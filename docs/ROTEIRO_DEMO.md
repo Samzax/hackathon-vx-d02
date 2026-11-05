@@ -12,7 +12,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 - Clicar em **Registrar evidência**. A B3 passa de 2 atrasadas para 1 no mapa.
 - Escolher `FIR_B2_2026-11-1Q_anomalia.pdf` e clicar em **Ler documento**. Aparece o alerta vermelho: pontuação 10 obriga a ISE e o registro no SIGBM em 24 h.
   - **Fala:** "O documento da operação também dispara obrigações."
-- Opcional: trocar "Quem está olhando" para *Manutenção da Usina*. O gestor vê só o vaso dele (NR-13).
+- Opcional: trocar "Quem está olhando" para *Manutenção da Usina*. O gestor vê só o vaso dele (NR-13). Abrir **📨 Boletim da semana**: "é isso que ele recebe toda segunda, sem ler norma nenhuma."
 
 ## 2. Mudanças (45 s)
 
@@ -40,3 +40,4 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 | Funciona sem internet? | Sim. A demo roda do cache (`data/cache_ia_demo.json`) e sem chave |
 | Serve para outra coisa além de barragem? | O motor é "ativo + obrigação + agenda + evidência": já roda vaso de pressão, unidade e licença |
 | Quanto custa cadastrar uma norma nova? | A extração da Res. 95 inteira custou US$ 0,065. A NR-13, US$ 0,045 |
+| Qual o tamanho do mercado? | Aba **Mercado**: 461 barragens de 126 empresas na PNSB (SIGBM). Preço e adoção são premissas que dá para mudar na hora |
