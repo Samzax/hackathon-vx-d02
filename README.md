@@ -47,6 +47,8 @@ Cada obrigação tem três campos que a máquina lê:
 - **agenda:** quando vence (ex.: `quinzenal+15d`, `anos:3`, `unica`);
 - **trecho:** o texto literal da norma.
 
+Os 66 trechos das normas oficiais são conferidos por teste (`tests/test_trechos.py`) contra os textos baixados das fontes oficiais (ANMlegis e gov.br/trabalho-e-emprego). A lista das fontes está em `regulaia/fontes.py`. A licença é fictícia e não tem texto para conferir.
+
 O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto (`regulaia/extrator.py`), uma pessoa escolhe e ajusta (`curadoria/*.csv`) e o script gera o CSV final (`regulaia/curadoria.py`). Repetir o processo dá o mesmo resultado.
 
 ## Conteúdo
@@ -73,6 +75,7 @@ uv run pytest
 uv run streamlit run app.py                                     # a torre (interface)
 uv run python -m regulaia.demo                                  # só monta o banco da demo
 uv run python -m regulaia.exemplos                              # gera os PDFs de exemplo
+uv run python -m regulaia.fontes                                # baixa os textos oficiais das normas (data/raw/normas)
 uv run python -m collector.xml_dou data/raw/dou/S01082026.zip   # funil do mês
 uv run python -m regulaia.impacto data/raw/dou/S01082026.zip    # impacto com IA (precisa de chave no .env)
 RUN_IA=1 uv run pytest tests/test_ia_real.py -v                 # casos de ouro com o modelo real

@@ -51,4 +51,5 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Agenda semanal; mudança de periodicidade aprovada leva a agenda junto (regra, não IA)
 - [x] Cadastro da Res. 220 conferido contra o texto oficial: trecho literal em cada obrigação, ≥ sublinhado do ANMlegis, 9 obrigações que faltavam (arts. 20 §2 e §3, 38 §4, 42, 46 §4, 49, 54 §2, 56 §1, 59)
 - [x] ISE pela norma do dia: pontuação 10 (Res. 95) ou EC1/EC3/EC4/EC5 = 5 (Res. 220), com FIR de exemplo no modelo novo
+- [x] Todos os trechos do cadastro (Res. 95, Res. 220, NR-13, NR-22) conferidos por teste contra o texto oficial; `regulaia.fontes` baixa os textos
 - [x] Regras com "ou"; plano de transição diz quando o tema existe na norma nova mas não vale para o ativo
