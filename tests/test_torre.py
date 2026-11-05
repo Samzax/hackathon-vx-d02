@@ -98,3 +98,19 @@ def test_res_95_sai_na_troca_de_norma(serra):
     assert "R95-01" in {o["codigo"] for o in trocas["B1"].saem}
     assert "OB-02" in {o["codigo"] for o in trocas["B1"].entram}
     assert not any(l.codigo.startswith("R95") for l in torre.painel(conn, 1, date(2027, 8, 2), DESDE))
+
+
+def test_zas_mte_e_anm_na_mesma_data(serra):
+    """NR-22 (Portaria MTE 105/2026) e Res. ANM 245/2026: ZAS em 26/12/2029 para não montante."""
+    conn, _ = serra
+    agora = {l.codigo for l in torre.painel(conn, 1, HOJE, DESDE, ativo="B1")}
+    assert "N22-ZAS1" in agora                       # B1 é a montante: vale já
+    linha = [f for f in torre.futuras(conn, 1, HOJE) if f.ativo == "B2"]
+    zas = {(f.codigo, f.dia, f.proposta) for f in linha if f.codigo in ("N22-ZAS2", "OB-01")}
+    assert ("N22-ZAS2", "2029-12-26", False) in zas
+    assert ("OB-01", "2027-08-02", False) in zas     # antes da Res. 245
+    ato = db.registrar_ato(conn, "dou", "res-245", "Resolução ANM Nº 245", texto=TRECHO_245)
+    db.propor_versao(conn, "OB-01", {"prazo": "2029-12-26", "vigencia_desde": "2029-12-26"},
+                     ato_id=ato, trecho=TRECHO_245)
+    linha = [f for f in torre.futuras(conn, 1, HOJE) if f.ativo == "B2" and f.codigo == "OB-01"]
+    assert {(f.dia, f.proposta) for f in linha} == {("2027-08-02", False), ("2029-12-26", True)}

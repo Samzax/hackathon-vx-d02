@@ -20,6 +20,7 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Revisar a interface rodando de verdade (preview) e corrigir o que estiver feio ou confuso
 - [x] Transição: mostrar as obrigações equivalentes (ex.: RPSB na 95 e na 220) em vez de só "sai/entra"
 - [x] Mudanças: ao aprovar a Res. 245, a OB-01 da B2 sai da transição de 2027 e vai para 2029
-- [ ] NR-22 Portaria MTE 105/2026 como segundo caso real de mudança (verificar antes se faz sentido)
+- [x] NR-22 Portaria MTE 105/2026: não serve como mudança pendente (é de jan/2026, já no texto da NR-22),
+      mas mostra MTE e ANM com a mesma data para a ZAS (26/12/2029): virou cadastro N22-ZAS1/2 e linha do tempo
 - [ ] Leitor de evidência (FIR em PDF -> período e campos), se sobrar tempo
 - [ ] Atualizar README e docs/ARQUITETURA.md com a torre, agenda, curadoria e custos medidos

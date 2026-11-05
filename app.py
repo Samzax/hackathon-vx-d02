@@ -30,6 +30,13 @@ CAMPO = {"prazo": "Prazo", "vigencia_desde": "Começa a valer em", "vigencia_ate
          "evidencia": "Evidência", "regra": "Regra", "agenda": "Agenda"}
 
 
+def _dispositivo(norma, artigo):
+    """'Res. ANM 220/2025' + 'Res. ANM 220/2025 art. 38 I' não repete a norma."""
+    if norma and artigo and artigo.startswith(norma):
+        return artigo
+    return f"{norma}, {artigo}" if norma else artigo
+
+
 def _br(valor):
     """AAAA-MM-DD -> DD/MM/AAAA; o resto passa como está."""
     try:
@@ -79,7 +86,7 @@ st.caption("Cada obrigação com a norma, o dispositivo e o trecho literal que a
            "Mudanças só valem depois de aprovadas por uma pessoa.")
 
 aba_hoje, aba_transicao, aba_mudancas, aba_radar = st.tabs(
-    ["Hoje", "Transição 95 → 220", "Mudanças", "Radar do DOU"])
+    ["Hoje", "Transição e linha do tempo", "Mudanças", "Radar do DOU"])
 
 # ------------------------------------------------------------------ Hoje
 
@@ -182,6 +189,25 @@ with aba_transicao:
                 c0.markdown(f"**{par.tema}**  \n<small>{situacao}</small>", unsafe_allow_html=True)
                 c1.markdown(_lista(par.saem), unsafe_allow_html=True)
                 c2.markdown(_lista(par.entram), unsafe_allow_html=True)
+
+    st.markdown("##### Linha do tempo: o que ainda vai passar a valer")
+    st.caption("Datas de entrada em vigor por ativo, de todas as normas do cadastro. "
+               "⏳ = data proposta por uma mudança ainda não aprovada.")
+    futuras = [f for f in torre.futuras(conn, empresa["id"], hoje) if f.ativo in codigos_meus]
+    por_dia: dict[str, list] = {}
+    for f in futuras:
+        por_dia.setdefault(f.dia, []).append(f)
+    for dia, fs in por_dia.items():
+        dias = (date.fromisoformat(dia) - hoje).days
+        agrupado: dict[tuple, list[str]] = {}
+        for f in fs:
+            agrupado.setdefault((f.codigo, f.titulo, f.norma, f.artigo, f.proposta), []).append(f.ativo)
+        normas_dia = sorted({n for (_, _, n, _, _) in agrupado if n})
+        with st.expander(f"**{_br(dia)}** · em {dias} dias · {len(agrupado)} obrigações · {', '.join(normas_dia)}",
+                         expanded=len(agrupado) <= 6):
+            st.markdown("\n".join(
+                f"- {'⏳ ' if prop else ''}{tit} — *{_dispositivo(norma, art)}* · {', '.join(ats)}"
+                for (cod, tit, norma, art, prop), ats in agrupado.items()))
 
 # ------------------------------------------------------------------ Mudanças
 

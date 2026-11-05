@@ -132,6 +132,33 @@ def transicao(conn, empresa_id: int, dia: date) -> list[Troca]:
     return out
 
 
+@dataclass
+class Futura:
+    dia: str              # AAAA-MM-DD em que passa a valer
+    ativo: str
+    codigo: str
+    titulo: str
+    norma: str | None
+    artigo: str
+    proposta: bool        # True: data vem de uma mudança ainda não aprovada
+
+
+def futuras(conn, empresa_id: int, hoje: date) -> list[Futura]:
+    """Linha do tempo: obrigações que passam a valer depois de hoje, por ativo."""
+    out = []
+    for a in _empresa_ativos(conn, empresa_id):
+        for o in db.obrigacoes_do_ativo(conn, a["id"]):
+            meta = _meta(conn, o.codigo)
+            for v, proposta in ((o.vigente, False), (o.pendente, True)):
+                if v and v["vigencia_desde"] and v["vigencia_desde"] > hoje.isoformat():
+                    if proposta and v["vigencia_desde"] == o.vigente["vigencia_desde"]:
+                        continue
+                    out.append(Futura(v["vigencia_desde"], a["codigo"], o.codigo, v["titulo"],
+                                      meta["norma"], v["artigo"], proposta))
+    out.sort(key=lambda f: (f.dia, f.ativo, f.codigo))
+    return out
+
+
 # Temas para casar obrigações equivalentes entre a norma que sai e a que entra.
 # Ordem importa: o primeiro tema que casar com o título vence.
 TEMAS = [
