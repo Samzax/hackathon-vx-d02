@@ -255,3 +255,18 @@ def test_muitos_periodos_viram_um_intervalo(serra):
     b = torre.boletim(conn, 1, date(2027, 8, 10), DESDE)
     assert "falta: 10 períodos entre setembro/2026 e junho/2027" in b
     assert "falta: 4º trimestre/2026, 1º trimestre/2027, 2º trimestre/2027" in b      # até 3, por extenso
+
+
+def test_zas_aprovada_vence_junto_com_a_nr22_no_painel(serra):
+    """Aprovada a Res. 245, a OB-01 da B2 vence no mesmo dia da NR-22 (26/12/2029); no dia seguinte, as duas atrasam.
+    Sem aprovação, a OB-01 continua cobrada desde 02/08/2027: nada muda sozinho."""
+    conn, _ = serra
+    assert _status(conn, "B2", "OB-01", date(2029, 12, 27)).vence == "2027-08-02"
+    ato = db.registrar_ato(conn, "dou", "res-245", "Resolução ANM Nº 245", texto=TRECHO_245)
+    vid = db.propor_versao(conn, "OB-01", {"prazo": "2029-12-26", "vigencia_desde": "2029-12-26"},
+                           ato_id=ato, trecho=TRECHO_245)
+    db.decidir(conn, vid, aprovar=True, por="teste")
+    for codigo in ("OB-01", "N22-ZAS2"):
+        assert _status(conn, "B2", codigo, date(2029, 12, 26)).status == agenda.VENCE_LOGO
+        depois = _status(conn, "B2", codigo, date(2029, 12, 27))
+        assert depois.status == agenda.ATRASADA and depois.vence == "2029-12-26"

@@ -73,3 +73,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Teste confere o funil de agosto (7.884 → 825) da tela e dos documentos contra o ZIP do DOU
 - [x] "Por norma" explica por que a Res. 220 ainda não aparece; comandos do README conferidos
 - [x] Viagem no tempo avisa que o histórico da demo para em 07/11/2026 (explica os atrasos de 2027); pergunta no roteiro
+- [x] Teste: aprovada a Res. 245, OB-01 e NR-22 vencem juntas no painel (26/12/2029); sem aprovação, nada muda
