@@ -42,6 +42,7 @@ class Linha:
     mudanca_pendente: bool = False
     evidencia: str | None = None
     nota: str = ""
+    agenda: str = ""                       # DSL da versão que vale (ver agenda.py)
 
 
 def dispositivo(norma: str | None, artigo: str | None) -> str:
@@ -152,7 +153,7 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
             linha = Linha(
                 ativo=a["codigo"], ativo_nome=a["nome"], tipo_ativo=a["tipo"], responsavel=a["responsavel"],
                 codigo=o.codigo, norma=meta["norma"], area=meta["area"], titulo=v["titulo"],
-                artigo=v["artigo"], periodicidade=v["periodicidade"], status=agenda.GATILHO,
+                artigo=v["artigo"], periodicidade=v["periodicidade"], status=agenda.GATILHO, agenda=v["agenda"],
                 dados_faltando=o.dados_faltando, mudanca_pendente=o.pendente is not None,
                 evidencia=v["evidencia"],
             )
@@ -315,20 +316,27 @@ def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str 
             marca = "ATRASADA · " if l.status == agenda.ATRASADA else ""
             eventos.append((l.vence, f"{l.ativo}-{l.codigo}-vence",
                             f"{marca}{l.ativo} · {l.titulo}",
-                            dispositivo(l.norma, l.artigo) + (f". {_maiuscula(l.nota)}" if l.nota else "")))
+                            dispositivo(l.norma, l.artigo) + (f". {_maiuscula(l.nota)}" if l.nota else ""),
+                            agenda.dias_de_aviso(l.agenda)))
     for f in futuras(conn, empresa_id, hoje):
         if f.ativo in ativos and f.dia <= limite and not f.proposta:
             eventos.append((f.dia, f"{f.ativo}-{f.codigo}-inicio",
-                            f"Começa a valer: {f.ativo} · {f.titulo}", dispositivo(f.norma, f.artigo)))
+                            f"Começa a valer: {f.ativo} · {f.titulo}", dispositivo(f.norma, f.artigo),
+                            agenda.AVISO_DIAS))
     linhas = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//RegulaIA//Torre de Controle//PT-BR",
               "CALSCALE:GREGORIAN", f"X-WR-CALNAME:RegulaIA · {_ics_texto(responsavel or 'Diretoria')}"]
     carimbo = f"{hoje:%Y%m%d}T000000Z"
-    for dia, uid, resumo, desc in sorted(eventos):
+    for dia, uid, resumo, desc, aviso in sorted(eventos):
         d = date.fromisoformat(dia)
         linhas += ["BEGIN:VEVENT", f"UID:{uid}-{d:%Y%m%d}@regulaia", f"DTSTAMP:{carimbo}",
                    f"DTSTART;VALUE=DATE:{d:%Y%m%d}",
                    f"DTEND;VALUE=DATE:{date.fromordinal(d.toordinal() + 1):%Y%m%d}",
-                   f"SUMMARY:{_ics_texto(resumo)}", f"DESCRIPTION:{_ics_texto(desc)}", "END:VEVENT"]
+                   f"SUMMARY:{_ics_texto(resumo)}", f"DESCRIPTION:{_ics_texto(desc)}",
+                   "TRANSP:TRANSPARENT"]            # prazo não ocupa a agenda do gestor como reunião
+        if d > hoje:     # lembrete quando fica amarela na torre (atrasada não precisa de lembrete no passado)
+            linhas += ["BEGIN:VALARM", "ACTION:DISPLAY", f"TRIGGER:-P{aviso}D",
+                       f"DESCRIPTION:{_ics_texto(resumo)}", "END:VALARM"]
+        linhas.append("END:VEVENT")
     linhas.append("END:VCALENDAR")
     return "\r\n".join(x for l in linhas for x in _ics_dobra(l)) + "\r\n"
 

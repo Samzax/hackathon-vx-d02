@@ -150,6 +150,19 @@ def test_calendario_ics_do_gestor(serra):
     assert "B3" not in desdobrado                                             # só os ativos dele
 
 
+def test_calendario_lembra_quando_fica_amarela_e_nao_ocupa_a_agenda(serra):
+    conn, _ = serra
+    ics = torre.calendario(conn, 1, HOJE, DESDE).replace("\r\n ", "")
+    eventos = ics.split("BEGIN:VEVENT")[1:]
+    assert all("TRANSP:TRANSPARENT" in e for e in eventos)
+    atrasadas = [e for e in eventos if "SUMMARY:ATRASADA" in e]
+    assert atrasadas and not any("VALARM" in e for e in atrasadas)        # lembrete no passado não serve
+    fir = next(e for e in eventos if "B1 · Preencher as FIR" in e and "ATRASADA" not in e)
+    assert "TRIGGER:-P5D" in fir                       # quinzenal: amarela 5 dias antes
+    assert any("TRIGGER:-P30D" in e for e in eventos)  # anual/plurianual: 30 dias antes
+    assert ics.count("BEGIN:VALARM") == ics.count("END:VALARM")
+
+
 def test_calendario_mostra_quando_a_res_220_comeca(serra):
     conn, _ = serra
     ics = torre.calendario(conn, 1, HOJE, DESDE, dias=365 * 4).replace("\r\n ", "")

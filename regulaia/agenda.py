@@ -33,6 +33,11 @@ AVISO_DIAS_CURTO = 5     # para quinzenal e mensal, 30 dias seria sempre amarelo
 EM_DIA, VENCE_LOGO, ATRASADA, GATILHO, CUMPRIDA = "em_dia", "vence_logo", "atrasada", "gatilho", "cumprida"
 
 
+def dias_de_aviso(agenda: str) -> int:
+    """Quantos dias antes do vencimento a obrigação fica amarela (e o calendário lembra)."""
+    return AVISO_DIAS_CURTO if agenda.startswith(("semanal", "quinzenal", "mensal")) else AVISO_DIAS
+
+
 class AgendaInvalida(ValueError):
     pass
 
@@ -266,7 +271,7 @@ def situacao(agenda: str, evidencias: list[str], hoje: date, desde: date,
     proximo = next((p for p in ps if p.vence >= hoje and p.rotulo not in feitos), None)
     if faltando:
         return Situacao(ATRASADA, proximo, faltando, ultima)
-    aviso = AVISO_DIAS_CURTO if agenda.startswith(("semanal", "quinzenal", "mensal")) else AVISO_DIAS
+    aviso = dias_de_aviso(agenda)
     if proximo and (proximo.vence - hoje).days <= aviso:
         return Situacao(VENCE_LOGO, proximo, [], ultima)
     return Situacao(EM_DIA, proximo, [], ultima)

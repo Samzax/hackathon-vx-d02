@@ -90,3 +90,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] PDF que não abre vira frase para o operador ("protegido por senha: mande uma cópia sem senha" / "não parece um PDF válido"), sem nome de exceção na tela; PDF só com senha de dono abre normalmente (teste)
 - [x] Montagem da demo 2x mais rápida (2,7 s -> 1,4 s; suíte 73 s -> 52 s): banco recriável montado sem esperar o disco a cada commit, padrão restaurado depois (teste)
 - [x] Colunas de status do mapa e da tabela "Por norma" com o nome ao passar o mouse (não depender só da cor); cabeçalho com texto foi testado e cortava os nomes em 1280 px
+- [x] Calendário .ics: lembrete no dia em que a obrigação fica amarela na torre (5 dias antes para quinzenal/mensal, 30 para o resto), sem lembrete para atrasada; prazos não marcam o gestor como ocupado; validado com a biblioteca icalendar
