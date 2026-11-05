@@ -189,3 +189,10 @@ def test_aviso_de_atraso_comeca_com_maiuscula(banco_temporario):
     next(s for s in at.selectbox if s.label.endswith("documento de exemplo")).select("EIR_B3_2026-10-1Q_recibo_SIGBM.pdf").run()
     next(b for b in at.button if b.label == "Ler documento").click().run()
     assert any(i.value.lstrip("⏰ ").startswith("Enviado em 06/11/2026, 7 dias depois do prazo") for i in at.info)
+
+
+def test_por_norma_explica_a_ausencia_da_res220(banco_temporario):
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    assert any(c.value.startswith("A Res. ANM 220/2025 ainda não aparece: entra em 02/08/2027") for c in at.caption)
+    next(b for b in at.button if b.label == "Res. 220").click().run()
+    assert not any(c.value.startswith("A Res. ANM 220/2025 ainda não aparece") for c in at.caption)

@@ -71,3 +71,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] .streamlit/config.toml: upload até 20 MB e sem estatística de uso também fora do Docker
 - [x] ARQUITETURA lista os 8 documentos de exemplo com o que cada um mostra; teste impede a lista de ficar velha
 - [x] Teste confere o funil de agosto (7.884 → 825) da tela e dos documentos contra o ZIP do DOU
+- [x] "Por norma" explica por que a Res. 220 ainda não aparece; comandos do README conferidos

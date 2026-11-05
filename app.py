@@ -221,6 +221,9 @@ with aba_hoje:
             **{ROTULO[s].split()[0]: sum(1 for l in linhas if l.norma == n and l.status == s)
                for s in [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO]},
         } for n in normas]), hide_index=True, width="stretch")
+        if hoje < TROCA_NORMA:
+            st.caption(f"A Res. ANM 220/2025 ainda não aparece: entra em {TROCA_NORMA:%d/%m/%Y} no lugar da "
+                       "Res. 95/2022. O que muda está na aba Transição e linha do tempo.")
 
     def _tabela(ls):
         return pd.DataFrame([{
