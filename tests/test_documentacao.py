@@ -1,6 +1,7 @@
 """Os números que a documentação e o roteiro da demo citam batem com o cadastro."""
 
 import csv
+import re
 from pathlib import Path
 
 import pytest
@@ -258,6 +259,33 @@ def test_numeros_do_pitch_saem_dos_dados():
     for trecho in ("7.884 atos → 825 da ANM → 2 para a IA → 1 muda o cadastro", "99,97%", "US$ 0,065",
                    "os 66 trechos", "menos de meio centavo de dólar"):
         assert trecho in pitch, trecho
+
+    # abertura e mercado: embargo, dano potencial e grupos saem do SIGBM
+    emb = m["pnsb_por_embargo"]
+    ja = emb["Embargada"] + emb["Desembargada"]
+    assert f'"{ja} de {m["barragens_na_pnsb"]}"' in pitch
+    assert f"{m['barragens_na_pnsb']} barragens de mineração que a lei" in pitch
+    assert f"{ja} já foram embargadas, quase metade. {emb['Embargada']} estão embargadas hoje" in pitch
+    assert 0.45 < ja / m["barragens_na_pnsb"] < 0.5
+    assert (f"{m['barragens_mineracao']} → {m['barragens_na_pnsb']} → "
+            f"{m['pnsb_por_dano_potencial']['Alto']} barragens") in pitch
+    faixas = m["grupos_por_raiz_cnpj"]["por_faixa_de_barragens"]
+    assert f"pelos {faixas['2 a 4']['grupos'] + faixas['5 a 9']['grupos']} grupos que têm de 2 a 9" in pitch
+
+    # "mais de 170 testes" no slide 6 (funções de teste, sem contar os casos parametrizados)
+    testes = sum(len(re.findall(r"^def test_", f.read_text(encoding="utf-8"), re.M))
+                 for f in (RAIZ / "tests").glob("test_*.py"))
+    assert "mais de 170 testes" in pitch and testes > 170, testes
+
+
+def test_pitch_cabe_em_cinco_minutos():
+    """Falas e narração do docs/PITCH.md: até 750 palavras, 5 min a 150 palavras por minuto."""
+    pitch = (RAIZ / "docs" / "PITCH.md").read_text(encoding="utf-8")
+    falas = re.findall(r'\*\*(?:Fala|Narração):\*\* "([^"]+)"', pitch)
+    assert len(falas) >= 14, len(falas)
+    palavras = sum(len(f.split()) for f in falas)
+    assert palavras <= 750, palavras
+    assert f"cerca de {round(palavras, -1)} palavras" in pitch, palavras
 
 
 def test_git_nao_versiona_segredo_nem_cpf():

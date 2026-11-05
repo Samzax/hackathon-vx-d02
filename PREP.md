@@ -93,7 +93,7 @@ Still open, until the recording is released:
 
 - [x] Create the GitHub repo and push the prep material (private repo, `main`)
 - [x] Build the collector and the golden test (OB-01) before Saturday (`collector/`, `tests/test_impacto.py`)
-- [ ] Draft the 5-minute pitch around the Res. 245 case: first draft in `docs/PITCH.md` (numbers checked by test), still to rehearse and rewrite in the presenter's voice
+- [x] Draft the 5-minute pitch: rewritten slide by slide in `docs/PITCH.md` for 5 minutes with no questions (numbers and word count checked by test); still to rehearse in the presenter's voice
 - [ ] Name one owner for data ingestion
 - [ ] Talk to someone who works in mining compliance; ask the organizers for an intro
 - [ ] Check with them that the seed list and the owner roles look realistic

@@ -83,7 +83,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | [docs/ARQUITETURA.md](docs/ARQUITETURA.md) | Decisões de arquitetura e custos medidos |
 | [docs/ROTEIRO_DEMO.md](docs/ROTEIRO_DEMO.md) | Roteiro da demo de 3 minutos, com as falas |
 | [docs/ANALISE_MERCADO.md](docs/ANALISE_MERCADO.md) | Análise de mercado e viabilidade (entrega do hackathon): problema, tamanho do mercado, concorrência, diferencial, modelo de negócio, riscos e próximos passos, com fontes; números do SIGBM conferidos por teste |
-| [docs/PITCH.md](docs/PITCH.md) | Rascunho do pitch de 5 minutos (problema, por que agora, demo, viabilidade, mercado), com números conferidos por teste |
+| [docs/PITCH.md](docs/PITCH.md) | Pitch de 5 minutos sem perguntas, slide a slide (o que vai na tela, a fala e o tempo), com o vídeo da demo no meio; números e contagem de palavras conferidos por teste |
 | [PREP.md](PREP.md) | Pesquisa, fontes de dados, critérios de avaliação |
 
 ## Como rodar
