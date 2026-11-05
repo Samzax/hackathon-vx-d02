@@ -195,6 +195,25 @@ def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
     assert not faltando, f"falta em [project].dependencies: {sorted(faltando)}"
 
 
+def test_requirements_txt_acompanha_o_uv_lock():
+    """O Streamlit Community Cloud instala pelo requirements.txt; ele sai do uv.lock com
+    `uv export --no-dev --no-hashes --no-emit-project --format requirements-txt -o requirements.txt`.
+    Cada pacote travado no uv.lock (fora os de desenvolvimento) tem de estar lá na mesma versão."""
+    import re
+    import tomllib
+
+    req = (RAIZ / "requirements.txt").read_text(encoding="utf-8")
+    fixados = dict(re.findall(r"^([A-Za-z0-9_.-]+)==([^\s;]+)", req, re.M))
+    fixados = {k.lower(): v for k, v in fixados.items()}
+    proj = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))["project"]["dependencies"]
+    diretos = {re.split(r"[<>=!~\[ ]", d, maxsplit=1)[0].lower() for d in proj}
+    trava = {p["name"].lower(): p["version"]
+             for p in tomllib.loads((RAIZ / "uv.lock").read_text(encoding="utf-8"))["package"] if "version" in p}
+    assert diretos <= fixados.keys(), diretos - fixados.keys()
+    diferentes = {n: (fixados[n], trava[n]) for n in fixados if n in trava and fixados[n] != trava[n]}
+    assert not diferentes, f"requirements.txt desatualizado, rode o uv export: {diferentes}"
+
+
 def test_caminhos_no_codigo_com_a_mesma_caixa_do_disco():
     """Windows não distingue 'Exemplos' de 'exemplos'; o Linux da imagem Docker distingue.
     Todo nome de arquivo ou pasta citado no código tem de bater letra por letra com o disco."""

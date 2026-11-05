@@ -116,6 +116,19 @@ A interface funciona sem chave e sem internet. As respostas da IA ficam em `data
 
 O ZIP mensal vem do [portal de dados abertos da Imprensa Nacional](https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados) (Seção 1, ano e mês) e fica em `data/raw/dou/`, fora do Git. O coletor não acessa o site do DOU, porque o `robots.txt` de www.in.gov.br proíbe robôs.
 
+## Link público antes da AWS
+
+Dois caminhos para mostrar a demo por link, sem chave de IA (tudo roda do cache):
+
+- **Streamlit Community Cloud** (link fixo, não depende da máquina de ninguém): em share.streamlit.io, entrar com o GitHub, **Create app**, repositório `Samzax/hackathon-vx-d02`, branch `main`, arquivo `app.py`, e em *Advanced settings* escolher Python 3.13. Não preencher *Secrets*: sem chave, ninguém de fora gasta crédito de IA. O app instala pelo `requirements.txt`, gerado do `uv.lock` (um teste avisa se ficar desatualizado).
+- **Túnel da sua máquina** (link temporário, some quando o computador desliga): rodar uma cópia do repositório sem `.env` e abrir um túnel do Cloudflare para ela:
+
+```bash
+cloudflared tunnel --no-autoupdate --url http://localhost:8502
+```
+
+O link `https://….trycloudflare.com` aparece na saída do comando. Quem tiver o link usa o app que roda na sua máquina, então a cópia exposta não pode ter `.env`.
+
 ## Rodar na nuvem (AWS)
 
 O `Dockerfile` empacota a torre com as dependências de produção (sem pytest; o reportlab vai junto porque o boletim e o plano saem em PDF):
