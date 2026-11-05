@@ -68,11 +68,14 @@ Quem opera manda o PDF e a torre dá baixa na obrigação certa (`regulaia/evide
 
 Ficam de fora só as obrigações únicas comprovadas por plano ou requerimento, como a adequação da ZAS e a renovação da licença.
 
-1. **Regra.** Acha o ativo (código entre parênteses ou nome inteiro: "Serra I" não casa "Serra II"), o tipo de documento pelo nome que aparece primeiro (o título: um RCO cita a DCO no corpo) e a data de execução.
+1. **Regra.** Acha o ativo, o tipo de documento e a data de execução.
+   - **Ativo.** Vale primeiro o código explícito: entre parênteses ("(B3)") ou depois de um rótulo ("Barragem B3", "Ativo: B3"). Um "B3" solto no texto não vale. Sem código, vale o nome inteiro, com ou sem o tipo ("Córrego Fundo"), ou a tag do vaso ("VP-101"). "Serra I" não casa "Serra II". Código que não está no cadastro vira um problema que diz qual código o documento citou.
+   - **Tipo.** É o nome que aparece primeiro, o título: um RCO cita a DCO no corpo.
+   - **Data.** Vale a data com rótulo ("Data da inspeção", "realizada em"), em `03/11/2026`, `03.11.2026`, `03-11-2026` ou "3 de novembro de 2026". Sem rótulo, só se houver uma data no texto. Ano com dois dígitos e data impossível não são adivinhados.
 2. **Desempate.** Se mais de um ativo é citado, fica o que tem obrigação vigente daquele tipo de documento. Um boletim de efluentes que cita a licença e a unidade vai para a licença.
 3. **IA só se a regra não fechar.** A data que ela indicar tem de estar escrita no documento; se não estiver, a leitura fica com um problema e não é registrada.
 4. **Período.** A data vira o período que a evidência comprova (`2026-10-1Q`, `2026-09`, a própria data para `anos:N`).
-5. **Gatilhos.** A regra da Inspeção de Segurança Especial é a da norma que vale no dia para aquela barragem. Pela Res. 95 (art. 27), anomalia com pontuação 10. Pela Res. 220 (art. 42), anomalia com EC1, EC3, EC4 ou EC5 = 5 no Quadro I.8; EC2 = 5 sozinho não obriga ISE. Nos dois casos o alerta lembra o registro no SIGBM em 24 horas. Uma FIR lida depois da troca sem as colunas EC ganha um aviso (art. 38 §2).
+5. **Gatilhos.** A regra da Inspeção de Segurança Especial é a da norma que vale no dia para aquela barragem. Pela Res. 95 (art. 27), anomalia com pontuação 10. Pela Res. 220 (art. 42), anomalia com EC1, EC3, EC4 ou EC5 = 5 no Quadro I.8 (lido como "EC3 = 5", "EC 3: 5", "EC-3 = 5" ou "EC3 (5)", porque ler a menos seria perder uma ISE); EC2 = 5 sozinho não obriga ISE. Nos dois casos o alerta lembra o registro no SIGBM em 24 horas. Uma FIR lida depois da troca sem as colunas EC ganha um aviso (art. 38 §2).
    Registrar a FIR com anomalia **abre** a obrigação de ISE daquele ativo (tabela `acionamento`). A obrigação tem prazo de 24 horas. Ela fica na torre, e depois no boletim, como atrasada até o relatório da ISE ser registrado, que a encerra. Sem isso, o alerta sumiria da tela junto com o documento. Pela Res. 220, EC = 5 abre duas obrigações: o registro no SIGBM em 24 h (art. 38 §4, encerrado pelo recibo do EIE) e a ISE (art. 42, encerrada pelo relatório).
 6. **Entrega fora do prazo.** O período comprovado é sempre o da execução (a inspeção). Se o documento traz a data de envio (o recibo do EIR, por exemplo) e ela passou do prazo, a leitura avisa sem bloquear, e o aviso fica gravado na evidência.
 

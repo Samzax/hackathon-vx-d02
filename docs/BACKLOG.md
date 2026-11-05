@@ -113,3 +113,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Leitor de evidências reconhece o ativo também pelo código depois de rótulo ("Barragem B3", "Ativo: B3"), pelo nome sem o tipo ("Córrego Fundo") e pela tag do vaso ("VP-101"); código solto continua sem valer
 - [x] Código desconhecido depois de rótulo ("Barragem B9") também é apontado como "não é ativo cadastrado"; a mensagem genérica passa a mostrar o formato "Ativo: B3"
 - [x] Gatilho de ISE lê mais formatos: "EC 3 = 5", "EC-3 = 5", "EC3 (5)" e "Maior pontuação: 10" (antes passavam em branco, e a ISE obrigatória não abria); "pontuação 6" solta continua sem valer
+- [x] ARQUITETURA descreve as regras atuais do leitor: jeitos de citar o ativo, formatos de data e de colunas EC aceitos e o que não é adivinhado
