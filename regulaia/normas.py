@@ -133,12 +133,20 @@ def _pula_sumario(paragrafos: list[str]) -> list[str]:
 def itens_nr(paragrafos: list[str], nivel: int = 3) -> list[Unidade]:
     """Agrupa os parágrafos pelo prefixo do item no nível pedido (13.5.4 com nivel=3).
     Um item que reaparece mais adiante (texto fora de ordem no PDF) junta-se ao primeiro."""
+    from collections import Counter
+
+    corpo = _pula_sumario(paragrafos)
+    # o capítulo da NR ("13" na NR-13): um número como "1.960 kPa" no início de linha não é item
+    caps = Counter(m.group(1).split(".")[0] for p in corpo if (m := _ITEM.match(p)))
+    capitulo = caps.most_common(1)[0][0] if caps else None
     grupos: dict[str, list[str]] = {}
     chave = None
-    for p in _pula_sumario(paragrafos):
+    for p in corpo:
         if _ANEXO.match(p) and grupos:
             break
         m = _ITEM.match(p)
+        if m and m.group(1).split(".")[0] != capitulo:
+            m = None
         if m:
             chave = ".".join(m.group(1).split(".")[:nivel])
         if chave is not None:

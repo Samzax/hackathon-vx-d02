@@ -1,0 +1,11 @@
+codigo,artigo,titulo_contem,agenda,titulo,regra,periodicidade,prazo,responsavel
+N13-01,13.5.1.7,registro de segurança,evento,,,Contínuo,A cada ocorrência e inspeção,
+N13-02,13.5.1.5,documentação,evento,Manter o prontuário do vaso atualizado no estabelecimento,,Contínuo,Permanente,
+N13-03,13.5.4.5,periódica,anos:3,Exame externo periódico do vaso — categoria III sem SPIE,classe = vaso_pressao e categoria_vaso = III e spie = falso,A cada 3 anos,Tabela 2: 3 anos sem SPIE,
+N13-04,13.5.4.5,periódica,anos:6,Exame interno periódico do vaso — categoria III sem SPIE,classe = vaso_pressao e categoria_vaso = III e spie = falso,A cada 6 anos,Tabela 2: 6 anos sem SPIE,
+N13-05,13.5.4.5,periódica,anos:5,Exame externo periódico do vaso — categoria V sem SPIE,classe = vaso_pressao e categoria_vaso = V e spie = falso,A cada 5 anos,Tabela 2: 5 anos sem SPIE,
+N13-06,13.5.4.5,periódica,anos:10,Exame interno periódico do vaso — categoria V sem SPIE,classe = vaso_pressao e categoria_vaso = V e spie = falso,A cada 10 anos,Tabela 2: 10 anos sem SPIE,
+N13-07,13.5.4.10,extraordinária,evento,,,,,
+N13-08,13.3.8,relatório,evento,,,,,
+N13-09,13.3.11,vazamento,evento,,,,,
+N13-10,13.5.1.4,Sinalizar,evento,,,,,

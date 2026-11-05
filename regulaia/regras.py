@@ -42,7 +42,10 @@ def _partes(regra: str) -> list[tuple[str, str | None, str | None]]:
         m = _COND.match(trecho)
         if not m:
             raise RegraInvalida(f"condição inválida: {trecho!r} em {regra!r}")
-        partes.append(m.groups())
+        campo, op, alvo = m.groups()
+        if op in (">", "<", ">=", "<=") and not isinstance(_valor(alvo), float):
+            raise RegraInvalida(f"{trecho!r}: maior/menor só com número")
+        partes.append((campo, op, alvo))
     return partes
 
 

@@ -45,3 +45,8 @@ def test_verdadeiro_e_falso_comparam_com_booleanos():
     assert aplica("inserida_pnsb = verdadeiro", {"inserida_pnsb": True})
     assert not aplica("inserida_pnsb = verdadeiro", {"inserida_pnsb": False})
     assert aplica("inserida_pnsb = falso e cri = alto", {"inserida_pnsb": False, "cri": "alto"})
+
+
+def test_maior_menor_so_com_numero():
+    with pytest.raises(RegraInvalida):
+        validar("categoria_vaso <= II")

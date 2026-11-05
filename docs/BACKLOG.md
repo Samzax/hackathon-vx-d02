@@ -12,7 +12,7 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [ ] Curadoria da Res. 95/2022 -> `curadoria/res95_2022.csv` -> `cadastro/res95_2022.csv`
       (códigos R95-01..; ver `data/historico_serra_azul.json`, que já usa R95-01, -02, -05, -06, -09, -16;
       vigência 2022-02-07 a 2027-08-01; incluir obrigações de emergência/PAEBM dos arts. 23-45)
-- [ ] Curadoria da NR-13 -> `cadastro/nr13.csv` (tipo equipamento; N13-03 = exame externo periódico,
+- [x] Curadoria da NR-13 -> `cadastro/nr13.csv` (tipo equipamento; N13-03 = exame externo periódico,
       N13-04 = exame interno periódico, conforme a Tabela 2 e a categoria do vaso; conferir no texto)
 - [ ] Testes da torre (`tests/test_torre.py`): B3 com FIR atrasada, B4 com dado faltando,
       L1 com renovação vencendo, transição 95 -> 220, Res. 245 pendente só na B2
