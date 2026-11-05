@@ -114,23 +114,32 @@ def _por_que_sem_ativo(texto_n: str, citados: list[str], ativos: list[dict]) -> 
     return "não foi possível identificar o ativo: o documento não cita o código entre parênteses, ex.: (B3), nem o nome"
 
 
+# uma data escrita de qualquer jeito que triagem.datas entende: 03/11/2026, 3.11.2026, 3 de novembro de 2026
+_UMA_DATA = r"(\d{1,2}[/.-]\d{1,2}[/.-]\d{4}|\d{1,2}º? de [a-zç]+ de \d{4})"
+
+
+def _data_rotulada(texto: str, rotulos: str) -> date | None:
+    """A data logo depois de um rótulo ("Data da inspeção:", "realizada em")."""
+    m = re.search(rf"(?:{rotulos})\s*:?\s*{_UMA_DATA}", texto, re.I)
+    achadas = datas(m.group(1)) if m else set()
+    return next(iter(achadas)) if len(achadas) == 1 else None
+
+
 def _data(texto: str) -> date | None:
-    m = re.search(r"data d[ae] (?:inspe[cç][aã]o|execu[cç][aã]o|realiza[cç][aã]o|coleta)\s*:?\s*"
-                  r"(\d{1,2}/\d{1,2}/\d{4})", texto, re.I)
-    if m:
-        d, mth, a = (int(x) for x in m.group(1).split("/"))
-        return date(a, mth, d)
+    rotulada = _data_rotulada(
+        texto, r"data d[ae] (?:inspe[cç][aã]o|execu[cç][aã]o|realiza[cç][aã]o|coleta)"
+               r"|(?:realizad[ao]|executad[ao]|inspecionad[ao]|feit[ao])\s+em")
+    if rotulada:
+        return rotulada
     ds = sorted(datas(texto))
     return ds[0] if len(ds) == 1 else None
 
 
 def _atraso(le: "Leitura", texto: str, agenda_ob: str, execucao: date) -> None:
     """Se o documento diz quando foi enviado/protocolado, compara com o prazo do período."""
-    m = re.search(r"data d[eo] (?:envio|protocolo|entrega)\s*:?\s*(\d{1,2}/\d{1,2}/\d{4})", texto, re.I)
-    if not m:
+    envio = _data_rotulada(texto, r"data d[eo] (?:envio|protocolo|entrega)")
+    if not envio:
         return
-    d, mth, a = (int(x) for x in m.group(1).split("/"))
-    envio = date(a, mth, d)
     try:
         prazo = agenda.periodos(agenda_ob, execucao, execucao)[0].vence
     except agenda.AgendaInvalida:

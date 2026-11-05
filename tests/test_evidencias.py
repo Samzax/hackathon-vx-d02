@@ -299,3 +299,20 @@ def test_pdf_que_nao_abre_vira_frase_para_o_operador():
             ev.texto_pdf(conteudo)
         frase = ev.por_que_nao_abre(erro.value)
         assert esperado in frase and "Error" not in frase
+
+
+@pytest.mark.parametrize("texto, esperado", [
+    ("Data da inspeção: 03/11/2026", date(2026, 11, 3)),
+    ("Data da inspeção: 3 de novembro de 2026", date(2026, 11, 3)),
+    ("Data da inspeção: 1º de novembro de 2026", date(2026, 11, 1)),
+    ("Data da inspeção: 03.11.2026", date(2026, 11, 3)),
+    ("Data da inspeção: 03-11-2026", date(2026, 11, 3)),
+    ("Inspeção realizada em 03/11/2026. Próxima inspeção: 18/11/2026", date(2026, 11, 3)),
+    ("Data de inspeção 03/11/2026 Emitido em 04/11/2026", date(2026, 11, 3)),
+    ("Vistoria em 3/11/2026", date(2026, 11, 3)),
+    ("Data da inspeção: 3/11/26", None),              # ano com 2 dígitos: ambíguo, não adivinha
+    ("Data da inspeção: 31/02/2026", None),           # data impossível: não quebra, só não lê
+    ("Inspeção em 03/11/2026, retorno em 18/11/2026", None),   # duas datas sem rótulo: não escolhe
+])
+def test_data_do_documento_em_varios_formatos(texto, esperado):
+    assert ev._data(texto) == esperado

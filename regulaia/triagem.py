@@ -41,7 +41,9 @@ _RE_NORMA_CURTA = re.compile(r"res\. ?anm (\d{1,4})")
 _RE_ART = re.compile(r"\barts?\. ?(\d{1,3})")
 _RE_PAR = re.compile(r"§ ?(\d{1,2})")
 _RE_DATA_EXTENSO = re.compile(r"(\d{1,2})o? de (" + "|".join(MESES) + r") de (\d{4})")
-_RE_DATA_NUM = re.compile(r"\b(\d{2})/(\d{2})/(\d{4})\b")
+# 03/11/2026, 3/11/2026, 03.11.2026, 03-11-2026 (o mesmo separador nos dois lados; ano com 4 dígitos,
+# para não confundir "3/11/26" com outra coisa)
+_RE_DATA_NUM = re.compile(r"\b(\d{1,2})([/.-])(\d{1,2})\2(\d{4})\b")
 
 
 def datas(texto: str) -> set[date]:
@@ -52,7 +54,7 @@ def datas(texto: str) -> set[date]:
             out.add(date(int(a), MESES[m], int(d)))
         except ValueError:
             pass
-    for d, m, a in _RE_DATA_NUM.findall(t):
+    for d, _sep, m, a in _RE_DATA_NUM.findall(t):
         try:
             out.add(date(int(a), int(m), int(d)))
         except ValueError:
