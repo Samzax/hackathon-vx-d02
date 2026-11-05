@@ -88,7 +88,9 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
                 s = agenda.situacao(v["agenda"], db.evidencias(conn, a["id"], o.codigo), hoje, ini,
                                     prazo=_prazo_unico(v))
                 linha.status, linha.ultima, linha.nota = s.status, s.ultima, s.nota
-                linha.vence = s.proximo.vence.isoformat() if s.proximo else None
+                # atrasada: a data que venceu primeiro; senão, a próxima
+                alvo = s.faltando[0] if s.faltando else s.proximo
+                linha.vence = alvo.vence.isoformat() if alvo else None
                 linha.faltando = [p.rotulo for p in s.faltando]
             out.append(linha)
     out.sort(key=lambda l: (l.ativo, ORDEM.get(l.status, 9), l.vence or "9999"))
@@ -128,6 +130,51 @@ def transicao(conn, empresa_id: int, dia: date) -> list[Troca]:
         if saem or entram:
             out.append(Troca(a["codigo"], saem, entram))
     return out
+
+
+# Temas para casar obrigações equivalentes entre a norma que sai e a que entra.
+# Ordem importa: o primeiro tema que casar com o título vence.
+TEMAS = [
+    ("Ficha de Inspeção Regular (FIR)", ("fir", "ficha de inspecao")),
+    ("Extrato de Inspeção Regular (EIR)", ("eir", "extrato de inspecao")),
+    ("RISR e DCE", ("risr", "dce")),
+    ("Revisão Periódica (RPSB)", ("rpsb", "revisao periodica")),
+    ("DCO e RCO do PAEBM", ("dco", "rco", "conformidade e operacionalidade")),
+    ("Treinamento do PAEBM", ("treinamento",)),
+    ("Exercício simulado", ("simulad",)),
+    ("Seminário orientativo", ("seminario",)),
+    ("Zona de Autossalvamento", ("zas", "autossalvamento")),
+    ("Emergência", ("emergencia", "ise", "anomalia", "incidente")),
+    ("Monitoramento", ("monitoramento", "sirene")),
+    ("PGRBM", ("pgrbm", "gestao de riscos")),
+]
+
+
+def tema(titulo: str) -> str:
+    from .triagem import normalizar
+    t = f" {normalizar(titulo)} "
+    for nome, chaves in TEMAS:
+        if any(f" {c}" in t for c in chaves):
+            return nome
+    return "Outras"
+
+
+@dataclass
+class Par:
+    tema: str
+    saem: list[dict]
+    entram: list[dict]
+
+
+def pares(troca: Troca) -> list[Par]:
+    """Agrupa o que sai e o que entra pelo tema: mostra o que continua, o que é novo e o que acaba."""
+    grupos: dict[str, Par] = {}
+    for o in troca.saem:
+        grupos.setdefault(tema(o["titulo"]), Par(tema(o["titulo"]), [], [])).saem.append(o)
+    for o in troca.entram:
+        grupos.setdefault(tema(o["titulo"]), Par(tema(o["titulo"]), [], [])).entram.append(o)
+    ordem = [n for n, _ in TEMAS] + ["Outras"]
+    return sorted(grupos.values(), key=lambda p: ordem.index(p.tema))
 
 
 # ------------------------------------------------------------------- mudanças

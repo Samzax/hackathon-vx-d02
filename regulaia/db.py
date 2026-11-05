@@ -42,6 +42,13 @@ def conectar(caminho: str | Path = DB_PADRAO) -> sqlite3.Connection:
     return conn
 
 
+def limpar(conn) -> None:
+    """Apaga todos os dados (menos o cache de IA), mantendo o arquivo e as conexões abertas."""
+    with conn:
+        for tabela in ("evidencia", "obrigacao_versao", "obrigacao", "ato", "ativo", "empresa"):
+            conn.execute(f"DELETE FROM {tabela}")
+
+
 # --------------------------------------------------------------- empresa e ativo
 
 

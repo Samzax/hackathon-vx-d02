@@ -17,8 +17,8 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Testes da torre (`tests/test_torre.py`): B3 com FIR atrasada, B4 com dado faltando,
       L1 com renovação vencendo, transição 95 -> 220, Res. 245 pendente só na B2
 - [x] Teste de fumaça da interface com `streamlit.testing.v1.AppTest`
-- [ ] Revisar a interface rodando de verdade (preview) e corrigir o que estiver feio ou confuso
-- [ ] Transição: mostrar as obrigações equivalentes (ex.: RPSB na 95 e na 220) em vez de só "sai/entra"
+- [x] Revisar a interface rodando de verdade (preview) e corrigir o que estiver feio ou confuso
+- [x] Transição: mostrar as obrigações equivalentes (ex.: RPSB na 95 e na 220) em vez de só "sai/entra"
 - [x] Mudanças: ao aprovar a Res. 245, a OB-01 da B2 sai da transição de 2027 e vai para 2029
 - [ ] NR-22 Portaria MTE 105/2026 como segundo caso real de mudança (verificar antes se faz sentido)
 - [ ] Leitor de evidência (FIR em PDF -> período e campos), se sobrar tempo

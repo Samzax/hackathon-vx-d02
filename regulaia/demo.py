@@ -91,10 +91,8 @@ def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU) -> tuple:
     from . import impacto
     from .ia import Roteador
 
-    caminho = Path(caminho or db.DB_PADRAO)
-    if caminho.exists():
-        caminho.unlink()
-    conn = db.conectar(caminho)
+    conn = db.conectar(Path(caminho or db.DB_PADRAO))
+    db.limpar(conn)     # no Windows o arquivo pode estar aberto pela interface
     ids = montar(conn)
     roteador = Roteador(db.conectar(impacto.CACHE_IA))
     analises = []
@@ -120,10 +118,9 @@ def main(argv: list[str]) -> int:
     from . import torre
 
     caminho = Path(argv[0]) if argv else db.DB_PADRAO
-    if caminho.exists():
-        caminho.unlink()
     conn = db.conectar(caminho)
-    ids = montar(conn)
+    db.limpar(conn)
+    montar(conn)
     spec = json.loads(HISTORICO.read_text(encoding="utf-8")) if HISTORICO.exists() else {}
     hoje = date.fromisoformat(spec.get("hoje", date.today().isoformat()))
     desde = date.fromisoformat(spec.get("desde", hoje.isoformat()))
