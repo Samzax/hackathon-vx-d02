@@ -22,9 +22,39 @@ def test_torre_abre_e_aprova_mudanca(banco_temporario):
     metricas = {m.label: m.value for m in at.metric}
     assert int(metricas["🔴 Atrasada"]) >= 1
     aprovar = [b for b in at.button if b.label == "Aprovar"]
-    if aprovar:          # sem chave e sem cache, a Res. 245 vai para revisão humana
-        aprovar[0].click().run()
-        assert not at.exception
+    assert aprovar, "a Res. 245 deveria estar aguardando aprovação (cache da demo no Git)"
+    aprovar[0].click().run()
+    assert not at.exception
+    assert not [b for b in at.button if b.label == "Aprovar"]
+
+
+def _atrasadas(at) -> int:
+    return int({m.label: m.value for m in at.metric}["🔴 Atrasada"])
+
+
+def test_envio_de_fir_tira_a_b3_do_atraso(banco_temporario):
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    antes = _atrasadas(at)
+    exemplo = next(s for s in at.selectbox if s.label.endswith("documento de exemplo"))
+    exemplo.select("FIR_B3_2026-10-1Q.pdf").run()
+    next(b for b in at.button if b.label == "Ler documento").click().run()
+    assert not at.exception and not at.error          # FIR comum: sem alerta de ISE
+    registrar = next(b for b in at.button if b.label.startswith("Registrar evidência"))
+    assert "B3 · R95-01 · 2026-10-1Q" in registrar.label
+    registrar.click().run()
+    assert not at.exception
+    assert _atrasadas(at) == antes - 1                # a FIR sai das atrasadas; o EIR da B3 continua
+    tabela = next(d.value for d in at.dataframe if "Ativo" in d.value.columns and "Responsável" in d.value.columns)
+    b3 = tabela[tabela["Ativo"].str.startswith("B3")].iloc[0]
+    assert b3["🔴"] == 1
+
+
+def test_fir_com_anomalia_mostra_alerta(banco_temporario):
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    exemplo = next(s for s in at.selectbox if s.label.endswith("documento de exemplo"))
+    exemplo.select("FIR_B2_2026-11-1Q_anomalia.pdf").run()
+    next(b for b in at.button if b.label == "Ler documento").click().run()
+    assert any("Inspeção de Segurança Especial" in e.value for e in at.error)
 
 
 def test_clone_novo_sem_chave_mostra_o_radar(tmp_path, monkeypatch):

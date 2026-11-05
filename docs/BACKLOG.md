@@ -31,3 +31,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Radar mostra o custo original de cada análise mesmo vinda do cache
 - [x] PDFs/zips como binário no Git (`.gitattributes`)
 - [x] Roteiro da demo de 3 minutos: `docs/ROTEIRO_DEMO.md`
+- [x] Teste da interface para o envio de evidência (FIR comum e FIR com anomalia)
