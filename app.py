@@ -119,8 +119,14 @@ with aba_hoje:
         if st.button("Ler documento", disabled=enviado is None and escolhido == "—"):
             nome, conteudo = ((enviado.name, enviado.getvalue()) if enviado is not None
                               else (escolhido, ev.exemplo(escolhido).read_bytes()))
-            st.session_state["leitura"] = (nome, ev.ler(conn, ev.texto_pdf(conteudo), empresa["id"], hoje,
-                                                         roteador=_roteador()))
+            try:
+                texto_doc = ev.texto_pdf(conteudo)
+            except Exception as e:      # arquivo corrompido, protegido por senha, não é PDF...
+                st.session_state.pop("leitura", None)
+                st.error(f"Não consegui abrir {nome} como PDF ({type(e).__name__}).")
+            else:
+                st.session_state["leitura"] = (nome, ev.ler(conn, texto_doc, empresa["id"], hoje,
+                                                             roteador=_roteador()))
         if "leitura" in st.session_state:
             nome, le = st.session_state["leitura"]
             st.markdown(f"**{nome}** · lido por {'regra' if le.metodo == 'regra' else 'IA (conferida)'}")
@@ -135,7 +141,7 @@ with aba_hoje:
                 st.error(f"🚨 {g}")
             for p in le.problemas:
                 st.warning(p)
-            for a in le.avisos:
+            for a in getattr(le, "avisos", []):     # leitura guardada antes de o campo existir
                 st.info(f"⏰ {a}")
             if le.completa and st.button(f"Registrar evidência de {le.ativo} · {le.obrigacao} · {le.periodo}",
                                          type="primary"):
