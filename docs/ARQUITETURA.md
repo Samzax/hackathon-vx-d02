@@ -98,7 +98,7 @@ Os dois são só gerados para download. Mandar por e-mail fica para a versão co
 
 ## O que a demo mostrou sobre as normas
 
-**A ANM e o MTE dão a mesma data para a ZAS.** A Res. ANM 245/2026 adiou o mapa de inundação com a Zona de Autossalvamento para 26/12/2029. A NR-22 (item 22.24.8, Portaria MTE 105/2026) dá a mesma data para barragens não alteadas a montante; para as alteadas a montante, a exigência é imediata. Uma barragem passa a ter duas obrigações, de dois reguladores, com o mesmo prazo. A linha do tempo mostra isso sem ninguém ler as duas normas.
+**A ANM e o MTE dão a mesma data para a ZAS.** A Res. ANM 245/2026 adiou para 26/12/2029 o art. 7 §1 da Res. 220: as áreas de lavra, beneficiamento e disposição de rejeitos deixam de contar como estruturas da barragem, e quem trabalha nelas não pode mais ficar na Zona de Autossalvamento. A NR-22 (item 22.24.8, Portaria MTE 105/2026) dá a mesma data para barragens não alteadas a montante; para as alteadas a montante, a exigência é imediata. Uma barragem passa a ter duas obrigações sobre o mesmo assunto (quem pode ficar na ZAS), de dois reguladores, com o mesmo prazo. A linha do tempo mostra isso sem ninguém ler as duas normas.
 
 ## Banco de dados: SQLite
 

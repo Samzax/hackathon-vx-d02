@@ -18,7 +18,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 ## 2. Mudanças (45 s)
 
 - **Fala:** "Em 31/7 saiu a Res. ANM 245. O radar achou o ato e propôs uma mudança. Ela não vale até alguém aprovar."
-- Mostrar o antes/depois da OB-01 (prazo do mapa da ZAS: 2027 → 26/12/2029), o trecho do ato e a linha "conferido pelo Python".
+- Mostrar o antes/depois da OB-01 (art. 7 §1: quem trabalha na lavra e no beneficiamento sai da ZAS; prazo 2027 → 26/12/2029), o trecho do ato e a linha "conferido pelo Python".
 - **Fala:** "Mudou uma obrigação. As outras 23 da Res. 220 ficaram iguais."
 - Clicar em **Aprovar**.
 
@@ -26,7 +26,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 
 - Mostrar a contagem regressiva para 02/08/2027, quando a Res. 220 substitui a 95, e os pares por tema: o que continua (FIR, RPSB), o que é novo e o que acaba.
 - Opcional: clicar em **Res. 220** (barra lateral, "Viagem no tempo"). A torre vira para 02/08/2027 e já cobra pela norma nova. **Fala:** "a RPSB não zera: a torre conta a última feita pela norma antiga." Voltar com **Demo**.
-- Na linha do tempo, abrir **26/12/2029**. No mesmo dia vencem duas obrigações sobre a ZAS: a da ANM (OB-01, o mapa de inundação, já aprovada) e a do MTE (NR-22, item 22.24.8: só os trabalhadores estritamente necessários dentro da ZAS).
+- Na linha do tempo, abrir **26/12/2029**. No mesmo dia vencem duas obrigações sobre a ZAS: a da ANM (OB-01, já aprovada: lavra e beneficiamento deixam de contar como estruturas da barragem) e a do MTE (NR-22, item 22.24.8: só os trabalhadores estritamente necessários dentro da ZAS).
   - **Fala:** "Dois reguladores, a mesma data. A torre cruza os dois sem ninguém ler as duas normas."
 
 ## 4. Radar do DOU (30 s)
