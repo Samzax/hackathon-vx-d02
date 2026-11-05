@@ -75,3 +75,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Viagem no tempo avisa que o histórico da demo para em 07/11/2026 (explica os atrasos de 2027); pergunta no roteiro
 - [x] Teste: aprovada a Res. 245, OB-01 e NR-22 vencem juntas no painel (26/12/2029); sem aprovação, nada muda
 - [x] Clone novo conferido de novo: 184 passam (10 pulados); com os textos oficiais, 190 (4 pulados); README atualizado
+- [x] OB-01 com título de ação ("Retirar da ZAS os trabalhadores das áreas de lavra..."); análise da Res. 245 refeita com a IA (US$ 0,0011, mesmo resultado) e cache da demo exportado

@@ -290,6 +290,16 @@
   "custo_usd": 0.0005161499999999999
  },
  {
+  "chave": "c89920d2fb19dbb1b4d6a4f49f8b5455a2b92510b3bd0cc140553653310ca2ae",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"OB-01\", \"campo\": \"vigencia_desde\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"A obrigação decorre do § 1º do art. 7º da Res. ANM 220/2025, cuja entrada em vigor foi expressamente deslocada para 26 de dezembro de 2029.\"}, {\"obrigacao\": \"OB-01\", \"campo\": \"prazo\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"O prazo do cadastro coincide com a antiga data de entrada em vigor do § 1º do art. 7º, que o ato transferiu para 26 de dezembro de 2029.\"}], \"motivo\": \"O ato apenas redefine as datas de entrada em vigor do art. 87 da Res. ANM 220/2025, postergando o § 1º do art. 7º para 26 de dezembro de 2029; para os demais artigos a data de 2 de agosto de 2027 é mantida, o que não altera as obrigações já cadastradas nessa data nem as obrigações da Res. ANM 95, cuja vigência o ato não modifica expressamente.\", \"confianca\": 0.72}",
+  "tokens_in": 1965,
+  "tokens_out": 1364,
+  "custo_usd": 0.00111315
+ },
+ {
   "chave": "c97a892e3cc63afca1f903e5159e2adc842faeb20a8350a8659f88c9900140ac",
   "tarefa": "impacto",
   "provedor": "opencode",
