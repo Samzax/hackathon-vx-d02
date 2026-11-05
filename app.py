@@ -199,12 +199,14 @@ with aba_hoje:
                 st.warning(f"{p[:1].upper()}{p[1:]}")
             for a in getattr(le, "avisos", []):     # leitura guardada antes de o campo existir
                 st.info(f"⏰ {a[:1].upper()}{a[1:]}")
-            if le.completa and st.button(f"Registrar evidência de {le.ativo} · {le.obrigacao} · {le.periodo}",
-                                         type="primary"):
+            if le.completa:
+                o_que = f"{le.documento} de {le.ativo} · {agenda.rotulo_humano(le.periodo)}"
+            if le.completa and st.button(f"Registrar evidência: {o_que}", type="primary",
+                                         help=f"Dá baixa em {le.obrigacao}, período {le.periodo}"):
                 ev.registrar(conn, le, nome)
                 del st.session_state["leitura"]
-                st.toast(f"Evidência registrada: {le.ativo} {le.obrigacao} {le.periodo}"
-                         + (f" · aberta: {', '.join(abre)}" if abre else ""))
+                st.toast(f"Evidência registrada: {o_que}"
+                         + (f" · aberta em {le.ativo}: {', '.join(abre)} (24 h)" if abre else ""))
                 st.rerun()
 
     para = None if visao.startswith("Diretoria") else visao

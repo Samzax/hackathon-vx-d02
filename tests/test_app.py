@@ -45,7 +45,8 @@ def test_envio_de_fir_tira_a_b3_do_atraso(banco_temporario):
     next(b for b in at.button if b.label == "Ler documento").click().run()
     assert not at.exception and not at.error          # FIR comum: sem alerta de ISE
     registrar = next(b for b in at.button if b.label.startswith("Registrar evidência"))
-    assert "B3 · R95-01 · 2026-10-1Q" in registrar.label
+    assert registrar.label == "Registrar evidência: FIR de B3 · 1ª quinzena de outubro/2026"
+    assert "R95-01" in registrar.help and "2026-10-1Q" in registrar.help     # o código fica na dica
     registrar.click().run()
     assert not at.exception
     assert _atrasadas(at) == antes - 1                # a FIR sai das atrasadas; o EIR da B3 continua
@@ -161,7 +162,7 @@ def test_fir_no_modelo_da_res220_dispara_ise_na_viagem_no_tempo(banco_temporario
     assert not at.exception
     assert any("Res. ANM 220/2025, art. 42" in e.value for e in at.error)
     registrar = next(b for b in at.button if b.label.startswith("Registrar evidência"))
-    assert "B2 · OB-02 · 2027-08-1Q" in registrar.label
+    assert registrar.label.endswith("FIR de B2 · 1ª quinzena de agosto/2027") and "OB-02" in registrar.help
 
 
 def test_anomalia_registrada_fica_na_torre_ate_o_relatorio_da_ise(banco_temporario):
