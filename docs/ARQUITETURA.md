@@ -42,6 +42,10 @@ O status vem de comparar os períodos vencidos com as evidências recebidas. "Da
 
 O campo `vigencia_desde`/`vigencia_ate` faz a troca de norma sozinha. As 21 obrigações da Res. 95/2022 valem até 1/8/2027 e as 15 da Res. 220/2025 a partir de 2/8/2027. A aba "Transição" agrupa as duas por tema (FIR, RPSB, PAEBM…) para mostrar o que continua, o que é novo e o que acaba.
 
+**A contagem não zera na troca de norma.** A RPSB da Res. 220 tem código novo e ainda não tem evidência própria. A torre usa a última RPSB feita pela Res. 95 no mesmo ativo, já que o tema é o mesmo, e diz isso na nota. Isso vale para toda obrigação contada da última execução (`anos:N`, `meses:N`). Assim que chega uma evidência própria, ela passa a valer.
+
+**Tempo de resposta.** Com 8 ativos e 63 obrigações, cada clique recalcula todas as abas em cerca de 0,4 s (medido com `AppTest`). Os ativos são lidos com uma consulta por ativo, não uma por obrigação.
+
 ## Cadastro: da norma ao CSV, com uma pessoa no meio
 
 ```
