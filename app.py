@@ -97,8 +97,8 @@ st.title("Torre de Controle Regulatória")
 st.caption("Cada obrigação com a norma, o dispositivo e o trecho literal que a cria. "
            "Mudanças só valem depois de aprovadas por uma pessoa.")
 
-aba_hoje, aba_transicao, aba_mudancas, aba_radar, aba_mercado = st.tabs(
-    ["Hoje", "Transição e linha do tempo", "Mudanças", "Radar do DOU", "Mercado"])
+aba_hoje, aba_transicao, aba_mudancas, aba_radar, aba_mercado, aba_como = st.tabs(
+    ["Hoje", "Transição e linha do tempo", "Mudanças", "Radar do DOU", "Mercado", "Como funciona"])
 
 # ------------------------------------------------------------------ Hoje
 
@@ -428,3 +428,44 @@ with aba_mercado:
     st.caption(f"Conta: {mercado['barragens_na_pnsb']} barragens × (R\\$ {_num(preco)} + {outros} × "
                f"R\\$ {_num(preco_outro)}) × 12 meses. Fora da conta: as {fora} barragens de mineração fora da "
                "PNSB e outros setores com o mesmo problema (energia, saneamento, óleo e gás).")
+
+# ------------------------------------------------------------------ Como funciona
+
+with aba_como:
+    n_obrig = conn.execute("SELECT COUNT(*) FROM obrigacao").fetchone()[0]
+    n_evid = conn.execute("SELECT COUNT(*) FROM evidencia").fetchone()[0]
+    n_ativos = len(ativos)
+    radar_c = json.loads(demo.RADAR.read_text(encoding="utf-8")) if demo.RADAR.exists() else []
+    custo_radar = sum(r.get("custo_original_usd", r["custo_usd"]) for r in radar_c)
+    custo_txt = f"{custo_radar:.4f}".replace(".", ",")
+    st.markdown("##### Dois caminhos para a mesma torre")
+    st.graphviz_chart(f"""
+digraph {{
+  rankdir=TB; bgcolor="transparent"; nodesep=0.35; ranksep=0.35; node [shape=box style="rounded,filled" fillcolor="#f0f2f6" fontname="Helvetica" fontsize=11];
+  edge [fontname="Helvetica" fontsize=9 color="#888888" fontcolor="#aaaaaa"];
+  dou [label="Diário Oficial\n7.884 atos/mês"];
+  regra [label="Regras e busca local\n(órgão, tipo, artigo citado)\ncusto zero"];
+  ia [label="IA barata, com cache\nUS$ {custo_txt} na demo" fillcolor="#fff4d6"];
+  py [label="Python confere\ntrecho, dispositivo, datas"];
+  pessoa [label="Pessoa aprova" fillcolor="#e3f5e1"];
+  cad [label="Cadastro versionado\n{n_obrig} obrigações" fillcolor="#dde8ff"];
+  torre [label="Torre por ativo\n{n_ativos} ativos" fillcolor="#dde8ff" penwidth=2];
+  doc [label="Documento da operação\n(FIR, laudo, boletim)"];
+  leitor [label="Leitor de evidência\nregra primeiro"];
+  ev [label="Evidências\n{n_evid} registradas"];
+  norma [label="Norma inteira\n(ANM, NR, licença)"];
+  extr [label="Extrator + curadoria\nUS$ 0,01–0,07 por norma" fillcolor="#fff4d6"];
+  dou -> regra [label="825 da ANM"]; regra -> ia [label="2 candidatos"]; ia -> py; py -> pessoa [label="mudança proposta"];
+  pessoa -> cad; norma -> extr -> cad; cad -> torre; doc -> leitor -> ev -> torre;
+  {{ rank=same; dou; norma; doc; }}
+}}
+""")
+    c1, c2, c3 = st.columns(3)
+    c1.markdown("**A IA nunca decide sozinha.** O Python confere se o trecho citado existe no ato e se as "
+                "datas aparecem nele; uma pessoa aprova. Toda versão guarda o ato, o trecho e quem decidiu.")
+    c2.markdown("**Regra antes de IA.** Órgão, tipo de ato e artigo citado resolvem 99,97% do volume. "
+                "A IA só vê o que sobra, e cada resposta fica em cache: a mesma pergunta nunca é paga duas vezes.")
+    c3.markdown("**Traga sua chave.** Provedor e modelo são configuração (DeepSeek, Anthropic, Bedrock). "
+                "A empresa pode rodar com a conta dela, e os documentos não passam pela nossa.")
+    st.caption("Stack: Python 3.13 · SQLite (Postgres em produção, só `db.py` muda) · Streamlit · "
+               "pypdf · DOU por dados abertos (o robots.txt do site proíbe robôs). Detalhes em docs/ARQUITETURA.md.")
