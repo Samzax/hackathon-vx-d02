@@ -19,7 +19,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 
 - **Fala:** "Em 31/7 saiu a Res. ANM 245. O radar achou o ato e propôs uma mudança. Ela não vale até alguém aprovar."
 - Mostrar o antes/depois da OB-01 (art. 7 §1: quem trabalha na lavra e no beneficiamento sai da ZAS; prazo 2027 → 26/12/2029), o trecho do ato e a linha "conferido pelo Python".
-- **Fala:** "Mudou uma obrigação. As outras 23 da Res. 220 ficaram iguais."
+- **Fala:** "Mudou uma obrigação. As outras 23 da Res. 220 ficaram iguais." (Está na linha em negrito do cartão, contada pelo Python, não pela IA.)
 - Clicar em **Aprovar**.
 
 ## 3. Transição e linha do tempo (45 s)

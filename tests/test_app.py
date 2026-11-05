@@ -26,6 +26,8 @@ def test_torre_abre_e_aprova_mudanca(banco_temporario):
     legendas = [c.value for c in at.caption]
     assert any(c.startswith("Conferido pelo Python") for c in legendas)      # o roteiro aponta para esta linha
     assert any(c.startswith("Por quê:") for c in legendas)
+    escopo = " ".join(m.value for m in at.markdown)
+    assert "**Muda 1 obrigação (OB-01).** As outras 23 da Res. ANM 220/2025 ficam iguais." in escopo  # o roteiro diz isso
     aprovar[0].click().run()
     assert not at.exception
     assert not [b for b in at.button if b.label == "Aprovar"]

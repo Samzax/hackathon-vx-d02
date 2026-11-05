@@ -76,3 +76,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Teste: aprovada a Res. 245, OB-01 e NR-22 vencem juntas no painel (26/12/2029); sem aprovação, nada muda
 - [x] Clone novo conferido de novo: 184 passam (10 pulados); com os textos oficiais, 190 (4 pulados); README atualizado
 - [x] OB-01 com título de ação ("Retirar da ZAS os trabalhadores das áreas de lavra..."); análise da Res. 245 refeita com a IA (US$ 0,0011, mesmo resultado) e cache da demo exportado
+- [x] Cartão da mudança diz, pelos dados, quantas obrigações mudam e quantas ficam (não depende do texto da IA)

@@ -43,6 +43,18 @@ def _usd(valor: float, casas: int = 4) -> str:
     return "US\\$ " + f"{valor:.{casas}f}".replace(".", ",")
 
 
+def _escopo(r: dict, m) -> str:
+    """O tamanho da mudança dito pelos dados, não pela IA: o que foi à IA, o que muda, o que fica."""
+    mudam = sorted({x["obrigacao"] for x in r["mudancas"] if not x["reprovada"]})
+    iguais = [c for c in r["candidatas"] if c not in mudam]
+    norma = conn.execute("SELECT norma FROM obrigacao WHERE codigo = ?", (m.codigo,)).fetchone()["norma"]
+    codigos = [row[0] for row in conn.execute("SELECT codigo FROM obrigacao WHERE norma = ?", (norma,))]
+    outras = len([c for c in codigos if c not in mudam])
+    return (f"**Muda {len(mudam)} {'obrigação' if len(mudam) == 1 else 'obrigações'} ({', '.join(mudam)}).** "
+            f"As outras {outras} da {norma} ficam iguais. Foram à IA {len(r['candidatas'])} candidatas; "
+            f"{', '.join(iguais) or 'nenhuma outra'} {'ficou igual' if len(iguais) == 1 else 'ficaram iguais'}.")
+
+
 def _val(campo, valor):
     """Valor de um campo de obrigação para quem aprova: datas em DD/MM/AAAA, agenda em português."""
     return agenda.descrever(valor) if campo == "agenda" and valor else _br(valor)
@@ -380,6 +392,7 @@ with aba_mudancas:
                 st.caption(f"Conferido pelo Python: o trecho existe no ato ✓ · as datas propostas aparecem no trecho ✓ · "
                            f"modelo {' → '.join(r['modelos'])} · "
                            f"custo {_usd(r.get('custo_original_usd', r['custo_usd']))}")
+                st.markdown(_escopo(r, m))
             st.markdown(f"Ativos afetados: **{', '.join(m.ativos)}**")
             b1, b2, _ = st.columns([1, 1, 4])
             if b1.button("Aprovar", key=f"ok{m.versao_id}", type="primary"):
