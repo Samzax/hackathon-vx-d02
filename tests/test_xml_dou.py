@@ -57,3 +57,18 @@ def test_funil_real_de_agosto():
     assert d4.anm == 23
     assert [a.identifica for a in d4.normativos] == ["Resolução ANM Nº 245, DE 31 DE julho DE 2026"]
     assert sum(len(f.normativos) for f in funis.values()) == 2
+
+
+@pytest.mark.skipif(not AGOSTO.exists(), reason="ZIP de agosto/2026 fora do Git (data/raw/dou)")
+def test_numeros_do_funil_na_tela_e_nos_documentos():
+    """7.884 → 825 → 2: a tela e os documentos citam o mês medido, não um número de memória."""
+    funis = funil_por_dia(load_month(AGOSTO))
+    total = f"{sum(f.total for f in funis):,}".replace(",", ".")
+    anm = str(sum(f.anm for f in funis))
+    raiz = AGOSTO.parent.parent.parent.parent
+    app = (raiz / "app.py").read_text(encoding="utf-8")
+    assert f'"Atos no DOU (ago/2026)", "{total}"' in app and f'"Da ANM", "{anm}"' in app
+    assert f"{total} atos/mês" in app and f"{anm} da ANM" in app
+    for doc in ("README.md", "docs/ROTEIRO_DEMO.md", "docs/ARQUITETURA.md"):
+        texto = (raiz / doc).read_text(encoding="utf-8")
+        assert total in texto and anm in texto, doc
