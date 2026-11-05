@@ -174,15 +174,18 @@ def pendente(l: Linha) -> str:
     """Períodos sem evidência, em português. Quando o único período é o próprio vencimento
     (entrega única, RPSB, exame do vaso), repetir a data não diz nada: diz que não há evidência.
     Sem período pendente, a nota (gatilho, acionamento)."""
-    rotulos = [agenda.rotulo_humano(p) for p in l.faltando]
-    if len(rotulos) == 1 and (rotulos[0] == _br(l.vence) or l.faltando[0] == "unico"):
-        return SEM_EVIDENCIA
-    return ", ".join(rotulos) or l.nota
+    if _so_o_vencimento(l):
+        return f"última evidência em {_br(l.ultima)}" if l.ultima else SEM_EVIDENCIA
+    return ", ".join(agenda.rotulo_humano(p) for p in l.faltando) or l.nota
+
+
+def _so_o_vencimento(l: Linha) -> bool:
+    return len(l.faltando) == 1 and (l.faltando[0] == "unico" or agenda.rotulo_humano(l.faltando[0]) == _br(l.vence))
 
 
 def _o_que_falta(l: Linha) -> str:
     texto = pendente(l) or SEM_EVIDENCIA
-    return f"falta: {texto}" if l.faltando and texto != SEM_EVIDENCIA else texto
+    return f"falta: {texto}" if l.faltando and not _so_o_vencimento(l) else texto
 
 
 def _valor(v) -> str:
