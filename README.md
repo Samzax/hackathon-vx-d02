@@ -83,6 +83,13 @@ uv run python -m regulaia.extrator ORIGEM NORMA TIPO DESTINO    # norma -> obrig
 uv run python -m regulaia.curadoria ...                         # escolhas humanas -> cadastro/*.csv
 ```
 
+Num clone novo, `uv run pytest` passa com alguns testes pulados. Eles precisam de arquivos que ficam fora do Git:
+- os textos oficiais das normas: baixe com `uv run python -m regulaia.fontes`;
+- o ZIP do DOU de agosto;
+- a IA de verdade: `RUN_IA=1`.
+
+Com os textos baixados, sobram 3 pulados.
+
 A interface funciona sem chave e sem internet. As respostas da IA ficam em `data/cache_ia.db`, então a demo repete exatamente igual. Para chamar a IA de verdade, copie `.env.example` para `.env` e preencha ao menos uma chave.
 
 O ZIP mensal vem do [portal de dados abertos da Imprensa Nacional](https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados) (Seção 1, ano e mês) e fica em `data/raw/dou/`, fora do Git. O coletor não acessa o site do DOU, porque o `robots.txt` de www.in.gov.br proíbe robôs.
