@@ -145,9 +145,14 @@ with aba_hoje:
     with st.expander(f"📨 Boletim da semana — {para or 'Diretoria'}"):
         st.caption("O que cada gestor receberia toda segunda, só com os ativos dele. "
                    "Aqui o boletim é só gerado; nada é enviado.")
-        st.download_button("Baixar boletim (.md)", texto_boletim,
-                           file_name=f"boletim_{hoje:%Y-%m-%d}_{(para or 'diretoria').replace(' ', '_')}.md",
+        sufixo = f"{hoje:%Y-%m-%d}_{(para or 'diretoria').replace(' ', '_')}"
+        d1, d2 = st.columns(2)
+        d1.download_button("Baixar boletim (.md)", texto_boletim, file_name=f"boletim_{sufixo}.md",
                            mime="text/markdown")
+        d2.download_button("Vencimentos no calendário (.ics)",
+                           torre.calendario(conn, empresa["id"], hoje, desde, responsavel=para),
+                           file_name=f"vencimentos_{sufixo}.ics", mime="text/calendar",
+                           help="Importa no Outlook ou Google Agenda: um evento por vencimento")
         st.markdown(texto_boletim.split("\n", 2)[2].replace("\n## ", "\n#### "))   # sem o título grande
 
     st.markdown("##### Mapa dos ativos")

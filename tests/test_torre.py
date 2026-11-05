@@ -135,3 +135,22 @@ def test_boletim_do_gestor_so_tem_os_ativos_dele(serra):
     assert "1 ativo ·" in b and "**E1**" in b
     assert "**B3**" not in b and "**L1**" not in b
     assert "Mudanças de norma" not in b
+
+
+def test_calendario_ics_do_gestor(serra):
+    conn, _ = serra
+    ics = torre.calendario(conn, 1, HOJE, DESDE, responsavel="Gerência de Meio Ambiente")
+    linhas = ics.split("\r\n")
+    assert linhas[0] == "BEGIN:VCALENDAR" and ics.endswith("END:VCALENDAR\r\n")
+    assert all(len(l.encode("utf-8")) <= 75 for l in linhas)
+    assert ics.count("BEGIN:VEVENT") == ics.count("END:VEVENT") > 0
+    desdobrado = ics.replace("\r\n ", "")
+    assert "SUMMARY:ATRASADA · L1 · Monitorar os efluentes" in desdobrado
+    assert "DTSTART;VALUE=DATE:20261115" in desdobrado                        # renovação da LO
+    assert "B3" not in desdobrado                                             # só os ativos dele
+
+
+def test_calendario_mostra_quando_a_res_220_comeca(serra):
+    conn, _ = serra
+    ics = torre.calendario(conn, 1, HOJE, DESDE, dias=365 * 4).replace("\r\n ", "")
+    assert "DTSTART;VALUE=DATE:20270802" in ics and "Começa a valer: B" in ics

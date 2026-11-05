@@ -22,7 +22,7 @@ A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do
 
 | Aba | O que mostra |
 |---|---|
-| **Hoje** | Status de cada obrigação por ativo (🔴 atrasada, ⚪ dado faltando no cadastro, 🟡 vence em breve, 🟢 em dia, 🔵 por gatilho). Também recebe documentos: o PDF de uma FIR dá baixa na quinzena, e uma anomalia de pontuação 10 dispara o aviso de Inspeção de Segurança Especial. Gera o boletim da semana de cada gestor (prévia e download; nada é enviado) |
+| **Hoje** | Status de cada obrigação por ativo (🔴 atrasada, ⚪ dado faltando no cadastro, 🟡 vence em breve, 🟢 em dia, 🔵 por gatilho). Também recebe documentos: o PDF de uma FIR dá baixa na quinzena, e uma anomalia de pontuação 10 dispara o aviso de Inspeção de Segurança Especial. Gera o boletim da semana de cada gestor e um calendário .ics com os vencimentos (só download; nada é enviado) |
 | **Transição e linha do tempo** | O que muda quando a Res. ANM 220/2025 substitui a Res. 95/2022 (2/8/2027), por tema: o que continua, o que é novo, o que acaba. Mostra também as datas futuras de cada ativo |
 | **Mudanças** | Versões propostas por atos novos, com antes/depois, o trecho do ato e a conferência do Python. Só valem depois de aprovadas |
 | **Radar do DOU** | O funil de um mês do DOU (7.884 atos → 825 da ANM → 2 candidatos → 1 mudança) e o custo real da IA |

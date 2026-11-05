@@ -170,6 +170,53 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
     return "\n".join(out)
 
 
+def _ics_texto(s: str) -> str:
+    return s.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
+
+
+def _ics_dobra(linha: str) -> list[str]:
+    """RFC 5545: linhas de até 75 octetos; a continuação começa com espaço."""
+    out, atual = [], ""
+    for ch in linha:
+        if len((atual + ch).encode("utf-8")) > (75 if not out else 74):
+            out.append(atual)
+            atual = ""
+        atual += ch
+    out.append(atual)
+    return [out[0]] + [" " + x for x in out[1:]]
+
+
+def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | None = None,
+               dias: int = 400) -> str:
+    """Arquivo .ics com o próximo vencimento de cada obrigação (e as que começam a valer) dentro
+    de `dias`, para importar no Outlook ou Google Agenda. Os UIDs são estáveis: importar de novo
+    na semana seguinte atualiza em vez de duplicar. Só gera o arquivo; não envia nada."""
+    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id)
+              if responsavel is None or a["responsavel"] == responsavel}
+    limite = date.fromordinal(hoje.toordinal() + dias).isoformat()
+    eventos = []
+    for l in painel(conn, empresa_id, hoje, desde):
+        if l.ativo in ativos and l.vence and l.vence <= limite and l.status != agenda.CUMPRIDA:
+            marca = "ATRASADA · " if l.status == agenda.ATRASADA else ""
+            eventos.append((l.vence, f"{l.ativo}-{l.codigo}-vence",
+                            f"{marca}{l.ativo} · {l.titulo}", f"{l.norma}, {l.artigo}"))
+    for f in futuras(conn, empresa_id, hoje):
+        if f.ativo in ativos and f.dia <= limite and not f.proposta:
+            eventos.append((f.dia, f"{f.ativo}-{f.codigo}-inicio",
+                            f"Começa a valer: {f.ativo} · {f.titulo}", f"{f.norma}, {f.artigo}"))
+    linhas = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//RegulaIA//Torre de Controle//PT-BR",
+              "CALSCALE:GREGORIAN", f"X-WR-CALNAME:RegulaIA · {_ics_texto(responsavel or 'Diretoria')}"]
+    carimbo = f"{hoje:%Y%m%d}T000000Z"
+    for dia, uid, resumo, desc in sorted(eventos):
+        d = date.fromisoformat(dia)
+        linhas += ["BEGIN:VEVENT", f"UID:{uid}-{d:%Y%m%d}@regulaia", f"DTSTAMP:{carimbo}",
+                   f"DTSTART;VALUE=DATE:{d:%Y%m%d}",
+                   f"DTEND;VALUE=DATE:{date.fromordinal(d.toordinal() + 1):%Y%m%d}",
+                   f"SUMMARY:{_ics_texto(resumo)}", f"DESCRIPTION:{_ics_texto(desc)}", "END:VEVENT"]
+    linhas.append("END:VCALENDAR")
+    return "\r\n".join(x for l in linhas for x in _ics_dobra(l)) + "\r\n"
+
+
 # ------------------------------------------------------------------ transição
 
 
