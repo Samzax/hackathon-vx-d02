@@ -429,9 +429,9 @@ with aba_mudancas:
     ).fetchall()
     if decididas:
         st.markdown("##### Decisões registradas")
-        st.markdown("| Obrigação | Ato | Decisão | Por | Quando (UTC) |\n|---|---|---|---|---|\n" + "\n".join(
+        st.markdown("| Obrigação | Ato | Decisão | Por | Quando (Brasília) |\n|---|---|---|---|---|\n" + "\n".join(
             f"| {r['codigo']} | {torre.nome_ato(r['ato']) or '—'} | {'❌ rejeitada' if r['status'] == 'rejeitada' else '✅ aprovada'} "
-            f"| {r['decidida_por'].split(' (')[0]} | {r['decidida_em']} |" for r in decididas))
+            f"| {r['decidida_por'].split(' (')[0]} | {torre.em_brasilia(r['decidida_em'])} |" for r in decididas))
 
     st.markdown("##### Histórico de uma obrigação")
     st.caption("Por que este prazo é este? Cada versão com a origem, o trecho que a sustenta e quem decidiu.")
@@ -448,7 +448,7 @@ with aba_mudancas:
                     "rejeitada": "❌ rejeitada"}[v["status"]]
             origem = torre.nome_ato(v["ato"]) or v["fonte"] or "cadastro inicial"
             st.markdown(f"**Versão {v['versao']}** · {selo} · origem: {origem}"
-                        + (f" · decidida por {v['decidida_por'].split(' (')[0]} em {_br(v['decidida_em'][:10])}"
+                        + (f" · decidida por {v['decidida_por'].split(' (')[0]} em {torre.em_brasilia(v['decidida_em'], com_hora=False)}"
                            if v["decidida_por"] else ""))
             if anterior:
                 mudou = db.diferencas(anterior, v)

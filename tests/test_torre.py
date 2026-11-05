@@ -305,3 +305,9 @@ def test_boletim_junta_a_mesma_obrigacao_de_varios_ativos(serra):
     assert "- **B1, B2, B4** · Preencher as FIR quinzenalmente" in b
     assert b.count("Preencher as FIR quinzenalmente") == 2          # a atrasada da B3 e a linha das três
     assert "(9, 3 já em amarelo na torre)" in b                      # a contagem continua por ativo
+
+
+def test_hora_da_decisao_em_brasilia():
+    assert torre.em_brasilia("2026-11-05 16:53:43") == "05/11/2026 13:53"
+    assert torre.em_brasilia("2026-11-06 01:30:00", com_hora=False) == "05/11/2026"   # 22h30 do dia 5 em Brasília
+    assert torre.em_brasilia(None) == "—"

@@ -45,6 +45,17 @@ class Linha:
     agenda: str = ""                       # DSL da versão que vale (ver agenda.py)
 
 
+def em_brasilia(utc: str | None, com_hora: bool = True) -> str:
+    """'2026-11-05 16:53:43' (UTC, como o SQLite grava) -> '05/11/2026 13:53'. Brasília é UTC-3
+    o ano todo desde 2019 (sem horário de verão); perto da meia-noite a data muda junto."""
+    from datetime import datetime, timedelta
+
+    if not utc:
+        return "—"
+    t = datetime.fromisoformat(utc[:19]) - timedelta(hours=3)
+    return f"{t:%d/%m/%Y %H:%M}" if com_hora else f"{t:%d/%m/%Y}"
+
+
 def _n(n: int, singular: str, plural: str) -> str:
     return f"{n} {singular if n == 1 else plural}"
 
