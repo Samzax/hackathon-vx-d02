@@ -10,6 +10,7 @@ import csv
 import hashlib
 import json
 import sqlite3
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -40,6 +41,18 @@ def conectar(caminho: str | Path = DB_PADRAO) -> sqlite3.Connection:
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA.read_text(encoding="utf-8"))
     return conn
+
+
+@contextmanager
+def sem_sincronizar(conn):
+    """Para montar um banco que se recria do zero: sem esperar o disco a cada commit
+    (2,7 s -> ~1,3 s na demo). Se a máquina cair no meio, é só montar de novo."""
+    antes = conn.execute("PRAGMA synchronous").fetchone()[0]
+    conn.execute("PRAGMA synchronous = OFF")
+    try:
+        yield conn
+    finally:
+        conn.execute(f"PRAGMA synchronous = {int(antes)}")
 
 
 def limpar(conn) -> None:

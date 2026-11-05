@@ -152,3 +152,15 @@ def test_cada_obrigacao_da_res220_cita_o_texto_literal():
     # o "≥" do ANMlegis é um ">" sublinhado: a regra do cadastro segue o texto
     ob11 = next(l for l in linhas if l["id"] == "OB-11")
     assert "DPA2 ≥ 4" in ob11["trecho"] and ob11["regra"] == "dpa2 >= 4"
+
+
+def test_montagem_sem_sincronizar_devolve_o_padrao(tmp_path):
+    """O banco da demo é montado sem esperar o disco; depois volta ao normal, mesmo se der erro."""
+    c = db.conectar(tmp_path / "x.db")
+    padrao = c.execute("PRAGMA synchronous").fetchone()[0]
+    with db.sem_sincronizar(c):
+        assert c.execute("PRAGMA synchronous").fetchone()[0] == 0
+    assert c.execute("PRAGMA synchronous").fetchone()[0] == padrao
+    with pytest.raises(RuntimeError), db.sem_sincronizar(c):
+        raise RuntimeError("falhou no meio")
+    assert c.execute("PRAGMA synchronous").fetchone()[0] == padrao

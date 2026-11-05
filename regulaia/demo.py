@@ -117,20 +117,21 @@ def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU, cache: Path |
     from .ia import Roteador
 
     conn = db.conectar(Path(caminho or db.DB_PADRAO))
-    db.limpar(conn)     # no Windows o arquivo pode estar aberto pela interface
-    ids = montar(conn)
     conn_cache = db.conectar(Path(cache or impacto.CACHE_IA))
     semear_cache(conn_cache)
     roteador = Roteador(conn_cache)
     analises = []
-    for a in load_month(dou):
-        if not (a.is_anm and a.is_normative):
-            continue
-        an = impacto.analisar(conn, roteador, a.identifica, a.text)
-        ato_id = db.registrar_ato(conn, "dou", a.id_materia, a.identifica, ementa=a.ementa,
-                                  publicado_em=a.pub_date.isoformat(), texto=a.text)
-        impacto.aplicar(conn, an, ato_id)
-        analises.append(an)
+    with db.sem_sincronizar(conn):
+        db.limpar(conn)     # no Windows o arquivo pode estar aberto pela interface
+        ids = montar(conn)
+        for a in load_month(dou):
+            if not (a.is_anm and a.is_normative):
+                continue
+            an = impacto.analisar(conn, roteador, a.identifica, a.text)
+            ato_id = db.registrar_ato(conn, "dou", a.id_materia, a.identifica, ementa=a.ementa,
+                                      publicado_em=a.pub_date.isoformat(), texto=a.text)
+            impacto.aplicar(conn, an, ato_id)
+            analises.append(an)
     RADAR.write_text(json.dumps([registro_radar(an) for an in analises], ensure_ascii=False, indent=1),
                      encoding="utf-8")
     return conn, ids, analises
@@ -155,8 +156,9 @@ def main(argv: list[str]) -> int:
         return 0
     caminho = Path(argv[0]) if argv else db.DB_PADRAO
     conn = db.conectar(caminho)
-    db.limpar(conn)
-    montar(conn)
+    with db.sem_sincronizar(conn):
+        db.limpar(conn)
+        montar(conn)
     spec = json.loads(HISTORICO.read_text(encoding="utf-8")) if HISTORICO.exists() else {}
     hoje = date.fromisoformat(spec.get("hoje", date.today().isoformat()))
     desde = date.fromisoformat(spec.get("desde", hoje.isoformat()))
