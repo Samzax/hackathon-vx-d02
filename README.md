@@ -114,7 +114,7 @@ O ZIP mensal vem do [portal de dados abertos da Imprensa Nacional](https://www.i
 
 ## Rodar na nuvem (AWS)
 
-O `Dockerfile` empacota a torre com as dependências de produção (sem pytest nem reportlab):
+O `Dockerfile` empacota a torre com as dependências de produção (sem pytest; o reportlab vai junto porque o boletim e o plano saem em PDF):
 
 ```bash
 docker build -t regulaia .
@@ -125,4 +125,4 @@ Sem chave e sem internet, a demo roda do cache (`data/cache_ia_demo.json`). Para
 
 Na AWS, a mesma imagem serve para os três caminhos: App Runner (mais simples: aponta para a imagem no ECR, porta 8501), ECS Fargate ou uma EC2 com Docker. A verificação de saúde está em `/_stcore/health`. O Bedrock entra como provedor de IA por configuração (ver [docs/ARQUITETURA.md](docs/ARQUITETURA.md)).
 
-> A imagem ainda não foi construída (Docker Desktop desligado nesta máquina). Conferido sem Docker, num diretório limpo: as duas etapas de instalação do Dockerfile (`uv sync --locked --no-dev --no-install-project` e depois `uv sync --locked --no-dev`) passam, o app abre sem erro só com as dependências de produção e o `.env` fica de fora. Falta conferir o build em Linux, o que leva um minuto com `docker build`.
+> A imagem ainda não foi construída (Docker Desktop desligado nesta máquina). Conferido sem Docker, num diretório limpo: as duas etapas de instalação do Dockerfile (`uv sync --locked --no-dev --no-install-project` e depois `uv sync --locked --no-dev`) passam, as seis abas abrem sem erro só com as dependências de produção, os dois PDFs baixam e o `.env` fica de fora. Um teste confere que tudo o que o app importa está em `[project].dependencies`. Falta conferir o build em Linux, o que leva um minuto com `docker build`.

@@ -158,3 +158,32 @@ def test_custos_citados_batem_com_o_que_foi_gasto():
     if radar:      # gerado por demo.preparar (fora do Git): por ato, a análise fica na faixa citada
         for r in radar:
             assert 0.0005 <= r.get("custo_original_usd", r["custo_usd"]) <= 0.002, r["ato"]
+
+
+def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
+    """A imagem Docker instala só [project].dependencies (uv sync --no-dev): tudo que o app,
+    a regulaia e o coletor importam de fora tem de estar lá, senão a tela quebra só na nuvem."""
+    import ast
+    import sys
+    import tomllib
+
+    pacote = {"bs4": "beautifulsoup4", "dotenv": "python-dotenv"}     # módulo -> nome no PyPI
+    deps = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))["project"]["dependencies"]
+    nomes = {d.split(">")[0].split("=")[0].split("<")[0].strip().lower() for d in deps}
+    locais = {"regulaia", "collector", "app"}
+    faltando = set()
+    for arq in [RAIZ / "app.py", *(RAIZ / "regulaia").glob("*.py"), *(RAIZ / "collector").glob("*.py")]:
+        for no in ast.walk(ast.parse(arq.read_text(encoding="utf-8"))):
+            if isinstance(no, ast.Import):
+                mods = [a.name for a in no.names]
+            elif isinstance(no, ast.ImportFrom) and not no.level:
+                mods = [no.module]
+            else:
+                continue
+            for m in mods:
+                raiz = m.split(".")[0]
+                if raiz in sys.stdlib_module_names or raiz in locais:
+                    continue
+                if pacote.get(raiz, raiz).lower() not in nomes:
+                    faltando.add(f"{arq.name}: {raiz}")
+    assert not faltando, f"falta em [project].dependencies: {sorted(faltando)}"
