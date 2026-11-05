@@ -10,6 +10,7 @@ Nada aqui escreve no banco; a interface só lê, e as decisões passam por db.de
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -62,6 +63,22 @@ def _prazo_unico(v: dict) -> str | None:
     return max(prazo, desde) if desde else prazo
 
 
+def _herdadas(conn, ativo_id: int, codigo: str, titulo: str) -> tuple[list[str], str | None]:
+    """Obrigação contada da última execução (RPSB a cada N anos) que acabou de entrar por norma nova:
+    a última RPSB feita pela norma anterior continua valendo. Equivalência = mesmo tema (ver TEMAS)."""
+    t = tema(titulo)
+    if t == "Outras":
+        return [], None
+    melhor: tuple[list[str], str | None] = ([], None)
+    for o in db.obrigacoes_do_ativo(conn, ativo_id):
+        if o.codigo == codigo or tema(o.vigente["titulo"]) != t:
+            continue
+        evs = [e for e in db.evidencias(conn, ativo_id, o.codigo) if re.fullmatch(r"\d{4}-\d\d-\d\d", e)]
+        if evs and (not melhor[0] or max(evs) > max(melhor[0])):
+            melhor = (evs, o.codigo)
+    return melhor
+
+
 def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = None) -> list[Linha]:
     """Status de cada obrigação que vale hoje, por ativo. `desde` é o início do monitoramento."""
     out = []
@@ -85,9 +102,15 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
                 linha.status = DADO_FALTANDO
                 linha.nota = "cadastro do ativo incompleto: " + ", ".join(o.dados_faltando)
             else:
-                s = agenda.situacao(v["agenda"], db.evidencias(conn, a["id"], o.codigo), hoje, ini,
-                                    prazo=_prazo_unico(v))
+                evs = db.evidencias(conn, a["id"], o.codigo)
+                herdada = None
+                if not evs and re.fullmatch(r"(anos|meses):\d+", v["agenda"]):
+                    evs, herdada = _herdadas(conn, a["id"], o.codigo, v["titulo"])
+                s = agenda.situacao(v["agenda"], evs, hoje, ini, prazo=_prazo_unico(v))
                 linha.status, linha.ultima, linha.nota = s.status, s.ultima, s.nota
+                if herdada:
+                    linha.nota = (f"conta a última execução registrada em {herdada} "
+                                  f"({_br(s.ultima)}), obrigação equivalente da norma anterior")
                 # atrasada: a data que venceu primeiro; senão, a próxima
                 alvo = s.faltando[0] if s.faltando else s.proximo
                 linha.vence = alvo.vence.isoformat() if alvo else None

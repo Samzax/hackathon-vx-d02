@@ -164,3 +164,22 @@ def test_plano_de_transicao(serra):
     assert "deixa de existir" not in p                     # cadastro da 220 é parcial: não afirmar o que não sabe
     so_usina = torre.plano_transicao(conn, 1, date(2027, 8, 2), HOJE, responsavel="Manutenção da Usina")
     assert "Nenhum dos ativos muda" in so_usina
+
+
+def test_rpsb_da_220_conta_a_ultima_rpsb_feita_pela_95(serra):
+    """Na troca de norma a RPSB não 'zera': a última feita pela Res. 95 continua valendo."""
+    conn, _ = serra
+    dia = date(2027, 8, 2)
+    b2 = {l.codigo: l for l in torre.painel(conn, 1, dia, DESDE, ativo="B2")}["OB-06"]
+    assert b2.status == agenda.EM_DIA and b2.vence == "2028-02-14"          # RPSB de 14/02/2025 + 3 anos
+    assert "R95-05" in b2.nota
+    b4 = {l.codigo: l for l in torre.painel(conn, 1, dia, DESDE, ativo="B4")}["OB-06"]
+    assert b4.status == agenda.ATRASADA and b4.vence == "2026-11-20"        # já vencia pela 95
+
+
+def test_evidencia_propria_vale_mais_que_a_herdada(serra):
+    conn, _ = serra
+    b2 = next(a for a in db.ativos(conn, 1) if a["codigo"] == "B2")
+    db.registrar_evidencia(conn, b2["id"], "OB-06", "2027-09-01")
+    l = {l.codigo: l for l in torre.painel(conn, 1, date(2027, 10, 1), DESDE, ativo="B2")}["OB-06"]
+    assert l.vence == "2030-09-01" and "R95-05" not in l.nota
