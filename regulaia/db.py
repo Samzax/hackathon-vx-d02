@@ -45,7 +45,7 @@ def conectar(caminho: str | Path = DB_PADRAO) -> sqlite3.Connection:
 def limpar(conn) -> None:
     """Apaga todos os dados (menos o cache de IA), mantendo o arquivo e as conexões abertas."""
     with conn:
-        for tabela in ("evidencia", "obrigacao_versao", "obrigacao", "ato", "ativo", "empresa"):
+        for tabela in ("acionamento", "evidencia", "obrigacao_versao", "obrigacao", "ato", "ativo", "empresa"):
             conn.execute(f"DELETE FROM {tabela}")
 
 
@@ -260,6 +260,33 @@ def evidencias_do_ativo(conn, ativo_id: int, limite: int = 10) -> list[dict]:
         (ativo_id, limite),
     ).fetchall()
     return [dict(r) | {"extraido": json.loads(r["extraido"]) if r["extraido"] else None} for r in rows]
+
+
+def acionar(conn, ativo_id: int, codigo: str, dia: str, prazo: str, motivo: str,
+            origem: str | None = None) -> None:
+    """Abre uma obrigação por evento (idempotente por ativo + obrigação + dia)."""
+    with conn:
+        conn.execute(
+            "INSERT OR IGNORE INTO acionamento (ativo_id, obrigacao_id, dia, prazo, motivo, origem) "
+            "VALUES (?, ?, ?, ?, ?, ?)", (ativo_id, _obrigacao_id(conn, codigo), dia, prazo, motivo, origem))
+
+
+def encerrar_acionamentos(conn, ativo_id: int, codigo: str, dia: str) -> int:
+    """A evidência da obrigação acionada, feita em `dia`, encerra o que foi aberto até esse dia."""
+    with conn:
+        return conn.execute(
+            "UPDATE acionamento SET encerrado_em = ? WHERE ativo_id = ? AND obrigacao_id = ? "
+            "AND dia <= ? AND encerrado_em IS NULL", (dia, ativo_id, _obrigacao_id(conn, codigo), dia)).rowcount
+
+
+def acionamentos_abertos(conn, em: str) -> dict[tuple[int, str], list[dict]]:
+    """{(ativo_id, código): [acionamentos]} abertos no dia `em` (já acionados e ainda não encerrados)."""
+    out: dict[tuple[int, str], list[dict]] = {}
+    for r in conn.execute(
+        "SELECT a.*, o.codigo FROM acionamento a JOIN obrigacao o ON o.id = a.obrigacao_id "
+        "WHERE a.dia <= ? AND (a.encerrado_em IS NULL OR a.encerrado_em > ?) ORDER BY a.dia", (em, em)):
+        out.setdefault((r["ativo_id"], r["codigo"]), []).append(dict(r))
+    return out
 
 
 def evidencias(conn, ativo_id: int, codigo: str) -> list[str]:

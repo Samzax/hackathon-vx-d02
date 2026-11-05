@@ -146,3 +146,19 @@ def test_fir_no_modelo_da_res220_dispara_ise_na_viagem_no_tempo(banco_temporario
     assert any("Res. ANM 220/2025, art. 42" in e.value for e in at.error)
     registrar = next(b for b in at.button if b.label.startswith("Registrar evidência"))
     assert "B2 · OB-02 · 2027-08-1Q" in registrar.label
+
+
+def test_anomalia_registrada_fica_na_torre_ate_o_relatorio_da_ise(banco_temporario):
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    antes = _atrasadas(at)
+
+    def ler_e_registrar(nome):
+        next(s for s in at.selectbox if s.label.endswith("documento de exemplo")).select(nome).run()
+        next(b for b in at.button if b.label == "Ler documento").click().run()
+        next(b for b in at.button if b.label.startswith("Registrar evidência")).click().run()
+        assert not at.exception
+
+    ler_e_registrar("FIR_B2_2026-11-1Q_anomalia.pdf")
+    assert _atrasadas(at) == antes + 1                 # a ISE da B2 fica aberta e passou do prazo de 24 h
+    ler_e_registrar("Relatorio_ISE_B2_2026-11-06.pdf")
+    assert _atrasadas(at) == antes

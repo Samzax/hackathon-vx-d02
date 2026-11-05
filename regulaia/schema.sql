@@ -86,6 +86,20 @@ CREATE TABLE IF NOT EXISTS evidencia (
     UNIQUE (ativo_id, obrigacao_id, periodo)
 );
 
+-- Obrigação por evento que um documento acionou (ex.: anomalia que obriga ISE).
+-- Fica aberta até chegar a evidência da própria obrigação acionada.
+CREATE TABLE IF NOT EXISTS acionamento (
+    id            INTEGER PRIMARY KEY,
+    ativo_id      INTEGER NOT NULL REFERENCES ativo(id),
+    obrigacao_id  INTEGER NOT NULL REFERENCES obrigacao(id),
+    dia           TEXT NOT NULL,                -- AAAA-MM-DD do fato que acionou
+    prazo         TEXT NOT NULL,                -- AAAA-MM-DD
+    motivo        TEXT NOT NULL,
+    origem        TEXT,                         -- arquivo que acionou
+    encerrado_em  TEXT,                         -- AAAA-MM-DD da evidência que encerrou
+    UNIQUE (ativo_id, obrigacao_id, dia)
+);
+
 -- Toda chamada de IA fica guardada: a mesma entrada nunca é paga duas vezes,
 -- e o custo do sistema pode ser medido.
 CREATE TABLE IF NOT EXISTS analise_ia (

@@ -202,3 +202,33 @@ def test_rco_vale_pelo_titulo_mesmo_citando_a_dco(conn):
                  "20/06/2028", "Fundamenta a Declaração de Conformidade e Operacionalidade (DCO) deste ano.")
     le = ev.ler(conn, texto, 1, date(2028, 7, 10))
     assert (le.documento, le.obrigacao, le.periodo) == ("RCO", "OB-14", "2028-06-30")
+
+
+def test_anomalia_registrada_abre_a_ise_ate_chegar_o_relatorio(conn):
+    """A FIR com pontuação 10 abre a ISE da B2 (prazo de 24 h). A torre não esquece: a ISE fica
+    atrasada até o relatório da inspeção ser registrado, que a encerra."""
+    le = ev.ler(conn, _pdf("FIR_B2_2026-11-1Q_anomalia.pdf"), 1, HOJE)
+    assert le.acionar == ["R95-04"]
+    assert _linha(conn, "B2", "R95-04").status == agenda.GATILHO
+    ev.registrar(conn, le, "FIR_B2_2026-11-1Q_anomalia.pdf")
+
+    ise = _linha(conn, "B2", "R95-04")
+    assert ise.status == agenda.ATRASADA and ise.vence == "2026-11-05"
+    assert "acionada em 04/11/2026 por FIR_B2_2026-11-1Q_anomalia.pdf" in ise.nota
+    # viagem no tempo: antes do fato não há nada; no próprio dia, vence logo
+    antes = {l.codigo: l for l in torre.painel(conn, 1, date(2026, 11, 3), DESDE, ativo="B2")}["R95-04"]
+    no_dia = {l.codigo: l for l in torre.painel(conn, 1, date(2026, 11, 4), DESDE, ativo="B2")}["R95-04"]
+    assert antes.status == agenda.GATILHO and no_dia.status == agenda.VENCE_LOGO
+
+    rel = ev.ler(conn, _pdf("Relatorio_ISE_B2_2026-11-06.pdf"), 1, HOJE)
+    assert (rel.documento, rel.obrigacao, rel.periodo) == ("ISE", "R95-04", "2026-11-06") and not rel.acionar
+    ev.registrar(conn, rel, "Relatorio_ISE_B2_2026-11-06.pdf")
+    assert _linha(conn, "B2", "R95-04").status == agenda.GATILHO
+
+
+def test_na_res220_a_anomalia_abre_a_ob19(conn):
+    le = ev.ler(conn, _pdf("FIR_B2_2027-08-1Q_Res220_EC3.pdf"), 1, DIA_220)
+    assert le.acionar == ["OB-19"]
+    ev.registrar(conn, le, "FIR_B2_2027-08-1Q_Res220_EC3.pdf")
+    ob19 = {l.codigo: l for l in torre.painel(conn, 1, date(2027, 8, 5), DESDE, ativo="B2")}["OB-19"]
+    assert ob19.status == agenda.ATRASADA

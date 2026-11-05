@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from . import agenda, db
@@ -35,6 +35,8 @@ DOCUMENTOS = {
     "relatorio de inspecao de seguranca do vaso": ("Inspeção NR-13", "exame externo"),
     "boletim de analise de efluentes": ("Efluentes", "efluentes"),
     "relatorio de conformidade e operacionalidade": ("RCO", "rco"),
+    "relatorio conclusivo de inspecao especial": ("RCIE", "ise"),
+    "relatorio de inspecao de seguranca especial": ("ISE", "ise"),
     "processo de gestao de riscos": ("PGRBM", "pgrbm"),
     "treinamento interno do paebm": ("Treinamento do PAEBM", "treinamento"),
     "treinamento da brigada": ("Treinamento da brigada (NR-22)", "brigadas"),
@@ -66,6 +68,7 @@ class Leitura:
     problemas: list[str] = field(default_factory=list)     # impedem o registro
     avisos: list[str] = field(default_factory=list)        # não impedem (ex.: entregue com atraso)
     gatilhos: list[str] = field(default_factory=list)
+    acionar: list[str] = field(default_factory=list)      # obrigações por evento que o registro abre (ex.: ISE)
 
     @property
     def completa(self) -> bool:
@@ -139,6 +142,7 @@ def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date) -> None:
     if ise and "220/2025" in f"{ise.get('fonte')} {ise.get('artigo')}":
         cinco = [c for c in _EC_ISE if le.estado_conservacao.get(c) == 5]
         if cinco:
+            le.acionar.append(ise["codigo"])
             le.gatilhos.append(f"Anomalia com {', '.join(c + ' = 5' for c in cinco)}: Inspeção de Segurança "
                                "Especial obrigatória (Res. ANM 220/2025, art. 42) e registro no SIGBM em até "
                                "24 horas (art. 38 §4)")
@@ -147,6 +151,8 @@ def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date) -> None:
                              "obrigatórias pela Res. ANM 220/2025 (art. 38 §2): não dá para saber se há ISE")
         return
     if le.pontuacao_maxima is not None and le.pontuacao_maxima >= 10:
+        if ise:
+            le.acionar.append(ise["codigo"])
         le.gatilhos.append("Anomalia com pontuação 10: Inspeção de Segurança Especial obrigatória "
                            "(Res. ANM 95/2022, art. 27) e registro no SIGBM em até 24 horas (art. 21)")
 
@@ -234,9 +240,17 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
 
 
 def registrar(conn, leitura: Leitura, arquivo: str) -> int:
+    """Grava a evidência. Se a leitura achou um gatilho, abre a obrigação por evento (prazo de 24 h,
+    o do registro no SIGBM); se o documento é a evidência de uma obrigação acionada, encerra-a."""
     if not leitura.completa:
         raise ValueError("leitura incompleta: " + "; ".join(leitura.problemas))
     aid = conn.execute("SELECT id FROM ativo WHERE codigo = ?", (leitura.ativo,)).fetchone()["id"]
+    if leitura.data:
+        db.encerrar_acionamentos(conn, aid, leitura.obrigacao, leitura.data)
+        dia = date.fromisoformat(leitura.data)
+        for codigo in (c for c in leitura.acionar if c != leitura.obrigacao):   # o relatório da ISE não reabre a ISE
+            db.acionar(conn, aid, codigo, leitura.data, (dia + timedelta(days=1)).isoformat(),
+                       "; ".join(leitura.gatilhos), origem=arquivo)
     return db.registrar_evidencia(conn, aid, leitura.obrigacao, leitura.periodo, arquivo=arquivo,
                                   extraido={"documento": leitura.documento, "data": leitura.data,
                                             "pontuacao_maxima": leitura.pontuacao_maxima,

@@ -87,6 +87,7 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
     """Status de cada obrigação que vale hoje, por ativo. `desde` é o início do monitoramento."""
     out = []
     metas = _metas(conn)
+    abertos = db.acionamentos_abertos(conn, hoje.isoformat())
     for a in _empresa_ativos(conn, empresa_id):
         if ativo and a["codigo"] != ativo:
             continue
@@ -120,6 +121,13 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
                 alvo = s.faltando[0] if s.faltando else s.proximo
                 linha.vence = alvo.vence.isoformat() if alvo else None
                 linha.faltando = [p.rotulo for p in s.faltando]
+                if acs := abertos.get((a["id"], o.codigo)):
+                    # obrigação por evento acionada por um documento: vale o prazo do acionamento
+                    ac = acs[0]
+                    linha.status = agenda.ATRASADA if hoje.isoformat() > ac["prazo"] else agenda.VENCE_LOGO
+                    linha.vence, linha.faltando = ac["prazo"], []
+                    linha.nota = (f"acionada em {_br(ac['dia'])} por {ac['origem'] or 'documento'}: "
+                                  "aguardando o relatório da inspeção")
             out.append(linha)
     out.sort(key=lambda l: (l.ativo, ORDEM.get(l.status, 9), l.vence or "9999"))
     return out
