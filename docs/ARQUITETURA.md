@@ -63,6 +63,27 @@ Quem opera a barragem manda o PDF (FIR, relatório do vaso, boletim de efluentes
 3. **IA só se a regra não fechar.** A data que ela indicar tem de estar escrita no documento; se não estiver, a leitura fica com um problema e não é registrada.
 4. **Período.** A data vira o período que a evidência comprova (`2026-10-1Q`, `2026-09`, a própria data para `anos:N`).
 5. **Gatilhos.** Uma FIR com pontuação 10 avisa que a Inspeção de Segurança Especial é obrigatória e que o registro no SIGBM tem prazo de 24 horas.
+6. **Entrega fora do prazo.** O período comprovado é sempre o da execução (a inspeção). Se o documento traz a data de envio (o recibo do EIR, por exemplo) e ela passou do prazo, a leitura avisa sem bloquear, e o aviso fica gravado na evidência.
+
+Documentos de exemplo, todos fictícios, em `data/exemplos/`. São gerados de forma determinística por `uv run python -m regulaia.exemplos`:
+
+- FIR comum e FIR com anomalia;
+- recibo do EIR;
+- relatório de exame externo de vaso (NR-13);
+- boletim de efluentes.
+
+PDF sem texto (escaneado) volta com um aviso claro. O OCR fica para depois.
+
+## Saídas para quem não abre a torre
+
+O gestor não precisa entrar no sistema para saber o que fazer:
+
+- **Boletim da semana** (`torre.boletim`, Markdown): só os ativos daquele gestor, com atrasadas, vencendo em 30 dias, dado faltando e mudanças aguardando aprovação. Cada item traz norma e dispositivo.
+- **Calendário** (`torre.calendario`, .ics, RFC 5545): um evento por vencimento e por obrigação que começa a valer. Os UIDs são estáveis, então reimportar atualiza os eventos em vez de duplicar.
+
+Os dois são só gerados para download. Mandar por e-mail fica para a versão com servidor.
+
+**Rastreabilidade.** `db.historico` devolve todas as versões de uma obrigação, com o ato, o trecho e quem decidiu. A aba "Mudanças" mostra isso para responder "por que este prazo é este?".
 
 ## O que a demo mostrou sobre as normas
 

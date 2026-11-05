@@ -10,6 +10,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 - Abrir **📄 Enviar evidência**, escolher `FIR_B3_2026-10-1Q.pdf` e clicar em **Ler documento**.
   - **Fala:** "A regra leu ativo, documento e data. A IA não foi chamada."
 - Clicar em **Registrar evidência**. A B3 passa de 2 atrasadas para 1 no mapa.
+- Opcional: `EIR_B3_2026-10-1Q_recibo_SIGBM.pdf` zera a B3 e mostra o aviso "enviado 7 dias depois do prazo". **Fala:** "comprova a quinzena, mas a torre não esconde o atraso."
 - Escolher `FIR_B2_2026-11-1Q_anomalia.pdf` e clicar em **Ler documento**. Aparece o alerta vermelho: pontuação 10 obriga a ISE e o registro no SIGBM em 24 h.
   - **Fala:** "O documento da operação também dispara obrigações."
 - Opcional: trocar "Quem está olhando" para *Manutenção da Usina*. O gestor vê só o vaso dele (NR-13). Abrir **📨 Boletim da semana**: "é isso que ele recebe toda segunda, sem ler norma nenhuma."
