@@ -49,7 +49,8 @@ class Leitura:
     periodo: str | None = None
     pontuacao_maxima: int | None = None
     metodo: str = "regra"                 # regra | ia
-    problemas: list[str] = field(default_factory=list)
+    problemas: list[str] = field(default_factory=list)     # impedem o registro
+    avisos: list[str] = field(default_factory=list)        # não impedem (ex.: entregue com atraso)
     gatilhos: list[str] = field(default_factory=list)
 
     @property
@@ -84,6 +85,22 @@ def _data(texto: str) -> date | None:
         return date(a, mth, d)
     ds = sorted(datas(texto))
     return ds[0] if len(ds) == 1 else None
+
+
+def _atraso(le: "Leitura", texto: str, agenda_ob: str, execucao: date) -> None:
+    """Se o documento diz quando foi enviado/protocolado, compara com o prazo do período."""
+    m = re.search(r"data d[eo] (?:envio|protocolo|entrega)\s*:?\s*(\d{1,2}/\d{1,2}/\d{4})", texto, re.I)
+    if not m:
+        return
+    d, mth, a = (int(x) for x in m.group(1).split("/"))
+    envio = date(a, mth, d)
+    try:
+        prazo = agenda.periodos(agenda_ob, execucao, execucao)[0].vence
+    except agenda.AgendaInvalida:
+        return          # agenda sem calendário fixo (anos:N, evento...): não há prazo de envio
+    if envio > prazo:
+        le.avisos.append(f"enviado em {envio:%d/%m/%Y}, {(envio - prazo).days} dias depois do prazo "
+                         f"({prazo:%d/%m/%Y}): o período fica comprovado, mas a entrega foi fora do prazo")
 
 
 def _pontuacao(texto_n: str) -> int | None:
@@ -166,6 +183,7 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
                     le.problemas.append("data de execução no futuro")
                 else:
                     le.periodo = agenda.periodo_de(ob["agenda"], d)
+                    _atraso(le, texto, ob["agenda"], d)
     if le.pontuacao_maxima is not None and le.pontuacao_maxima >= 10:
         le.gatilhos.append("Anomalia com pontuação 10: Inspeção de Segurança Especial obrigatória "
                            "(Res. ANM 95/2022, art. 27) e registro no SIGBM em até 24 horas (art. 21)")
@@ -179,7 +197,7 @@ def registrar(conn, leitura: Leitura, arquivo: str) -> int:
     return db.registrar_evidencia(conn, aid, leitura.obrigacao, leitura.periodo, arquivo=arquivo,
                                   extraido={"documento": leitura.documento, "data": leitura.data,
                                             "pontuacao_maxima": leitura.pontuacao_maxima,
-                                            "metodo": leitura.metodo})
+                                            "metodo": leitura.metodo, "avisos": leitura.avisos})
 
 
 def exemplo(nome: str) -> Path:

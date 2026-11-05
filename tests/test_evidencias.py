@@ -116,3 +116,17 @@ def test_pdf_escaneado_diz_que_nao_tem_texto(conn):
     le = ev.ler(conn, "  \n ", 1, HOJE, roteador=_IA({"ativo": "B3"}))
     assert le.problemas == ["o PDF não tem texto (parece escaneado): ainda não fazemos OCR"]
     assert le.metodo == "regra"                     # nem chama a IA
+
+
+def test_recibo_do_eir_comprova_a_quinzena_e_avisa_o_atraso(conn):
+    le = ev.ler(conn, _pdf("EIR_B3_2026-10-1Q_recibo_SIGBM.pdf"), 1, HOJE)
+    assert (le.ativo, le.obrigacao, le.periodo) == ("B3", "R95-02", "2026-10-1Q")   # período da inspeção, não do envio
+    assert le.completa and len(le.avisos) == 1 and "7 dias depois do prazo (30/10/2026)" in le.avisos[0]
+    ev.registrar(conn, le, "EIR_B3_2026-10-1Q_recibo_SIGBM.pdf")
+    assert _linha(conn, "B3", "R95-02").status != agenda.ATRASADA
+
+
+def test_envio_no_prazo_nao_gera_aviso(conn):
+    texto = "Extrato de Inspeção Regular (B3)\nData da inspeção: 09/10/2026\nData do envio: 20/10/2026"
+    le = ev.ler(conn, texto, 1, HOJE)
+    assert le.periodo == "2026-10-1Q" and not le.avisos

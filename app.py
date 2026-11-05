@@ -135,6 +135,8 @@ with aba_hoje:
                 st.error(f"🚨 {g}")
             for p in le.problemas:
                 st.warning(p)
+            for a in le.avisos:
+                st.info(f"⏰ {a}")
             if le.completa and st.button(f"Registrar evidência de {le.ativo} · {le.obrigacao} · {le.periodo}",
                                          type="primary"):
                 ev.registrar(conn, le, nome)
