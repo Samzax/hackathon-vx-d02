@@ -221,7 +221,10 @@ with aba_hoje:
         **{ROTULO[s].split()[0]: sum(1 for l in linhas if l.ativo == a["codigo"] and l.status == s)
            for s in [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO]},
     } for a in meus])
-    st.dataframe(mapa, hide_index=True, width="stretch")
+    # texto com largura fixa: a tabela inteira cabe num projetor de 1280 px sem rolar de lado
+    st.dataframe(mapa, hide_index=True, width="stretch", column_config={
+        "Ativo": st.column_config.TextColumn(width="medium"),
+        "Responsável": st.column_config.TextColumn(width="medium")})
 
     with st.expander("Por norma: quem cobra o quê"):
         normas = sorted({l.norma for l in linhas if l.norma})
