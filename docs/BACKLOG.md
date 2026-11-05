@@ -112,3 +112,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Leitor de evidência aceita mais formatos de data: 03.11.2026, 03-11-2026, 3/11/2026 e "realizada em"; ano com 2 dígitos e data impossível não são adivinhados (11 casos de teste). A mesma leitura vale para a data de envio (aviso de atraso) e para a conferência de datas do radar
 - [x] Leitor de evidências reconhece o ativo também pelo código depois de rótulo ("Barragem B3", "Ativo: B3"), pelo nome sem o tipo ("Córrego Fundo") e pela tag do vaso ("VP-101"); código solto continua sem valer
 - [x] Código desconhecido depois de rótulo ("Barragem B9") também é apontado como "não é ativo cadastrado"; a mensagem genérica passa a mostrar o formato "Ativo: B3"
+- [x] Gatilho de ISE lê mais formatos: "EC 3 = 5", "EC-3 = 5", "EC3 (5)" e "Maior pontuação: 10" (antes passavam em branco, e a ISE obrigatória não abria); "pontuação 6" solta continua sem valer

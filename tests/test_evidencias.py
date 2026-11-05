@@ -339,3 +339,36 @@ def test_data_do_documento_em_varios_formatos(texto, esperado):
 ])
 def test_jeitos_de_citar_o_ativo(conn, texto, esperado):
     assert ev._ativos_citados(ev.normalizar(texto), db.ativos(conn, 1)) == esperado
+
+
+@pytest.mark.parametrize("texto, esperado", [
+    ("EC3 = 5", {"EC3": 5}),
+    ("EC 3 = 5", {"EC3": 5}),
+    ("EC-3 = 5", {"EC3": 5}),
+    ("EC3: 5", {"EC3": 5}),
+    ("Estado de Conservação EC3 (5)", {"EC3": 5}),
+    ("EC1=0 EC2=5 EC3=0", {"EC1": 0, "EC2": 5, "EC3": 0}),
+    ("conforme o art. 38 §2, sec3: 5", {}),           # "ec" dentro de outra palavra não conta
+])
+def test_colunas_de_estado_de_conservacao_em_varios_formatos(texto, esperado):
+    """Ler menos do que está escrito aqui é perder uma ISE obrigatória."""
+    assert ev._estado_conservacao(ev.normalizar(texto)) == esperado
+
+
+@pytest.mark.parametrize("texto, esperado", [
+    ("Pontuação máxima: 10", 10),
+    ("Pontuação máxima obtida = 10", 10),
+    ("Maior pontuação: 10", 10),
+    ("Pontuação total: 6; pontuação máxima: 10", 10),
+    ("pontuação 6 na anomalia do talude", None),      # sem "máxima"/"maior": não é a do documento
+])
+def test_pontuacao_maxima_em_varios_formatos(texto, esperado):
+    assert ev._pontuacao(ev.normalizar(texto)) == esperado
+
+
+def test_ec_escrito_com_espaco_ainda_abre_a_ise(conn):
+    """A mesma FIR da Res. 220 com "EC 3 = 5" no lugar de "EC3 = 5": a ISE tem de abrir igual."""
+    texto = _pdf("FIR_B2_2027-08-1Q_Res220_EC3.pdf").replace("EC3 = 5", "EC 3 = 5")
+    assert "EC 3 = 5" in texto
+    le = ev.ler(conn, texto, 1, DIA_220)
+    assert le.estado_conservacao["EC3"] == 5 and len(le.gatilhos) == 1 and "art. 42" in le.gatilhos[0]

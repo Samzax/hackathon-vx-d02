@@ -174,13 +174,17 @@ def _atraso(le: "Leitura", texto: str, agenda_ob: str, execucao: date) -> None:
 
 
 def _pontuacao(texto_n: str) -> int | None:
-    m = re.search(r"pontuacao maxima[^0-9]{0,40}(\d{1,2})", texto_n)
+    """'Pontuação máxima: 10', 'Pontuação máxima obtida = 10', 'Maior pontuação: 10'. Sem o 'máxima'/'maior'
+    não lê: 'pontuação 6' pode ser a de uma anomalia qualquer."""
+    m = re.search(r"(?:pontuacao maxima|maior pontuacao)[^0-9]{0,40}(\d{1,2})", texto_n)
     return int(m.group(1)) if m else None
 
 
 def _estado_conservacao(texto_n: str) -> dict[str, int]:
-    """Colunas de Estado de Conservação do Quadro I.8 (Res. 220): 'EC3 = 5'."""
-    return {f"EC{c}": int(v) for c, v in re.findall(r"\bec([1-5])\s*[=:]\s*(\d{1,2})\b", texto_n)}
+    """Colunas de Estado de Conservação do Quadro I.8 (Res. 220): 'EC3 = 5', 'EC 3: 5', 'EC-3 (5)'.
+    Errar para menos aqui é perder uma ISE obrigatória, então aceita os jeitos comuns de escrever."""
+    return {f"EC{c}": int(v) for c, v in
+            re.findall(r"\bec\s?-?\s?([1-5])\s*(?:[=:]\s*|\(\s*)(\d{1,2})\b", texto_n)}
 
 
 _EC_ISE = ("EC1", "EC3", "EC4", "EC5")      # Res. 220, art. 42: EC2 = 5 não obriga ISE
