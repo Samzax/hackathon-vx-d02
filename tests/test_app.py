@@ -113,3 +113,21 @@ def test_todas_as_visoes_em_todas_as_datas_da_viagem(banco_temporario):
             at.sidebar.date_input[0].set_value(d)
             at.run()
             assert not at.exception, (v, d, [e.value for e in at.exception])
+
+
+def test_ato_ficticio_vira_mudanca_pendente(banco_temporario, monkeypatch):
+    """O ato de exemplo da aba Radar roda do cache da demo (sem chave) e vira mudança para aprovar."""
+    from regulaia import ia
+
+    monkeypatch.setattr(ia, "load_dotenv", lambda *a, **k: None)
+    for chave in ("DEEPSEEK_API_KEY", "ANTHROPIC_API_KEY", "OPENCODE_API_KEY"):
+        monkeypatch.delenv(chave, raising=False)
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    next(b for b in at.button if b.label == "Usar um ato fictício de exemplo").click().run()
+    next(b for b in at.button if b.label == "Analisar ato").click().run()
+    assert not at.exception
+    texto = " ".join(m.value for m in at.markdown)
+    assert "R95-01" in texto and "Semanal" in texto and "conferida pelo Python" in texto
+    next(b for b in at.button if b.label.startswith("Enviar para aprovação")).click().run()
+    assert not at.exception
+    assert len([b for b in at.button if b.label == "Aprovar"]) == 2       # Res. 245 e o ato de teste

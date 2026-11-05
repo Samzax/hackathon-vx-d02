@@ -46,3 +46,5 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Varredura da interface: 8 visões x 3 datas sem erro; condicionantes da licença não somem após a validade
 - [x] Dockerfile para AWS (App Runner/ECS/EC2); app conferido só com dependências de produção
 - [x] Tema claro conferido; diagrama legível nos dois temas
+- [x] Cada ativo mostra o que comprova (últimas evidências)
+- [x] Radar: teste com um ato colado (regra -> IA -> Python -> aprovação), com exemplo fictício no cache

@@ -200,6 +200,16 @@
   "custo_usd": 0.0028164
  },
  {
+  "chave": "8eba3c2f9eb65f2674c6c5fb3cb0f57d307decc030b97cf3cca8bc78333d67de",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"R95-01\", \"campo\": \"periodicidade\", \"valor_atual\": \"Quinzenal\", \"valor_novo\": \"Semanal\", \"trecho\": \"I - preencher, semanalmente, as Fichas de Inspeção Regular (FIR);\", \"justificativa\": \"O ato dá nova redação ao inciso I do art. 19 e passa a exigir o preenchimento semanal das FIR, alterando a periodicidade cadastrada como quinzenal.\"}], \"motivo\": \"O ato altera apenas a redação do inciso I do art. 19 da Resolução ANM nº 95/2022, trocando o preenchimento quinzenal das FIR pelo semanal, com vigência a partir de 1º de abril de 2027. Nenhum outro dispositivo é modificado, e o novo prazo de preenchimento não é detalhado a ponto de alterar o campo prazo do cadastro.\", \"confianca\": 0.82}",
+  "tokens_in": 1601,
+  "tokens_out": 847,
+  "custo_usd": 0.00074835
+ },
+ {
   "chave": "96e796da149790311a0b1b7f4d2bd72b23d149abbe9804ed8cacc1065bc429fd",
   "tarefa": "impacto",
   "provedor": "opencode",
@@ -228,6 +238,16 @@
   "tokens_in": 4621,
   "tokens_out": 12809,
   "custo_usd": 0.008378549999999998
+ },
+ {
+  "chave": "b816e5a5e1000d9e830cde094cf4c6da29f43f2cbb0a129f73fbbc9a047f7737",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"O ato prorroga prazos processuais que dependam dos sistemas Protocolo Digital, Dados Cadastrais ou Dados Minerários da ANM, com termo final entre 02/04 e 13/07/2026, até 28/09/2026, mas exclui expressamente os prazos do SIGBM, do RAL e da DIPEM (§2º, II) e as obrigações cujo descumprimento traga risco à saúde, à vida, ao meio ambiente e ao patrimônio (§1º). Nenhuma obrigação do cadastro depende dos sistemas alcançados: as obrigações vinculadas ao SIGBM (OB-06, R95-10, R95-12) estão excluídas e as demais (LO-05, N13-01, N13-03) não são prazos processuais daqueles sistemas, de modo que o cadastro permanece inalterado.\", \"confianca\": 0.9}",
+  "tokens_in": 2209,
+  "tokens_out": 484,
+  "custo_usd": 0.00062175
  },
  {
   "chave": "bb2fc59f898ab954cd69137f0695241a7bcaabd290d79c36e35d566019176f4a",

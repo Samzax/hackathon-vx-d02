@@ -5,6 +5,7 @@ Uso: uv run streamlit run app.py
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import date
 
@@ -104,7 +105,8 @@ with st.sidebar:
     st.caption(f"Histórico monitorado desde {desde:%d/%m/%Y}.")
     if st.button("Recriar demo", help="Apaga decisões e volta ao estado inicial"):
         _conexao.clear()
-        st.session_state.pop("leitura", None)
+        for k in ("leitura", "analise_teste", "ato_teste"):
+            st.session_state.pop(k, None)
         st.rerun()
 
 meus = [a for a in ativos if visao.startswith("Diretoria") or a["responsavel"] == visao]
@@ -427,6 +429,56 @@ with aba_radar:
                        f"modelo: {' → '.join(r['modelos'])} · confiança {r['confianca']} · "
                        f"custo US\\$ {r.get('custo_original_usd', r['custo_usd']):.4f}"
                        + (" (resposta já em cache: não foi paga de novo)" if not r["custo_usd"] else ""))
+
+ATO_EXEMPLO = """RESOLUÇÃO FICTÍCIA DE TESTE Nº 1, DE 2 DE MARÇO DE 2027
+(texto inventado para demonstração: não é um ato real)
+
+Art. 1º O inciso I do art. 19 da Resolução ANM nº 95, de 7 de fevereiro de 2022, passa a vigorar com a seguinte redação:
+"I - preencher, semanalmente, as Fichas de Inspeção Regular (FIR);"
+Art. 2º Esta Resolução entra em vigor em 1º de abril de 2027."""
+
+with aba_radar:
+    st.markdown("##### 🧪 Teste com um ato seu")
+    st.caption("Cole o texto de um ato. A regra escolhe as obrigações candidatas sem custo; a IA só roda se "
+               "houver candidata; o Python confere o que ela disser; nada muda sem aprovação na aba Mudanças.")
+    if st.button("Usar um ato fictício de exemplo"):
+        st.session_state["ato_teste"] = ATO_EXEMPLO
+    texto_ato = st.text_area("Texto do ato", key="ato_teste", height=180,
+                             placeholder="Cole aqui o texto de uma resolução, portaria, instrução normativa…")
+    if st.button("Analisar ato", type="primary", disabled=not (texto_ato or "").strip()):
+        titulo_ato = texto_ato.strip().splitlines()[0][:150]
+        rot = _roteador()
+        if rot is None:
+            st.error("Não consegui iniciar o roteador de IA (veja modelos.toml e .env).")
+        else:
+            with st.spinner("Triagem por regra e, se houver candidata, análise da IA…"):
+                st.session_state["analise_teste"] = (titulo_ato, texto_ato,
+                                                     impacto.analisar(conn, rot, titulo_ato, texto_ato))
+    if "analise_teste" in st.session_state:
+        titulo_ato, texto_salvo, an = st.session_state["analise_teste"]
+        st.markdown(f"**{titulo_ato}**")
+        if an.candidatas:
+            st.markdown("Candidatas escolhidas pela regra: " + " · ".join(
+                f"`{c.codigo}` ({', '.join(c.motivos[:2])})" for c in an.candidatas))
+        st.caption(an.motivo or "—")
+        if an.modelos:
+            st.caption(f"Modelo: {' → '.join(an.modelos)} · custo da análise US\\$ {an.custo_original_usd:.4f}"
+                       + (" (resposta já em cache: não foi paga de novo)" if an.custo_original_usd and not an.custo_usd else ""))
+        for m in an.mudancas:
+            selo = f"❌ reprovada pelo Python: {m.reprovada}" if m.reprovada else "✅ conferida pelo Python"
+            st.markdown(f"- **{m.obrigacao}** · {CAMPO.get(m.campo, m.campo)}: {_br(m.valor_atual)} → "
+                        f"**{_br(m.valor_novo)}** — {selo}")
+            st.caption(f"“{m.trecho}”")
+        if an.aprovadas:
+            if st.button("Enviar para aprovação (aba Mudanças)"):
+                ato_id = db.registrar_ato(conn, "teste", "teste-" + hashlib.sha256(
+                    texto_salvo.encode("utf-8")).hexdigest()[:16], titulo_ato, texto=texto_salvo)
+                impacto.aplicar(conn, an, ato_id)
+                del st.session_state["analise_teste"]
+                st.toast("Mudança proposta: aprove ou rejeite na aba Mudanças.")
+                st.rerun()
+        elif not an.candidatas:
+            st.info("Nenhuma obrigação do cadastro é tocada por este ato: a IA nem foi chamada (custo zero).")
 
 # ------------------------------------------------------------------ Mercado
 
