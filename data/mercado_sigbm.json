@@ -1,0 +1,25 @@
+{
+  "fonte": "SIGBM público da ANM, botão Exportar CSV de https://sigbm.anm.gov.br/Publico/ClassificacaoNacionalDaBarragem",
+  "exportado_em": "2026-11-05",
+  "barragens_mineracao": 908,
+  "empresas": 235,
+  "barragens_na_pnsb": 461,
+  "empresas_com_barragem_na_pnsb": 126,
+  "mg": {
+    "barragens_na_pnsb": 189,
+    "empresas_com_barragem_na_pnsb": 41
+  },
+  "pnsb_por_situacao": {
+    "Ativa": 288,
+    "Em descaracterização": 111,
+    "Inativa": 62
+  },
+  "pnsb_por_nivel_emergencia": {
+    "Sem emergência": 384,
+    "Nível de Emergência 1": 60,
+    "Nível de Alerta": 10,
+    "Nível de Emergência 2": 6,
+    "Nível de Emergência 3": 1
+  },
+  "nota": "Empresas contadas por CPF/CNPJ distinto. O arquivo bruto fica fora do Git (data/raw/sigbm/) porque traz CPF de pessoas físicas."
+}

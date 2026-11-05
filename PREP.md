@@ -22,6 +22,14 @@ Use these two details in the pitch:
 
 Art. 86 revokes Res. 95/2022, 130/2023 and 175/2024 from 2 Aug 2027. Until then Res. 95/2022 still applies, so `seed_obligations.csv` is the register from that date. It is not today's calendar. Today's calendar needs rows from Res. 95/2022, which have not been checked.
 
+## Findings on 5 Nov
+
+- **The full month, measured.** August 2026, DOU Seção 1 open-data XML (`S01082026.zip`, regular and extra editions): **7,884 acts → 825 from ANM → 2 normative** (Res. 245 and Res. 246). The 4 Aug numbers match the site listing exactly: 339 in DO1 plus 9 in DO1E, 23 from ANM.
+- **Res. ANM 246/2026 is the second golden case.** It extends ANM procedural deadlines, but §1 excludes obligations whose breach risks life or the environment, and §2 II excludes SIGBM deadlines. Correct answer for dam obligations: **no change**. A naive system would flag it.
+- **"DPA2" is real.** It is the loss-of-life sub-score of DPA in Res. 220. The text writes the threshold as an underlined ">", which means **≥ 4**. The seed had "> 4", which left DPA2 = 4 dams in neither art. 39 I nor II. Fixed.
+- **Market, with a source** (SIGBM public export, 5 Nov 2026): **908 mining dams from 235 companies; 461 under the PNSB from 126 companies; 189 PNSB dams in MG from 41 companies.** Details in `data/mercado_sigbm.json`.
+- **SIGBM moved** to `sigbm.anm.gov.br` (no robots.txt). The old `app.anm.gov.br` resets the connection. The page has an official "Exportar CSV" button. The raw export stays out of Git because it includes CPFs of individual owners.
+
 ## One real day, as a funnel
 
 DOU Seção 1 regular edition, 4 Aug 2026: **339 acts → 23 from ANM → 1 that changes an obligation.**
@@ -89,6 +97,6 @@ Still open, until the recording is released:
 - [ ] Name one owner for data ingestion
 - [ ] Talk to someone who works in mining compliance; ask the organizers for an intro
 - [ ] Check with them that the seed list and the owner roles look realistic
-- [ ] Refresh the dam count from SIGBM (the only figure found is 907, from March 2022)
+- [x] Refresh the dam count from SIGBM (908 dams, 5 Nov 2026)
 - [ ] Send the organizers your challenge by Nov 6
 - [ ] Re-check INLABS on Friday

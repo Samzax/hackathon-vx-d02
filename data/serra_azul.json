@@ -1,0 +1,95 @@
+{
+  "empresa": "Mineradora Serra Azul",
+  "ficticia": true,
+  "nota": "Empresa fictícia. Altura, volume, método construtivo, CRI, DPA, situação operacional e nível de emergência de cada barragem foram copiados de barragens reais de MG inseridas na PNSB (SIGBM, exportação pública de 2026-11-05), sem nome, CNPJ, município ou coordenadas. Os campos em 'ficticios' não existem no SIGBM público e foram preenchidos pela equipe.",
+  "ativos": [
+    {
+      "codigo": "B1",
+      "nome": "Barragem Serra I",
+      "responsavel": "Gerência de Geotecnia",
+      "atributos": {
+        "uf": "MG",
+        "minerio": "Minério de Ferro",
+        "altura_m": 68.0,
+        "volume_m3": 2980000.0,
+        "metodo_construtivo": "Alteamento a montante",
+        "cri": "baixo",
+        "dpa": "alto",
+        "situacao_operacional": "Em descaracterização",
+        "nivel_emergencia": "Sem emergência",
+        "dpa2": 4,
+        "trabalhadores_zas": false,
+        "mapa_inundacao_validado": true,
+        "alteamento_continuo": false,
+        "modificacao_estrutural": false
+      },
+      "ficticios": ["dpa2", "trabalhadores_zas", "mapa_inundacao_validado", "alteamento_continuo", "modificacao_estrutural"]
+    },
+    {
+      "codigo": "B2",
+      "nome": "Barragem Serra II",
+      "responsavel": "Gerência de Segurança e Geotecnia",
+      "atributos": {
+        "uf": "MG",
+        "minerio": "Minério de Ferro",
+        "altura_m": 55.0,
+        "volume_m3": 9771474.42,
+        "metodo_construtivo": "Alteamento a jusante",
+        "cri": "medio",
+        "dpa": "alto",
+        "situacao_operacional": "Ativa",
+        "nivel_emergencia": "Sem emergência",
+        "dpa2": 8,
+        "trabalhadores_zas": true,
+        "mapa_inundacao_validado": true,
+        "alteamento_continuo": true,
+        "modificacao_estrutural": false
+      },
+      "ficticios": ["dpa2", "trabalhadores_zas", "mapa_inundacao_validado", "alteamento_continuo", "modificacao_estrutural"]
+    },
+    {
+      "codigo": "B3",
+      "nome": "Barragem Córrego Fundo",
+      "responsavel": "Gerência de Geotecnia",
+      "atributos": {
+        "uf": "MG",
+        "minerio": "Minério de Ferro",
+        "altura_m": 17.0,
+        "volume_m3": 625531.0,
+        "metodo_construtivo": "Etapa única",
+        "cri": "baixo",
+        "dpa": "medio",
+        "situacao_operacional": "Ativa",
+        "nivel_emergencia": "Sem emergência",
+        "dpa2": 2,
+        "trabalhadores_zas": false,
+        "mapa_inundacao_validado": true,
+        "alteamento_continuo": false,
+        "modificacao_estrutural": false
+      },
+      "ficticios": ["minerio", "dpa2", "trabalhadores_zas", "mapa_inundacao_validado", "alteamento_continuo", "modificacao_estrutural"]
+    },
+    {
+      "codigo": "B4",
+      "nome": "Barragem Vale do Cedro",
+      "responsavel": "Gerência de Emergências",
+      "atributos": {
+        "uf": "MG",
+        "minerio": "Minério de Ferro",
+        "altura_m": 37.0,
+        "volume_m3": 914500.0,
+        "metodo_construtivo": "Alteamento por linha de centro",
+        "cri": "alto",
+        "dpa": "alto",
+        "situacao_operacional": "Inativa",
+        "nivel_emergencia": "Nível de Emergência 1",
+        "dpa2": 6,
+        "trabalhadores_zas": false,
+        "mapa_inundacao_validado": true,
+        "alteamento_continuo": false
+      },
+      "ficticios": ["dpa2", "trabalhadores_zas", "mapa_inundacao_validado", "alteamento_continuo"],
+      "nota": "modificacao_estrutural ficou em branco de propósito: a torre deve mostrar o dado que falta."
+    }
+  ]
+}
