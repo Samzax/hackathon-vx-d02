@@ -294,5 +294,14 @@ def test_boletim_bate_com_o_amarelo_da_torre(serra):
     b = torre.boletim(conn, 1, HOJE, DESDE)
     assert f", {amarelas} já em amarelo na torre)" in b
     secao = b.split("## 📅")[1].split("##")[0]
-    assert secao.count(" 🟡") == amarelas
+    marcadas = [l for l in secao.splitlines() if l.endswith(" 🟡")]
+    assert sum(len(l.split("**")[1].split(", ")) for l in marcadas) == amarelas     # linha agrupada conta cada ativo
     assert "## 🟡" not in b                    # o título não promete amarelo para tudo
+
+
+def test_boletim_junta_a_mesma_obrigacao_de_varios_ativos(serra):
+    conn, _ = serra
+    b = torre.boletim(conn, 1, HOJE, DESDE)
+    assert "- **B1, B2, B4** · Preencher as FIR quinzenalmente" in b
+    assert b.count("Preencher as FIR quinzenalmente") == 2          # a atrasada da B3 e a linha das três
+    assert "(9, 3 já em amarelo na torre)" in b                      # a contagem continua por ativo

@@ -256,8 +256,14 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
                        and l.vence and l.vence <= limite), key=lambda l: l.vence)
     pendentes = [m for m in mudancas(conn, empresa_id) if set(m.ativos) & set(ativos)]
 
-    def item(l: Linha, extra: str) -> str:
-        return f"- **{l.ativo}** · {l.titulo} ({dispositivo(l.norma, l.artigo)}) — {extra}"
+    def itens(ls: list[Linha], extra) -> list[str]:
+        """Uma linha por obrigação; a mesma obrigação, com o mesmo prazo, em vários ativos vira uma
+        linha só ("**B1, B2, B4** · Preencher as FIR…"): a diretoria lê 5 linhas em vez de 9."""
+        grupos: dict[tuple, list[str]] = {}
+        for l in ls:
+            grupos.setdefault((l.titulo, dispositivo(l.norma, l.artigo), extra(l)), []).append(l.ativo)
+        return [f"- **{', '.join(dict.fromkeys(a))}** · {titulo} ({disp}) — {ex}"
+                for (titulo, disp, ex), a in grupos.items()]
 
     para = responsavel or "Diretoria"
     out = [f"# Boletim regulatório — {para}", "",
@@ -267,20 +273,19 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
         out.append("Nada atrasado, nada vencendo nos próximos dias e nenhuma mudança aguardando aprovação.")
     if atrasadas:
         out += [f"## 🔴 Atrasadas ({len(atrasadas)})", ""]
-        out += [item(l, f"venceu em {_br(l.vence)}; {_o_que_falta(l)}") for l in atrasadas]
+        out += itens(atrasadas, lambda l: f"venceu em {_br(l.vence)}; {_o_que_falta(l)}")
         out.append("")
     if proximas:
         # o boletim olha 30 dias à frente; na torre, quinzenal/mensal só fica amarela 5 dias antes
         amarelas = sum(1 for l in proximas if l.status == agenda.VENCE_LOGO)
         out += [f"## 📅 Vencem nos próximos {janela} dias ({len(proximas)}"
                 + (f", {amarelas} já em amarelo na torre)" if amarelas else ")"), ""]
-        out += [item(l, f"até {_br(l.vence)}" + (" 🟡" if l.status == agenda.VENCE_LOGO else ""))
-                for l in proximas]
+        out += itens(proximas, lambda l: f"até {_br(l.vence)}" + (" 🟡" if l.status == agenda.VENCE_LOGO else ""))
         out.append("")
     if faltando:
         out += [f"## ⚪ Falta dado no cadastro ({len(faltando)})", ""]
-        out += [item(l, "informar " + ", ".join(f"{campo_legivel(c)} ({c})" for c in l.dados_faltando))
-                for l in faltando]
+        out += itens(faltando, lambda l: "informar " + ", ".join(f"{campo_legivel(c)} ({c})"
+                                                                 for c in l.dados_faltando))
         out.append("")
     if pendentes:
         out += [f"## ⚠️ Mudanças de norma aguardando aprovação ({len(pendentes)})", ""]

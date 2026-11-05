@@ -97,3 +97,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Corrigido antes de chegar à nuvem: reportlab era só de dev e a imagem (uv sync --no-dev) quebraria o boletim em PDF; agora é dependência de produção, pandas declarado, e um teste confere que tudo o que o app importa está em [project].dependencies. Imagem reconstituída sem Docker num diretório limpo: seis abas sem erro e os dois PDFs baixam
 - [x] Preparo para o Linux da imagem: teste confere que todo caminho citado no código bate letra por letra com o disco (Windows não distingue maiúscula), sem nomes que só diferem na caixa e sem acento em nome de arquivo
 - [x] Fins de linha: tudo LF no Git (o Linux da imagem lê igual); PNG marcado como binário no .gitattributes
+- [x] Boletim junta a mesma obrigação com o mesmo prazo em vários ativos numa linha ("B1, B2, B4 · Preencher as FIR…"): a seção de 30 dias da diretoria cai de 9 para 5 linhas; as contagens seguem por ativo
