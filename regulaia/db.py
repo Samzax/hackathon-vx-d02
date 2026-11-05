@@ -156,8 +156,10 @@ def versao(conn, codigo: str, status: str = "vigente") -> dict | None:
 
 
 def historico(conn, codigo: str) -> list[dict]:
+    """Todas as versões de uma obrigação, da primeira à mais nova, com o título do ato que a originou."""
     rows = conn.execute(
-        "SELECT v.*, o.codigo FROM obrigacao_versao v JOIN obrigacao o ON o.id = v.obrigacao_id "
+        "SELECT v.*, o.codigo, a.titulo AS ato FROM obrigacao_versao v "
+        "JOIN obrigacao o ON o.id = v.obrigacao_id LEFT JOIN ato a ON a.id = v.ato_id "
         "WHERE o.codigo = ? ORDER BY v.versao",
         (codigo,),
     ).fetchall()

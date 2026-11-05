@@ -287,7 +287,8 @@ with aba_mudancas:
             if r:
                 st.caption(f"Por quê: {r['motivo']}")
                 st.caption(f"Conferido pelo Python: o trecho existe no ato ✓ · as datas propostas aparecem no trecho ✓ · "
-                           f"modelo {' → '.join(r['modelos'])} · custo US\\$ {r['custo_usd']:.4f}")
+                           f"modelo {' → '.join(r['modelos'])} · "
+                           f"custo US\\$ {r.get('custo_original_usd', r['custo_usd']):.4f}")
             st.markdown(f"Ativos afetados: **{', '.join(m.ativos)}**")
             b1, b2, _ = st.columns([1, 1, 4])
             if b1.button("Aprovar", key=f"ok{m.versao_id}", type="primary"):
@@ -306,6 +307,33 @@ with aba_mudancas:
         st.markdown("| Obrigação | Ato | Decisão | Por | Quando (UTC) |\n|---|---|---|---|---|\n" + "\n".join(
             f"| {r['codigo']} | {r['ato'] or '—'} | {'❌ rejeitada' if r['status'] == 'rejeitada' else '✅ aprovada'} "
             f"| {r['decidida_por'].split(' (')[0]} | {r['decidida_em']} |" for r in decididas))
+
+    st.markdown("##### Histórico de uma obrigação")
+    st.caption("Por que este prazo é este? Cada versão com a origem, o trecho que a sustenta e quem decidiu.")
+    codigos = sorted({o.codigo for a in meus for o in db.obrigacoes_do_ativo(conn, a["id"])})   # inclusive as futuras
+    com_mudanca = [c for c in codigos if len(db.historico(conn, c)) > 1]
+    escolha = st.selectbox("Obrigação", com_mudanca + [c for c in codigos if c not in com_mudanca],
+                           format_func=lambda c: f"{c} · {db.versao(conn, c)['titulo'][:90]}"
+                           + (" (já mudou)" if c in com_mudanca else ""))
+    if escolha:
+        anterior = None
+        for v in db.historico(conn, escolha):
+            selo = {"vigente": "🟢 vigente", "substituida": "⚪ substituída", "pendente": "⏳ pendente",
+                    "rejeitada": "❌ rejeitada"}[v["status"]]
+            origem = v["ato"] or v["fonte"] or "cadastro inicial"
+            st.markdown(f"**Versão {v['versao']}** · {selo} · origem: {origem}"
+                        + (f" · decidida por {v['decidida_por'].split(' (')[0]} em {v['decidida_em']} UTC"
+                           if v["decidida_por"] else ""))
+            if anterior:
+                mudou = db.diferencas(anterior, v)
+                if mudou:
+                    st.markdown("; ".join(f"{CAMPO.get(c, c)}: {_br(a)} → **{_br(b)}**" for c, (a, b) in mudou.items()))
+            else:
+                st.markdown(f"Prazo: {_br(v['prazo'])} · vale de {_br(v['vigencia_desde'])} "
+                            f"até {_br(v['vigencia_ate']) if v['vigencia_ate'] else 'sem fim'} · {v['artigo']}")
+            if v["trecho"]:
+                st.caption(f"“{v['trecho']}”")
+            anterior = v
 
 # ------------------------------------------------------------------ Radar
 

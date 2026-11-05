@@ -79,3 +79,12 @@ def test_mercado_faz_a_conta_com_as_premissas(banco_temporario):
     assert valores["Receita anual com 10% de adoção"] == "R$ 1,2 mi"
     next(s for s in at.slider if s.label.startswith("Adoção")).set_value(100).run()
     assert {m.label: m.value for m in at.metric}["Receita anual com 100% de adoção"] == "R$ 12,4 mi"
+
+
+def test_historico_mostra_a_versao_nova_depois_de_aprovar(banco_temporario):
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    next(b for b in at.button if b.label == "Aprovar").click().run()
+    hist = next(s for s in at.selectbox if s.label == "Obrigação")
+    assert hist.value == "OB-01"                       # a que já mudou aparece primeiro
+    texto = " ".join(m.value for m in at.markdown)
+    assert "Versão 2" in texto and "Resolução ANM Nº 245" in texto and "26/12/2029" in texto
