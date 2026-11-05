@@ -26,8 +26,9 @@ Como o tempo está dividido, e qual critério cada parte carrega:
 
 ## 1 · Metade já foi embargada (0:00 – 0:25)
 
-- **Na tela:** "223 de 461" em letra grande. Embaixo: "barragens de mineração na Política Nacional de Segurança de Barragens que já foram embargadas. Fonte: SIGBM, 05/11/2026".
-- **Fala:** "Das 461 barragens de mineração que a lei de segurança de barragens cobre, 223 já foram embargadas, quase metade. 76 estão embargadas hoje. Embargo quer dizer estrutura parada, e a multa da lei vai até 1 bilhão de reais."
+- **Na tela:** "223 de 461" em letra grande. Embaixo: "barragens de mineração na Política Nacional de Segurança de Barragens que já foram embargadas. Fonte: SIGBM, 05/11/2026". Numa segunda linha, menor: "2025: 85 autos de embargo. Fonte: ANM".
+- **Fala:** "Das 461 barragens de mineração que a lei de segurança de barragens cobre, 223 já foram embargadas, quase metade. 76 estão embargadas hoje, e só em 2025 a ANM lavrou 85 autos de embargo. Embargo quer dizer estrutura parada. Em agosto, uma barragem da Vale foi embargada sem anomalia nenhuma: a obra terminou e o estudo de ruptura não foi refeito."
+- **Por que não falamos de multa:** as multas da ANM estão suspensas desde março de 2026 (Deliberação 436), e o embargo continua. Citar "multa de até R$ 1 bilhão" sem dizer isso é número que a banca pode derrubar. Detalhe e casos na [análise de mercado](ANALISE_MERCADO.md), seção "Fiscalização e casos".
 
 ## 2 · Sessenta entregas por barragem, e a norma muda (0:25 – 0:55)
 
@@ -63,7 +64,11 @@ Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é a
 
 ## 7 · Mercado e modelo (3:45 – 4:15)
 
-- **Na tela:** funil 908 → 461 → 243 barragens (cadastradas → na política nacional → dano potencial alto); embaixo, "R$ 12,4 mi por ano só nas barragens da PNSB" e as camadas de expansão.
+- **O que o slide faz:** carrega o critério de mercado e viabilidade (20% da nota) em 30 segundos, respondendo três perguntas: quem compra primeiro, quanto vale e como a empresa ganha dinheiro. Risco de embargo não entra aqui: é dor, e fica no slide 1. Multa evitada não entra como receita nem como economia.
+- **Na tela:**
+  - à esquerda, o funil 908 → 461 → 208 → 46 barragens (cadastradas → na política nacional → grupos de 2 a 9 barragens → meta em 3 anos), com "R$ 24,5 mi · R$ 12,4 mi · R$ 1,2 mi por ano" ao lado das etapas que viram receita (TAM, SAM, SOM);
+  - à direita, o modelo em três linhas: assinatura por ativo; implantação; licença para consultoria, que também é canal de venda;
+  - embaixo, uma linha: "preço a validar com 10 entrevistas e 3 pilotos pagos".
 - **Fala:** "Começamos pelos 59 grupos que têm de 2 a 9 barragens: dor de consolidar, pouco time de sistemas. Cobrando por ativo, só as 461 barragens da PNSB dão R$ 12,4 milhões por ano; com 10% de adoção, R$ 1,2 milhão. Fora dessa conta ficam as outras 447 barragens de mineração, as 29.761 barragens do país e as 8.086 mineradoras que pagam royalty."
 - **Premissas, não dados** (dá para mudar ao vivo na aba **Mercado**): R$ 1.500 por barragem por mês, 5 outros ativos por barragem a R$ 150 por mês cada, 10% de adoção. Conta: 461 × (R$ 1.500 + 5 × R$ 150) × 12.
 
@@ -83,7 +88,7 @@ Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é a
 
 ## Ensaio
 
-- As falas e a narração somam cerca de 540 palavras: 3 min 40 s a 150 palavras por minuto. O resto do tempo é o vídeo mostrando a tela entre uma narração e outra, e uma pausa depois do número de abertura. Um teste conta as palavras e falha se passar de 750.
+- As falas e a narração somam cerca de 560 palavras: 3 min 45 s a 150 palavras por minuto. O resto do tempo é o vídeo mostrando a tela entre uma narração e outra, e uma pausa depois do número de abertura. Um teste conta as palavras e falha se passar de 750.
 - Cronometrar duas vezes com o vídeo rodando. Se passar de 5 min, cortar primeiro o corte "Transição" do vídeo e depois o slide 9 para uma frase.
 - O vídeo é gravado antes, com a barra lateral em 07/11/2026, "Diretoria (todos os ativos)" e **Recriar demo**. Ter o arquivo do vídeo local, além do link, caso a internet falhe.
 - Não há perguntas: as respostas que mais importam já estão nos slides 6 (a IA errar), 7 (premissas de preço) e 8 (concorrência). A tabela "Se perguntarem" do [roteiro](ROTEIRO_DEMO.md) fica para as mentorias e para conversas depois do pitch.

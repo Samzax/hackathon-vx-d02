@@ -1,0 +1,24 @@
+{
+  "fonte": "ANM, 'Relatório destaca melhora no cenário de segurança das barragens de mineração em 2025', publicado em 10/03/2026: https://www.gov.br/anm/pt-br/assuntos/noticias/relatorio-destaca-melhora-no-cenario-de-seguranca-das-barragens-de-mineracao-em-2025",
+  "ano": 2025,
+  "vistorias_em_campo": 137,
+  "vistorias_em_barragens_pnsb": 126,
+  "autos_de_infracao_aprox": 620,
+  "multas": 212,
+  "autos_de_embargo": 85,
+  "nota": "Autos de embargo não são barragens distintas: uma barragem pode receber mais de um, e parte pode ser de barragem fora da PNSB. A proporção por barragem da PNSB é só uma ordem de grandeza.",
+  "suspensao_das_multas": {
+    "ato": "Deliberação ANM nº 436, de 19/03/2026",
+    "o_que_suspende": "multas das Resoluções ANM 122/2022 e 223/2025: novos autos com multa, processos em curso cujo objeto é a multa e a cobrança, inclusive de fatos anteriores",
+    "o_que_continua": "as demais penalidades (embargo, interdição, paralisação)",
+    "revisao": "grupo de trabalho com proposta prevista para 11/05/2026; Consulta Pública nº 1/2026 (10/08 a 24/09/2026) para alterar a Res. 223/2025; sem data de fim publicada",
+    "fonte": "https://www.demarest.com.br/anm-suspende-a-aplicacao-das-multas-previstas-nas-resolucoes-122-2022-e-223-2025/"
+  },
+  "relacao_52_2026": {
+    "publicada_em": "2026-08-10",
+    "autos": "mais de 100",
+    "responsaveis": 14,
+    "nota": "Autos referentes a barragens de rejeito; entre os responsáveis, Vale, CSN Mineração, AngloGold Ashanti e Gerdau, e a maior parte dos autos é de mineradoras pequenas e cooperativas. Valores não publicados. Nomes de pessoas físicas autuadas não são registrados aqui.",
+    "fonte": "https://atlaspublico.com.br/noticias/anm-lavra-mais-de-100-autos-de-infracao-contra-14-77892"
+  }
+}

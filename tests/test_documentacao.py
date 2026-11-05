@@ -268,9 +268,13 @@ def test_numeros_do_pitch_saem_dos_dados():
     assert f"{m['barragens_na_pnsb']} barragens de mineração que a lei" in pitch
     assert f"{ja} já foram embargadas, quase metade. {emb['Embargada']} estão embargadas hoje" in pitch
     assert 0.45 < ja / m["barragens_na_pnsb"] < 0.5
-    assert (f"{m['barragens_mineracao']} → {m['barragens_na_pnsb']} → "
-            f"{m['pnsb_por_dano_potencial']['Alto']} barragens") in pitch
     faixas = m["grupos_por_raiz_cnpj"]["por_faixa_de_barragens"]
+    entrada = faixas["2 a 4"]["barragens"] + faixas["5 a 9"]["barragens"]
+    assert (f"{m['barragens_mineracao']} → {m['barragens_na_pnsb']} → {entrada} → "
+            f"{round(m['barragens_na_pnsb'] * 0.10)} barragens") in pitch
+    fisc = json.loads((RAIZ / "data" / "fiscalizacao_anm.json").read_text(encoding="utf-8"))
+    assert f"só em {fisc['ano']} a ANM lavrou {fisc['autos_de_embargo']} autos de embargo" in pitch
+    assert f"{fisc['ano']}: {fisc['autos_de_embargo']} autos de embargo. Fonte: ANM" in pitch
     assert f"pelos {faixas['2 a 4']['grupos'] + faixas['5 a 9']['grupos']} grupos que têm de 2 a 9" in pitch
 
     # "mais de 170 testes" no slide 6 (funções de teste, sem contar os casos parametrizados)
@@ -364,6 +368,18 @@ def test_numeros_da_analise_de_mercado_saem_dos_dados():
     assert f"| {pnsb} | R$ {mi(pnsb * por_barragem)} milhões |" in doc
     assert f"| {entrada} | R$ {mi(entrada * por_barragem)} milhões |" in doc
     assert f"cerca de {round(som / (entrada / sum(v['grupos'] for v in meio)))} dos 59 grupos | {som} | "            f"R$ {mi(som * por_barragem)} milhão |" in doc
+    # fiscalização da ANM: números do relatório guardados em data/fiscalizacao_anm.json
+    fisc = json.loads((RAIZ / "data" / "fiscalizacao_anm.json").read_text(encoding="utf-8"))
+    assert f"Só em {fisc['ano']} a ANM lavrou {fisc['autos_de_embargo']} autos de embargo" in doc
+    for linha in (f"| Vistorias em campo | {fisc['vistorias_em_campo']} "
+                  f"({fisc['vistorias_em_barragens_pnsb']} em barragens da PNSB) |",
+                  f"| Autos de infração | cerca de {fisc['autos_de_infracao_aprox']} |",
+                  f"| Multas | {fisc['multas']} |",
+                  f"| Autos de embargo | {fisc['autos_de_embargo']} |",
+                  f"cerca de 1 auto de embargo para cada {round(pnsb / fisc['autos_de_embargo'])} barragens",
+                  fisc["suspensao_das_multas"]["ato"],
+                  f"contra {fisc['relacao_52_2026']['responsaveis']} responsáveis"):
+        assert linha in doc, linha
     # custo do problema: 4 barragens, R$ 13,9 mil × 1,8 ÷ 168 h ≈ R$ 150/h, de 6 a 20 h por semana
     hora = round(13_900 * 1.8 / 168, -1)
     assert hora == 150

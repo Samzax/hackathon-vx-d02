@@ -6,7 +6,7 @@ Todo número deste documento tem fonte (lista no fim) ou é marcado como **premi
 
 ## 1. Resumo
 
-- **O problema existe e custa caro.** Das 461 barragens de mineração na Política Nacional de Segurança de Barragens (PNSB), 76 estão embargadas hoje e outras 147 já foram embargadas e liberadas: 223 (48%) passaram por embargo. A multa da Lei 14.066/2020 vai de R$ 2 mil a R$ 1 bilhão.
+- **O problema existe e custa caro.** Das 461 barragens de mineração na Política Nacional de Segurança de Barragens (PNSB), 76 estão embargadas hoje e outras 147 já foram embargadas e liberadas: 223 (48%) passaram por embargo. Só em 2025 a ANM lavrou 85 autos de embargo em barragens. A multa da Lei 14.066/2020 vai de R$ 2 mil a R$ 1 bilhão, mas está suspensa desde março de 2026; o embargo continua, e é ele que para a estrutura (seção 2).
 - **O volume é grande e muda de base em 2027.** Uma barragem na PNSB tem de 12 a 18 obrigações e cerca de 60 entregas com data por ano só pela Res. ANM 95/2022. Em 02/08/2027 a Res. ANM 220/2025 substitui a 95, e a 220 já foi alterada antes de valer (Res. ANM 245/2026).
 - **O fiscal não vai achar o erro por você.** A ANM tem 53 servidores para fiscalizar cerca de 900 barragens, segundo a associação dos servidores. O controle é por declaração do próprio empreendedor: quem erra a data descobre no embargo.
 - **Mercado inicial bem definido.** 125 grupos econômicos com barragem na PNSB; 64 deles têm barragem de dano potencial alto (243 barragens, 144 em Minas Gerais). Com as premissas de preço da seção 3: TAM de R$ 24,5 milhões por ano (908 barragens de mineração), SAM de R$ 12,4 milhões (as 461 da PNSB) e SOM de R$ 1,2 milhão em 3 anos (46 barragens, cerca de 13 grupos).
@@ -38,6 +38,40 @@ Todo número deste documento tem fonte (lista no fim) ou é marcado como **premi
 - O modelo é de autodeclaração: a DCE é emitida pelo próprio empreendedor duas vezes por ano. Sem fiscal suficiente, a falha aparece no embargo automático da campanha ou depois de um acidente.
 - O custo de cauda é conhecido: R$ 37,7 bilhões no acordo de Brumadinho (2021) e R$ 170 bilhões na repactuação de Mariana (2024). Não tratamos isso como economia esperada do produto; é o contexto que explica por que o setor gasta com segurança e conformidade.
 
+### Fiscalização e casos: o que pesa é o embargo
+
+**Fiscalização da ANM em barragens em 2025** (relatório publicado em 10/03/2026; dados em `data/fiscalizacao_anm.json`):
+
+| Indicador | 2025 |
+|---|---|
+| Vistorias em campo | 137 (126 em barragens da PNSB) |
+| Autos de infração | cerca de 620 |
+| Multas | 212 |
+| Autos de embargo | 85 |
+
+Comparado às 461 barragens da PNSB, dá cerca de 1 auto de embargo para cada 5 barragens em um ano. É só ordem de grandeza: auto não é barragem distinta (uma barragem pode receber mais de um) e parte dos autos pode ser de barragem fora da PNSB.
+
+**A multa está suspensa; o embargo, não.** A Deliberação ANM nº 436, de 19/03/2026, suspendeu as multas das Resoluções ANM 122/2022 e 223/2025: novos autos com multa, processos em curso sobre a multa e a cobrança. Embargo, interdição e paralisação continuam. A ANM abriu a Consulta Pública nº 1/2026 (10/08 a 24/09/2026) para mudar a Res. 223 e não publicou data para o fim da suspensão. Antes de citar a suspensão como vigente, conferir o DOU do dia.
+
+**Autuação chega a todos os portes.** A Relação nº 52/2026 (DOU de 10/08/2026) trouxe mais de 100 autos de infração contra 14 responsáveis por barragens de rejeito. Entre eles estão Vale, CSN Mineração, AngloGold Ashanti e Gerdau, mas a maior parte dos autos é de mineradoras pequenas e cooperativas, o nosso segmento de entrada. A relação não publica valores.
+
+**Casos públicos:**
+
+| Caso | O que aconteceu | Valor |
+|---|---|---|
+| Vale, barragem Maravilhas II (Itabirito, 2026) | Embargo publicado em 28/08/2026: o estudo de ruptura e o PAEBM não foram atualizados depois das obras de reforço concluídas em outubro de 2025. Não houve anomalia nova. A barragem foi para nível de alerta | Sem valor publicado |
+| AngloGold Ashanti, Planta do Queiroz (Nova Lima, 2023) | O MPMG pediu a suspensão das atividades; o caso envolve declaração de estabilidade; produção parada desde dezembro de 2022 | Pedido de bloqueio de R$ 50 milhões |
+| Vale, "barragens-fantasma" (2021) | O MPMG pediu multa por barragem que não estava no cadastro | Pedido de R$ 100 mil por dia e R$ 15 milhões por barragem nova declarada |
+| Vale, minas Fábrica e Viga (Ouro Preto, 2026) | A Justiça mandou paralisar atividades | Multa de R$ 3,3 milhões, podendo chegar a cerca de R$ 13,7 milhões; bloqueio de R$ 846,6 milhões negado |
+| Mina Casa Branca (Brumadinho, 2020) | Liminar proibiu lançar rejeito na barragem | R$ 50 mil por dia se descumprir |
+| Emicon (Brumadinho, 2024) | Descumprimento de acordo com o MPMG sobre a segurança da barragem | R$ 5 mil por dia, até R$ 500 mil |
+
+O que tiramos disso:
+
+- **Maravilhas II é o caso que a torre resolve.** A estrutura não piorou; o documento ficou para trás de um fato da operação (a obra terminou e o estudo não foi refeito). É o tipo de obrigação por evento que a demo abre a partir de um documento de campo. E aconteceu numa empresa com time e orçamento, então o problema não é só de mineradora pequena.
+- **Não calculamos "multa média evitada".** Os valores dos autos não são publicados, a faixa legal vai de R$ 2 mil a R$ 1 bilhão (antes da Lei 14.066 o teto do Código de Mineração era de cerca de R$ 3,2 mil) e a cobrança está suspensa. Uma média seria inventada.
+- **O custo que pesa é o embargo**, que para a estrutura, e os pedidos judiciais de multa diária e bloqueio. Entram no argumento de compra como risco, não como economia garantida.
+
 ### Quanto trabalho é isso (estimativa)
 
 - No cadastro da demo, feito a partir do texto oficial da Res. 95/2022, uma barragem tem de 12 a 18 obrigações e de 59 a 61 entregas com data por ano (FIR e extrato quinzenais, DCE e RISR semestrais, simulados, treinamentos, PAEBM, RCO), além das obrigações por evento e das plurianuais (RPSB).
@@ -55,7 +89,7 @@ Não há dado público do custo médio de controlar obrigações de barragem. A 
 | Triagem de norma, controle de prazo e cobrança | De 6 a 20 horas por semana (hipótese; 20 h é o número que a Nomos divulga para manter a lista de normas em dia) | De R$ 47 mil a R$ 156 mil por ano |
 | Preço da RegulaIA nas premissas da seção 3 | 4 × R$ 27 mil | R$ 108 mil por ano |
 
-O que a conta mostra: só com horas economizadas, o preço se paga perto do topo da faixa (20 h por semana), não embaixo. O argumento de compra precisa somar o que não entra nessa conta: consultoria chamada às pressas, uma estrutura embargada, retrabalho na troca 95 → 220. Esses custos são reais, mas não tratamos multa ou embargo evitado como economia garantida. Por isso preço e horas são as duas primeiras perguntas das entrevistas (seção 8).
+O que a conta mostra: só com horas economizadas, o preço se paga perto do topo da faixa (20 h por semana), não embaixo. O argumento de compra precisa somar o que não entra nessa conta: consultoria chamada às pressas, uma estrutura embargada, retrabalho na troca 95 → 220. Esses custos são reais (casos na seção "Fiscalização e casos"), mas não tratamos multa ou embargo evitado como economia garantida. Por isso preço e horas são as duas primeiras perguntas das entrevistas (seção 8).
 
 ## 3. Tamanho do mercado
 
@@ -211,3 +245,13 @@ Acessadas em novembro de 2026.
 21. Stance, Sistema de Requisitos Legais: https://stancebrasil.com.br/solucao/requisitos-legais/
 22. Nomos: https://nomos.pro/
 23. Legalbot: https://www.legalbot.com.br/
+24. ANM, "Relatório destaca melhora no cenário de segurança das barragens de mineração em 2025" (10/03/2026): https://www.gov.br/anm/pt-br/assuntos/noticias/relatorio-destaca-melhora-no-cenario-de-seguranca-das-barragens-de-mineracao-em-2025 (números em `data/fiscalizacao_anm.json`).
+25. Demarest, suspensão das multas das Resoluções 122/2022 e 223/2025: https://www.demarest.com.br/anm-suspende-a-aplicacao-das-multas-previstas-nas-resolucoes-122-2022-e-223-2025/ ; consulta pública sobre a Res. 223: https://www.demarest.com.br/anm-inicia-consulta-publica-sobre-proposta-de-alteracao-da-resolucao-anm-no-223-2025/
+26. Atlas Público, Relação nº 52/2026: https://atlaspublico.com.br/noticias/anm-lavra-mais-de-100-autos-de-infracao-contra-14-77892
+27. Mais Minas, embargo de Maravilhas II: https://maisminas.com.br/anm-embarga-barragem-maravilhas-ii-da-vale-em-itabirito/
+28. AngloGold, Planta do Queiroz: https://agenciabrasil.ebc.com.br/geral/noticia/2023-04/anglogold-e-alvo-de-acao-do-mpmg-que-pede-interdicao-de-barragens ; https://www.otempo.com.br/cidades/mpmg-pede-suspensao-das-atividades-da-mineradora-anglogold-em-nova-lima-1.2857803
+29. Estado de Minas, paralisação em mina da Vale em Ouro Preto: https://www.em.com.br/gerais/2026/02/7351221-justica-determina-paralisacao-de-atividades-em-mina-da-vale-em-ouro-preto.html
+30. "Barragens-fantasma": https://atilalemos.com.br/2021/05/06/barragens-fantasma-mp-pede-que-vale-declare-todas-as-barragens-em-minas/
+31. Mina Casa Branca: https://noticias.ambientebrasil.com.br/clipping/2020/04/15/158801-justica-proibe-mineradora-de-lancar-rejeitos-em-barragem-de-brumadinho.html
+32. MPMG, Emicon: https://www.mpmg.mp.br/portal/menu/comunicacao/noticias/justica-acata-pedido-do-mpmg-e-determina-adocao-de-medidas-emergenciais-para-garantir-a-seguranca-de-barragem-da-emicon-em-brumadinho.shtml
+33. O Tempo, teto de multa antes da Lei 14.066: https://www.otempo.com.br/politica/congresso-se-omite-e-multa-maxima-da-anm-a-vale-e-de-r-3-2-mil-1.2129581
