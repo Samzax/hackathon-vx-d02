@@ -45,6 +45,10 @@ class Linha:
     agenda: str = ""                       # DSL da versão que vale (ver agenda.py)
 
 
+def _n(n: int, singular: str, plural: str) -> str:
+    return f"{n} {singular if n == 1 else plural}"
+
+
 def dispositivo(norma: str | None, artigo: str | None) -> str:
     """'Res. ANM 220/2025' + 'Res. ANM 220/2025 art. 38 I' não repete a norma; 'Res. ANM 95/2022' + 'art. 27' junta."""
     if norma and artigo and artigo.startswith(norma):
@@ -501,7 +505,9 @@ def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: s
                     for o in p.so_para_outros]
         out.append("")
     if trocas:
-        out.insert(4, f"{len(trocas)} ativos afetados · {novas_total} obrigações sem equivalente na norma atual.\n")
+        out.insert(4, f"{_n(len(trocas), 'ativo afetado', 'ativos afetados')} · "
+                      f"{_n(novas_total, 'obrigação sem equivalente', 'obrigações sem equivalente')} "
+                      "na norma atual.\n")
     out.append("Gerado pela RegulaIA a partir do cadastro aprovado. Mudanças ainda pendentes não entram.")
     return "\n".join(out)
 

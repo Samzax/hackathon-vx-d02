@@ -12,7 +12,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from regulaia import agenda, db, demo, impacto, torre
+from regulaia import agenda, db, demo, impacto, pdf, torre
 from regulaia import evidencias as ev
 from regulaia.ia import Roteador
 
@@ -83,6 +83,12 @@ def _spec() -> dict:
 def _conexao(caminho: str):
     conn, _, _ = demo.preparar(caminho)
     return conn
+
+
+@st.cache_data(max_entries=32)
+def _pdf(md: str, titulo: str) -> bytes:
+    """O PDF só muda quando o texto muda: sem isso, cada clique pagaria ~0,4 s de reportlab."""
+    return pdf.de_markdown(md, titulo)
 
 
 @st.cache_resource
@@ -207,10 +213,12 @@ with aba_hoje:
         st.caption("O que cada gestor receberia toda segunda, só com os ativos dele. "
                    "Aqui o boletim é só gerado; nada é enviado.")
         sufixo = f"{hoje:%Y-%m-%d}_{(para or 'diretoria').replace(' ', '_')}"
-        d1, d2 = st.columns(2)
-        d1.download_button("Baixar boletim (.md)", texto_boletim, file_name=f"boletim_{sufixo}.md",
+        d1, d2, d3 = st.columns(3)
+        d1.download_button("Baixar boletim (PDF)", _pdf(texto_boletim, f"Boletim · {para or 'Diretoria'}"),
+                           file_name=f"boletim_{sufixo}.pdf", mime="application/pdf", type="primary")
+        d2.download_button("Boletim em texto (.md)", texto_boletim, file_name=f"boletim_{sufixo}.md",
                            mime="text/markdown")
-        d2.download_button("Vencimentos no calendário (.ics)",
+        d3.download_button("Vencimentos no calendário (.ics)",
                            torre.calendario(conn, empresa["id"], hoje, desde, responsavel=para),
                            file_name=f"vencimentos_{sufixo}.ics", mime="text/calendar",
                            help="Importa no Outlook ou Google Agenda: um evento por vencimento")
@@ -328,10 +336,13 @@ with aba_transicao:
         st.info("Nenhum dos seus ativos muda de obrigação na troca de norma.")
     else:
         para_t = None if visao.startswith("Diretoria") else visao
-        st.download_button("📋 Baixar plano de transição (.md)",
-                           torre.plano_transicao(conn, empresa["id"], TROCA_NORMA, hoje, responsavel=para_t),
-                           file_name=f"plano_transicao_{(para_t or 'diretoria').replace(' ', '_')}.md",
-                           mime="text/markdown")
+        plano_md = torre.plano_transicao(conn, empresa["id"], TROCA_NORMA, hoje, responsavel=para_t)
+        nome_plano = f"plano_transicao_{(para_t or 'diretoria').replace(' ', '_')}"
+        b1, b2, _ = st.columns(3)
+        b1.download_button("📋 Baixar plano de transição (PDF)",
+                           _pdf(plano_md, f"Plano de transição · {para_t or 'Diretoria'}"),
+                           file_name=f"{nome_plano}.pdf", mime="application/pdf")
+        b2.download_button("Plano em texto (.md)", plano_md, file_name=f"{nome_plano}.md", mime="text/markdown")
 
     def _lista(os_):
         if not os_:
