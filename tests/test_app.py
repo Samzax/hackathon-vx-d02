@@ -174,3 +174,11 @@ def test_anomalia_registrada_fica_na_torre_ate_o_relatorio_da_ise(banco_temporar
     assert any(m.value.startswith("Acionada em 04/11/2026 por FIR_B2_2026-11-1Q_anomalia.pdf") for m in at.markdown)
     ler_e_registrar("Relatorio_ISE_B2_2026-11-06.pdf")
     assert _atrasadas(at) == antes
+
+
+def test_detalhe_do_ativo_sem_codigo_cru(banco_temporario):
+    """O vaso E1 diz quando foi o último exame, não repete a data; o dado faltando da B4 vem em português."""
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    texto = " ".join(m.value for m in at.markdown)
+    assert "Última evidência em 30/10/2023." in texto and "Períodos sem evidência: 30/10/2026" not in texto
+    assert "**se passou por modificação estrutural** (`modificacao_estrutural`)" in texto

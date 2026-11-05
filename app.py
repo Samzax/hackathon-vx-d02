@@ -254,12 +254,15 @@ with aba_hoje:
                     v = db.versao(conn, l.codigo)
                     st.markdown(f"**{ROTULO[l.status]} · {l.titulo}** ({torre.dispositivo(l.norma, l.artigo)})")
                     if l.faltando:
-                        st.markdown("Períodos sem evidência: " + ", ".join(map(agenda.rotulo_humano, l.faltando)))
+                        texto = torre.pendente(l)
+                        st.markdown(texto[:1].upper() + texto[1:] + "." if torre.so_o_vencimento(l)
+                                    else "Períodos sem evidência: " + texto)
                     if l.nota and not l.dados_faltando:
                         st.markdown(l.nota[:1].upper() + l.nota[1:] + ".")
                     if l.dados_faltando:
-                        st.markdown(f"Falta no cadastro do ativo: `{'`, `'.join(l.dados_faltando)}` — "
-                                    "sem esse dado não dá para dizer se a obrigação vale.")
+                        campos = "; ".join(f"**{torre.campo_legivel(c)}** (`{c}`)" for c in l.dados_faltando)
+                        st.markdown(f"Falta no cadastro do ativo: {campos}. "
+                                    "Sem esse dado não dá para dizer se a obrigação vale.")
                     if v.get("trecho"):
                         st.caption(f"“{v['trecho']}”")
             recentes = db.evidencias_do_ativo(conn, a["id"], limite=8)

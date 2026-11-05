@@ -239,3 +239,12 @@ def test_nome_do_ato_sem_as_maiusculas_do_dou():
     assert torre.nome_ato("Resolução ANM Nº 245, DE 31 DE julho DE 2026") == "Resolução ANM nº 245, de 31 de julho de 2026"
     assert torre.nome_ato("PORTARIA MTE Nº 105, DE 5 DE MAIO DE 2026") == "Portaria MTE nº 105, de 5 de maio de 2026"
     assert torre.nome_ato("Ato colado na tela") == "Ato colado na tela" and torre.nome_ato(None) is None
+
+
+def test_dado_faltando_em_portugues(serra):
+    conn, _ = serra
+    assert torre.campo_legivel("modificacao_estrutural") == "se passou por modificação estrutural"
+    assert torre.campo_legivel("dpa2") == "pontuação de perda de vidas humanas do DPA (número)"
+    assert torre.campo_legivel("inventado") == "inventado"
+    b = torre.boletim(conn, 1, HOJE, DESDE)
+    assert "informar se passou por modificação estrutural (modificacao_estrutural)" in b

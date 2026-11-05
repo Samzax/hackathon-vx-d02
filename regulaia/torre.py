@@ -75,6 +75,18 @@ def nome_ato(titulo: str | None) -> str | None:
     return " ".join(palavras)
 
 
+def campo_legivel(campo: str) -> str:
+    """'modificacao_estrutural' -> 'se passou por modificação estrutural', pelo vocabulário que a
+    regra usa. Campo fora do vocabulário passa como está."""
+    from .extrator import VOCABULARIO
+
+    for atributos in VOCABULARIO.values():
+        if campo in atributos:
+            desc = atributos[campo]
+            return desc.removeprefix("verdadeiro ") if desc.startswith("verdadeiro se ") else desc
+    return campo
+
+
 def _minuscula(texto: str) -> str:
     """'Relatório de ISE' -> 'relatório de ISE'; siglas ('FIE, EIE...') ficam como estão."""
     return texto[0].lower() + texto[1:] if len(texto) > 1 and texto[1].islower() else texto
@@ -146,7 +158,7 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
             )
             if o.dados_faltando:
                 linha.status = DADO_FALTANDO
-                linha.nota = "cadastro do ativo incompleto: " + ", ".join(o.dados_faltando)
+                linha.nota = "cadastro do ativo incompleto: " + ", ".join(map(campo_legivel, o.dados_faltando))
             else:
                 evs = db.evidencias(conn, a["id"], o.codigo)
                 herdada = None
@@ -198,18 +210,18 @@ def pendente(l: Linha) -> str:
     """Períodos sem evidência, em português. Quando o único período é o próprio vencimento
     (entrega única, RPSB, exame do vaso), repetir a data não diz nada: diz que não há evidência.
     Sem período pendente, a nota (gatilho, acionamento)."""
-    if _so_o_vencimento(l):
+    if so_o_vencimento(l):
         return f"última evidência em {_br(l.ultima)}" if l.ultima else SEM_EVIDENCIA
     return ", ".join(agenda.rotulo_humano(p) for p in l.faltando) or l.nota
 
 
-def _so_o_vencimento(l: Linha) -> bool:
+def so_o_vencimento(l: Linha) -> bool:
     return len(l.faltando) == 1 and (l.faltando[0] == "unico" or agenda.rotulo_humano(l.faltando[0]) == _br(l.vence))
 
 
 def _o_que_falta(l: Linha) -> str:
     texto = pendente(l) or SEM_EVIDENCIA
-    return f"falta: {texto}" if l.faltando and not _so_o_vencimento(l) else texto
+    return f"falta: {texto}" if l.faltando and not so_o_vencimento(l) else texto
 
 
 def _valor(v, campo: str | None = None) -> str:
@@ -255,7 +267,8 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
         out.append("")
     if faltando:
         out += [f"## ⚪ Falta dado no cadastro ({len(faltando)})", ""]
-        out += [item(l, "informar " + ", ".join(l.dados_faltando)) for l in faltando]
+        out += [item(l, "informar " + ", ".join(f"{campo_legivel(c)} ({c})" for c in l.dados_faltando))
+                for l in faltando]
         out.append("")
     if pendentes:
         out += [f"## ⚠️ Mudanças de norma aguardando aprovação ({len(pendentes)})", ""]
