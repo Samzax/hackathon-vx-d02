@@ -277,13 +277,17 @@ def obrigacoes_do_ativo(conn, ativo_id: int, em: str | None = None) -> list[Obri
     if a is None:
         raise ErroCadastro(f"ativo {ativo_id} não existe")
     attrs = json.loads(a["atributos"])
-    codigos = [r["codigo"] for r in conn.execute(
-        "SELECT codigo FROM obrigacao WHERE tipo_ativo = ? ORDER BY codigo", (a["tipo"],)
-    )]
+    # uma consulta só: vigente e pendente de todas as obrigações do tipo do ativo
+    versoes: dict[str, dict[str, dict]] = {}
+    for r in conn.execute(
+        "SELECT v.*, o.codigo FROM obrigacao_versao v JOIN obrigacao o ON o.id = v.obrigacao_id "
+        "WHERE o.tipo_ativo = ? AND v.status IN ('vigente', 'pendente')", (a["tipo"],)
+    ):
+        versoes.setdefault(r["codigo"], {})[r["status"]] = dict(r)
     out = []
-    for codigo in codigos:
-        vig = versao(conn, codigo)
-        pen = versao(conn, codigo, "pendente")
+    for codigo in sorted(versoes):
+        vig = versoes[codigo].get("vigente")
+        pen = versoes[codigo].get("pendente")
         if vig is None:
             continue
         if em and not (vale_em(vig, em) or (pen is not None and vale_em(pen, em))):
