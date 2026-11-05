@@ -220,7 +220,7 @@ with aba_hoje:
             for p in le.problemas:
                 st.warning(f"{p[:1].upper()}{p[1:]}")
             for a in getattr(le, "avisos", []):     # leitura guardada antes de o campo existir
-                st.info(f"⏰ {a[:1].upper()}{a[1:]}")
+                st.info(f"{'🤖' if 'pela IA' in a else '⏰'} {a[:1].upper()}{a[1:]}")
             if le.completa:
                 o_que = f"{le.documento} de {le.ativo} · {agenda.rotulo_humano(le.periodo)}"
             if le.completa and not alheio and st.button(f"Registrar evidência: {o_que}", type="primary",

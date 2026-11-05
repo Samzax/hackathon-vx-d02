@@ -256,6 +256,9 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
             ia = r.dados
             if le.ativo is None and ia.get("ativo") in {a["codigo"] for a in ativos}:
                 le.ativo = ia["ativo"]
+                # o documento não diz qual é o ativo com todas as letras: quem registra precisa saber que foi dedução
+                le.avisos.append(f"o ativo {le.ativo} foi deduzido pela IA, porque o documento não cita o código "
+                                 "nem o nome inteiro de um ativo só: confira antes de registrar")
             if d is None and ia.get("data"):
                 try:
                     proposta = date.fromisoformat(str(ia["data"]))

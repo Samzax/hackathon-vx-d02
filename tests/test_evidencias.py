@@ -93,7 +93,14 @@ def test_ia_completa_o_ativo_quando_a_regra_nao_acha(conn):
     texto = "Ficha de Inspeção Regular\nData da inspeção: 09/10/2026\nbarramento do córrego"
     le = ev.ler(conn, texto, 1, HOJE, roteador=_IA({"ativo": "B3", "data": None}))
     assert (le.ativo, le.periodo, le.metodo) == ("B3", "2026-10-1Q", "ia")
-    assert le.completa
+    assert le.completa                                # deduzir o ativo não bloqueia...
+    assert any(a.startswith("o ativo B3 foi deduzido pela IA") for a in le.avisos)   # ...mas fica dito
+
+
+def test_ativo_lido_pela_regra_nao_ganha_aviso_de_ia(conn):
+    texto = "Ficha de Inspeção Regular (B3)\nvistoria feita sem data legível"
+    le = ev.ler(conn, texto, 1, HOJE, roteador=_IA({"ativo": "B3", "data": None}))
+    assert le.metodo == "ia" and not any("deduzido" in a for a in le.avisos)
 
 
 def test_relatorio_nr13_tira_o_vaso_do_atraso(conn):

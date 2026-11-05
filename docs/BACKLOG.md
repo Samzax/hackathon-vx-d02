@@ -116,3 +116,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] ARQUITETURA descreve as regras atuais do leitor: jeitos de citar o ativo, formatos de data e de colunas EC aceitos e o que não é adivinhado
 - [x] Gestor não registra documento de ativo de outro gestor (aviso diz quem registra; sem botão nem prévia do que abriria); a leitura mostra as colunas EC lidas do Quadro I.8 para conferência
 - [x] README e roteiro contam que um gestor não dá baixa no ativo de outro (pergunta pronta para a banca, com o PDF de exemplo)
+- [x] Quando a IA deduz o ativo (o documento não cita código nem nome inteiro), a leitura avisa e o aviso fica gravado na evidência; ícone 🤖 em vez do relógio de atraso
