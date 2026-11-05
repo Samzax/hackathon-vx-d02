@@ -139,3 +139,30 @@ def test_evidencias_do_ativo_mostra_a_mais_nova_primeiro_com_o_que_foi_lido(conn
     [ultima, *_] = db.evidencias_do_ativo(conn, b3["id"])
     assert (ultima["codigo"], ultima["periodo"]) == ("R95-02", "2026-10-1Q")
     assert ultima["extraido"]["metodo"] == "regra" and "depois do prazo" in ultima["extraido"]["avisos"][0]
+
+
+DIA_220 = date(2027, 8, 2)        # primeiro dia da Res. ANM 220/2025 (botão da viagem no tempo)
+
+
+def test_na_res220_a_ise_vem_das_colunas_ec(conn):
+    """Res. 220, art. 42: EC1, EC3, EC4 ou EC5 = 5 obriga ISE; EC2 = 5 sozinho não."""
+    le = ev.ler(conn, _pdf("FIR_B2_2027-08-1Q_Res220_EC3.pdf"), 1, DIA_220)
+    assert (le.ativo, le.obrigacao, le.periodo) == ("B2", "OB-02", "2027-08-1Q")
+    assert le.estado_conservacao == {"EC1": 0, "EC2": 5, "EC3": 5, "EC4": 0, "EC5": 0}
+    assert len(le.gatilhos) == 1
+    assert "EC3 = 5" in le.gatilhos[0] and "EC2" not in le.gatilhos[0]
+    assert "Res. ANM 220/2025, art. 42" in le.gatilhos[0] and "38 §4" in le.gatilhos[0]
+
+
+def test_ec2_igual_a_5_nao_obriga_ise(conn):
+    texto = _pdf("FIR_B2_2027-08-1Q_Res220_EC3.pdf").replace("EC3 = 5", "EC3 = 0")
+    le = ev.ler(conn, texto, 1, DIA_220)
+    assert le.estado_conservacao["EC2"] == 5 and not le.gatilhos
+
+
+def test_pontuacao_10_nao_e_mais_a_regra_depois_da_troca(conn):
+    """A FIR no modelo antigo (pontuação 10, sem colunas EC) lida sob a Res. 220: sem gatilho
+    automático, mas com aviso de que falta o Quadro I.8."""
+    le = ev.ler(conn, _pdf("FIR_B2_2026-11-1Q_anomalia.pdf"), 1, DIA_220)
+    assert not le.gatilhos
+    assert any("Quadro I.8" in a for a in le.avisos)

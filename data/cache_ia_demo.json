@@ -60,6 +60,16 @@
   "custo_usd": 0.0019240499999999998
  },
  {
+  "chave": "385309ce292c4b749f65a00129b1384d33d95df6d0a767c550485705a82a3ac9",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"OB-01\", \"campo\": \"vigencia_desde\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"A obrigação decorre do § 1º do art. 7º da Resolução ANM nº 220/2025, cuja entrada em vigor foi deslocada para 26/12/2029.\"}, {\"obrigacao\": \"OB-01\", \"campo\": \"prazo\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"O prazo da obrigação coincidia com a data de entrada em vigor do dispositivo, que passou a ser 26/12/2029.\"}], \"motivo\": \"A Resolução ANM nº 245/2026 altera o art. 87 da Resolução ANM nº 220/2025 para fixar em 26/12/2029 a entrada em vigor do § 1º do art. 7º, mantendo as demais datas (22/04/2027 e 02/08/2027). Só a obrigação vinculada ao § 1º do art. 7º (OB-01) muda; as demais obrigações não são alcançadas pelo texto, e o parágrafo único do art. 87 apenas preserva a aplicação da Resolução ANM nº 95/2022 no período de 22/04/2027 a 1º/08/2027, sem alterar prazos ou vigências do cadastro.\", \"confianca\": 0.78}",
+  "tokens_in": 1980,
+  "tokens_out": 1682,
+  "custo_usd": 0.0013061999999999998
+ },
+ {
   "chave": "3a02bd19876576e631b9c58587e0c3dd13783afc2a9827253eab32f470b55e06",
   "tarefa": "extrator",
   "provedor": "opencode",

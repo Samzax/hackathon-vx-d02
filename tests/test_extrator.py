@@ -21,6 +21,14 @@ def test_artigos_ignora_revogado_e_anexo():
     assert "quinto dia" in arts[1].texto
 
 
+def test_maior_ou_igual_sublinhado_do_anmlegis():
+    """Na Res. 220 o ANMlegis escreve "≥" como ">" sublinhado; perder o sublinhado troca a regra."""
+    html = ("<p>Art. 54. Para barragens classificadas com DPA2 <u>&gt;</u> 4, semestralmente.</p>"
+            "<p>Art. 55. Para barragens classificadas com DPA2 &lt; 4, anualmente.</p>")
+    arts = normas.artigos(normas.paragrafos_anmlegis_html(html))
+    assert "DPA2 ≥ 4" in arts[0].texto and "DPA2 < 4" in arts[1].texto
+
+
 def test_blocos_nao_partem_artigo():
     arts = [normas.Artigo(str(i), "x" * 600) for i in range(1, 6)]
     assert [[a.numero for a in b] for b in normas.blocos(arts, max_chars=1300)] == [[1, 2], [3, 4], [5]]

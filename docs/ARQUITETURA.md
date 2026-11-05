@@ -66,7 +66,7 @@ Quem opera a barragem manda o PDF (FIR, relatório do vaso, boletim de efluentes
 2. **Desempate.** Se mais de um ativo é citado, fica o que tem obrigação vigente daquele tipo de documento. Um boletim de efluentes que cita a licença e a unidade vai para a licença.
 3. **IA só se a regra não fechar.** A data que ela indicar tem de estar escrita no documento; se não estiver, a leitura fica com um problema e não é registrada.
 4. **Período.** A data vira o período que a evidência comprova (`2026-10-1Q`, `2026-09`, a própria data para `anos:N`).
-5. **Gatilhos.** Uma FIR com pontuação 10 avisa que a Inspeção de Segurança Especial é obrigatória e que o registro no SIGBM tem prazo de 24 horas.
+5. **Gatilhos.** A regra da Inspeção de Segurança Especial é a da norma que vale no dia para aquela barragem. Pela Res. 95 (art. 27), anomalia com pontuação 10. Pela Res. 220 (art. 42), anomalia com EC1, EC3, EC4 ou EC5 = 5 no Quadro I.8; EC2 = 5 sozinho não obriga ISE. Nos dois casos o alerta lembra o registro no SIGBM em 24 horas. Uma FIR lida depois da troca sem as colunas EC ganha um aviso (art. 38 §2).
 6. **Entrega fora do prazo.** O período comprovado é sempre o da execução (a inspeção). Se o documento traz a data de envio (o recibo do EIR, por exemplo) e ela passou do prazo, a leitura avisa sem bloquear, e o aviso fica gravado na evidência.
 
 Documentos de exemplo, todos fictícios, em `data/exemplos/`. São gerados de forma determinística por `uv run python -m regulaia.exemplos`:
@@ -108,6 +108,19 @@ Ficou de fora o DynamoDB, que o primeiro rascunho sugeria. Os dados são relacio
 **Obrigações nunca são sobrescritas.** Cada mudança cria uma versão nova, ligada ao ato que a causou e ao trecho citado. Ela fica `pendente` até uma pessoa aprovar. Isso dá a comparação antes/depois, a resposta para "por que esse prazo é esse?" e o histórico de quem decidiu.
 
 O cadastro inicial está em `seed_obligations.csv`, legível e revisável no GitHub. A coluna `regra` diz a quais ativos cada obrigação se aplica (a sintaxe está em `regulaia/regras.py`).
+
+### O cadastro da Res. 220 conferido contra o texto oficial
+
+Cada uma das 19 obrigações traz na coluna `trecho` o parágrafo da Res. 220 que a cria, copiado do texto consolidado do ANMlegis. Um teste confere que cada trecho existe, palavra por palavra, no texto baixado.
+
+A conferência achou três coisas:
+- **O "≥" do ANMlegis é um ">" sublinhado** (`<u>&gt;</u>`). Extrair só o texto perde o sublinhado, e "DPA2 ≥ 4" vira "DPA2 > 4". A barragem B1 tem DPA2 = 4 exatamente, então o erro tiraria dela os treinamentos semestrais, o seminário e a DCO. O leitor de normas agora converte o sublinhado de volta para ≥ e ≤.
+- **Faltavam quatro obrigações.**
+  - OB-16, art. 54 §2: exercício simulado prático anual para DPA2 ≥ 4. Sem ela, o plano de transição da B1 mostrava "simulado sem equivalente".
+  - OB-17, art. 56 §1: seminário a pedido da prefeitura para DPA2 < 4.
+  - OB-18, art. 38 §4: anomalia EC = 5 no SIGBM em 24 h.
+  - OB-19, art. 42: ISE.
+- **A regra da ISE mudou de escala.** Pela Res. 95 é pontuação 10; pela Res. 220, coluna EC = 5. O leitor de evidências segue a norma do dia.
 
 ## Custo da IA: cada camada só passa adiante o que não conseguiu resolver
 

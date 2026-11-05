@@ -11,7 +11,7 @@ TRECHO_245 = "III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º."
 @pytest.fixture
 def conn():
     c = db.conectar(":memory:")
-    assert db.carregar_obrigacoes_csv(c, SEED) == 15
+    assert db.carregar_obrigacoes_csv(c, SEED) == 19
     return c
 
 
@@ -130,3 +130,25 @@ def test_janela_de_vigencia(conn, serra_azul):
     assert db.vale_em({"vigencia_desde": "2022-02-07", "vigencia_ate": "2027-08-01"}, "2027-08-01")
     assert not db.vale_em({"vigencia_desde": "2022-02-07", "vigencia_ate": "2027-08-01"}, "2027-08-02")
     assert db.vale_em({"vigencia_desde": None, "vigencia_ate": None}, "1999-01-01")
+
+
+RES220 = SEED.parent / "data" / "raw" / "normas" / "res220_2025.html"
+
+
+def test_cada_obrigacao_da_res220_cita_o_texto_literal():
+    """Toda obrigação do cadastro inicial traz o parágrafo da Res. 220 que a cria, palavra por palavra."""
+    import csv
+
+    from regulaia import normas
+
+    with open(SEED, encoding="utf-8", newline="") as f:
+        linhas = list(csv.DictReader(f))
+    assert all(l["trecho"].strip() for l in linhas)
+    if not RES220.exists():
+        pytest.skip("texto da Res. 220 não baixado (data/raw fica fora do Git)")
+    paragrafos = set(normas.paragrafos_anmlegis(RES220))
+    fora = [l["id"] for l in linhas if l["trecho"] not in paragrafos]
+    assert not fora, fora
+    # o "≥" do ANMlegis é um ">" sublinhado: a regra do cadastro segue o texto
+    ob11 = next(l for l in linhas if l["id"] == "OB-11")
+    assert "DPA2 ≥ 4" in ob11["trecho"] and ob11["regra"] == "dpa2 >= 4"

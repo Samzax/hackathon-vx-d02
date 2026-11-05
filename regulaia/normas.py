@@ -39,9 +39,19 @@ Artigo = Unidade   # nome antigo
 # ------------------------------------------------------------------- ANMlegis
 
 
+_SUBLINHADO = {">": "≥", "<": "≤"}
+
+
 def paragrafos_anmlegis(caminho: str | Path) -> list[str]:
-    html = Path(caminho).read_text(encoding="utf-8")
+    return paragrafos_anmlegis_html(Path(caminho).read_text(encoding="utf-8"))
+
+
+def paragrafos_anmlegis_html(html: str) -> list[str]:
     soup = BeautifulSoup(html, "html.parser")
+    # O ANMlegis escreve "≥" como ">" sublinhado (<u>&gt;</u>): sem isso, "DPA2 ≥ 4" viraria "DPA2 > 4"
+    for u in soup.find_all("u"):
+        if (s := u.get_text().strip()) in _SUBLINHADO:
+            u.replace_with(_SUBLINHADO[s])
     return paragrafos_anmlegis_de(p.get_text(" ", strip=True) for p in soup.find_all("p"))
 
 

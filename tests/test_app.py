@@ -133,3 +133,16 @@ def test_ato_ficticio_vira_mudanca_pendente(banco_temporario, monkeypatch):
     assert len([b for b in at.button if b.label == "Aprovar"]) == 2       # Res. 245 e o ato de teste
     tabela = " ".join(m.value for m in at.markdown)
     assert "| Agenda | quinzenal+0d | **semanal+0d** |" in tabela          # a agenda acompanha, por regra
+
+
+def test_fir_no_modelo_da_res220_dispara_ise_na_viagem_no_tempo(banco_temporario):
+    """No primeiro dia da Res. 220 a FIR traz as colunas EC do Quadro I.8; EC3 = 5 obriga ISE (art. 42)."""
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    next(b for b in at.button if b.label == "Res. 220").click().run()
+    exemplo = next(s for s in at.selectbox if s.label.endswith("documento de exemplo"))
+    exemplo.select("FIR_B2_2027-08-1Q_Res220_EC3.pdf").run()
+    next(b for b in at.button if b.label == "Ler documento").click().run()
+    assert not at.exception
+    assert any("Res. ANM 220/2025, art. 42" in e.value for e in at.error)
+    registrar = next(b for b in at.button if b.label.startswith("Registrar evidência"))
+    assert "B2 · OB-02 · 2027-08-1Q" in registrar.label

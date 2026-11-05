@@ -49,3 +49,5 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Cada ativo mostra o que comprova (últimas evidências)
 - [x] Radar: teste com um ato colado (regra -> IA -> Python -> aprovação), com exemplo fictício no cache
 - [x] Agenda semanal; mudança de periodicidade aprovada leva a agenda junto (regra, não IA)
+- [x] Cadastro da Res. 220 conferido contra o texto oficial: trecho literal em cada obrigação, ≥ sublinhado do ANMlegis, 4 obrigações que faltavam (arts. 54 §2, 56 §1, 38 §4, 42)
+- [x] ISE pela norma do dia: pontuação 10 (Res. 95) ou EC1/EC3/EC4/EC5 = 5 (Res. 220), com FIR de exemplo no modelo novo

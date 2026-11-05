@@ -4,8 +4,10 @@
                  se a regra não fecha tudo, a IA tenta; o Python confere o que a IA disse
                  contra o texto (a data tem de estar no documento, o ativo tem de existir).
 
-Além de dar baixa na obrigação, a leitura procura gatilhos: uma FIR com anomalia de
-pontuação 10 obriga uma Inspeção de Segurança Especial (Res. ANM 95/2022, art. 27).
+Além de dar baixa na obrigação, a leitura procura gatilhos de Inspeção de Segurança
+Especial (ISE), pela norma que vale no dia para aquela barragem:
+  Res. ANM 95/2022, art. 27  -> anomalia com pontuação 10
+  Res. ANM 220/2025, art. 42 -> anomalia com EC1, EC3, EC4 ou EC5 = 5 (EC2 não dispara)
 """
 
 from __future__ import annotations
@@ -48,6 +50,7 @@ class Leitura:
     data: str | None = None
     periodo: str | None = None
     pontuacao_maxima: int | None = None
+    estado_conservacao: dict[str, int] = field(default_factory=dict)   # {"EC1": 0, "EC3": 5, ...}
     metodo: str = "regra"                 # regra | ia
     problemas: list[str] = field(default_factory=list)     # impedem o registro
     avisos: list[str] = field(default_factory=list)        # não impedem (ex.: entregue com atraso)
@@ -108,6 +111,35 @@ def _pontuacao(texto_n: str) -> int | None:
     return int(m.group(1)) if m else None
 
 
+def _estado_conservacao(texto_n: str) -> dict[str, int]:
+    """Colunas de Estado de Conservação do Quadro I.8 (Res. 220): 'EC3 = 5'."""
+    return {f"EC{c}": int(v) for c, v in re.findall(r"\bec([1-5])\s*[=:]\s*(\d{1,2})\b", texto_n)}
+
+
+_EC_ISE = ("EC1", "EC3", "EC4", "EC5")      # Res. 220, art. 42: EC2 = 5 não obriga ISE
+
+
+def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date) -> None:
+    """A regra de ISE é a da norma que vale hoje para o ativo (a obrigação de ISE vigente diz qual)."""
+    ise = None
+    if le.ativo:
+        aid = next(a["id"] for a in ativos if a["codigo"] == le.ativo)
+        ise = _obrigacao(conn, aid, "ise", hoje.isoformat())
+    if ise and "220/2025" in f"{ise.get('fonte')} {ise.get('artigo')}":
+        cinco = [c for c in _EC_ISE if le.estado_conservacao.get(c) == 5]
+        if cinco:
+            le.gatilhos.append(f"Anomalia com {', '.join(c + ' = 5' for c in cinco)}: Inspeção de Segurança "
+                               "Especial obrigatória (Res. ANM 220/2025, art. 42) e registro no SIGBM em até "
+                               "24 horas (art. 38 §4)")
+        elif le.documento == "FIR" and not le.estado_conservacao:
+            le.avisos.append("a FIR não traz as colunas de Estado de Conservação (EC1 a EC5) do Quadro I.8, "
+                             "obrigatórias pela Res. ANM 220/2025 (art. 38 §2): não dá para saber se há ISE")
+        return
+    if le.pontuacao_maxima is not None and le.pontuacao_maxima >= 10:
+        le.gatilhos.append("Anomalia com pontuação 10: Inspeção de Segurança Especial obrigatória "
+                           "(Res. ANM 95/2022, art. 27) e registro no SIGBM em até 24 horas (art. 21)")
+
+
 def _obrigacao(conn, ativo_id: int, chave: str, hoje: str) -> dict | None:
     for o in db.obrigacoes_do_ativo(conn, ativo_id, em=hoje):
         if o.dados_faltando or not db.vale_em(o.vigente, hoje):
@@ -136,6 +168,7 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
     le.ativo = citados[0] if len(citados) == 1 else None
     d = _data(texto)
     le.pontuacao_maxima = _pontuacao(tn)
+    le.estado_conservacao = _estado_conservacao(tn)
 
     if (le.ativo is None or tipo is None or d is None) and roteador is not None:
         lista = ", ".join(f"{a['codigo']} = {a['nome']}" for a in ativos)
@@ -184,9 +217,7 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
                 else:
                     le.periodo = agenda.periodo_de(ob["agenda"], d)
                     _atraso(le, texto, ob["agenda"], d)
-    if le.pontuacao_maxima is not None and le.pontuacao_maxima >= 10:
-        le.gatilhos.append("Anomalia com pontuação 10: Inspeção de Segurança Especial obrigatória "
-                           "(Res. ANM 95/2022, art. 27) e registro no SIGBM em até 24 horas (art. 21)")
+    _gatilhos(conn, le, ativos, hoje)
     return le
 
 
@@ -197,6 +228,7 @@ def registrar(conn, leitura: Leitura, arquivo: str) -> int:
     return db.registrar_evidencia(conn, aid, leitura.obrigacao, leitura.periodo, arquivo=arquivo,
                                   extraido={"documento": leitura.documento, "data": leitura.data,
                                             "pontuacao_maxima": leitura.pontuacao_maxima,
+                                            "estado_conservacao": leitura.estado_conservacao or None,
                                             "metodo": leitura.metodo, "avisos": leitura.avisos})
 
 
