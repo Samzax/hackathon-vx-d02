@@ -283,3 +283,16 @@ def test_zas_aprovada_vence_junto_com_a_nr22_no_painel(serra):
         assert _status(conn, "B2", codigo, date(2029, 12, 26)).status == agenda.VENCE_LOGO
         depois = _status(conn, "B2", codigo, date(2029, 12, 27))
         assert depois.status == agenda.ATRASADA and depois.vence == "2029-12-26"
+
+
+def test_boletim_bate_com_o_amarelo_da_torre(serra):
+    """O boletim olha 30 dias à frente, mas não pode contradizer o 'Vence em breve' da tela."""
+    from collections import Counter
+
+    conn, _ = serra
+    amarelas = Counter(l.status for l in torre.painel(conn, 1, HOJE, DESDE))[agenda.VENCE_LOGO]
+    b = torre.boletim(conn, 1, HOJE, DESDE)
+    assert f", {amarelas} já em amarelo na torre)" in b
+    secao = b.split("## 📅")[1].split("##")[0]
+    assert secao.count(" 🟡") == amarelas
+    assert "## 🟡" not in b                    # o título não promete amarelo para tudo

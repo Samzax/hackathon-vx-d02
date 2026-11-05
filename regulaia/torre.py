@@ -266,8 +266,12 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
         out += [item(l, f"venceu em {_br(l.vence)}; {_o_que_falta(l)}") for l in atrasadas]
         out.append("")
     if proximas:
-        out += [f"## 🟡 Vencem nos próximos {janela} dias ({len(proximas)})", ""]
-        out += [item(l, f"até {_br(l.vence)}") for l in proximas]
+        # o boletim olha 30 dias à frente; na torre, quinzenal/mensal só fica amarela 5 dias antes
+        amarelas = sum(1 for l in proximas if l.status == agenda.VENCE_LOGO)
+        out += [f"## 📅 Vencem nos próximos {janela} dias ({len(proximas)}"
+                + (f", {amarelas} já em amarelo na torre)" if amarelas else ")"), ""]
+        out += [item(l, f"até {_br(l.vence)}" + (" 🟡" if l.status == agenda.VENCE_LOGO else ""))
+                for l in proximas]
         out.append("")
     if faltando:
         out += [f"## ⚪ Falta dado no cadastro ({len(faltando)})", ""]
