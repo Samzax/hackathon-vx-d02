@@ -92,14 +92,35 @@ def por_que_nao_abre(erro: Exception) -> str:
     return "o arquivo não parece um PDF válido (corrompido ou com outra extensão)"
 
 
+# tipo no começo do nome, que o documento costuma omitir ("Córrego Fundo" em vez de "Barragem Córrego Fundo")
+_TIPO_NO_NOME = re.compile(r"^(?:barragem|vaso|reservatorio|complexo|unidade)\s+")
+# código sem parênteses só vale depois de um rótulo: "B3" solto pode ser outra coisa
+_ROTULO_DE_CODIGO = r"(?:ativo|barragem|estrutura|equipamento|codigo(?: d[oa] (?:ativo|barragem|equipamento))?)\s*:?\s*"
+
+
+def _nomes_do_ativo(a: dict) -> list[str]:
+    """Como um documento pode chamar o ativo: o nome inteiro, o nome sem o tipo (se sobrar mais de uma
+    palavra) e a tag do equipamento ("VP-101"), já normalizados."""
+    nome = normalizar(a["nome"])
+    nomes = [nome]
+    curto = _TIPO_NO_NOME.sub("", nome)
+    if curto != nome and len(curto.split()) >= 2:
+        nomes.append(curto)
+    if tag := re.match(r"[a-z]{1,4}-\d{2,5}\b", nome):
+        nomes.append(tag.group(0))
+    return nomes
+
+
 def _ativos_citados(texto_n: str, ativos: list[dict]) -> list[str]:
-    """Código entre parênteses ("(B3)") vale mais que nome; nome só inteiro ("Serra I" não casa "Serra II")."""
+    """Código explícito ("(B3)" ou "Ativo: B3") vale mais que nome; nome só inteiro ("Serra I" não casa
+    "Serra II"), aceito também sem o tipo ("Córrego Fundo") e pela tag do equipamento ("VP-101")."""
     por_codigo = [a["codigo"] for a in ativos
-                  if re.search(rf"\(\s*{re.escape(a['codigo'].lower())}\s*\)", texto_n)]
+                  if re.search(rf"\(\s*{re.escape(a['codigo'].lower())}\s*\)", texto_n)
+                  or re.search(rf"{_ROTULO_DE_CODIGO}{re.escape(a['codigo'].lower())}(?!\w)", texto_n)]
     if por_codigo:
         return por_codigo
     return [a["codigo"] for a in ativos
-            if re.search(rf"(?<!\w){re.escape(normalizar(a['nome']))}(?!\w)", texto_n)]
+            if any(re.search(rf"(?<!\w){re.escape(n)}(?!\w)", texto_n) for n in _nomes_do_ativo(a))]
 
 
 def _por_que_sem_ativo(texto_n: str, citados: list[str], ativos: list[dict]) -> str:

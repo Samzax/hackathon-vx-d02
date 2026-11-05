@@ -316,3 +316,22 @@ def test_pdf_que_nao_abre_vira_frase_para_o_operador():
 ])
 def test_data_do_documento_em_varios_formatos(texto, esperado):
     assert ev._data(texto) == esperado
+
+
+@pytest.mark.parametrize("texto, esperado", [
+    ("Barragem Córrego Fundo (B3)", ["B3"]),
+    ("BARRAGEM CORREGO FUNDO", ["B3"]),
+    ("Córrego Fundo", ["B3"]),                        # nome sem o tipo
+    ("Barragem B3", ["B3"]),                          # código depois de rótulo
+    ("Ativo: B3", ["B3"]),
+    ("Código da barragem: B3", ["B3"]),
+    ("Serra I", ["B1"]),
+    ("Serra II", ["B2"]),                             # "Serra I" não casa "Serra II"
+    ("Vaso VP-101", ["E1"]),                          # tag do equipamento
+    ("VP-1010", []),                                  # tag maior não é a mesma
+    ("Relatório EC1 = 5, B3 ok", []),                 # código solto, sem rótulo: não adivinha
+    ("Serra Azul", []),                               # nome da empresa não é ativo
+    ("Ativo: B1 e Ativo: B2", ["B1", "B2"]),          # dois ativos continuam sendo dois
+])
+def test_jeitos_de_citar_o_ativo(conn, texto, esperado):
+    assert ev._ativos_citados(ev.normalizar(texto), db.ativos(conn, 1)) == esperado

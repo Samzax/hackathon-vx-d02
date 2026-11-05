@@ -110,3 +110,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] PDFs gerados só no clique (download_button com partial): mudar a data ou o gestor não paga mais reportlab; rerun estável em 0,34-0,36 s. Downloads conferidos no navegador
 - [x] Histórico inteiro do Git (114 commits) varrido: nenhum .env, export bruto do SIGBM, banco, chave de API ou CPF; .env.example sempre com valores vazios. Teste impede versionar isso daqui em diante
 - [x] Leitor de evidência aceita mais formatos de data: 03.11.2026, 03-11-2026, 3/11/2026 e "realizada em"; ano com 2 dígitos e data impossível não são adivinhados (11 casos de teste). A mesma leitura vale para a data de envio (aviso de atraso) e para a conferência de datas do radar
+- [x] Leitor de evidências reconhece o ativo também pelo código depois de rótulo ("Barragem B3", "Ativo: B3"), pelo nome sem o tipo ("Córrego Fundo") e pela tag do vaso ("VP-101"); código solto continua sem valer
