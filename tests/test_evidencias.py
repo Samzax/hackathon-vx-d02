@@ -270,6 +270,10 @@ def test_diz_por_que_nao_achou_o_ativo(conn):
     """Quem mandou o documento precisa saber o que corrigir: código desconhecido ou dois ativos."""
     desconhecido = ev.ler(conn, "Ficha de Inspeção Regular da barragem (B9). Data de inspeção: 05/11/2026", 1, HOJE)
     assert desconhecido.problemas[0].startswith("o documento cita B9, que não é ativo cadastrado")
+    rotulado = ev.ler(conn, "Ficha de Inspeção Regular. Barragem B9. Data de inspeção: 05/11/2026", 1, HOJE)
+    assert rotulado.problemas[0].startswith("o documento cita B9, que não é ativo cadastrado")
+    nada = ev.ler(conn, "Ficha de Inspeção Regular. Data de inspeção: 05/11/2026", 1, HOJE)
+    assert '"Ativo: B3"' in nada.problemas[0]
     dois = ev.ler(conn, "Ficha de Inspeção Regular (B1) e (B2). Data de inspeção: 05/11/2026", 1, HOJE)
     assert dois.problemas[0] == "o documento cita mais de um ativo (B1, B2): não dá para saber de qual é"
     assert not desconhecido.completa and not dois.completa

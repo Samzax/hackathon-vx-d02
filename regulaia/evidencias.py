@@ -128,11 +128,14 @@ def _por_que_sem_ativo(texto_n: str, citados: list[str], ativos: list[dict]) -> 
     if len(citados) > 1:
         return f"o documento cita mais de um ativo ({', '.join(citados)}): não dá para saber de qual é"
     cadastrados = sorted(a["codigo"] for a in ativos)
-    estranhos = sorted({m.upper() for m in re.findall(r"\(\s*([a-z]{1,2}\d{1,3})\s*\)", texto_n)} - set(cadastrados))
+    codigo = r"([a-z]{1,2}\d{1,3})(?!\w)"
+    vistos = re.findall(rf"\(\s*{codigo}\s*\)", texto_n) + re.findall(rf"{_ROTULO_DE_CODIGO}{codigo}", texto_n)
+    estranhos = sorted({m.upper() for m in vistos} - set(cadastrados))
     if estranhos:
         return (f"o documento cita {', '.join(estranhos)}, que não é ativo cadastrado da empresa "
                 f"(cadastrados: {', '.join(cadastrados)})")
-    return "não foi possível identificar o ativo: o documento não cita o código entre parênteses, ex.: (B3), nem o nome"
+    return ("não foi possível identificar o ativo: o documento não cita o código, ex.: (B3) ou \"Ativo: B3\", "
+            "nem o nome")
 
 
 # uma data escrita de qualquer jeito que triagem.datas entende: 03/11/2026, 3.11.2026, 3 de novembro de 2026
