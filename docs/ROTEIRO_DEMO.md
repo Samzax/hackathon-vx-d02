@@ -4,7 +4,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 
 ## 1. Hoje (60 s)
 
-- **Fala:** "A Serra Azul tem 8 ativos e 63 obrigações vindas de 5 normas: ANM, NR-13, NR-22 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que vence, por ativo."
+- **Fala:** "A Serra Azul tem 8 ativos e 72 obrigações vindas de 5 normas: ANM, NR-13, NR-22 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que vence, por ativo."
 - Apontar os números do topo: 4 atrasadas, 1 dado faltando, 3 vencendo.
 - Abrir **B3 · Barragem Córrego Fundo**. A FIR e o EIR da 1ª quinzena de outubro estão atrasados. Mostrar o trecho literal da Res. 95 embaixo.
 - Abrir **📄 Enviar evidência**, escolher `FIR_B3_2026-10-1Q.pdf` e clicar em **Ler documento**.
@@ -19,7 +19,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 
 - **Fala:** "Em 31/7 saiu a Res. ANM 245. O radar achou o ato e propôs uma mudança. Ela não vale até alguém aprovar."
 - Mostrar o antes/depois da OB-01 (prazo do mapa da ZAS: 2027 → 26/12/2029), o trecho do ato e a linha "conferido pelo Python".
-- **Fala:** "Mudou uma obrigação. As outras quatorze da Res. 220 ficaram iguais."
+- **Fala:** "Mudou uma obrigação. As outras 23 da Res. 220 ficaram iguais."
 - Clicar em **Aprovar**.
 
 ## 3. Transição e linha do tempo (45 s)

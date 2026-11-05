@@ -18,18 +18,18 @@ Cada gestor vê só os seus ativos e ninguém precisa ler norma nenhuma.
 
 ## A demo
 
-A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. A empresa tem 8 ativos e 63 obrigações cadastradas, em 7 de novembro de 2026:
+A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. A empresa tem 8 ativos e 72 obrigações cadastradas, em 7 de novembro de 2026:
 
 | Aba | O que mostra |
 |---|---|
-| **Hoje** | Status de cada obrigação por ativo (🔴 atrasada, ⚪ dado faltando no cadastro, 🟡 vence em breve, 🟢 em dia, 🔵 por gatilho). Também recebe documentos: o PDF de uma FIR dá baixa na quinzena, e uma anomalia de pontuação 10 dispara o aviso de Inspeção de Segurança Especial. Gera o boletim da semana de cada gestor e um calendário .ics com os vencimentos (só download; nada é enviado) |
+| **Hoje** | Status de cada obrigação por ativo (🔴 atrasada, ⚪ dado faltando no cadastro, 🟡 vence em breve, 🟢 em dia, 🔵 por gatilho). Também recebe documentos: o PDF de uma FIR dá baixa na quinzena, e uma anomalia que obriga Inspeção de Segurança Especial dispara o aviso: pontuação 10 pela Res. 95, EC = 5 pela Res. 220. Gera o boletim da semana de cada gestor e um calendário .ics com os vencimentos (só download; nada é enviado) |
 | **Transição e linha do tempo** | O que muda quando a Res. ANM 220/2025 substitui a Res. 95/2022 (2/8/2027), por tema: o que continua, o que é novo, o que deixa de valer para aquele ativo (e por quê: "só para DPA2 ≥ 4"), com o plano de transição para download. Mostra também as datas futuras de cada ativo |
 | **Mudanças** | Versões propostas por atos novos, com antes/depois, o trecho do ato e a conferência do Python. Só valem depois de aprovadas. Embaixo, o histórico de cada obrigação: todas as versões, a origem e quem decidiu |
 | **Radar do DOU** | O funil de um mês do DOU (7.884 atos → 825 da ANM → 2 candidatos → 1 mudança) e o custo real da IA. Embaixo, "Teste com um ato seu": cole qualquer texto e veja a triagem, a análise e a conferência, e mande para aprovação |
 | **Mercado** | Barragens e empresas no SIGBM (com fonte), por que agora e uma conta de receita com premissas ajustáveis |
 | **Como funciona** | Diagrama dos dois fluxos (norma → torre e documento → torre) com os números da demo e as três garantias: a IA não decide sozinha, regra antes de IA, traga sua chave |
 
-**Caso principal.** A Res. ANM 245/2026 adiou o art. 7 §1 da Res. 220/2025 (mapa de inundação com a ZAS) de 2/8/2027 para 26/12/2029. Um sistema correto muda essa obrigação e deixa as outras quatorze iguais. A NR-22 (Portaria MTE 105/2026, item 22.24.8) dá a mesma data para barragens não alteadas a montante. A linha do tempo mostra as duas normas, ANM e MTE, convergindo.
+**Caso principal.** A Res. ANM 245/2026 adiou o art. 7 §1 da Res. 220/2025 (mapa de inundação com a ZAS) de 2/8/2027 para 26/12/2029. Um sistema correto muda essa obrigação e deixa as outras 23 da Res. 220 iguais. A NR-22 (Portaria MTE 105/2026, item 22.24.8) dá a mesma data para barragens não alteadas a montante. A linha do tempo mostra as duas normas, ANM e MTE, convergindo.
 
 ## O que está cadastrado
 
