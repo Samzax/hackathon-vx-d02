@@ -60,9 +60,15 @@ norma (ANMlegis ou PDF) -> unidades (artigos / itens) -> blocos de ~9 mil caract
 
 ## Leitor de evidência
 
-Quem opera a barragem manda o PDF (FIR, relatório do vaso, boletim de efluentes) e a torre dá baixa na obrigação certa (`regulaia/evidencias.py`):
+Quem opera manda o PDF e a torre dá baixa na obrigação certa (`regulaia/evidencias.py`). São 20 tipos de documento:
+- barragem: FIR, EIR, RISR, DCE, RPSB, DCO, RCO, simulado, treinamento e seminário do PAEBM, PGRBM;
+- vaso NR-13: exame externo e interno;
+- mina: treinamento da brigada e simulação de emergência da NR-22;
+- licença: efluentes, águas, ruído, PRAD e relatório de condicionantes.
 
-1. **Regra.** Acha o ativo (código entre parênteses ou nome inteiro: "Serra I" não casa "Serra II"), o tipo de documento por palavra-chave e a data de execução.
+Ficam de fora só as obrigações únicas comprovadas por plano ou requerimento, como a adequação da ZAS e a renovação da licença.
+
+1. **Regra.** Acha o ativo (código entre parênteses ou nome inteiro: "Serra I" não casa "Serra II"), o tipo de documento pelo nome que aparece primeiro (o título: um RCO cita a DCO no corpo) e a data de execução.
 2. **Desempate.** Se mais de um ativo é citado, fica o que tem obrigação vigente daquele tipo de documento. Um boletim de efluentes que cita a licença e a unidade vai para a licença.
 3. **IA só se a regra não fechar.** A data que ela indicar tem de estar escrita no documento; se não estiver, a leitura fica com um problema e não é registrada.
 4. **Período.** A data vira o período que a evidência comprova (`2026-10-1Q`, `2026-09`, a própria data para `anos:N`).

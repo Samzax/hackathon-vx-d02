@@ -166,3 +166,39 @@ def test_pontuacao_10_nao_e_mais_a_regra_depois_da_troca(conn):
     le = ev.ler(conn, _pdf("FIR_B2_2026-11-1Q_anomalia.pdf"), 1, DIA_220)
     assert not le.gatilhos
     assert any("Quadro I.8" in a for a in le.avisos)
+
+
+def _doc(titulo: str, ativo: str, data: str, resto: str = "") -> str:
+    return (f"{titulo}\nEmpreendedor: Mineradora Serra Azul (fictícia)\n{ativo}\n"
+            f"Data de realização: {data}\n{resto}\nDocumento fictício.")
+
+
+@pytest.mark.parametrize("titulo, ativo, data, obrigacao, periodo", [
+    ("REGISTRO DE TREINAMENTO INTERNO DO PAEBM", "Barragem: Barragem Serra II (B2)", "20/10/2026", "R95-11", "2026-S2"),
+    ("SEMINÁRIO ORIENTATIVO - LISTA DE PRESENÇA", "Barragem: Barragem Serra II (B2)", "15/09/2026", "R95-13", "2026"),
+    ("PROCESSO DE GESTÃO DE RISCOS PARA BARRAGENS DE MINERAÇÃO (PGRBM) - ATUALIZAÇÃO", "Barragem: Barragem Serra II (B2)",
+     "15/10/2026", "R95-16", "2026-10-15"),
+    ("RELATÓRIO DE MONITORAMENTO DA QUALIDADE DAS ÁGUAS SUPERFICIAIS", "Licença de Operação nº 000/2023 (L1)",
+     "05/10/2026", "LO-01", "2026-T4"),
+    ("RELATÓRIO DE EXECUÇÃO DO PLANO DE RECUPERAÇÃO DE ÁREAS DEGRADADAS", "Licença de Operação nº 000/2023 (L1)",
+     "10/07/2026", "LO-04", "2026-S2"),
+    ("REGISTRO DE TREINAMENTO DA BRIGADA DE EMERGÊNCIA", "Unidade: Complexo Minerário Serra Azul (U1)",
+     "02/10/2026", "N22-08", "2026-10-02"),
+    ("RELATÓRIO DE SIMULAÇÃO DO PLANO DE EMERGÊNCIA", "Unidade: Complexo Minerário Serra Azul (U1)",
+     "18/08/2026", "N22-09", "2026"),
+    ("RELATÓRIO CONSOLIDADO DE RUÍDO E VIBRAÇÃO DAS DETONAÇÕES", "Licença de Operação nº 000/2023 (L1)",
+     "30/09/2026", "LO-03", "2026-T3"),
+    ("RELATÓRIO ANUAL DE CUMPRIMENTO DAS CONDICIONANTES", "Licença de Operação nº 000/2023 (L1)",
+     "10/03/2026", "LO-05", "2026-03-15"),
+])
+def test_documentos_de_paebm_pgrbm_licenca_e_brigada(conn, titulo, ativo, data, obrigacao, periodo):
+    le = ev.ler(conn, _doc(titulo, ativo, data), 1, HOJE)
+    assert (le.obrigacao, le.periodo) == (obrigacao, periodo), le.problemas
+
+
+def test_rco_vale_pelo_titulo_mesmo_citando_a_dco(conn):
+    """O RCO (Res. 220, art. 57 I) fala da DCO no corpo: o tipo é o do título."""
+    texto = _doc("RELATÓRIO DE CONFORMIDADE E OPERACIONALIDADE (RCO) DO PAEBM", "Barragem: Barragem Serra II (B2)",
+                 "20/06/2028", "Fundamenta a Declaração de Conformidade e Operacionalidade (DCO) deste ano.")
+    le = ev.ler(conn, texto, 1, date(2028, 7, 10))
+    assert (le.documento, le.obrigacao, le.periodo) == ("RCO", "OB-14", "2028-06-30")

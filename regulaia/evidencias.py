@@ -22,7 +22,8 @@ from .triagem import datas, normalizar
 
 VERSAO_PROMPT = "evidencia-v1"
 
-# palavra-chave no documento -> palavra-chave no título da obrigação
+# palavra-chave no documento -> palavra-chave no título da obrigação.
+# Vale o nome que aparece primeiro no documento (o título): um RCO cita a DCO, mas começa por "Relatório".
 DOCUMENTOS = {
     "ficha de inspecao regular": ("FIR", "fir"),
     "extrato de inspecao regular": ("EIR", "eir"),
@@ -33,6 +34,16 @@ DOCUMENTOS = {
     "exercicio simulado": ("Simulado", "simulad"),
     "relatorio de inspecao de seguranca do vaso": ("Inspeção NR-13", "exame externo"),
     "boletim de analise de efluentes": ("Efluentes", "efluentes"),
+    "relatorio de conformidade e operacionalidade": ("RCO", "rco"),
+    "processo de gestao de riscos": ("PGRBM", "pgrbm"),
+    "treinamento interno do paebm": ("Treinamento do PAEBM", "treinamento"),
+    "treinamento da brigada": ("Treinamento da brigada (NR-22)", "brigadas"),
+    "simulacao do plano de emergencia": ("Simulação do plano de emergência (NR-22)", "simulacoes"),
+    "seminario orientativo": ("Seminário Orientativo", "seminario"),
+    "qualidade das aguas": ("Monitoramento de águas", "qualidade das aguas"),
+    "ruido e vibracao": ("Ruído e vibração", "ruido"),
+    "recuperacao de areas degradadas": ("PRAD", "prad"),
+    "cumprimento das condicionantes": ("Relatório de condicionantes", "cumprimento das condicionantes"),
 }
 
 SISTEMA = """Você lê documentos de conformidade de uma mineradora (fichas de inspeção, relatórios,
@@ -156,7 +167,8 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
     if len(tn.split()) < 5:
         le.problemas.append("o PDF não tem texto (parece escaneado): ainda não fazemos OCR")
         return le
-    tipo = next(((nome, chave) for k, (nome, chave) in DOCUMENTOS.items() if k in tn), None)
+    achados = sorted((tn.find(k), nome, chave) for k, (nome, chave) in DOCUMENTOS.items() if k in tn)
+    tipo = achados[0][1:] if achados else None
     if tipo and tipo[1] == "exame externo" and re.search(r"tipo de exame\s*:?\s*interno|exame interno", tn) \
             and "exame externo" not in tn:
         tipo = ("Inspeção NR-13 (exame interno)", "exame interno")
