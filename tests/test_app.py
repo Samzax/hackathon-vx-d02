@@ -98,3 +98,18 @@ def test_viagem_no_tempo_para_a_res_220(banco_temporario):
     assert next(m for m in at.metric if m.label == "Dias até a Res. ANM 220/2025").value == "0"
     next(b for b in at.button if b.label == "Demo").click().run()
     assert str(at.date_input[0].value) == "2026-11-07"
+
+
+def test_todas_as_visoes_em_todas_as_datas_da_viagem(banco_temporario):
+    """Cada gestor, no dia da demo, na troca para a Res. 220 e depois do prazo da ZAS: nenhuma tela quebra."""
+    from datetime import date
+
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    visoes = at.sidebar.selectbox[0].options
+    assert len(visoes) >= 8
+    for v in visoes:
+        for d in (date(2026, 11, 7), date(2027, 8, 2), date(2029, 12, 27)):
+            at.sidebar.selectbox[0].select(v)
+            at.sidebar.date_input[0].set_value(d)
+            at.run()
+            assert not at.exception, (v, d, [e.value for e in at.exception])
