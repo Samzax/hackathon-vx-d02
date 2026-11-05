@@ -59,12 +59,15 @@ Mais duas proteções:
 
 O código fala com uma interface única. Qual provedor e qual modelo atende cada tarefa fica num arquivo de configuração, e as chaves ficam no `.env`, nunca no GitHub.
 
-| Provedor | Uso |
-|---|---|
-| Anthropic | Desenvolvimento e plano B |
-| Amazon Bedrock | No evento, com a conta da organização (Claude via API Converse) |
-| DeepSeek | Alternativa barata para a camada 2 |
-| OpenCode Go | A confirmar o formato da API |
+| Camada | Padrão | Se não houver |
+|---|---|---|
+| 2. Modelo barato | DeepSeek V4.1 Flash via OpenCode Go (franquia do plano de US$ 10) | Claude Haiku (OpenCode Go ou Anthropic) |
+| 3. Modelo forte | Claude Sonnet/Opus, se houver chave da Anthropic ou Bedrock | DeepSeek V4 Pro via OpenCode Go |
+| No evento | Claude 5 no Bedrock (a família 5.5 não estaria disponível lá) | O mesmo de antes, pela internet |
+
+A OpenCode Go mistura dois formatos de API: alguns modelos usam o da OpenAI (`/chat/completions`, ex.: DeepSeek) e outros o da Anthropic (`/messages`, ex.: Haiku, Qwen). O código fala os dois, o que também cobre a Anthropic e a DeepSeek diretas. O Bedrock entra por um adaptador próprio (Converse).
+
+Os prompts não podem depender de um modelo específico. A saída é sempre JSON validado pelo Python, então trocar de modelo muda o custo e a qualidade, não o funcionamento.
 
 Sobre o `AGENTS.md`: ele é uma convenção para agentes de programação (Codex, OpenCode, Claude Code) e não é lido por chamadas de API. O equivalente no nosso produto é o arquivo de configuração: ele manda a camada 2 usar um modelo barato (Haiku, DeepSeek) e só a camada 3 usar um forte (Sonnet).
 
