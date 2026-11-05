@@ -6,14 +6,15 @@ Uso: uv run streamlit run app.py
 from __future__ import annotations
 
 import hashlib
+import os
 from functools import partial
 import json
-from datetime import date
+from datetime import date, timedelta
 
 import pandas as pd
 import streamlit as st
 
-from regulaia import agenda, arquivos, db, demo, impacto, ocr, pdf, torre
+from regulaia import agenda, arquivos, db, demo, impacto, ocr, operacao, pdf, sigbm, torre
 from regulaia import evidencias as ev
 from regulaia.ia import Roteador
 
@@ -108,6 +109,12 @@ def _pdf(md: str, titulo: str) -> bytes:
 
 
 @st.cache_resource
+def _roteador_sem_chave():
+    """Só o cache: para quando a visita já gastou a cota de IA do link público."""
+    return Roteador(db.conectar(impacto.CACHE_IA), env={}, provedores={})
+
+
+@st.cache_resource
 def _roteador():
     """IA só para o que a regra não resolve; sem chave no .env, fica só a regra (e o cache)."""
     try:
@@ -118,15 +125,81 @@ def _roteador():
 
 conn = _conexao(str(db.DB_PADRAO))
 spec = _spec()
-empresa = conn.execute("SELECT id, nome FROM empresa").fetchone()
-ativos = db.ativos(conn, empresa["id"])
+empresas = {e["id"]: e for e in db.empresas(conn)}
+if "empresa_nova" in st.session_state:                      # acabou de importar
+    st.session_state["empresa_id"] = st.session_state.pop("empresa_nova")
+if st.session_state.get("empresa_id") not in empresas:      # primeira visita, ou "Recriar demo"
+    st.session_state["empresa_id"] = next(iter(empresas))
+LIMITE_IA_SESSAO = int(os.environ.get("REGULAIA_LIMITE_SESSAO") or 0) or None   # análises pagas por visita
+
+
+def _roteador_da_sessao():
+    """O roteador, se esta visita ainda pode pagar IA; senão None (só regra e cache)."""
+    rot = _roteador()
+    if rot is not None and LIMITE_IA_SESSAO and st.session_state.get("ia_usadas", 0) >= LIMITE_IA_SESSAO:
+        return None
+    return rot
+
+
+def _com_ia(fn):
+    """Roda fn(roteador) e conta quantas respostas novas (pagas) a IA deu nesta visita."""
+    rot = _roteador_da_sessao()
+    antes = rot.chamadas() if rot else 0
+    try:
+        return fn(rot)
+    finally:
+        if rot:
+            st.session_state["ia_usadas"] = st.session_state.get("ia_usadas", 0) + rot.chamadas() - antes
+
+
+@st.dialog("Sua mineradora em 30 segundos", width="large")
+def _importar():
+    st.caption(f"Barragens reais do SIGBM (exportação pública de {_br(sigbm.EXPORTADO_EM)}), só de empresas (CNPJ). "
+               "A torre monta as obrigações pelas regras do cadastro; o que o SIGBM não informa fica como "
+               "**dado faltando**, para você preencher. Nada é presumido.")
+    termo = st.text_input("CNPJ ou nome da empresa", placeholder="ex.: 33.592.510/0001-54, Vale, Samarco, CSN…")
+    achadas = sigbm.buscar(termo) if termo else []
+    if termo and not achadas:
+        st.warning("Nenhuma empresa com barragem no SIGBM com esse CNPJ ou nome.")
+    if not achadas:
+        return
+    i = st.radio("Empresa", range(len(achadas)), format_func=lambda i: (
+        f"{achadas[i].nome} · {achadas[i].cnpj} · {len(achadas[i].barragens)} barragens "
+        f"({len(achadas[i].na_pnsb)} na PNSB) · " + ", ".join(sorted({b['uf'] for b in achadas[i].barragens}))))
+    emp = achadas[i]
+    alerta = [b for b in emp.barragens if sigbm.alertas(b)]
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Barragens no SIGBM", len(emp.barragens))
+    c2.metric("Na PNSB", len(emp.na_pnsb), help="Política Nacional de Segurança de Barragens: onde vale a Res. 95")
+    c3.metric("Com alerta no SIGBM", len(alerta), help="Embargo, nível de alerta ou emergência, DCE/DCO não atestada")
+    so_pnsb = st.checkbox("Só as barragens na PNSB", value=bool(emp.na_pnsb), disabled=not emp.na_pnsb,
+                          help="As obrigações do cadastro (Res. ANM 95/2022) valem para barragens na PNSB")
+    inicio = st.date_input("Começar a cobrar a partir de", value=st.session_state.get("hoje", date.today()),
+                           format="DD/MM/YYYY",
+                           help="O que venceu antes desta data não aparece como atraso: a torre não sabe o que já foi entregue")
+    if st.button(f"Montar a torre de {emp.nome}", type="primary"):
+        eid = sigbm.importar(conn, emp, inicio, so_pnsb=so_pnsb and bool(emp.na_pnsb))
+        st.session_state["empresa_nova"] = eid      # o seletor já existe nesta rodada: troca na próxima
+        st.session_state.pop("manter_importar", None)
+        st.rerun()
+
 
 # ------------------------------------------------------------------ barra lateral
 
 with st.sidebar:
     st.markdown("### 🗼 RegulaIA")
-    st.caption(f"{empresa['nome']} · empresa fictícia")
-    responsaveis = sorted({a["responsavel"] for a in ativos if a["responsavel"]})
+    st.selectbox("Empresa", list(empresas), key="empresa_id",
+                 format_func=lambda i: empresas[i]["nome"] + (" · fictícia" if empresas[i]["ficticia"] else ""))
+    empresa = empresas[st.session_state["empresa_id"]]
+    importada = bool(empresa["monitorado_desde"])
+    if st.button("➕ Sua mineradora (SIGBM)", width="stretch",
+                 help="Busque pelo CNPJ ou pelo nome e monte a torre com as barragens reais da empresa")             or st.session_state.get("manter_importar"):   # nos testes, o diálogo fica aberto entre reruns
+        _importar()
+    if importada:
+        st.caption(f"Barragens e atributos: {empresa['origem']}. Dados públicos, sem pessoa física.")
+    ativos = db.ativos(conn, empresa["id"])
+    donos = {k: v for k, v in db.responsaveis(conn).items() if k[0] in {a["id"] for a in ativos}}
+    responsaveis = sorted({a["responsavel"] for a in ativos if a["responsavel"]} | set(donos.values()))
     visao = st.selectbox("Quem está olhando", ["Diretoria (todos os ativos)"] + responsaveis)
     hoje_demo = date.fromisoformat(spec.get("hoje", date.today().isoformat()))
     st.session_state.setdefault("hoje", hoje_demo)
@@ -142,36 +215,106 @@ with st.sidebar:
               width="stretch")
     v3.button("ZAS", on_click=_ir_para, args=(date(2029, 12, 27),),
               help="27/12/2029: dia seguinte ao prazo da ZAS (ANM e NR-22)", width="stretch")
-    desde = date.fromisoformat(spec.get("desde", "2026-05-01"))
-    st.caption(f"Histórico monitorado desde {desde:%d/%m/%Y}.")
-    if st.button("Recriar demo", help="Apaga decisões e volta ao estado inicial"):
+    desde = date.fromisoformat(empresa["monitorado_desde"] or spec.get("desde", "2026-05-01"))
+    st.caption(f"{'Monitorada' if importada else 'Histórico monitorado'} desde {desde:%d/%m/%Y}.")
+    rot_ia = _roteador()
+    if rot_ia is not None and rot_ia.ligada:
+        teto = f" de {_usd(rot_ia.teto_dia_usd, 2)}" if rot_ia.teto_dia_usd else ""
+        resta = (f" · {max(LIMITE_IA_SESSAO - st.session_state.get('ia_usadas', 0), 0)} análises novas nesta visita"
+                 if LIMITE_IA_SESSAO else "")
+        st.caption(f"🤖 IA ligada · gasto hoje {_usd(rot_ia.gasto_hoje(), 3)}{teto}{resta}")
+    else:
+        st.caption("🤖 IA desligada: só regra e respostas em cache")
+    if st.button("Recriar demo", help="Apaga decisões, entregas e empresas importadas e volta ao estado inicial"):
         _conexao.clear()
-        for k in ("leitura", "analise_teste", "ato_teste", "radar_teste"):
+        for k in ("leitura", "analise_teste", "ato_teste", "radar_teste", "empresa_id"):
             st.session_state.pop(k, None)
         st.rerun()
 
-meus = [a for a in ativos if visao.startswith("Diretoria") or a["responsavel"] == visao]
+diretoria = visao.startswith("Diretoria")
+dono_do_ativo = {a["codigo"]: a["responsavel"] for a in ativos}
+todas = torre.painel(conn, empresa["id"], hoje, desde)
+
+
+def _minha(l) -> bool:
+    """Diretoria vê tudo; o gestor do ativo vê o ativo inteiro; quem recebeu uma obrigação vê a dela."""
+    return diretoria or dono_do_ativo.get(l.ativo) == visao or l.responsavel == visao
+
+
+minhas = [l for l in todas if _minha(l)]
+meus = [a for a in ativos if diretoria or a["responsavel"] == visao or any(l.ativo == a["codigo"] for l in minhas)]
 codigos_meus = {a["codigo"] for a in meus}
 
 st.title("Torre de Controle Regulatória")
 st.caption("Cada obrigação com a norma, o dispositivo e o trecho literal que a cria. "
            "Mudanças só valem depois de aprovadas por uma pessoa.")
-if hoje > hoje_demo:
+if hoje > hoje_demo and not importada:
     st.info(f"Viagem no tempo: {hoje:%d/%m/%Y}. As entregas da demo vão até {hoje_demo:%d/%m/%Y}; "
             "o que venceu depois disso aparece atrasado porque ninguém registrou a entrega. "
             "O ponto aqui é ver o que a torre passa a cobrar, e de qual norma.", icon="🕰️")
 
-aba_hoje, aba_transicao, aba_mudancas, aba_radar, aba_mercado, aba_como = st.tabs(
-    ["Hoje", "Transição e linha do tempo", "Mudanças", "Radar do DOU", "Mercado", "Como funciona"])
+aba_hoje, aba_entregas, aba_transicao, aba_mudancas, aba_radar, aba_mercado, aba_como = st.tabs(
+    ["Hoje", "Entregas", "Transição e linha do tempo", "Mudanças", "Radar do DOU", "Mercado", "Como funciona"])
 
 # ------------------------------------------------------------------ Hoje
 
 with aba_hoje:
-    linhas = [l for l in torre.painel(conn, empresa["id"], hoje, desde) if l.ativo in codigos_meus]
+    linhas = minhas
     cont = {s: sum(1 for l in linhas if l.status == s) for s in ROTULO}
     cols = st.columns(5)
     for col, s in zip(cols, [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO], strict=True):
         col.metric(ROTULO[s], cont[s])
+
+    if importada:
+        com_alerta = [a for a in meus if a["atributos"].get("alertas_sigbm")]
+        sem_dado = sorted({c for l in linhas for c in l.dados_faltando if c != torre.ULTIMA_EXECUCAO})
+        sem_data = sum(1 for l in linhas if torre.ULTIMA_EXECUCAO in l.dados_faltando)
+        with st.container(border=True):
+            st.markdown(f"##### Primeiros passos · {len(meus)} barragens importadas do SIGBM")
+            p1, p2, p3 = st.columns(3)
+            p1.markdown(f"**1. O que o SIGBM já mostra.** {len(com_alerta)} barragens com alerta público "
+                        "(embargo, nível de emergência, DCE ou DCO não atestada).")
+            p2.markdown(f"**2. Complete o cadastro.** {len(sem_dado)} dados que o SIGBM não tem decidem se "
+                        "algumas obrigações valem. Preencha abaixo, para todas de uma vez ou uma a uma.")
+            p3.markdown(f"**3. Registre as últimas entregas.** {sem_data} obrigações a cada N anos (RPSB, PGRBM…) "
+                        "precisam da data da última execução: aba **Entregas**.")
+            if com_alerta:
+                with st.expander(f"🚨 Alertas do SIGBM em {len(com_alerta)} barragens"):
+                    st.dataframe(pd.DataFrame([{
+                        "Barragem": f"{a['codigo']} · {a['nome']}",
+                        "Município": f"{a['atributos'].get('municipio', '')}/{a['atributos'].get('uf', '')}",
+                        "Alertas": "; ".join(a["atributos"]["alertas_sigbm"]),
+                    } for a in com_alerta]), hide_index=True, width="stretch")
+            if sem_dado:
+                with st.expander("✍️ Completar o cadastro: o que o SIGBM não informa"):
+                    alvo = st.selectbox("Barragem", ["todas"] + [a["codigo"] for a in meus],
+                                        format_func=lambda c: "Todas as barragens que ainda não têm o dado" if c == "todas"
+                                        else f"{c} · {next(a['nome'] for a in meus if a['codigo'] == c)}")
+                    novos = {}
+                    for campo in sem_dado:
+                        rotulo = sigbm.FALTAM_NO_SIGBM.get(campo, torre.campo_legivel(campo))
+                        if campo == "dpa2":
+                            v = st.number_input(f"{rotulo} (`{campo}`)", 0.0, 10.0, value=None, step=1.0,
+                                                key=f"cad_{campo}")
+                            if v is not None:
+                                novos[campo] = v
+                        else:
+                            v = st.radio(f"{rotulo[:1].upper()}{rotulo[1:]} (`{campo}`)", ["não sei", "sim", "não"],
+                                         horizontal=True, key=f"cad_{campo}")
+                            if v != "não sei":
+                                novos[campo] = v == "sim"
+                    if st.button("Salvar no cadastro", type="primary", disabled=not novos):
+                        n = 0
+                        for a in meus:
+                            if alvo == "todas":
+                                faltam = {k: v for k, v in novos.items() if k not in a["atributos"]}
+                            else:
+                                faltam = novos if a["codigo"] == alvo else {}
+                            if faltam:
+                                db.atualizar_atributos(conn, a["id"], faltam, por=visao)
+                                n += 1
+                        st.toast(f"Cadastro atualizado em {n} barragens: a torre recalculou o que vale.")
+                        st.rerun()
 
     with st.expander("📄 Enviar evidência — a operação manda o documento, a torre dá baixa sozinha"):
         st.caption("O texto é lido por regra (qual ativo, qual documento, qual data). Só se a regra não fechar "
@@ -193,7 +336,7 @@ with aba_hoje:
                     st.session_state.pop("leitura", None)
                     st.warning(f"Não consegui ler {nome}: {lido_pdf.aviso}.")
                 else:
-                    le = ev.ler(conn, lido_pdf.texto, empresa["id"], hoje, roteador=_roteador())
+                    le = _com_ia(lambda rot: ev.ler(conn, lido_pdf.texto, empresa["id"], hoje, roteador=rot))
                     if lido_pdf.ocr:
                         le.avisos.append(f"o texto de {lido_pdf.escaneadas} página(s) escaneada(s) veio do OCR "
                                          f"({lido_pdf.ocr}): confira ativo, data e números antes de registrar")
@@ -269,7 +412,7 @@ with aba_hoje:
                "🟢 em dia · 🔵 depende de gatilho")
     mapa = pd.DataFrame([{
         "Ativo": f"{a['codigo']} · {a['nome']}",
-        "Responsável": a["responsavel"],
+        "Responsável": a["responsavel"] or "—",
         **{COLUNA[s]: sum(1 for l in linhas if l.ativo == a["codigo"] and l.status == s)
            for s in COLUNA},
     } for a in meus])
@@ -317,8 +460,8 @@ with aba_hoje:
         alerta = sum(1 for l in do_ativo if l.status == agenda.VENCE_LOGO)
         selo = "🔴" if ruins else "🟡" if alerta else "🟢"
         titulo = (f"{selo} **{a['codigo']} · {a['nome']}** — {TIPO.get(a['tipo'], a['tipo'])} · "
-                  f"{a['responsavel']} · {len(do_ativo)} obrigações")
-        with st.expander(titulo, expanded=bool(ruins)):
+                  f"{a['responsavel'] or 'sem responsável'} · {len(do_ativo)} obrigações")
+        with st.expander(titulo, expanded=bool(ruins) and len(meus) <= 12):
             com_data = [l for l in do_ativo if l.status != agenda.GATILHO]
             gatilho = [l for l in do_ativo if l.status == agenda.GATILHO]
             if com_data:
@@ -339,7 +482,10 @@ with aba_hoje:
                         st.markdown(texto[:1].upper() + texto[1:] + ".")
                     if l.nota and not l.dados_faltando:
                         st.markdown(l.nota[:1].upper() + l.nota[1:] + ".")
-                    if l.dados_faltando:
+                    if l.dados_faltando == [torre.ULTIMA_EXECUCAO]:
+                        st.markdown("Falta a **data da última execução**: sem ela não dá para calcular o próximo "
+                                    "vencimento. Registre a última entrega na aba **Entregas**.")
+                    elif l.dados_faltando:
                         campos = "; ".join(f"**{torre.campo_legivel(c)}** (`{c}`)" for c in l.dados_faltando)
                         st.markdown(f"Falta no cadastro do ativo: {campos}. "
                                     "Sem esse dado não dá para dizer se a obrigação vale.")
@@ -361,6 +507,196 @@ with aba_hoje:
                             f"{_curto(titulos.get(e['codigo'], ''))}  \n"
                             f"  <small>{(e['arquivo'] or '—').split('/')[-1]} · {lido}</small>{aviso}")
                     st.markdown("\n".join(linhas_ev), unsafe_allow_html=True)
+
+# ------------------------------------------------------------------ Entregas
+
+def _feito():
+    """Depois de agir, a seleção da tabela zera: a linha pode ter sumido ou mudado de lugar."""
+    st.session_state["acoes"] = st.session_state.get("acoes", 0) + 1
+    st.rerun()
+
+
+with aba_entregas:
+    st.caption("O dia a dia: filtre, selecione uma obrigação e registre a entrega, troque o responsável ou "
+               "comente. Tudo fica no histórico com quem fez e quando.")
+    f1, f2, f3, f4 = st.columns([1.3, 1.3, 1.2, 1.2])
+    st_fil = f1.multiselect("Status", list(ROTULO), default=[agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO],
+                            format_func=ROTULO.get)
+    at_fil = f2.multiselect("Ativo", [a["codigo"] for a in meus],
+                            format_func=lambda c: f"{c} · {next(a['nome'] for a in meus if a['codigo'] == c)}")
+    no_fil = f3.multiselect("Norma", sorted({l.norma for l in minhas if l.norma}))
+    re_fil = f4.multiselect("Responsável", sorted({l.responsavel or "— sem responsável" for l in minhas}))
+    g1, g2 = st.columns([2, 1])
+    busca = g1.text_input("Buscar na obrigação", placeholder="ex.: FIR, RPSB, simulado, NR-13…")
+    janela = g2.selectbox("Vence em", [None, 7, 30, 90, 365],
+                          format_func=lambda d: "qualquer data" if d is None else f"até {d} dias")
+    lim = (hoje + timedelta(days=janela)).isoformat() if janela else None
+    filtradas = [l for l in minhas
+                 if (not st_fil or l.status in st_fil) and (not at_fil or l.ativo in at_fil)
+                 and (not no_fil or l.norma in no_fil)
+                 and (not re_fil or (l.responsavel or "— sem responsável") in re_fil)
+                 and (not busca or busca.lower() in f"{l.titulo} {l.codigo} {l.norma} {l.evidencia}".lower())
+                 and (not lim or (l.vence and l.vence <= lim))]
+    filtradas.sort(key=lambda l: (torre.ORDEM.get(l.status, 9), l.vence or "9999", l.ativo))
+    nome_arq = f"obrigacoes_{(visao if not diretoria else 'diretoria').replace(' ', '_')}_{hoje:%Y-%m-%d}"
+    e1, e2, e3 = st.columns([1, 1, 2])
+    e1.download_button(f"⬇️ Excel ({len(filtradas)} linhas)",
+                       partial(operacao.planilha, filtradas, f"RegulaIA · {empresa['nome']}"),
+                       file_name=f"{nome_arq}.xlsx", disabled=not filtradas,
+                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    e2.download_button("📅 Agenda (.ics)",
+                       partial(torre.calendario, conn, empresa["id"], hoje, desde, None if diretoria else visao),
+                       file_name=f"vencimentos_{nome_arq}.ics", mime="text/calendar",
+                       help="Os vencimentos de quem está olhando, para o Outlook ou Google Agenda")
+    e3.caption(f"{len(filtradas)} de {len(minhas)} obrigações. Selecione uma linha (ou várias) para agir.")
+    sel = st.dataframe(pd.DataFrame([{
+        "Status": ROTULO.get(l.status, l.status), "Ativo": l.ativo, "Obrigação": _curto(l.titulo, 90),
+        "Vence": _br(l.vence) if l.vence else "", "Responsável": (l.responsavel or "—") + (" ✎" if l.responsavel_proprio else ""),
+        "Última": agenda.rotulo_humano(l.ultima) if l.ultima else "", "Pendente": torre.pendente(l),
+    } for l in filtradas]), hide_index=True, width="stretch", on_select="rerun", selection_mode="multi-row",
+        key=f"sel_entregas_{empresa['id']}_{st.session_state.get('acoes', 0)}", height=min(36 * len(filtradas) + 40, 420))
+    escolhidas = [filtradas[i] for i in sel.selection.rows if i < len(filtradas)]
+
+    if len(escolhidas) > 1:
+        with st.container(border=True):
+            st.markdown(f"**{len(escolhidas)} obrigações selecionadas**")
+            m1, m2 = st.columns(2)
+            novo_resp = m1.text_input("Passar todas para", placeholder="nome ou área", key="resp_lote")
+            if m1.button("Atribuir responsável", disabled=not novo_resp.strip()):
+                for l in escolhidas:
+                    db.atribuir(conn, l.ativo_id, l.codigo, novo_resp, por=visao)
+                st.toast(f"{len(escolhidas)} obrigações agora com {novo_resp.strip()}")
+                _feito()
+            dia_lote = m2.date_input("Entregues em", value=hoje, format="DD/MM/YYYY", key="dia_lote")
+            if m2.button("Marcar todas como entregues", help="Cada uma no período que está pendente"):
+                for l in escolhidas:
+                    if l.agenda and l.agenda != "evento":
+                        db.entregar(conn, l.ativo_id, l.codigo, operacao.periodo_para_entrega(l, dia_lote),
+                                    dia=dia_lote.isoformat(), por=visao)
+                st.toast(f"{len(escolhidas)} entregas registradas")
+                _feito()
+    elif escolhidas:
+        l = escolhidas[0]
+        v = db.versao(conn, l.codigo) or {}
+        with st.container(border=True):
+            st.markdown(f"#### {ROTULO.get(l.status, l.status)} · {l.ativo} · {l.titulo}")
+            st.caption(f"{torre.dispositivo(l.norma, l.artigo)} · {l.periodicidade or agenda.descrever(l.agenda)} · "
+                       f"evidência: {l.evidencia or '—'}")
+            if l.nota:
+                st.markdown(l.nota[:1].upper() + l.nota[1:] + ".")
+            if v.get("trecho"):
+                st.caption(f"“{_curto(v['trecho'], 400)}”")
+            a1, a2, a3 = st.columns(3)
+            with a1:
+                st.markdown("**✅ Registrar entrega**")
+                if l.agenda == "evento" and l.status == agenda.GATILHO:
+                    st.caption("Obrigação por gatilho: registre quando o evento acontecer.")
+                dia_ent = st.date_input("Feita em", value=hoje, format="DD/MM/YYYY", key=f"dia_{l.ativo}_{l.codigo}",
+                                        max_value=hoje)
+                per = operacao.periodo_para_entrega(l, dia_ent)
+                st.caption(f"Comprova: **{agenda.rotulo_humano(per)}**")
+                anexo = st.file_uploader("Comprovante (opcional)", key=f"anexo_{l.ativo}_{l.codigo}")
+                obs = st.text_input("Observação", key=f"obs_{l.ativo}_{l.codigo}")
+                if st.button("Registrar entrega", type="primary", key=f"ent_{l.ativo}_{l.codigo}"):
+                    onde = None
+                    if anexo is not None:
+                        try:
+                            onde = arquivos.guardar(anexo.name, anexo.getvalue())
+                        except Exception as e:
+                            st.warning(f"Não consegui guardar o arquivo ({type(e).__name__}); registro só o nome.")
+                            onde = anexo.name
+                    db.entregar(conn, l.ativo_id, l.codigo, per, dia=dia_ent.isoformat(), por=visao,
+                                arquivo=onde, obs=obs or None)
+                    st.toast(f"Entrega registrada: {l.ativo} · {l.codigo} · {agenda.rotulo_humano(per)}")
+                    _feito()
+            with a2:
+                st.markdown("**👤 Responsável**")
+                st.caption(f"Hoje: {l.responsavel or 'ninguém'}" + (" (só desta obrigação)" if l.responsavel_proprio
+                                                                     else " (o do ativo)" if l.responsavel else ""))
+                quem = st.text_input("Passar para", key=f"quem_{l.ativo}_{l.codigo}",
+                                     placeholder="nome, área ou consultoria")
+                b1, b2 = st.columns(2)
+                if b1.button("Atribuir", key=f"atr_{l.ativo}_{l.codigo}", disabled=not quem.strip()):
+                    db.atribuir(conn, l.ativo_id, l.codigo, quem, por=visao)
+                    _feito()
+                if l.responsavel_proprio and b2.button("Voltar ao do ativo", key=f"vol_{l.ativo}_{l.codigo}"):
+                    db.atribuir(conn, l.ativo_id, l.codigo, "", por=visao)
+                    _feito()
+            with a3:
+                st.markdown("**💬 Comentário**")
+                txt = st.text_area("Comentário", key=f"com_{l.ativo}_{l.codigo}", label_visibility="collapsed",
+                                   placeholder="ex.: laudo com a consultoria, chega dia 20", height=100)
+                if st.button("Comentar", key=f"cbt_{l.ativo}_{l.codigo}", disabled=not txt.strip()):
+                    db.registrar_evento(conn, l.ativo_id, l.codigo, "comentario", txt.strip(), por=visao)
+                    _feito()
+            hist = db.eventos(conn, l.ativo_id, l.codigo, limite=20)
+            evs = [e for e in db.evidencias_do_ativo(conn, l.ativo_id, limite=200) if e["codigo"] == l.codigo]
+            st.markdown("**Histórico**")
+            icone = {"entrega": "✅", "responsavel": "👤", "comentario": "💬", "cadastro": "✍️"}
+            itens = [f"- {icone.get(e['tipo'], '•')} {torre.em_brasilia(e['em']) if len(e['em']) > 10 else _br(e['em'])}"
+                     f" · {e['por'] or '—'}: {e['texto']}" for e in hist]
+            manuais = {e["periodo"] for e in evs if (e["extraido"] or {}).get("baixa_manual")}
+            itens += [f"- 📎 {agenda.rotulo_humano(e['periodo'])} · {(e['arquivo'] or 'sem arquivo').split('/')[-1]}"
+                      for e in evs[:8] if e["periodo"] not in manuais]
+            st.markdown("\n".join(itens) if itens else "Nada registrado ainda.")
+            if manuais:
+                desf = st.selectbox("Desfazer uma entrega manual", sorted(manuais, reverse=True),
+                                    format_func=agenda.rotulo_humano, key=f"desf_{l.ativo}_{l.codigo}")
+                if st.button("Desfazer", key=f"dbt_{l.ativo}_{l.codigo}"):
+                    db.desfazer_entrega(conn, l.ativo_id, l.codigo, desf, por=visao)
+                    _feito()
+
+    st.markdown("##### Calendário do mês")
+    k1, k2 = st.columns([1, 3])
+    meses = [date(hoje.year + (hoje.month - 1 + i) // 12, (hoje.month - 1 + i) % 12 + 1, 1) for i in range(-1, 12)]
+    mes = k1.selectbox("Mês", meses, index=1, format_func=lambda d: f"{d:%m/%Y}")
+    venc = operacao.vencimentos_no_mes(conn, [l for l in minhas if not at_fil or l.ativo in at_fil], mes.year, mes.month)
+    k2.caption(f"{len(venc)} vencimentos em {mes:%m/%Y}, período a período · ✅ entregue · 🔴 venceu sem entrega · "
+               "🟡 a vencer. Filtro de ativo acima vale aqui.")
+    por_dia_v: dict[int, list] = {}
+    for x in venc:
+        por_dia_v.setdefault(date.fromisoformat(x.dia).day, []).append(x)
+
+    def _chip(x) -> str:
+        cor = "✅" if x.entregue else "🔴" if x.dia < hoje.isoformat() else "🟡"
+        return f"{cor} {x.linha.ativo} {_curto(x.linha.titulo, 28)}"
+
+    import calendar as _cal
+    semanas = _cal.Calendar(firstweekday=0).monthdayscalendar(mes.year, mes.month)
+    celulas = []
+    for sem in semanas:
+        tds = []
+        for d in sem:
+            if not d:
+                tds.append("<td></td>")
+                continue
+            xs = por_dia_v.get(d, [])
+            hoje_cls = " style='outline:2px solid #4a7dff'" if date(mes.year, mes.month, d) == hoje else ""
+            lista = "<br>".join(_chip(x) for x in xs[:4]) + (f"<br><b>+{len(xs) - 4}</b>" if len(xs) > 4 else "")
+            tds.append(f"<td{hoje_cls}><b>{d}</b><br><small>{lista}</small></td>")
+        celulas.append("<tr>" + "".join(tds) + "</tr>")
+    st.html("<style>.cal{width:100%;border-collapse:collapse;table-layout:fixed}"
+            ".cal td,.cal th{border:1px solid rgba(128,128,128,.3);vertical-align:top;padding:4px;"
+            "font-size:12px;height:70px;overflow:hidden}.cal th{height:auto}</style>"
+            "<table class='cal'><tr>" + "".join(f"<th>{d}</th>" for d in ("seg", "ter", "qua", "qui", "sex", "sáb", "dom"))
+            + "</tr>" + "".join(celulas) + "</table>")
+    if venc:
+        with st.expander(f"Lista dos {len(venc)} vencimentos de {mes:%m/%Y}"):
+            st.dataframe(pd.DataFrame([{
+                "Dia": _br(x.dia), "Ativo": x.linha.ativo, "Obrigação": x.linha.titulo,
+                "Período": agenda.rotulo_humano(x.periodo), "Situação": "entregue" if x.entregue else
+                ("venceu sem entrega" if x.dia < hoje.isoformat() else "a vencer"), "Responsável": x.linha.responsavel,
+            } for x in venc]), hide_index=True, width="stretch")
+
+    st.markdown("##### Boletim por responsável")
+    # cada gestor só vê o próprio boletim; a Diretoria escolhe de quem
+    quem_b = st.selectbox("Prévia do boletim de", ["Diretoria"] + responsaveis if diretoria else [visao],
+                          key=f"boletim_de_{visao}")
+    md_b = torre.boletim(conn, empresa["id"], hoje, desde, responsavel=None if quem_b == "Diretoria" else quem_b)
+    with st.container(border=True, height=360):
+        st.markdown(md_b.split("\n", 2)[2].replace("\n## ", "\n#### "))
+    st.download_button("Baixar este boletim (PDF)", partial(_pdf, md_b, f"Boletim · {quem_b}"),
+                       file_name=f"boletim_{quem_b.replace(' ', '_')}_{hoje:%Y-%m-%d}.pdf", mime="application/pdf")
 
 # ------------------------------------------------------------------ Transição
 
@@ -574,13 +910,15 @@ with aba_radar:
                              placeholder="Cole aqui o texto de uma resolução, portaria, instrução normativa…")
     if st.button("Analisar ato", type="primary", disabled=not (texto_ato or "").strip()):
         titulo_ato = torre.titulo_do_ato(texto_ato)
-        rot = _roteador()
-        if rot is None:
+        if _roteador() is None:
             st.error("Não consegui iniciar o roteador de IA (veja modelos.toml e .env).")
         else:
+            if _roteador_da_sessao() is None:
+                st.info(f"Esta visita já usou as {LIMITE_IA_SESSAO} análises novas de IA do link público: "
+                        "segue só com regra e cache.")
             with st.spinner("Triagem por regra e, se houver candidata, análise da IA…"):
-                st.session_state["analise_teste"] = (titulo_ato, texto_ato,
-                                                     impacto.analisar(conn, rot, titulo_ato, texto_ato))
+                an = _com_ia(lambda rot: impacto.analisar(conn, rot or _roteador_sem_chave(), titulo_ato, texto_ato))
+                st.session_state["analise_teste"] = (titulo_ato, texto_ato, an)
     if "analise_teste" in st.session_state:
         titulo_ato, texto_salvo, an = st.session_state["analise_teste"]
         st.markdown(f"**{torre.nome_ato(titulo_ato)}**")

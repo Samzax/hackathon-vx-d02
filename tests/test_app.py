@@ -150,11 +150,11 @@ def test_todas_as_visoes_em_todas_as_datas_da_viagem(banco_temporario):
     from datetime import date
 
     at = AppTest.from_file(APP, default_timeout=120).run()
-    visoes = at.sidebar.selectbox[0].options
+    visoes = at.sidebar.selectbox[1].options
     assert len(visoes) >= 8
     for v in visoes:
         for d in (date(2026, 11, 7), date(2027, 8, 2), date(2029, 12, 27)):
-            at.sidebar.selectbox[0].select(v)
+            at.sidebar.selectbox[1].select(v)
             at.sidebar.date_input[0].set_value(d)
             at.run()
             assert not at.exception, (v, d, [e.value for e in at.exception])
@@ -259,7 +259,7 @@ def test_cada_gestor_so_ve_os_ativos_dele(banco_temporario):
     for gestor in sorted({a["responsavel"] for a in ativos}):
         meus = {a["codigo"] for a in ativos if a["responsavel"] == gestor}
         alheios = {a["codigo"] for a in ativos} - meus
-        at.sidebar.selectbox[0].select(gestor).run()
+        at.sidebar.selectbox[1].select(gestor).run()
         assert not at.exception
         partes = [e.value for tipo in (at.markdown, at.caption, at.info, at.warning, at.error) for e in tipo]
         partes += [e.label for e in at.expander]
@@ -274,10 +274,32 @@ def test_gestor_nao_registra_documento_de_ativo_alheio(banco_temporario):
     """A FIR da B3 é da Geotecnia: a Manutenção da Usina vê o aviso e não tem o botão de registrar."""
     at = AppTest.from_file(APP, default_timeout=120).run()
     for visao, pode in [("Manutenção da Usina", False), ("Gerência de Geotecnia", True)]:
-        at.sidebar.selectbox[0].select(visao).run()
+        at.sidebar.selectbox[1].select(visao).run()
         next(s for s in at.selectbox if s.label.endswith("documento de exemplo")).select("FIR_B3_2026-10-1Q.pdf").run()
         next(b for b in at.button if b.label == "Ler documento").click().run()
         assert not at.exception
         registrar = [b for b in at.button if b.label.startswith("Registrar evidência")]
         aviso = [w.value for w in at.warning if "não está entre os ativos" in w.value]
         assert bool(registrar) == pode and bool(aviso) != pode, visao
+
+
+def test_importar_mineradora_do_sigbm_e_operar(banco_temporario):
+    """'Sua mineradora em 30 segundos': busca pelo CNPJ, monta a torre, completa o cadastro."""
+    at = AppTest.from_file(APP, default_timeout=120)
+    at.session_state["manter_importar"] = True     # no navegador o diálogo roda como fragmento e fica aberto
+    at.run()
+    next(t for t in at.text_input if t.label == "CNPJ ou nome da empresa").input("33.592.510/0001-54").run()
+    assert not at.exception
+    next(b for b in at.button if b.label.startswith("Montar a torre de VALE")).click().run()
+    assert not at.exception
+    assert at.sidebar.selectbox[0].value != 1                       # trocou para a empresa importada
+    metricas = {m.label: int(m.value) for m in at.metric if m.label.startswith(("🔴", "⚪"))}
+    assert metricas["🔴 Atrasada"] == 0 and metricas["⚪ Dado faltando"] > 0   # nada de atraso inventado
+    assert any(m.value.startswith("##### Primeiros passos") for m in at.markdown)
+    # completar o cadastro de todas as barragens de uma vez
+    next(r for r in at.radio if "(`modificacao_estrutural`)" in r.label).set_value("não").run()
+    antes = metricas["⚪ Dado faltando"]
+    next(b for b in at.button if b.label == "Salvar no cadastro").click().run()
+    assert not at.exception
+    assert int({m.label: m.value for m in at.metric}["⚪ Dado faltando"]) < antes
+    assert any(b.label.startswith("⬇️ Excel") for b in at.get("download_button"))

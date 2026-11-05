@@ -102,9 +102,10 @@ def semear_cache(cache, origem: Path = CACHE_DEMO) -> int:
         return 0
     linhas = json.loads(origem.read_text(encoding="utf-8"))
     with cache:
+        # data fixa no passado: a resposta da demo não conta no teto de gasto do dia (REGULAIA_TETO_DIA_USD)
         cache.executemany(
-            f"INSERT OR IGNORE INTO analise_ia ({', '.join(_COLUNAS_CACHE)}) "
-            f"VALUES ({', '.join('?' * len(_COLUNAS_CACHE))})",
+            f"INSERT OR IGNORE INTO analise_ia ({', '.join(_COLUNAS_CACHE)}, criada_em) "
+            f"VALUES ({', '.join('?' * len(_COLUNAS_CACHE))}, '2026-11-01 00:00:00')",
             [tuple(l[c] for c in _COLUNAS_CACHE) for l in linhas])
     return len(linhas)
 

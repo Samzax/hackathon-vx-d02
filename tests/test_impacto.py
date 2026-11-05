@@ -163,3 +163,22 @@ def test_extrair_json(texto):
 def test_extrair_json_recusa(texto):
     with pytest.raises(RespostaInvalida):
         extrair_json(texto)
+
+
+def test_teto_diario_de_ia_corta_chamada_paga_mas_nao_o_cache():
+    """No link público a IA fica ligada com teto por dia: passou do teto, só regra e cache."""
+    from regulaia.ia import SemProvedor, TetoAtingido
+
+    conn = db.conectar(":memory:")
+    falso = Falso({"high": {"ok": 1}})
+    rot = Roteador(conn, env={"REGULAIA_TETO_DIA_USD": "0.0001"}, provedores={"opencode": falso})
+    rot.cfg["camadas"]["2"]["modelos"] = [{"provedor": "opencode", "modelo": "x", "esforco": "high"}]
+    rot.cfg["precos"]["x"] = (1.0, 1.0)            # 1000 + 200 tokens = US$ 0,0012
+    assert rot.pedir_json("t", 2, "s", "u1", "v1").dados == {"ok": 1}
+    assert rot.gasto_hoje() > rot.teto_dia_usd
+    with pytest.raises(TetoAtingido):
+        rot.pedir_json("t", 2, "s", "u2", "v1")
+    assert issubclass(TetoAtingido, SemProvedor)   # quem já trata "sem IA" trata o teto
+    assert rot.pedir_json("t", 2, "s", "u1", "v1").do_cache   # o que já foi pago continua valendo
+    assert len(falso.chamadas) == 1
+    assert Roteador(conn, env={}, provedores={}).teto_dia_usd is None

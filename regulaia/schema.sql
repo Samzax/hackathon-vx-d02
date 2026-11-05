@@ -114,3 +114,22 @@ CREATE TABLE IF NOT EXISTS analise_ia (
     custo_usd   REAL,
     criada_em   TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Dia a dia: quem responde por uma obrigação de um ativo (sobrepõe o responsável do ativo).
+CREATE TABLE IF NOT EXISTS responsavel_obrigacao (
+    ativo_id      INTEGER NOT NULL REFERENCES ativo(id),
+    obrigacao_id  INTEGER NOT NULL REFERENCES obrigacao(id),
+    responsavel   TEXT NOT NULL,
+    PRIMARY KEY (ativo_id, obrigacao_id)
+);
+
+-- Histórico de uma obrigação num ativo: entrega, troca de responsável, comentário, dado preenchido.
+CREATE TABLE IF NOT EXISTS evento (
+    id            INTEGER PRIMARY KEY,
+    ativo_id      INTEGER NOT NULL REFERENCES ativo(id),
+    obrigacao_id  INTEGER REFERENCES obrigacao(id),   -- vazio: evento do ativo (cadastro)
+    tipo          TEXT NOT NULL,                      -- entrega, responsavel, comentario, cadastro
+    texto         TEXT NOT NULL,
+    por           TEXT,
+    em            TEXT NOT NULL DEFAULT (datetime('now'))
+);

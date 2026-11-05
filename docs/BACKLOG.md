@@ -124,3 +124,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Fiscalização da ANM (2025) e casos de embargo na análise de mercado e no pitch (slides 1 e 7), números em data/fiscalizacao_anm.json conferidos por teste
 - [x] Slides do pitch (.pptx, docs/slides/gerar.js) e análise/roteiro em .docx (docs/slides/docs_google.py) para importar no Google Slides e Docs
 - [x] requirements.txt para o Streamlit Community Cloud (teste confere com o uv.lock) e instrução de link público no README
+- [x] Sua mineradora em 30 segundos (busca no SIGBM por CNPJ ou nome, monta a torre sem atraso inventado, dado faltando para o que o SIGBM não informa, alertas do SIGBM), aba Entregas (registrar entrega com comprovante, responsável por obrigação, comentário, histórico, ações em lote, calendário do mês, Excel e .ics, boletim por responsável) e IA ao vivo com teto diário e limite por visita

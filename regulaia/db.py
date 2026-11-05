@@ -44,6 +44,11 @@ def conectar(caminho: str | Path = DB_PADRAO) -> sqlite3.Connection:
     # bancos criados antes da coluna de correção
     if "correcao" not in {r["name"] for r in conn.execute("PRAGMA table_info(obrigacao_versao)")}:
         conn.execute("ALTER TABLE obrigacao_versao ADD COLUMN correcao TEXT")
+    # colunas da importação do SIGBM (empresa real): ficam aqui para bancos antigos e novos
+    colunas = {r["name"] for r in conn.execute("PRAGMA table_info(empresa)")}
+    for col in ("monitorado_desde", "origem"):
+        if col not in colunas:
+            conn.execute(f"ALTER TABLE empresa ADD COLUMN {col} TEXT")
     return conn
 
 
@@ -62,18 +67,50 @@ def sem_sincronizar(conn):
 def limpar(conn) -> None:
     """Apaga todos os dados (menos o cache de IA), mantendo o arquivo e as conexões abertas."""
     with conn:
-        for tabela in ("acionamento", "evidencia", "obrigacao_versao", "obrigacao", "ato", "ativo", "empresa"):
+        for tabela in ("evento", "responsavel_obrigacao", "acionamento", "evidencia", "obrigacao_versao", "obrigacao", "ato", "ativo", "empresa"):
             conn.execute(f"DELETE FROM {tabela}")
 
 
 # --------------------------------------------------------------- empresa e ativo
 
 
-def criar_empresa(conn, nome: str, ficticia: bool = True) -> int:
+def criar_empresa(conn, nome: str, ficticia: bool = True, monitorado_desde: str | None = None,
+                  origem: str | None = None) -> int:
+    """`monitorado_desde`: a partir de quando a torre cobra (o que venceu antes não vira atraso)."""
     cur = conn.execute(
-        "INSERT INTO empresa (nome, ficticia) VALUES (?, ?)", (nome, int(ficticia))
+        "INSERT INTO empresa (nome, ficticia, monitorado_desde, origem) VALUES (?, ?, ?, ?)",
+        (nome, int(ficticia), monitorado_desde, origem),
     )
     return cur.lastrowid
+
+
+def empresas(conn) -> list[dict]:
+    """Fictícias primeiro (a demo), depois as importadas, na ordem em que entraram."""
+    return [dict(r) for r in conn.execute("SELECT * FROM empresa ORDER BY ficticia DESC, id")]
+
+
+def atualizar_atributos(conn, ativo_id: int, novos: dict, por: str | None = None) -> dict:
+    """Preenche ou corrige atributos de um ativo (ex.: o dado que faltava). Fica no histórico."""
+    r = conn.execute("SELECT atributos FROM ativo WHERE id = ?", (ativo_id,)).fetchone()
+    if r is None:
+        raise ErroCadastro(f"ativo {ativo_id} não existe")
+    atual = json.loads(r["atributos"])
+    mudou = {k: v for k, v in novos.items() if atual.get(k) != v}
+    if not mudou:
+        return atual
+    atual |= mudou
+    with conn:
+        conn.execute("UPDATE ativo SET atributos = ? WHERE id = ?",
+                     (json.dumps(atual, ensure_ascii=False), ativo_id))
+        conn.execute("INSERT INTO evento (ativo_id, tipo, texto, por) VALUES (?, 'cadastro', ?, ?)",
+                     (ativo_id, "; ".join(f"{k} = {_legivel(v)}" for k, v in mudou.items()), por))
+    return atual
+
+
+def _legivel(v) -> str:
+    if isinstance(v, bool):
+        return "sim" if v else "não"
+    return str(v)
 
 
 def criar_ativo(conn, empresa_id: int, tipo: str, codigo: str, nome: str,
@@ -319,6 +356,67 @@ def evidencias_do_ativo(conn, ativo_id: int, limite: int = 10) -> list[dict]:
         (ativo_id, limite),
     ).fetchall()
     return [dict(r) | {"extraido": json.loads(r["extraido"]) if r["extraido"] else None} for r in rows]
+
+
+def entregar(conn, ativo_id: int, codigo: str, periodo: str, *, dia: str, por: str | None = None,
+             arquivo: str | None = None, obs: str | None = None) -> int:
+    """Baixa manual: alguém diz que entregou o período, com ou sem arquivo. Encerra o que a
+    obrigação tinha acionado até o dia da entrega e fica no histórico."""
+    eid = registrar_evidencia(conn, ativo_id, codigo, periodo, arquivo=arquivo, recebida_em=dia,
+                              extraido={"baixa_manual": True, "por": por, "obs": obs})
+    encerrar_acionamentos(conn, ativo_id, codigo, dia)
+    texto = f"entregue {periodo}" + (f" ({arquivo})" if arquivo else "") + (f": {obs}" if obs else "")
+    registrar_evento(conn, ativo_id, codigo, "entrega", texto, por, em=dia)
+    return eid
+
+
+def desfazer_entrega(conn, ativo_id: int, codigo: str, periodo: str, por: str | None = None) -> bool:
+    with conn:
+        n = conn.execute("DELETE FROM evidencia WHERE ativo_id = ? AND obrigacao_id = ? AND periodo = ?",
+                         (ativo_id, _obrigacao_id(conn, codigo), periodo)).rowcount
+    if n:
+        registrar_evento(conn, ativo_id, codigo, "entrega", f"entrega de {periodo} desfeita", por)
+    return bool(n)
+
+
+def registrar_evento(conn, ativo_id: int, codigo: str | None, tipo: str, texto: str,
+                     por: str | None = None, em: str | None = None) -> None:
+    ob = _obrigacao_id(conn, codigo) if codigo else None
+    with conn:
+        conn.execute("INSERT INTO evento (ativo_id, obrigacao_id, tipo, texto, por, em) "
+                     "VALUES (?, ?, ?, ?, ?, COALESCE(?, datetime('now')))", (ativo_id, ob, tipo, texto, por, em))
+
+
+def atribuir(conn, ativo_id: int, codigo: str, responsavel: str, por: str | None = None) -> None:
+    """Quem responde por esta obrigação neste ativo. Vazio volta ao responsável do ativo."""
+    ob = _obrigacao_id(conn, codigo)
+    nome = responsavel.strip()
+    with conn:
+        if nome:
+            conn.execute("INSERT INTO responsavel_obrigacao (ativo_id, obrigacao_id, responsavel) VALUES (?, ?, ?) "
+                         "ON CONFLICT(ativo_id, obrigacao_id) DO UPDATE SET responsavel = excluded.responsavel",
+                         (ativo_id, ob, nome))
+        else:
+            conn.execute("DELETE FROM responsavel_obrigacao WHERE ativo_id = ? AND obrigacao_id = ?", (ativo_id, ob))
+    registrar_evento(conn, ativo_id, codigo, "responsavel", f"responsável: {nome or 'o do ativo'}", por)
+
+
+def responsaveis(conn) -> dict[tuple[int, str], str]:
+    """{(ativo_id, código): responsável} das obrigações que têm responsável próprio."""
+    return {(r["ativo_id"], r["codigo"]): r["responsavel"] for r in conn.execute(
+        "SELECT ro.ativo_id, o.codigo, ro.responsavel FROM responsavel_obrigacao ro "
+        "JOIN obrigacao o ON o.id = ro.obrigacao_id")}
+
+
+def eventos(conn, ativo_id: int, codigo: str | None = None, limite: int = 50) -> list[dict]:
+    """Histórico, mais recente primeiro. Com `codigo`: os da obrigação e os de cadastro do ativo."""
+    sql = ("SELECT ev.*, o.codigo FROM evento ev LEFT JOIN obrigacao o ON o.id = ev.obrigacao_id "
+           "WHERE ev.ativo_id = ?")
+    args: list = [ativo_id]
+    if codigo:
+        sql += " AND (o.codigo = ? OR ev.obrigacao_id IS NULL)"
+        args.append(codigo)
+    return [dict(r) for r in conn.execute(sql + " ORDER BY ev.em DESC, ev.id DESC LIMIT ?", (*args, limite))]
 
 
 def acionar(conn, ativo_id: int, codigo: str, dia: str, prazo: str, motivo: str,

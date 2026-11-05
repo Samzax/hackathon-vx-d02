@@ -29,6 +29,10 @@ class SemProvedor(RuntimeError):
     """Nenhum modelo da camada tem chave configurada, ou todos falharam."""
 
 
+class TetoAtingido(SemProvedor):
+    """O gasto de IA do dia chegou ao teto (REGULAIA_TETO_DIA_USD): só regra e cache até amanhã."""
+
+
 class RespostaInvalida(ValueError):
     pass
 
@@ -197,6 +201,11 @@ class Roteador:
             env = dict(os.environ)
         self.cfg = tomllib.loads(config.read_text(encoding="utf-8"))
         self.conn = conn
+        # no link público: teto de gasto por dia (UTC), somado do cache, que guarda o custo de cada chamada
+        try:
+            self.teto_dia_usd = float(env.get("REGULAIA_TETO_DIA_USD") or 0) or None
+        except ValueError:
+            self.teto_dia_usd = None
         if provedores is not None:
             self.provedores = provedores
         else:
@@ -252,6 +261,9 @@ class Roteador:
         modelos = self.candidatos(camada)
         if not modelos:
             raise SemProvedor(f"nenhum provedor da camada {camada} tem chave no .env")
+        if self.teto_dia_usd is not None and self.gasto_hoje() >= self.teto_dia_usd:
+            raise TetoAtingido(f"teto diário de IA atingido (US$ {self.teto_dia_usd:.2f}): "
+                               "até amanhã, só regra e respostas em cache")
         falhas = []
         for modelo in modelos:
             chave = self._chave(tarefa, modelo, versao_prompt, sistema, usuario)
@@ -267,6 +279,22 @@ class Roteador:
             self._guardar(chave, tarefa, modelo, dados, tin, tout, custo)
             return Resposta(dados, modelo, tin, tout, custo, tentativas=falhas)
         raise SemProvedor("todos os modelos falharam: " + " | ".join(falhas))
+
+    @property
+    def ligada(self) -> bool:
+        return bool(self.provedores)
+
+    def gasto_hoje(self) -> float:
+        if self.conn is None:
+            return 0.0
+        return self.conn.execute("SELECT COALESCE(SUM(custo_usd), 0) FROM analise_ia "
+                                 "WHERE date(criada_em) = date('now')").fetchone()[0]
+
+    def chamadas(self) -> int:
+        """Respostas guardadas: a diferença antes e depois de uma análise diz se houve chamada paga."""
+        if self.conn is None:
+            return 0
+        return self.conn.execute("SELECT COUNT(*) FROM analise_ia").fetchone()[0]
 
     def custo_total(self) -> float:
         if self.conn is None:

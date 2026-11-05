@@ -43,6 +43,8 @@ class Linha:
     evidencia: str | None = None
     nota: str = ""
     agenda: str = ""                       # DSL da versão que vale (ver agenda.py)
+    ativo_id: int | None = None
+    responsavel_proprio: bool = False      # a obrigação tem responsável próprio, não o do ativo
 
 
 def titulo_do_ato(texto: str, limite: int = 150) -> str:
@@ -100,11 +102,16 @@ def nome_ato(titulo: str | None) -> str | None:
     return " ".join(palavras)
 
 
+ULTIMA_EXECUCAO = "ultima_execucao"
+
+
 def campo_legivel(campo: str) -> str:
     """'modificacao_estrutural' -> 'se passou por modificação estrutural', pelo vocabulário que a
     regra usa. Campo fora do vocabulário passa como está."""
     from .extrator import VOCABULARIO
 
+    if campo == ULTIMA_EXECUCAO:
+        return "data da última execução"
     for atributos in VOCABULARIO.values():
         if campo in atributos:
             desc = atributos[campo]
@@ -161,10 +168,19 @@ def _herdadas(conn, ativo_id: int, codigo: str, titulo: str) -> tuple[list[str],
 
 
 def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = None) -> list[Linha]:
-    """Status de cada obrigação que vale hoje, por ativo. `desde` é o início do monitoramento."""
+    """Status de cada obrigação que vale hoje, por ativo. `desde` é o início do monitoramento.
+
+    Empresa importada do SIGBM tem o próprio `monitorado_desde`, que vale no lugar de `desde`; e
+    nela uma obrigação "a cada N anos" sem execução registrada não é atraso, é dado faltando: a
+    torre não sabe quando foi a última, e quem sabe é a empresa."""
+    emp = conn.execute("SELECT * FROM empresa WHERE id = ?", (empresa_id,)).fetchone()
+    importada = bool(emp and emp["monitorado_desde"])
+    if importada:
+        desde = date.fromisoformat(emp["monitorado_desde"])
     out = []
     metas = _metas(conn)
     abertos = db.acionamentos_abertos(conn, hoje.isoformat())
+    donos = db.responsaveis(conn)
     for a in _empresa_ativos(conn, empresa_id):
         if ativo and a["codigo"] != ativo:
             continue
@@ -174,8 +190,10 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
                 continue       # só a pendente vale hoje: aparece em mudancas()
             meta = metas.get(o.codigo, _SEM_META)
             ini = max(desde, date.fromisoformat(v["vigencia_desde"])) if v["vigencia_desde"] else desde
+            dono = donos.get((a["id"], o.codigo))
             linha = Linha(
-                ativo=a["codigo"], ativo_nome=a["nome"], tipo_ativo=a["tipo"], responsavel=a["responsavel"],
+                ativo=a["codigo"], ativo_nome=a["nome"], tipo_ativo=a["tipo"], responsavel=dono or a["responsavel"],
+                ativo_id=a["id"], responsavel_proprio=dono is not None,
                 codigo=o.codigo, norma=meta["norma"], area=meta["area"], titulo=v["titulo"],
                 artigo=v["artigo"], periodicidade=v["periodicidade"], status=agenda.GATILHO, agenda=v["agenda"],
                 dados_faltando=o.dados_faltando, mudanca_pendente=o.pendente is not None,
@@ -191,6 +209,11 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
                     evs, herdada = _herdadas(conn, a["id"], o.codigo, v["titulo"])
                 s = agenda.situacao(v["agenda"], evs, hoje, ini, prazo=_prazo_unico(v))
                 linha.status, linha.ultima, linha.nota = s.status, s.ultima, s.nota
+                if importada and not evs and re.fullmatch(r"(anos|meses):\d+", v["agenda"]):
+                    linha.status, linha.dados_faltando = DADO_FALTANDO, [ULTIMA_EXECUCAO]
+                    linha.nota = "sem a data da última execução: registre a entrega para a torre contar o prazo"
+                    out.append(linha)
+                    continue
                 if herdada:
                     linha.nota = (f"conta a última execução registrada em {herdada} "
                                   f"({_br(s.ultima)}), obrigação equivalente da norma anterior")
@@ -268,7 +291,8 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
     É o que iria por e-mail toda segunda; aqui só é gerado, nunca enviado."""
     ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id)
               if responsavel is None or a["responsavel"] == responsavel}
-    linhas = [l for l in painel(conn, empresa_id, hoje, desde) if l.ativo in ativos]
+    linhas = [l for l in painel(conn, empresa_id, hoje, desde)
+              if l.ativo in ativos or (responsavel and l.responsavel == responsavel)]
     atrasadas = [l for l in linhas if l.status == agenda.ATRASADA]
     faltando = [l for l in linhas if l.status == DADO_FALTANDO]
     limite = date.fromordinal(hoje.toordinal() + janela).isoformat()
@@ -345,7 +369,8 @@ def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str 
     limite = date.fromordinal(hoje.toordinal() + dias).isoformat()
     eventos = []
     for l in painel(conn, empresa_id, hoje, desde):
-        if l.ativo in ativos and l.vence and l.vence <= limite and l.status != agenda.CUMPRIDA:
+        meu = l.ativo in ativos or (responsavel and l.responsavel == responsavel)
+        if meu and l.vence and l.vence <= limite and l.status != agenda.CUMPRIDA:
             marca = "ATRASADA · " if l.status == agenda.ATRASADA else ""
             eventos.append((l.vence, f"{l.ativo}-{l.codigo}-vence",
                             f"{marca}{l.ativo} · {l.titulo}",
