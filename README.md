@@ -51,6 +51,19 @@ Os 66 trechos das normas oficiais são conferidos por teste (`tests/test_trechos
 
 O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto (`regulaia/extrator.py`), uma pessoa escolhe e ajusta (`curadoria/*.csv`) e o script gera o CSV final (`regulaia/curadoria.py`). Repetir o processo dá o mesmo resultado.
 
+## O que os testes garantem
+
+| Garantia | Teste |
+|---|---|
+| A Res. 245 muda só a OB-01, e só na B2; a Res. 246 não muda nada | `tests/test_impacto.py` (e `tests/test_ia_real.py` com o modelo de verdade) |
+| A IA não inventa: trecho que não está no ato ou data que não está no trecho é reprovado | `test_trecho_inventado_e_reprovado…`, `test_data_que_nao_esta_no_trecho…`, `test_ia_nao_pode_inventar_data` |
+| Ato sem relação com o cadastro não chama a IA; resposta repetida vem do cache, mesmo sem chave | `test_ato_sem_relacao_nao_chama_a_ia`, `test_cache_vale_mesmo_sem_chave` |
+| Cada trecho citado no cadastro existe no texto oficial (66 trechos) | `tests/test_trechos.py` |
+| Anomalia abre a ISE e ela só fecha com o relatório; na Res. 220 a regra é a do art. 42 | `tests/test_evidencias.py` |
+| ANM e MTE vencem juntas na ZAS depois de aprovada a Res. 245; sem aprovação, nada muda | `test_zas_aprovada_vence_junto_com_a_nr22_no_painel` |
+| Os números da documentação e do roteiro batem com o cadastro, a demo e o DOU | `tests/test_documentacao.py`, `test_numeros_do_funil_na_tela_e_nos_documentos` |
+| A imagem Docker leva o que a demo precisa e deixa de fora `.env` e dados brutos | `test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto` |
+
 ## Conteúdo
 
 | Caminho | O que é |

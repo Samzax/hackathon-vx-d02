@@ -93,3 +93,16 @@ def test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto():
         assert not _ignorado_no_docker(f, padroes), f"{f} ficaria fora da imagem"
     for f in [".env", ".env.local", "data/raw/sigbm.csv", "data/regulaia.db", ".git/config", ".venv/x"]:
         assert _ignorado_no_docker(f, padroes), f"{f} entraria na imagem"
+
+
+def test_readme_cita_testes_que_existem():
+    """A tabela 'O que os testes garantem' só pode citar teste e arquivo que existem."""
+    import re
+
+    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+    secao = readme.split("## O que os testes garantem")[1].split("\n## ")[0]
+    codigo = "\n".join(p.read_text(encoding="utf-8") for p in (RAIZ / "tests").glob("test_*.py"))
+    for nome in re.findall(r"`(test_\w+?)(?:…)?`", secao):
+        assert f"def {nome}" in codigo, nome
+    for arquivo in re.findall(r"`(tests/[\w/]+\.py)`", secao):
+        assert (RAIZ / arquivo).exists(), arquivo
