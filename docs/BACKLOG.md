@@ -32,3 +32,10 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] PDFs/zips como binário no Git (`.gitattributes`)
 - [x] Roteiro da demo de 3 minutos: `docs/ROTEIRO_DEMO.md`
 - [x] Teste da interface para o envio de evidência (FIR comum e FIR com anomalia)
+- [x] Boletim da semana por gestor (Markdown) e períodos em linguagem de gente
+- [x] Calendário .ics com os vencimentos de cada gestor
+- [x] Aba Mercado (SIGBM com fonte + premissas ajustáveis)
+- [x] Leitor de evidência para relatório de vaso NR-13 (externo/interno); PDF escaneado com aviso
+- [x] Histórico de cada obrigação (versões, origem, quem decidiu)
+- [x] Visão por norma e órgão na aba Hoje
+- [x] Aba Como funciona (diagrama com números vivos)
