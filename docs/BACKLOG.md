@@ -114,3 +114,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Código desconhecido depois de rótulo ("Barragem B9") também é apontado como "não é ativo cadastrado"; a mensagem genérica passa a mostrar o formato "Ativo: B3"
 - [x] Gatilho de ISE lê mais formatos: "EC 3 = 5", "EC-3 = 5", "EC3 (5)" e "Maior pontuação: 10" (antes passavam em branco, e a ISE obrigatória não abria); "pontuação 6" solta continua sem valer
 - [x] ARQUITETURA descreve as regras atuais do leitor: jeitos de citar o ativo, formatos de data e de colunas EC aceitos e o que não é adivinhado
+- [x] Gestor não registra documento de ativo de outro gestor (aviso diz quem registra; sem botão nem prévia do que abriria); a leitura mostra as colunas EC lidas do Quadro I.8 para conferência

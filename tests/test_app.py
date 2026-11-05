@@ -165,6 +165,8 @@ def test_fir_no_modelo_da_res220_dispara_ise_na_viagem_no_tempo(banco_temporario
     assert any("Res. ANM 220/2025, art. 42" in e.value for e in at.error)
     registrar = next(b for b in at.button if b.label.startswith("Registrar evidência"))
     assert registrar.label.endswith("FIR de B2 · 1ª quinzena de agosto/2027") and "OB-02" in registrar.help
+    lido = next(d.value for d in at.dataframe if "Estado de conservação" in d.value.columns)
+    assert lido.iloc[0]["Estado de conservação"] == "EC1 0 · EC2 5 · EC3 5 · EC4 0 · EC5 0"   # o que a regra leu
 
 
 def test_anomalia_registrada_fica_na_torre_ate_o_relatorio_da_ise(banco_temporario):
@@ -235,3 +237,16 @@ def test_cada_gestor_so_ve_os_ativos_dele(banco_temporario):
         vistos = set(re.findall(r"\b(?:B[1-9]|E[1-9]|L[1-9]|U[1-9])\b", texto))
         assert meus & vistos, gestor                       # vê os dele
         assert not (vistos & alheios), (gestor, sorted(vistos & alheios))
+
+
+def test_gestor_nao_registra_documento_de_ativo_alheio(banco_temporario):
+    """A FIR da B3 é da Geotecnia: a Manutenção da Usina vê o aviso e não tem o botão de registrar."""
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    for visao, pode in [("Manutenção da Usina", False), ("Gerência de Geotecnia", True)]:
+        at.sidebar.selectbox[0].select(visao).run()
+        next(s for s in at.selectbox if s.label.endswith("documento de exemplo")).select("FIR_B3_2026-10-1Q.pdf").run()
+        next(b for b in at.button if b.label == "Ler documento").click().run()
+        assert not at.exception
+        registrar = [b for b in at.button if b.label.startswith("Registrar evidência")]
+        aviso = [w.value for w in at.warning if "não está entre os ativos" in w.value]
+        assert bool(registrar) == pode and bool(aviso) != pode, visao

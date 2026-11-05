@@ -194,17 +194,23 @@ with aba_hoje:
         if "leitura" in st.session_state:
             nome, le = st.session_state["leitura"]
             st.markdown(f"**{nome}** · lido por {'regra' if le.metodo == 'regra' else 'IA (conferida)'}")
-            st.dataframe(pd.DataFrame([{
+            lido = {
                 "Ativo": le.ativo or "—", "Documento": le.documento or "—", "Obrigação": le.obrigacao or "—",
                 "Data de execução": _br(le.data), "Período comprovado": le.periodo or "—",
                 "Pontuação máxima": le.pontuacao_maxima if le.pontuacao_maxima is not None else "—",
-            }]), hide_index=True, width="stretch")
-            if le.ativo and le.ativo not in codigos_meus:
-                st.warning(f"O documento é de {le.ativo}, que não está entre os ativos de {visao}.")
+            }
+            if le.estado_conservacao:      # Quadro I.8 da Res. 220: quem confere vê o que a regra leu
+                lido["Estado de conservação"] = " · ".join(f"{c} {v}" for c, v in sorted(le.estado_conservacao.items()))
+            st.dataframe(pd.DataFrame([lido]), hide_index=True, width="stretch")
+            # cada gestor responde só pelos ativos dele: documento de outro ativo não é registrado nesta visão
+            alheio = bool(le.ativo) and le.ativo not in codigos_meus
+            if alheio:
+                st.warning(f"O documento é de {le.ativo}, que não está entre os ativos de {visao}. "
+                           "Quem registra é o responsável por esse ativo ou a Diretoria.")
             for g in le.gatilhos:
                 st.error(f"🚨 {g}")
             abre = [c for c in getattr(le, "acionar", []) if c != le.obrigacao]
-            if abre and le.completa:
+            if abre and le.completa and not alheio:
                 abertas = []
                 for c in abre:
                     v = db.versao(conn, c) or {}
@@ -217,7 +223,7 @@ with aba_hoje:
                 st.info(f"⏰ {a[:1].upper()}{a[1:]}")
             if le.completa:
                 o_que = f"{le.documento} de {le.ativo} · {agenda.rotulo_humano(le.periodo)}"
-            if le.completa and st.button(f"Registrar evidência: {o_que}", type="primary",
+            if le.completa and not alheio and st.button(f"Registrar evidência: {o_que}", type="primary",
                                          help=f"Dá baixa em {le.obrigacao}, período {le.periodo}"):
                 ev.registrar(conn, le, nome)
                 del st.session_state["leitura"]
