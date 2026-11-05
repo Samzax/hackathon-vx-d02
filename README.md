@@ -29,7 +29,11 @@ uv sync
 uv run pytest
 uv run python -m regulaia.demo                                  # monta o banco da demo
 uv run python -m collector.xml_dou data/raw/dou/S01082026.zip   # funil do mês
+uv run python -m regulaia.impacto data/raw/dou/S01082026.zip    # impacto com IA (precisa de chave no .env)
+RUN_IA=1 uv run pytest tests/test_ia_real.py -v                 # casos de ouro com o modelo real
 ```
+
+Para a IA, copie `.env.example` para `.env` e preencha ao menos uma chave. As respostas ficam em `data/cache_ia.db`: rodar de novo não custa nada e dá a mesma resposta, o que deixa a demo repetível sem internet.
 
 O ZIP mensal vem do [portal de dados abertos da Imprensa Nacional](https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados) (Seção 1, ano e mês) e fica em `data/raw/dou/`, fora do Git.
 

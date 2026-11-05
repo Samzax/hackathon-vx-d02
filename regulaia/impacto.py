@@ -25,6 +25,7 @@ VERSAO_PROMPT = "impacto-v1"
 CAMPOS = ("prazo", "vigencia_desde", "periodicidade", "aplica_se_a", "titulo", "evidencia")
 CAMPOS_DATA = ("prazo", "vigencia_desde")
 CONFIANCA_MINIMA = 0.7
+CACHE_IA = db.ROOT / "data" / "cache_ia.db"
 
 SISTEMA = """Você é analista de conformidade regulatória de barragens de mineração no Brasil.
 Recebe um ATO publicado no Diário Oficial e uma lista de OBRIGAÇÕES do cadastro de uma empresa.
@@ -208,7 +209,9 @@ def main(argv: list[str]) -> int:
         caminho.unlink()
     conn = db.conectar(caminho)
     ativos = demo.montar(conn)
-    roteador = Roteador(conn)
+    # O cache de IA fica num arquivo à parte: sobrevive à recriação do banco da demo,
+    # não paga duas vezes e deixa a demo repetível sem internet.
+    roteador = Roteador(db.conectar(CACHE_IA))
     print("Modelos disponíveis:",
           {c: [m.rotulo for m in roteador.candidatos(c)] for c in (2, 3)}, "\n")
 
@@ -229,12 +232,12 @@ def main(argv: list[str]) -> int:
             print("   >> precisa de revisão humana")
         ato_id = db.registrar_ato(conn, "dou", a.id_materia, a.identifica, ementa=a.ementa,
                                   publicado_em=a.pub_date.isoformat(), texto=a.text)
-        aplicar(conn, an, ato_id)
+        novas = set(aplicar(conn, an, ato_id))
         afetadas = sorted(
             codigo for codigo, aid in ativos.items()
-            if any(o.pendente for o in db.obrigacoes_do_ativo(conn, aid))
+            if any(o.pendente and o.pendente["id"] in novas for o in db.obrigacoes_do_ativo(conn, aid))
         )
-        print(f"   barragens com mudança pendente: {', '.join(afetadas) or 'nenhuma'}\n")
+        print(f"   barragens afetadas por este ato: {', '.join(afetadas) or 'nenhuma'}\n")
     print(f"Custo total de IA: US$ {roteador.custo_total():.5f}")
     return 0
 
