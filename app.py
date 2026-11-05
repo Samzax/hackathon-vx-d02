@@ -6,6 +6,7 @@ Uso: uv run streamlit run app.py
 from __future__ import annotations
 
 import hashlib
+from functools import partial
 import json
 from datetime import date
 
@@ -101,7 +102,8 @@ def _conexao(caminho: str):
 
 @st.cache_data(max_entries=32)
 def _pdf(md: str, titulo: str) -> bytes:
-    """O PDF só muda quando o texto muda: sem isso, cada clique pagaria ~0,4 s de reportlab."""
+    """O PDF só muda quando o texto muda. Os botões passam partial(_pdf, ...): o Streamlit só gera
+    o arquivo no clique, então mudar a data ou o gestor não paga reportlab."""
     return pdf.de_markdown(md, titulo)
 
 
@@ -230,7 +232,7 @@ with aba_hoje:
                    "Aqui o boletim é só gerado; nada é enviado.")
         sufixo = f"{hoje:%Y-%m-%d}_{(para or 'diretoria').replace(' ', '_')}"
         d1, d2, d3 = st.columns(3)
-        d1.download_button("Baixar boletim (PDF)", _pdf(texto_boletim, f"Boletim · {para or 'Diretoria'}"),
+        d1.download_button("Baixar boletim (PDF)", partial(_pdf, texto_boletim, f"Boletim · {para or 'Diretoria'}"),
                            file_name=f"boletim_{sufixo}.pdf", mime="application/pdf", type="primary")
         d2.download_button("Boletim em texto (.md)", texto_boletim, file_name=f"boletim_{sufixo}.md",
                            mime="text/markdown")
@@ -356,7 +358,7 @@ with aba_transicao:
         nome_plano = f"plano_transicao_{(para_t or 'diretoria').replace(' ', '_')}"
         b1, b2, _ = st.columns(3)
         b1.download_button("📋 Baixar plano de transição (PDF)",
-                           _pdf(plano_md, f"Plano de transição · {para_t or 'Diretoria'}"),
+                           partial(_pdf, plano_md, f"Plano de transição · {para_t or 'Diretoria'}"),
                            file_name=f"{nome_plano}.pdf", mime="application/pdf")
         b2.download_button("Plano em texto (.md)", plano_md, file_name=f"{nome_plano}.md", mime="text/markdown")
 

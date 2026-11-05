@@ -107,3 +107,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Celular (390 px): sem rolagem lateral; os 5 números do topo em duas linhas (antes ocupavam a tela inteira), rótulo sem corte e título menor. CSS só abaixo de 640 px: o desktop fica igual (conferido nas duas larguras)
 - [x] PREP.md em dia: XML mensal do DOU baixado e lido (7.884 atos), listagem conferida contra o XML, repositório e teste-ouro marcados como feitos; o pitch de 5 min continua em aberto (roteiro da demo de 3 min pronto)
 - [x] Rascunho do pitch de 5 min (docs/PITCH.md): problema com a Res. 245 (notícia diz 31/12, ato diz 26/12), por que agora, demo curta, viabilidade, mercado e premissas; teste confere cada número contra o SIGBM, as premissas da aba Mercado e a demo
+- [x] PDFs gerados só no clique (download_button com partial): mudar a data ou o gestor não paga mais reportlab; rerun estável em 0,34-0,36 s. Downloads conferidos no navegador
