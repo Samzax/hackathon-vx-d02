@@ -155,9 +155,11 @@ def test_custos_citados_batem_com_o_que_foi_gasto():
     assert f"Res. 95 inteira custou {usd(custo['res95_2022'])}. A NR-13, {usd(custo['nr13'])}" in roteiro
     radar = json.loads((RAIZ / "data" / "radar_demo.json").read_text(encoding="utf-8")) \
         if (RAIZ / "data" / "radar_demo.json").exists() else None
+    assert "| Analisar o impacto de um ato candidato do DOU | ~2 mil tokens de entrada | US$ 0,0005 a 0,003 |" in arq
+    assert "Cada análise custou menos de meio centavo de dólar" in roteiro
     if radar:      # gerado por demo.preparar (fora do Git): por ato, a análise fica na faixa citada
         for r in radar:
-            assert 0.0005 <= r.get("custo_original_usd", r["custo_usd"]) <= 0.002, r["ato"]
+            assert 0.0005 <= r.get("custo_original_usd", r["custo_usd"]) <= 0.003, r["ato"]
 
 
 def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():

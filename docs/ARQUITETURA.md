@@ -162,7 +162,7 @@ Mais duas proteções:
 | Extrair obrigações da Res. ANM 95/2022 (norma inteira) | 1 vez por norma | US$ 0,065 |
 | Extrair obrigações da NR-13 | 1 vez por norma | US$ 0,045 |
 | Extrair obrigações da NR-22 (capítulo de barragens) | 1 vez por norma | US$ 0,009 |
-| Analisar o impacto de um ato candidato do DOU | ~2 mil tokens de entrada | US$ 0,0005 a 0,002 |
+| Analisar o impacto de um ato candidato do DOU | ~2 mil tokens de entrada | US$ 0,0005 a 0,003 |
 | Funil de um mês do DOU (7.884 atos) | 825 da ANM → 2 candidatos para a IA | menos de US$ 0,01 |
 
 As regras resolvem 99,97% do volume. A IA só vê o que sobrou, e cada resposta fica em cache.

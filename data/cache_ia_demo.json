@@ -380,6 +380,16 @@
   "custo_usd": 0.00098625
  },
  {
+  "chave": "e37bd08bd1bcd7bfffac98bc0fb552db6c0e34581270fff37af882ac7b65ba32",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"OB-01\", \"campo\": \"prazo\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"O ato fixa a entrada em vigor do § 1º do art. 7º em 26/12/2029, deslocando o prazo da obrigação vinculada a esse dispositivo.\"}, {\"obrigacao\": \"OB-01\", \"campo\": \"vigencia_desde\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"A vigência da obrigação vinculada ao § 1º do art. 7º passa a começar em 26/12/2029.\"}], \"motivo\": \"A Resolução altera apenas a data de entrada em vigor do § 1º do art. 7º da Res. ANM 220/2025 para 26/12/2029; as demais datas permanecem 22/04/2027 e 02/08/2027, sem mudança nas obrigações correspondentes.\", \"confianca\": 0.95}",
+  "tokens_in": 1967,
+  "tokens_out": 3369,
+  "custo_usd": 0.00231645
+ },
+ {
   "chave": "eac11f2d2f8351248e6ee4eb6e10c5b451d79f8926a7268f8a08fc97c000d6ed",
   "tarefa": "extrator",
   "provedor": "opencode",

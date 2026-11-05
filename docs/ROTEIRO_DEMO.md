@@ -32,7 +32,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 ## 4. Radar do DOU (30 s)
 
 - Funil de agosto/2026: 7.884 atos → 825 da ANM → 2 normativos para a IA → 1 muda o cadastro.
-- **Fala:** "Regra antes de IA: 99,97% do volume nunca chega ao modelo. Cada análise custou cerca de um décimo de centavo de dólar, e a resposta fica em cache. A empresa pode usar a própria conta de IA (Bedrock, Anthropic), então os documentos dela não saem de casa."
+- **Fala:** "Regra antes de IA: 99,97% do volume nunca chega ao modelo. Cada análise custou menos de meio centavo de dólar, e a resposta fica em cache. A empresa pode usar a própria conta de IA (Bedrock, Anthropic), então os documentos dela não saem de casa."
 
 ## Se perguntarem
 
