@@ -83,3 +83,18 @@ uv run python -m regulaia.curadoria ...                         # escolhas human
 A interface funciona sem chave e sem internet. As respostas da IA ficam em `data/cache_ia.db`, então a demo repete exatamente igual. Para chamar a IA de verdade, copie `.env.example` para `.env` e preencha ao menos uma chave.
 
 O ZIP mensal vem do [portal de dados abertos da Imprensa Nacional](https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados) (Seção 1, ano e mês) e fica em `data/raw/dou/`, fora do Git. O coletor não acessa o site do DOU, porque o `robots.txt` de www.in.gov.br proíbe robôs.
+
+## Rodar na nuvem (AWS)
+
+O `Dockerfile` empacota a torre com as dependências de produção (sem pytest nem reportlab):
+
+```bash
+docker build -t regulaia .
+docker run -p 8501:8501 regulaia
+```
+
+Sem chave e sem internet, a demo roda do cache (`data/cache_ia_demo.json`). Para usar a IA de verdade, passe as chaves por variável de ambiente (`--env-file .env` ou os segredos do serviço). O `.env` nunca entra na imagem.
+
+Na AWS, a mesma imagem serve para os três caminhos: App Runner (mais simples: aponta para a imagem no ECR, porta 8501), ECS Fargate ou uma EC2 com Docker. A verificação de saúde está em `/_stcore/health`. O Bedrock entra como provedor de IA por configuração (ver [docs/ARQUITETURA.md](docs/ARQUITETURA.md)).
+
+> A imagem ainda não foi construída nesta máquina (Docker Desktop desligado). Conferido sem Docker: o app abre sem erro só com as dependências de produção (`uv sync --no-dev`).

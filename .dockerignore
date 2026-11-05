@@ -1,0 +1,21 @@
+# segredos nunca entram na imagem
+.env
+.env.*
+!.env.example
+
+# dados brutos (o CSV do SIGBM tem CPF) e caches locais
+data/raw/
+data/anm/
+cache/
+*.db
+*.db-journal
+data/radar_demo.json
+data/extraido/log_*.txt
+
+# ambiente local
+.venv/
+.git/
+.pytest_cache/
+__pycache__/
+*.pyc
+.claude/
