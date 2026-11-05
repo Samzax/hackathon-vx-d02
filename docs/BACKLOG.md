@@ -80,3 +80,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] PREP.md atualizado (24 obrigações da Res. 220, 21 da Res. 95 conferidas); teste dos números inclui o PREP
 - [x] Roteiro: pergunta sobre a data da notícia da ANM (31/12) contra o ato (26/12)
 - [x] uv.lock conferido; teste do .dockerignore: a imagem leva o que a demo lê ao iniciar e deixa de fora .env, dados brutos e bancos
+- [x] Ato colado ganha o mesmo cartão em Mudanças (porquê, conferência, escopo); a conferência só lista o que o Python checou de fato

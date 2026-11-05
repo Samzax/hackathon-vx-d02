@@ -131,15 +131,19 @@ def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU, cache: Path |
                                   publicado_em=a.pub_date.isoformat(), texto=a.text)
         impacto.aplicar(conn, an, ato_id)
         analises.append(an)
-    RADAR.write_text(json.dumps([
-        {"ato": an.ato, "candidatas": [c.codigo for c in an.candidatas], "motivo": an.motivo,
-         "confianca": an.confianca, "modelos": an.modelos, "custo_usd": an.custo_usd,
-         "custo_original_usd": an.custo_original_usd,
-         "revisao_humana": an.revisao_humana,
-         "mudancas": [{"obrigacao": m.obrigacao, "campo": m.campo, "valor_novo": m.valor_novo,
-                       "reprovada": m.reprovada} for m in an.mudancas]}
-        for an in analises], ensure_ascii=False, indent=1), encoding="utf-8")
+    RADAR.write_text(json.dumps([registro_radar(an) for an in analises], ensure_ascii=False, indent=1),
+                     encoding="utf-8")
     return conn, ids, analises
+
+
+def registro_radar(an) -> dict:
+    """O que a interface mostra de uma análise de ato: candidatas, motivo, modelo, custo e mudanças."""
+    return {"ato": an.ato, "candidatas": [c.codigo for c in an.candidatas], "motivo": an.motivo,
+            "confianca": an.confianca, "modelos": an.modelos, "custo_usd": an.custo_usd,
+            "custo_original_usd": an.custo_original_usd,
+            "revisao_humana": an.revisao_humana,
+            "mudancas": [{"obrigacao": m.obrigacao, "campo": m.campo, "valor_novo": m.valor_novo,
+                          "reprovada": m.reprovada} for m in an.mudancas]}
 
 
 def main(argv: list[str]) -> int:

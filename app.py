@@ -120,7 +120,7 @@ with st.sidebar:
     st.caption(f"Histórico monitorado desde {desde:%d/%m/%Y}.")
     if st.button("Recriar demo", help="Apaga decisões e volta ao estado inicial"):
         _conexao.clear()
-        for k in ("leitura", "analise_teste", "ato_teste"):
+        for k in ("leitura", "analise_teste", "ato_teste", "radar_teste"):
             st.session_state.pop(k, None)
         st.rerun()
 
@@ -378,6 +378,7 @@ with aba_mudancas:
         st.success("Nenhuma mudança aguardando decisão para os seus ativos.")
     radar_por_ato = {torre.nome_ato(r["ato"]): r for r in (json.loads(demo.RADAR.read_text(encoding="utf-8"))
                                            if demo.RADAR.exists() else [])}
+    radar_por_ato.update(st.session_state.get("radar_teste", {}))
     for m in pendentes:
         with st.container(border=True):
             st.markdown(f"#### {m.codigo} · {m.titulo}")
@@ -389,8 +390,10 @@ with aba_mudancas:
             r = radar_por_ato.get(m.ato)
             if r:
                 st.caption(f"Por quê: {r['motivo']}")
-                st.caption(f"Conferido pelo Python: o trecho existe no ato ✓ · as datas propostas aparecem no trecho ✓ · "
-                           f"modelo {' → '.join(r['modelos'])} · "
+                com_data = any(x["campo"] in impacto.CAMPOS_DATA for x in r["mudancas"] if not x["reprovada"])
+                st.caption("Conferido pelo Python: a obrigação estava entre as candidatas ✓ · o trecho existe no ato ✓ · "
+                           + ("as datas propostas aparecem no trecho ✓ · " if com_data else "")
+                           + f"modelo {' → '.join(r['modelos'])} · "
                            f"custo {_usd(r.get('custo_original_usd', r['custo_usd']))}")
                 st.markdown(_escopo(r, m))
             st.markdown(f"Ativos afetados: **{', '.join(m.ativos)}**")
@@ -514,6 +517,8 @@ with aba_radar:
                 ato_id = db.registrar_ato(conn, "teste", "teste-" + hashlib.sha256(
                     texto_salvo.encode("utf-8")).hexdigest()[:16], titulo_ato, texto=texto_salvo)
                 impacto.aplicar(conn, an, ato_id)
+                # o cartão em Mudanças mostra o porquê e a conferência também para o ato colado
+                st.session_state.setdefault("radar_teste", {})[torre.nome_ato(titulo_ato)] = demo.registro_radar(an)
                 del st.session_state["analise_teste"]
                 st.toast("Mudança proposta: aprove ou rejeite na aba Mudanças.")
                 st.rerun()

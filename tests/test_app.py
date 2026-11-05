@@ -144,6 +144,11 @@ def test_ato_ficticio_vira_mudanca_pendente(banco_temporario, monkeypatch):
     assert len([b for b in at.button if b.label == "Aprovar"]) == 2       # Res. 245 e o ato de teste
     tabela = " ".join(m.value for m in at.markdown)
     assert "| Agenda | quinzenal, até o fim de cada quinzena | **semanal, até o fim de cada semana** |" in tabela  # por regra
+    # o cartão do ato colado tem o mesmo porquê e a mesma conferência que o da Res. 245
+    assert "**Muda 1 obrigação (R95-01).** As outras 20 da Res. ANM 95/2022 ficam iguais." in tabela
+    conferidos = [c.value for c in at.caption if c.value.startswith("Conferido pelo Python")]
+    assert len(conferidos) == 2
+    assert sum("as datas propostas aparecem no trecho" in c for c in conferidos) == 1   # só a Res. 245 muda data
 
 
 def test_fir_no_modelo_da_res220_dispara_ise_na_viagem_no_tempo(banco_temporario):
