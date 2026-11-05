@@ -246,6 +246,12 @@ with aba_transicao:
     trocas = [t for t in torre.transicao(conn, empresa["id"], TROCA_NORMA) if t.ativo in codigos_meus]
     if not trocas:
         st.info("Nenhum dos seus ativos muda de obrigação na troca de norma.")
+    else:
+        para_t = None if visao.startswith("Diretoria") else visao
+        st.download_button("📋 Baixar plano de transição (.md)",
+                           torre.plano_transicao(conn, empresa["id"], TROCA_NORMA, hoje, responsavel=para_t),
+                           file_name=f"plano_transicao_{(para_t or 'diretoria').replace(' ', '_')}.md",
+                           mime="text/markdown")
 
     def _lista(os_):
         if not os_:

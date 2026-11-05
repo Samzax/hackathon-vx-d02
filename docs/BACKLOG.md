@@ -39,3 +39,5 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Histórico de cada obrigação (versões, origem, quem decidiu)
 - [x] Visão por norma e órgão na aba Hoje
 - [x] Aba Como funciona (diagrama com números vivos)
+- [x] Recibo do EIR com aviso de entrega fora do prazo; upload de arquivo inválido sem quebrar a tela
+- [x] Plano de transição para download (o que continua, o que é novo, o que não tem equivalente)

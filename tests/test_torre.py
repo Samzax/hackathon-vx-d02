@@ -154,3 +154,13 @@ def test_calendario_mostra_quando_a_res_220_comeca(serra):
     conn, _ = serra
     ics = torre.calendario(conn, 1, HOJE, DESDE, dias=365 * 4).replace("\r\n ", "")
     assert "DTSTART;VALUE=DATE:20270802" in ics and "Começa a valer: B" in ics
+
+
+def test_plano_de_transicao(serra):
+    conn, _ = serra
+    p = torre.plano_transicao(conn, 1, date(2027, 8, 2), HOJE)
+    assert "faltam 268 dias" in p and "## B1 · Barragem Serra I" in p
+    assert "**Revisão Periódica (RPSB)** — 🔁 continua" in p
+    assert "deixa de existir" not in p                     # cadastro da 220 é parcial: não afirmar o que não sabe
+    so_usina = torre.plano_transicao(conn, 1, date(2027, 8, 2), HOJE, responsavel="Manutenção da Usina")
+    assert "Nenhum dos ativos muda" in so_usina

@@ -315,6 +315,39 @@ def pares(troca: Troca) -> list[Par]:
     return sorted(grupos.values(), key=lambda p: ordem.index(p.tema))
 
 
+def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: str | None = None) -> str:
+    """Plano de transição em Markdown: por ativo, o que continua, o que é novo e o que acaba
+    na troca de norma de `dia`. É o documento que a empresa montaria lendo as duas resoluções."""
+    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id)
+              if responsavel is None or a["responsavel"] == responsavel}
+    trocas = [t for t in transicao(conn, empresa_id, dia) if t.ativo in ativos]
+    faltam = (dia - hoje).days
+    out = [f"# Plano de transição — {responsavel or 'Diretoria'}", "",
+           f"Troca de norma em {dia:%d/%m/%Y} (faltam {faltam} dias). Gerado em {hoje:%d/%m/%Y}.", ""]
+    if not trocas:
+        out.append("Nenhum dos ativos muda de obrigação nessa data.")
+    novas_total = 0
+    for t in trocas:
+        a = ativos[t.ativo]
+        out += [f"## {t.ativo} · {a['nome']} ({a['responsavel']})", ""]
+        for p in pares(t):
+            if p.saem and p.entram:
+                rotulo = "🔁 continua, com regra nova"
+            elif p.entram:
+                rotulo = "🆕 nova: preparar antes da data"
+                novas_total += len(p.entram)
+            else:
+                rotulo = "➖ sem equivalente no cadastro da nova norma: conferir antes de abandonar"
+            out.append(f"- **{p.tema}** — {rotulo}")
+            out += [f"  - antes: {o['titulo']} ({o['artigo']})" for o in p.saem]
+            out += [f"  - depois: {o['titulo']} ({o['artigo']})" for o in p.entram]
+        out.append("")
+    if trocas:
+        out.insert(4, f"{len(trocas)} ativos afetados · {novas_total} obrigações sem equivalente na norma atual.\n")
+    out.append("Gerado pela RegulaIA a partir do cadastro aprovado. Mudanças ainda pendentes não entram.")
+    return "\n".join(out)
+
+
 # ------------------------------------------------------------------- mudanças
 
 
