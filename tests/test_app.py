@@ -212,3 +212,24 @@ def test_viagem_no_tempo_explica_os_atrasos(banco_temporario):
     assert not [i for i in at.info if i.value.startswith("Viagem no tempo")]
     next(b for b in at.button if b.label == "Res. 220").click().run()
     assert [i for i in at.info if i.value.startswith("Viagem no tempo: 02/08/2027. As entregas da demo vão até 07/11/2026")]
+
+
+def test_cada_gestor_so_ve_os_ativos_dele(banco_temporario):
+    """A promessa do produto: o gestor vê só os ativos dele em todas as abas (texto, tabelas e títulos)."""
+    import json
+    import re
+
+    ativos = json.loads((Path(APP).parent / "data" / "serra_azul.json").read_text(encoding="utf-8"))["ativos"]
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    for gestor in sorted({a["responsavel"] for a in ativos}):
+        meus = {a["codigo"] for a in ativos if a["responsavel"] == gestor}
+        alheios = {a["codigo"] for a in ativos} - meus
+        at.sidebar.selectbox[0].select(gestor).run()
+        assert not at.exception
+        partes = [e.value for tipo in (at.markdown, at.caption, at.info, at.warning, at.error) for e in tipo]
+        partes += [e.label for e in at.expander]
+        partes += [d.value.to_string() for d in at.dataframe]
+        texto = "\n".join(str(p) for p in partes)
+        vistos = set(re.findall(r"\b(?:B[1-9]|E[1-9]|L[1-9]|U[1-9])\b", texto))
+        assert meus & vistos, gestor                       # vê os dele
+        assert not (vistos & alheios), (gestor, sorted(vistos & alheios))

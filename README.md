@@ -67,6 +67,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | ANM e MTE vencem juntas na ZAS depois de aprovada a Res. 245; sem aprovação, nada muda | `test_zas_aprovada_vence_junto_com_a_nr22_no_painel` |
 | Os números da documentação e do roteiro batem com o cadastro, a demo e o DOU | `tests/test_documentacao.py`, `test_numeros_do_funil_na_tela_e_nos_documentos` |
 | O boletim não contradiz o amarelo da tela; o PDF sai sem emoji quebrado nem marcação crua | `test_boletim_bate_com_o_amarelo_da_torre`, `tests/test_pdf.py` |
+| Cada gestor só vê os ativos dele, em todas as abas (texto, tabelas e títulos) | `test_cada_gestor_so_ve_os_ativos_dele` |
 | A imagem Docker leva o que a demo precisa e deixa de fora `.env` e dados brutos | `test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto` |
 
 ## Conteúdo
