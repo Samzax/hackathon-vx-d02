@@ -13,7 +13,10 @@ A Resolução ANM nº 245/2026 adiou o art. 7 §1 da Res. ANM 220/2025 de 2 ago.
 | Arquivo | O que é |
 |---|---|
 | [PREP.md](PREP.md) | Pesquisa, fontes de dados, critérios de avaliação e pendências |
-| [seed_obligations.csv](seed_obligations.csv) | 15 obrigações da Res. 220/2025. A OB-01 é o teste principal |
+| [docs/ARQUITETURA.md](docs/ARQUITETURA.md) | Decisões de arquitetura: banco, custo da IA, provedores |
+| [seed_obligations.csv](seed_obligations.csv) | 15 obrigações da Res. 220/2025, no estado anterior à Res. 245. A OB-01 é o teste principal |
+| `regulaia/` | Banco (SQLite), versionamento de obrigações e regras de aplicabilidade |
+| `collector/` | Leitura de páginas do DOU já salvas em cache |
 
 ## Como rodar
 
