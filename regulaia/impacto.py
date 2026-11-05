@@ -16,7 +16,6 @@ import re
 import sys
 from dataclasses import dataclass, field
 from datetime import date
-from pathlib import Path
 
 from . import agenda, db, triagem
 from .ia import Roteador, SemProvedor

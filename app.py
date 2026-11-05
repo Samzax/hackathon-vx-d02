@@ -125,7 +125,7 @@ with aba_hoje:
     linhas = [l for l in torre.painel(conn, empresa["id"], hoje, desde) if l.ativo in codigos_meus]
     cont = {s: sum(1 for l in linhas if l.status == s) for s in ROTULO}
     cols = st.columns(5)
-    for col, s in zip(cols, [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO]):
+    for col, s in zip(cols, [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO], strict=True):
         col.metric(ROTULO[s], cont[s])
 
     with st.expander("📄 Enviar evidência — a operação manda o documento, a torre dá baixa sozinha"):

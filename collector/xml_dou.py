@@ -76,7 +76,7 @@ def _parts(zip_path: Path):
                 continue
             body = art.find("body")
 
-            def field(tag: str) -> str:
+            def field(tag: str, body=body) -> str:
                 el = body.find(tag) if body is not None else None
                 return (el.text or "").strip() if el is not None else ""
 

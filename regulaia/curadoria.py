@@ -50,7 +50,7 @@ def montar(extracao: dict, escolhas: list[dict], norma: str, tipo: str,
     out = []
     for e in escolhas:
         p = _achar(extracao["propostas"], e["artigo"], e.get("titulo_contem") or "")
-        def campo(nome, padrao=None):
+        def campo(nome, padrao=None, e=e):
             return (e.get(nome) or "").strip() or padrao
         linha = {
             "id": e["codigo"], "tipo_ativo": tipo, "norma": norma,

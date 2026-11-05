@@ -112,7 +112,7 @@ def faltantes(regra: str, atributos: dict) -> list[str]:
         valores = [_vale(c, atributos) for c in grupo]
         if False in valores:
             continue           # esta alternativa já não vale, com ou sem o dado que falta
-        falta += [c[0] for c, v in zip(grupo, valores) if v is None and c[0] not in falta]
+        falta += [c[0] for c, v in zip(grupo, valores, strict=True) if v is None and c[0] not in falta]
     return falta
 
 
