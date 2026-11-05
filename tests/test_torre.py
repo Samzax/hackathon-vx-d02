@@ -233,3 +233,9 @@ def test_rpsb_alteamento_continuo_tem_periodicidade_legivel():
 
     with open(Path(__file__).parent.parent / "cadastro" / "res95_2022.csv", encoding="utf-8") as f:
         assert not [r["id"] for r in csv.DictReader(f) if " N " in r["periodicidade"]]
+
+
+def test_nome_do_ato_sem_as_maiusculas_do_dou():
+    assert torre.nome_ato("Resolução ANM Nº 245, DE 31 DE julho DE 2026") == "Resolução ANM nº 245, de 31 de julho de 2026"
+    assert torre.nome_ato("PORTARIA MTE Nº 105, DE 5 DE MAIO DE 2026") == "Portaria MTE nº 105, de 5 de maio de 2026"
+    assert torre.nome_ato("Ato colado na tela") == "Ato colado na tela" and torre.nome_ato(None) is None

@@ -56,6 +56,25 @@ def artigo_curto(norma: str | None, artigo: str | None) -> str:
     return (artigo or "").removeprefix(norma or "").strip()
 
 
+_SIGLAS = {"SIGBM", "IBAMA", "SNTEP", "SUPAS"}
+
+
+def nome_ato(titulo: str | None) -> str | None:
+    """'RESOLUÇÃO ANM Nº 245, DE 31 DE JULHO DE 2026' (como o DOU publica) vira
+    'Resolução ANM nº 245, de 31 de julho de 2026'. Siglas curtas (ANM, MTE) ficam."""
+    if not titulo:
+        return titulo
+    palavras = []
+    for i, p in enumerate(titulo.split(" ")):
+        nucleo = p.strip(",.;:")
+        if nucleo in ("DE", "DA", "DO", "DAS", "DOS", "E", "Nº", "N°") or nucleo.lower() in agenda._MESES:
+            p = p.lower()
+        elif nucleo.isupper() and len(nucleo) >= 5 and nucleo not in _SIGLAS:
+            p = p.capitalize() if i == 0 else p.lower()
+        palavras.append(p)
+    return " ".join(palavras)
+
+
 def _minuscula(texto: str) -> str:
     """'Relatório de ISE' -> 'relatório de ISE'; siglas ('FIE, EIE...') ficam como estão."""
     return texto[0].lower() + texto[1:] if len(texto) > 1 and texto[1].islower() else texto
@@ -487,7 +506,7 @@ def mudancas(conn, empresa_id: int) -> list[Mudanca]:
         afetados = [a["codigo"] for a in ativos
                     if any(o.codigo == r["codigo"] and o.pendente for o in db.obrigacoes_do_ativo(conn, a["id"]))]
         out.append(Mudanca(r["id"], r["codigo"], vig["titulo"], db.diferencas(vig, pen),
-                           r["ato"], r["publicado_em"], pen["trecho"], pen["fonte"], afetados))
+                           nome_ato(r["ato"]), r["publicado_em"], pen["trecho"], pen["fonte"], afetados))
     return out
 
 

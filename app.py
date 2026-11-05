@@ -38,6 +38,11 @@ def _curto(texto: str, n: int = 70) -> str:
     return texto if len(texto) <= n else texto[:n].rsplit(" ", 1)[0] + "…"
 
 
+def _usd(valor: float, casas: int = 4) -> str:
+    """US$ com vírgula decimal (o $ escapado não vira fórmula no Markdown)."""
+    return "US\\$ " + f"{valor:.{casas}f}".replace(".", ",")
+
+
 def _br(valor):
     """AAAA-MM-DD -> DD/MM/AAAA; o resto passa como está."""
     try:
@@ -338,7 +343,7 @@ with aba_mudancas:
     pendentes = [m for m in torre.mudancas(conn, empresa["id"]) if set(m.ativos) & codigos_meus]
     if not pendentes:
         st.success("Nenhuma mudança aguardando decisão para os seus ativos.")
-    radar_por_ato = {r["ato"]: r for r in (json.loads(demo.RADAR.read_text(encoding="utf-8"))
+    radar_por_ato = {torre.nome_ato(r["ato"]): r for r in (json.loads(demo.RADAR.read_text(encoding="utf-8"))
                                            if demo.RADAR.exists() else [])}
     for m in pendentes:
         with st.container(border=True):
@@ -353,7 +358,7 @@ with aba_mudancas:
                 st.caption(f"Por quê: {r['motivo']}")
                 st.caption(f"Conferido pelo Python: o trecho existe no ato ✓ · as datas propostas aparecem no trecho ✓ · "
                            f"modelo {' → '.join(r['modelos'])} · "
-                           f"custo US\\$ {r.get('custo_original_usd', r['custo_usd']):.4f}")
+                           f"custo {_usd(r.get('custo_original_usd', r['custo_usd']))}")
             st.markdown(f"Ativos afetados: **{', '.join(m.ativos)}**")
             b1, b2, _ = st.columns([1, 1, 4])
             if b1.button("Aprovar", key=f"ok{m.versao_id}", type="primary"):
@@ -370,7 +375,7 @@ with aba_mudancas:
     if decididas:
         st.markdown("##### Decisões registradas")
         st.markdown("| Obrigação | Ato | Decisão | Por | Quando (UTC) |\n|---|---|---|---|---|\n" + "\n".join(
-            f"| {r['codigo']} | {r['ato'] or '—'} | {'❌ rejeitada' if r['status'] == 'rejeitada' else '✅ aprovada'} "
+            f"| {r['codigo']} | {torre.nome_ato(r['ato']) or '—'} | {'❌ rejeitada' if r['status'] == 'rejeitada' else '✅ aprovada'} "
             f"| {r['decidida_por'].split(' (')[0]} | {r['decidida_em']} |" for r in decididas))
 
     st.markdown("##### Histórico de uma obrigação")
@@ -382,20 +387,22 @@ with aba_mudancas:
                            + (" (já mudou)" if c in com_mudanca else ""))
     if escolha:
         anterior = None
+        norma_escolha = conn.execute("SELECT norma FROM obrigacao WHERE codigo = ?", (escolha,)).fetchone()["norma"]
         for v in db.historico(conn, escolha):
             selo = {"vigente": "🟢 vigente", "substituida": "⚪ substituída", "pendente": "⏳ pendente",
                     "rejeitada": "❌ rejeitada"}[v["status"]]
-            origem = v["ato"] or v["fonte"] or "cadastro inicial"
+            origem = torre.nome_ato(v["ato"]) or v["fonte"] or "cadastro inicial"
             st.markdown(f"**Versão {v['versao']}** · {selo} · origem: {origem}"
-                        + (f" · decidida por {v['decidida_por'].split(' (')[0]} em {v['decidida_em']} UTC"
+                        + (f" · decidida por {v['decidida_por'].split(' (')[0]} em {_br(v['decidida_em'][:10])}"
                            if v["decidida_por"] else ""))
             if anterior:
                 mudou = db.diferencas(anterior, v)
                 if mudou:
                     st.markdown("; ".join(f"{CAMPO.get(c, c)}: {_br(a)} → **{_br(b)}**" for c, (a, b) in mudou.items()))
             else:
-                st.markdown(f"Prazo: {_br(v['prazo'])} · vale de {_br(v['vigencia_desde'])} "
-                            f"até {_br(v['vigencia_ate']) if v['vigencia_ate'] else 'sem fim'} · {v['artigo']}")
+                vale = (f"vale de {_br(v['vigencia_desde'])} até {_br(v['vigencia_ate'])}" if v["vigencia_ate"]
+                        else f"vale a partir de {_br(v['vigencia_desde'])}")
+                st.markdown(f"Prazo: {_br(v['prazo'])} · {vale} · {torre.dispositivo(norma_escolha, v['artigo'])}")
             if v["trecho"]:
                 st.caption(f"“{v['trecho']}”")
             anterior = v
@@ -417,16 +424,16 @@ with aba_radar:
     if gastos:
         nomes = {"impacto": "análise de impacto de atos", "extrator": "extração de obrigações de normas"}
         st.markdown("**Custo real de IA até agora** (cada resposta fica em cache e não é paga de novo): " + " · ".join(
-            f"{nomes.get(g['tarefa'], g['tarefa'])}: {g['n']} chamadas, US\\$ {g['usd']:.3f}" for g in gastos))
+            f"{nomes.get(g['tarefa'], g['tarefa'])}: {g['n']} chamadas, {_usd(g['usd'], 3)}" for g in gastos))
     radar = json.loads(demo.RADAR.read_text(encoding="utf-8")) if demo.RADAR.exists() else []
     for r in radar:
         with st.container(border=True):
             mud = [x for x in r["mudancas"] if not x["reprovada"]]
-            st.markdown(f"**{r['ato']}** — {'muda ' + ', '.join(sorted({x['obrigacao'] for x in mud})) if mud else 'não muda o cadastro'}")
+            st.markdown(f"**{torre.nome_ato(r['ato'])}** — {'muda ' + ', '.join(sorted({x['obrigacao'] for x in mud})) if mud else 'não muda o cadastro'}")
             st.caption(r["motivo"])
             st.caption(f"Obrigações enviadas à IA: {', '.join(r['candidatas']) or 'nenhuma'} · "
                        f"modelo: {' → '.join(r['modelos'])} · confiança {r['confianca']} · "
-                       f"custo US\\$ {r.get('custo_original_usd', r['custo_usd']):.4f}"
+                       f"custo {_usd(r.get('custo_original_usd', r['custo_usd']))}"
                        + (" (resposta já em cache: não foi paga de novo)" if not r["custo_usd"] else ""))
 
 ATO_EXEMPLO = """RESOLUÇÃO FICTÍCIA DE TESTE Nº 1, DE 2 DE MARÇO DE 2027
@@ -461,7 +468,7 @@ with aba_radar:
                 f"`{c.codigo}` ({', '.join(c.motivos[:2])})" for c in an.candidatas))
         st.caption(an.motivo or "—")
         if an.modelos:
-            st.caption(f"Modelo: {' → '.join(an.modelos)} · custo da análise US\\$ {an.custo_original_usd:.4f}"
+            st.caption(f"Modelo: {' → '.join(an.modelos)} · custo da análise {_usd(an.custo_original_usd)}"
                        + (" (resposta já em cache: não foi paga de novo)" if an.custo_original_usd and not an.custo_usd else ""))
         for m in an.mudancas:
             selo = f"❌ reprovada pelo Python: {m.reprovada}" if m.reprovada else "✅ conferida pelo Python"

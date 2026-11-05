@@ -23,6 +23,9 @@ def test_torre_abre_e_aprova_mudanca(banco_temporario):
     assert int(metricas["🔴 Atrasada"]) >= 1
     aprovar = [b for b in at.button if b.label == "Aprovar"]
     assert aprovar, "a Res. 245 deveria estar aguardando aprovação (cache da demo no Git)"
+    legendas = [c.value for c in at.caption]
+    assert any(c.startswith("Conferido pelo Python") for c in legendas)      # o roteiro aponta para esta linha
+    assert any(c.startswith("Por quê:") for c in legendas)
     aprovar[0].click().run()
     assert not at.exception
     assert not [b for b in at.button if b.label == "Aprovar"]
@@ -87,7 +90,12 @@ def test_historico_mostra_a_versao_nova_depois_de_aprovar(banco_temporario):
     hist = next(s for s in at.selectbox if s.label == "Obrigação")
     assert hist.value == "OB-01"                       # a que já mudou aparece primeiro
     texto = " ".join(m.value for m in at.markdown)
-    assert "Versão 2" in texto and "Resolução ANM Nº 245" in texto and "26/12/2029" in texto
+    assert "Versão 2" in texto and "Resolução ANM nº 245, de 31 de julho de 2026" in texto and "26/12/2029" in texto
+    versoes = [m.value for m in at.markdown if m.value.startswith("**Versão")]
+    assert versoes and not [v for v in versoes if "UTC" in v]
+    assert "sem fim" not in texto and "vale a partir de 02/08/2027" in texto
+    custos = " ".join(c.value for c in at.caption if "custo" in c.value)
+    assert r"US\$ 0," in custos and r"US\$ 0." not in custos
 
 
 def test_viagem_no_tempo_para_a_res_220(banco_temporario):
