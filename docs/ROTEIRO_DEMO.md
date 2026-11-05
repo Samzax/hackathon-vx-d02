@@ -4,7 +4,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 
 ## 1. Hoje (60 s)
 
-- **Fala:** "A Serra Azul tem 8 ativos e 72 obrigações vindas de 5 normas: ANM, NR-13, NR-22 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que vence, por ativo."
+- **Fala:** "A Serra Azul tem 8 ativos e 72 obrigações vindas de 5 normas: as Res. 95 e 220 da ANM, a NR-13, a NR-22 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que vence, por ativo."
 - Apontar os números do topo: 4 atrasadas, 1 dado faltando, 3 vencendo.
 - Abrir **B3 · Barragem Córrego Fundo**. A FIR e o EIR da 1ª quinzena de outubro estão atrasados. Mostrar o trecho literal da Res. 95 embaixo.
 - Abrir **📄 Enviar evidência**, escolher `FIR_B3_2026-10-1Q.pdf` e clicar em **Ler documento**.

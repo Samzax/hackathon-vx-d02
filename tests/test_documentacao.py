@@ -76,6 +76,25 @@ def test_todos_os_exemplos_estao_documentados():
     assert not faltando, f"documente em ARQUITETURA.md: {faltando}"
 
 
+def test_roteiro_so_cita_o_que_existe_na_tela():
+    """Botões e abas em negrito no roteiro existem no app; os PDFs citados existem nos exemplos."""
+    import re
+
+    from regulaia import exemplos
+
+    roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
+    app = (RAIZ / "app.py").read_text(encoding="utf-8")
+    nao_sao_rotulos = {"Fala:", "B3 · Barragem Córrego Fundo", "26/12/2029"}
+    rotulos = [r.lstrip("📄📨 ") for r in re.findall(r"\*\*([^*]+)\*\*", roteiro) if r not in nao_sao_rotulos]
+    assert len(rotulos) >= 8
+    assert not [r for r in rotulos if r not in app], "rótulo do roteiro que não existe no app.py"
+    for r in re.findall(r'"([^"]+)"', roteiro[:roteiro.index("**Fala:**")]):
+        assert r in app, r
+    pdfs = re.findall(r"`([^`]+\.pdf)`", roteiro)
+    assert len(pdfs) >= 5
+    assert not [n for n in pdfs if n not in exemplos.DOCS], "PDF do roteiro que não existe nos exemplos"
+
+
 def _ignorado_no_docker(caminho: str, padroes: list[str]) -> bool:
     """Aproximação das regras do .dockerignore: último padrão que casa decide; '!' reinclui; pasta inclui o conteúdo."""
     from fnmatch import fnmatch
