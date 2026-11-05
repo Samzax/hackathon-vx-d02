@@ -84,15 +84,16 @@ AMOSTRA_DOU = ROOT / "tests" / "fixtures" / "dou" / "S01_amostra.zip"
 RADAR = ROOT / "data" / "radar_demo.json"
 
 
-def preparar(caminho: Path = db.DB_PADRAO, dou: Path = AMOSTRA_DOU) -> tuple:
+def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU) -> tuple:
     """Banco pronto para a interface: cadastro, empresa, histórico e o radar do DOU
     já rodado (Res. 245 e 246). Usa o cache de IA; sem chave, só o que está em cache."""
     from collector.xml_dou import load_month
     from . import impacto
     from .ia import Roteador
 
-    if Path(caminho).exists():
-        Path(caminho).unlink()
+    caminho = Path(caminho or db.DB_PADRAO)
+    if caminho.exists():
+        caminho.unlink()
     conn = db.conectar(caminho)
     ids = montar(conn)
     roteador = Roteador(db.conectar(impacto.CACHE_IA))

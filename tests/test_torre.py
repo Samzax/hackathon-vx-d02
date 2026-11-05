@@ -75,3 +75,26 @@ def test_vaso_categoria_iii_com_exame_externo_vencido(serra):
     assert _status(conn, "E1", "N13-04").status == agenda.EM_DIA
     e2 = {l.codigo for l in torre.painel(conn, 1, HOJE, DESDE, ativo="E2")}
     assert {"N13-05", "N13-06"} <= e2 and "N13-03" not in e2
+
+
+def test_b3_com_fir_e_eir_atrasados(serra):
+    conn, _ = serra
+    fir, eir = _status(conn, "B3", "R95-01"), _status(conn, "B3", "R95-02")
+    assert fir.status == eir.status == agenda.ATRASADA
+    assert fir.faltando == ["2026-10-1Q"] and fir.norma == "Res. ANM 95/2022"
+
+
+def test_b4_dado_faltando_e_rpsb_vencendo(serra):
+    conn, _ = serra
+    assert _status(conn, "B4", "R95-08").status == torre.DADO_FALTANDO
+    rpsb = _status(conn, "B4", "R95-05")
+    assert rpsb.status == agenda.VENCE_LOGO and rpsb.vence == "2026-11-20"
+    assert "R95-15" in {l.codigo for l in torre.painel(conn, 1, HOJE, DESDE, ativo="B4")}   # NE1
+
+
+def test_res_95_sai_na_troca_de_norma(serra):
+    conn, _ = serra
+    trocas = {t.ativo: t for t in torre.transicao(conn, 1, date(2027, 8, 2))}
+    assert "R95-01" in {o["codigo"] for o in trocas["B1"].saem}
+    assert "OB-02" in {o["codigo"] for o in trocas["B1"].entram}
+    assert not any(l.codigo.startswith("R95") for l in torre.painel(conn, 1, date(2027, 8, 2), DESDE))

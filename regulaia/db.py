@@ -77,11 +77,12 @@ def registrar_ato(conn, fonte: str, identificador: str, titulo: str, *,
                   url: str | None = None, texto: str | None = None) -> int:
     """Grava o ato uma vez só; chamadas repetidas devolvem o mesmo id."""
     sha = hashlib.sha256(texto.encode("utf-8")).hexdigest() if texto else None
-    conn.execute(
-        "INSERT INTO ato (fonte, identificador, titulo, ementa, publicado_em, url, texto, sha256) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(identificador) DO NOTHING",
-        (fonte, identificador, titulo, ementa, publicado_em, url, texto, sha),
-    )
+    with conn:
+        conn.execute(
+            "INSERT INTO ato (fonte, identificador, titulo, ementa, publicado_em, url, texto, sha256) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(identificador) DO NOTHING",
+            (fonte, identificador, titulo, ementa, publicado_em, url, texto, sha),
+        )
     return conn.execute(
         "SELECT id FROM ato WHERE identificador = ?", (identificador,)
     ).fetchone()["id"]
