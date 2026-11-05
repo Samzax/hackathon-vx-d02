@@ -37,8 +37,10 @@ CREATE TABLE IF NOT EXISTS ato (
 
 CREATE TABLE IF NOT EXISTS obrigacao (
     id          INTEGER PRIMARY KEY,
-    codigo      TEXT NOT NULL UNIQUE,           -- OB-01...
-    tipo_ativo  TEXT NOT NULL
+    codigo      TEXT NOT NULL UNIQUE,           -- OB-01, R95-03...
+    tipo_ativo  TEXT NOT NULL,
+    norma       TEXT,                           -- Res. ANM 220/2025, NR-13...
+    area        TEXT                            -- barragem, emergencia, ambiental, equipamento...
 );
 
 CREATE TABLE IF NOT EXISTS obrigacao_versao (
@@ -51,7 +53,8 @@ CREATE TABLE IF NOT EXISTS obrigacao_versao (
     regra           TEXT NOT NULL,              -- texto para a máquina (ver regras.py)
     periodicidade   TEXT,
     prazo           TEXT,
-    vigencia_desde  TEXT,
+    vigencia_desde  TEXT,                       -- AAAA-MM-DD: a partir de quando vale
+    vigencia_ate    TEXT,                       -- AAAA-MM-DD: último dia em que vale (vazio = sem fim)
     responsavel     TEXT,
     evidencia       TEXT,
     fonte           TEXT,                       -- de onde veio esta versão

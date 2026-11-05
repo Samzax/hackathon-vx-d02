@@ -22,7 +22,7 @@ DB_PADRAO = ROOT / "data" / "regulaia.db"
 # Campos de uma versão que uma mudança regulatória pode alterar.
 CAMPOS_VERSAO = (
     "titulo", "artigo", "aplica_se_a", "regra", "periodicidade", "prazo",
-    "vigencia_desde", "responsavel", "evidencia",
+    "vigencia_desde", "vigencia_ate", "responsavel", "evidencia",
 )
 
 
@@ -89,29 +89,42 @@ def registrar_ato(conn, fonte: str, identificador: str, titulo: str, *,
 # -------------------------------------------------------------------- obrigação
 
 
-def carregar_obrigacoes_csv(conn, caminho: str | Path, tipo_ativo: str = "barragem") -> int:
-    """Carrega o cadastro inicial: cada linha vira a versão 1, já vigente."""
+def carregar_obrigacoes_csv(conn, caminho: str | Path, tipo_ativo: str = "barragem",
+                            norma: str | None = None) -> int:
+    """Carrega um cadastro: cada linha vira a versão 1, já vigente.
+
+    Colunas obrigatórias: id, artigo, obrigacao, aplica_se_a, regra, periodicidade,
+    prazo, vigencia_desde, responsavel_ficticio, evidencia, fonte.
+    Opcionais: vigencia_ate, area, norma, tipo_ativo.
+    """
     n = 0
     with open(caminho, encoding="utf-8", newline="") as f:
         for linha in csv.DictReader(f):
             regras.validar(linha["regra"])
             with conn:
                 ob_id = conn.execute(
-                    "INSERT INTO obrigacao (codigo, tipo_ativo) VALUES (?, ?)",
-                    (linha["id"], tipo_ativo),
+                    "INSERT INTO obrigacao (codigo, tipo_ativo, norma, area) VALUES (?, ?, ?, ?)",
+                    (linha["id"], linha.get("tipo_ativo") or tipo_ativo,
+                     linha.get("norma") or norma, linha.get("area") or None),
                 ).lastrowid
                 conn.execute(
                     "INSERT INTO obrigacao_versao (obrigacao_id, versao, titulo, artigo, "
-                    "aplica_se_a, regra, periodicidade, prazo, vigencia_desde, responsavel, "
-                    "evidencia, fonte, status, decidida_por, decidida_em) "
-                    "VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'vigente', 'carga inicial', datetime('now'))",
+                    "aplica_se_a, regra, periodicidade, prazo, vigencia_desde, vigencia_ate, "
+                    "responsavel, evidencia, fonte, status, decidida_por, decidida_em) "
+                    "VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'vigente', 'carga inicial', datetime('now'))",
                     (ob_id, linha["obrigacao"], linha["artigo"], linha["aplica_se_a"],
                      linha["regra"], linha["periodicidade"], linha["prazo"],
-                     linha["vigencia_desde"], linha["responsavel_ficticio"],
-                     linha["evidencia"], linha["fonte"]),
+                     linha["vigencia_desde"] or None, linha.get("vigencia_ate") or None,
+                     linha["responsavel_ficticio"], linha["evidencia"], linha["fonte"]),
                 )
             n += 1
     return n
+
+
+def vale_em(versao: dict, dia: str) -> bool:
+    """A versão vale no dia (AAAA-MM-DD)? Janela fechada nas duas pontas."""
+    desde, ate = versao.get("vigencia_desde"), versao.get("vigencia_ate")
+    return (not desde or desde <= dia) and (not ate or dia <= ate)
 
 
 def _obrigacao_id(conn, codigo: str) -> int:
@@ -211,7 +224,9 @@ class ObrigacaoDoAtivo:
     dados_faltando: list[str]      # atributos do ativo que a regra usa e não estão preenchidos
 
 
-def obrigacoes_do_ativo(conn, ativo_id: int) -> list[ObrigacaoDoAtivo]:
+def obrigacoes_do_ativo(conn, ativo_id: int, em: str | None = None) -> list[ObrigacaoDoAtivo]:
+    """Obrigações que se aplicam ao ativo. Com `em` (AAAA-MM-DD), só as que valem nesse dia
+    pela versão vigente ou pela pendente."""
     a = conn.execute("SELECT tipo, atributos FROM ativo WHERE id = ?", (ativo_id,)).fetchone()
     if a is None:
         raise ErroCadastro(f"ativo {ativo_id} não existe")
@@ -224,6 +239,8 @@ def obrigacoes_do_ativo(conn, ativo_id: int) -> list[ObrigacaoDoAtivo]:
         vig = versao(conn, codigo)
         pen = versao(conn, codigo, "pendente")
         if vig is None:
+            continue
+        if em and not (vale_em(vig, em) or (pen is not None and vale_em(pen, em))):
             continue
         aplica_vig = regras.aplica(vig["regra"], attrs)
         aplica_pen = pen is not None and regras.aplica(pen["regra"], attrs)

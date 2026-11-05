@@ -120,3 +120,13 @@ def test_dado_faltando_aparece_em_vez_de_sumir(conn, serra_azul):
     obs = {o.codigo: o for o in db.obrigacoes_do_ativo(conn, serra_azul["B1"])}
     # alteamento_continuo não foi informado para a B1
     assert obs["OB-10"].dados_faltando == ["alteamento_continuo"]
+
+
+def test_janela_de_vigencia(conn, serra_azul):
+    # OB-02 (FIR quinzenal pela Res. 220) só vale a partir de 2027-08-02
+    hoje = {o.codigo for o in db.obrigacoes_do_ativo(conn, serra_azul["B1"], em="2026-11-05")}
+    depois = {o.codigo for o in db.obrigacoes_do_ativo(conn, serra_azul["B1"], em="2027-08-02")}
+    assert "OB-02" not in hoje and "OB-02" in depois
+    assert db.vale_em({"vigencia_desde": "2022-02-07", "vigencia_ate": "2027-08-01"}, "2027-08-01")
+    assert not db.vale_em({"vigencia_desde": "2022-02-07", "vigencia_ate": "2027-08-01"}, "2027-08-02")
+    assert db.vale_em({"vigencia_desde": None, "vigencia_ate": None}, "1999-01-01")

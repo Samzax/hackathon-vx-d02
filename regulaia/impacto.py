@@ -21,9 +21,9 @@ from pathlib import Path
 from . import db, triagem
 from .ia import Roteador, SemProvedor
 
-VERSAO_PROMPT = "impacto-v1"
-CAMPOS = ("prazo", "vigencia_desde", "periodicidade", "aplica_se_a", "titulo", "evidencia")
-CAMPOS_DATA = ("prazo", "vigencia_desde")
+VERSAO_PROMPT = "impacto-v2"
+CAMPOS = ("prazo", "vigencia_desde", "vigencia_ate", "periodicidade", "aplica_se_a", "titulo", "evidencia")
+CAMPOS_DATA = ("prazo", "vigencia_desde", "vigencia_ate")
 CONFIANCA_MINIMA = 0.7
 CACHE_IA = db.ROOT / "data" / "cache_ia.db"
 
@@ -37,7 +37,8 @@ Regras:
 3. Datas no formato AAAA-MM-DD.
 4. Ressalvas e exceções do ato decidem: se o ato exclui expressamente o caso, não há mudança.
 5. Se o ato mantém um valor igual ao que já está no cadastro, isso não é mudança.
-6. Campos que podem mudar: prazo, vigencia_desde, periodicidade, aplica_se_a, titulo, evidencia.
+6. Campos que podem mudar: prazo, vigencia_desde, vigencia_ate, periodicidade, aplica_se_a, titulo, evidencia.
+   vigencia_ate é o último dia em que a obrigação vale (use quando o ato revoga ou encerra a obrigação).
 7. Se nenhuma obrigação muda, devolva "mudancas": [] e explique em "motivo".
 
 Responda só com um objeto JSON, sem texto fora dele:
@@ -116,7 +117,7 @@ class Analise:
 def _mensagem(identificacao: str, ato_texto: str, cadastro: dict[str, dict]) -> str:
     obs = [
         {k: v for k, v in ob.items() if k in ("codigo", "artigo", "titulo", "aplica_se_a",
-                                              "periodicidade", "prazo", "vigencia_desde", "evidencia")}
+                                              "periodicidade", "prazo", "vigencia_desde", "vigencia_ate", "evidencia")}
         for ob in cadastro.values()
     ]
     return (f"ATO: {identificacao}\n\n{ato_texto}\n\n"
