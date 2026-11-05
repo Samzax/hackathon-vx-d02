@@ -78,3 +78,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] OB-01 com título de ação ("Retirar da ZAS os trabalhadores das áreas de lavra..."); análise da Res. 245 refeita com a IA (US$ 0,0011, mesmo resultado) e cache da demo exportado
 - [x] Cartão da mudança diz, pelos dados, quantas obrigações mudam e quantas ficam (não depende do texto da IA)
 - [x] PREP.md atualizado (24 obrigações da Res. 220, 21 da Res. 95 conferidas); teste dos números inclui o PREP
+- [x] Roteiro: pergunta sobre a data da notícia da ANM (31/12) contra o ato (26/12)
