@@ -57,3 +57,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Código sem avisos do ruff (F, E9, B); teste de que a curadoria regera o cadastro da Res. 95, NR-13 e NR-22
 - [x] Regras com "ou"; plano de transição diz quando o tema existe na norma nova mas não vale para o ativo
 - [x] ISE aberta aparece no calendário .ics e no boletim com o motivo; citações da Res. 220 sem a norma repetida
+- [x] Teste confere os números do topo citados no roteiro da demo

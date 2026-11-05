@@ -30,3 +30,18 @@ def test_numero_de_tipos_de_documento():
 
     tipos = len(DOCUMENTOS) + 1          # + exame interno do vaso, que sai do mesmo documento
     assert f"São {tipos} tipos de documento" in (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
+
+
+def test_numeros_do_topo_no_roteiro():
+    """O roteiro manda apontar os números do topo da aba Hoje; eles saem do painel da demo."""
+    from collections import Counter
+    from datetime import date
+
+    from regulaia import agenda, db, demo, torre
+
+    conn = db.conectar(":memory:")
+    demo.montar(conn)
+    n = Counter(l.status for l in torre.painel(conn, 1, date(2026, 11, 7), date(2026, 5, 1)))
+    roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
+    assert (f"{n[agenda.ATRASADA]} atrasadas, {n[torre.DADO_FALTANDO]} dado faltando, "
+            f"{n[agenda.VENCE_LOGO]} vencendo") in roteiro
