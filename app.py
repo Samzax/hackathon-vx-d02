@@ -537,7 +537,8 @@ with aba_mercado:
     m1.metric("Barragens de mineração", f"{mercado['barragens_mineracao']:,}".replace(",", "."))
     m2.metric("Empresas responsáveis", mercado["empresas"])
     m3.metric("Barragens na PNSB", mercado["barragens_na_pnsb"])
-    m4.metric("Empresas com barragem na PNSB", mercado["empresas_com_barragem_na_pnsb"])
+    m4.metric("Empresas na PNSB", mercado["empresas_com_barragem_na_pnsb"],
+              help="Empresas com pelo menos uma barragem na Política Nacional de Segurança de Barragens")
     emerg = {k: v for k, v in mercado["pnsb_por_nivel_emergencia"].items() if k != "Sem emergência"}
     st.caption(f"Fonte: {mercado['fonte']} (exportado em {_br(mercado['exportado_em'])}). "
                f"Em Minas Gerais: {mercado['mg']['barragens_na_pnsb']} barragens na PNSB, de "
