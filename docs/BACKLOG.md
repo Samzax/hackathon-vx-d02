@@ -117,3 +117,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Gestor não registra documento de ativo de outro gestor (aviso diz quem registra; sem botão nem prévia do que abriria); a leitura mostra as colunas EC lidas do Quadro I.8 para conferência
 - [x] README e roteiro contam que um gestor não dá baixa no ativo de outro (pergunta pronta para a banca, com o PDF de exemplo)
 - [x] Quando a IA deduz o ativo (o documento não cita código nem nome inteiro), a leitura avisa e o aviso fica gravado na evidência; ícone 🤖 em vez do relógio de atraso
+- [x] Triagem lê mais jeitos de citar norma e artigo: "Res. ANM nº 95", "n.º 95", "Res. 95/2022", "artigo 27" e listas ("arts. 17, 18 e 19" viram os três); o § não vira artigo. Conferido: os 14 atos da amostra do DOU e o ato fictício mantêm as mesmas candidatas, então o cache de IA continua valendo

@@ -36,9 +36,11 @@ def normalizar(texto: str) -> str:
 # ------------------------------------------------------------------- camada 0
 
 
-_RE_NORMA = re.compile(r"resolucao(?: dc/| )?(?:anm )?(?:n[o.]? ?|numero )?(\d{1,4})\b")
-_RE_NORMA_CURTA = re.compile(r"res\. ?anm (\d{1,4})")
-_RE_ART = re.compile(r"\barts?\. ?(\d{1,3})")
+# "Resolução ANM nº 95/2022", "Resolução DC/ANM nº 245", "Res. ANM n.º 95", "Res. 95/2022" ("º" vira "o")
+_RE_NORMA = re.compile(r"\b(?:resolucao|res\.)(?: ?dc/| )?(?:anm )?(?:n\.? ?o?\.? ?|numero )?(\d{1,4})\b")
+# "art. 27", "artigo 27", "arts. 17, 18 e 19" (todos os da lista, não só o primeiro)
+# (o "§ 2º" de "art. 27, § 2º" vira "2o" ao normalizar: item da lista termina em fronteira de palavra)
+_RE_ART = re.compile(r"\b(?:arts?\.|artigos?) ?(\d{1,3}(?:(?:, ?| e )\d{1,3}(?!\w))*)")
 _RE_PAR = re.compile(r"§ ?(\d{1,2})")
 _RE_DATA_EXTENSO = re.compile(r"(\d{1,2})o? de (" + "|".join(MESES) + r") de (\d{4})")
 # 03/11/2026, 3/11/2026, 03.11.2026, 03-11-2026 (o mesmo separador nos dois lados; ano com 4 dígitos,
@@ -73,8 +75,8 @@ class Referencias:
 def referencias(texto: str) -> Referencias:
     t = normalizar(texto)
     return Referencias(
-        normas=set(_RE_NORMA.findall(t)) | set(_RE_NORMA_CURTA.findall(t)),
-        artigos=set(_RE_ART.findall(t)),
+        normas=set(_RE_NORMA.findall(t)),
+        artigos={n for lista in _RE_ART.findall(t) for n in re.findall(r"\d{1,3}", lista)},
         paragrafos=set(_RE_PAR.findall(texto)),
         datas=datas(texto),
     )
