@@ -64,3 +64,32 @@ def test_todos_os_exemplos_estao_documentados():
     arquitetura = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
     faltando = [n for n in exemplos.DOCS if f"`{n}`" not in arquitetura]
     assert not faltando, f"documente em ARQUITETURA.md: {faltando}"
+
+
+def _ignorado_no_docker(caminho: str, padroes: list[str]) -> bool:
+    """Aproximação das regras do .dockerignore: último padrão que casa decide; '!' reinclui; pasta inclui o conteúdo."""
+    from fnmatch import fnmatch
+
+    ignorado = False
+    for p in padroes:
+        nega = p.startswith("!")
+        p = p.lstrip("!").rstrip("/")
+        partes = caminho.split("/")
+        prefixos = ["/".join(partes[:i]) for i in range(1, len(partes) + 1)]
+        if any(fnmatch(x, p) or fnmatch(x.split("/")[-1], p) and "/" not in p for x in prefixos):
+            ignorado = not nega
+    return ignorado
+
+
+def test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto():
+    """Sem Docker nesta máquina: confere o .dockerignore contra os arquivos que o app lê ao iniciar."""
+    padroes = [l.strip() for l in (RAIZ / ".dockerignore").read_text(encoding="utf-8").splitlines()
+               if l.strip() and not l.startswith("#")]
+    precisa = ["app.py", "seed_obligations.csv", "cadastro/res95_2022.csv", "data/cache_ia_demo.json",
+               "data/historico_serra_azul.json", "data/serra_azul.json", "data/mercado_sigbm.json",
+               "tests/fixtures/dou/S01_amostra.zip", ".streamlit/config.toml", "uv.lock", ".env.example"]
+    for f in precisa:
+        assert (RAIZ / f).exists(), f
+        assert not _ignorado_no_docker(f, padroes), f"{f} ficaria fora da imagem"
+    for f in [".env", ".env.local", "data/raw/sigbm.csv", "data/regulaia.db", ".git/config", ".venv/x"]:
+        assert _ignorado_no_docker(f, padroes), f"{f} entraria na imagem"
