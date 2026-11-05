@@ -32,6 +32,8 @@ Other days: 17 Oct 2025 had 295 acts (9 ANM), 24 Apr 2026 had 338 acts (13 ANM).
 
 ## Data access
 
+> **5 Nov: `https://www.in.gov.br/robots.txt` is `User-agent: * / Disallow: /`.** Do not run an automated collector against the DOU listing or act pages. A `requests` call was also dropped by the server on 5 Nov while `curl` still answered, which looks like bot filtering. Use the official channels for machine access: INLABS (still in maintenance on 5 Nov) or the monthly open-data XML, downloaded by hand. Also confirmed on 5 Nov: the 4 Aug 2026 listing has 339 acts in `do1`, 23 from ANM, and 9 more in the extra edition `do1e`.
+
 | Source | Status on 2026-11-02 |
 |---|---|
 | DOU daily listing | **Works without login.** Tested back to Oct 2025 |
@@ -51,7 +53,7 @@ Watch out for:
 - `content` looks like an excerpt, so fetch the act page for the full text.
 - Extra editions use other section codes (`do1a`, `do1e`, `do1esp`). Skipping them can miss an act.
 - Listing completeness looks right (act pages run from 1 to the last page) but has not been checked against the official XML.
-- Cache everything and throttle requests. The site's terms of use and robots rules have not been checked.
+- Robots rules forbid crawling (see the note at the top of this section). Terms of use still not read.
 
 ## Seed obligations
 

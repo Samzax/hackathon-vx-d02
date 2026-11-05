@@ -19,3 +19,8 @@ data/raw/
 # Sistema
 .DS_Store
 Thumbs.db
+data/anm/
+
+# Banco local
+*.db
+*.db-journal

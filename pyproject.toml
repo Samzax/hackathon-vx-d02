@@ -1,0 +1,21 @@
+[project]
+name = "regulaia"
+version = "0.1.0"
+description = "Torre de controle regulatória: Hackathon VX, Desafio 02"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.12",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+package = false

@@ -14,3 +14,15 @@ A Resolução ANM nº 245/2026 adiou o art. 7 §1 da Res. ANM 220/2025 de 2 ago.
 |---|---|
 | [PREP.md](PREP.md) | Pesquisa, fontes de dados, critérios de avaliação e pendências |
 | [seed_obligations.csv](seed_obligations.csv) | 15 obrigações da Res. 220/2025. A OB-01 é o teste principal |
+
+## Como rodar
+
+Requer o [uv](https://docs.astral.sh/uv/). Ele instala o Python 3.13 e as dependências na primeira execução.
+
+```bash
+uv sync
+uv run pytest
+uv run python -m collector 2026-08-04
+```
+
+O coletor lê só o que está em `cache/`. Ele não acessa o site do DOU, porque o `robots.txt` de www.in.gov.br proíbe robôs.
