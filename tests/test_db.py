@@ -75,6 +75,55 @@ def test_rejeitar_mantem_a_versao_vigente(conn):
     assert [v["status"] for v in db.historico(conn, "OB-01")] == ["vigente", "rejeitada"]
 
 
+def test_quem_aprova_corrige_a_proposta_e_fica_registrado(conn):
+    """A IA leu 31/12 (a notícia); quem aprova corrige para 26/12 (o ato). Vale o corrigido,
+    e o histórico guarda o que foi proposto."""
+    import json
+
+    ato = _res_245(conn)
+    vid = db.propor_versao(conn, "OB-01", {"prazo": "2029-12-31", "vigencia_desde": "2029-12-31"},
+                           ato_id=ato, trecho=TRECHO_245)
+    db.decidir(conn, vid, aprovar=True, por="Gerente de Geotecnia",
+               correcoes={"prazo": "2029-12-26", "vigencia_desde": "2029-12-26"})
+    ob01 = db.versao(conn, "OB-01")
+    assert (ob01["prazo"], ob01["vigencia_desde"]) == ("2029-12-26", "2029-12-26")
+    assert json.loads(ob01["correcao"]) == {"prazo": ["2029-12-31", "2029-12-26"],
+                                            "vigencia_desde": ["2029-12-31", "2029-12-26"]}
+    assert ob01["decidida_por"] == "Gerente de Geotecnia"
+
+
+def test_aprovar_sem_corrigir_nao_marca_correcao(conn):
+    vid = db.propor_versao(conn, "OB-01", {"prazo": "2029-12-26"}, ato_id=None, trecho=None)
+    db.decidir(conn, vid, aprovar=True, por="x", correcoes={"prazo": "2029-12-26"})   # igual ao proposto
+    assert db.versao(conn, "OB-01")["correcao"] is None
+
+
+def test_correcao_invalida_nao_aprova_nada(conn):
+    vid = db.propor_versao(conn, "OB-01", {"prazo": "2029-12-31"}, ato_id=None, trecho=None)
+    with pytest.raises(db.ErroCadastro, match="não é data"):
+        db.decidir(conn, vid, aprovar=True, por="x", correcoes={"prazo": "31/12/2029"})
+    with pytest.raises(db.ErroCadastro, match="não podem mudar"):
+        db.decidir(conn, vid, aprovar=True, por="x", correcoes={"status": "vigente"})
+    with pytest.raises(db.ErroCadastro, match="rejeite"):            # corrigir de volta ao vigente = rejeitar
+        db.decidir(conn, vid, aprovar=True, por="x", correcoes={"prazo": "2027-08-02"})
+    with pytest.raises(db.ErroCadastro, match="só vale para aprovar"):
+        db.decidir(conn, vid, aprovar=False, por="x", correcoes={"prazo": "2029-12-26"})
+    assert db.versao(conn, "OB-01")["prazo"] == "2027-08-02"
+    assert db.versao(conn, "OB-01", "pendente")["prazo"] == "2029-12-31"
+
+
+def test_banco_antigo_ganha_a_coluna_de_correcao(tmp_path):
+    import sqlite3
+
+    arq = tmp_path / "antigo.db"
+    velho = sqlite3.connect(arq)
+    velho.executescript(db.SCHEMA.read_text(encoding="utf-8").replace(
+        "    correcao        TEXT,", ""))
+    velho.close()
+    conn = db.conectar(arq)
+    assert "correcao" in {r["name"] for r in conn.execute("PRAGMA table_info(obrigacao_versao)")}
+
+
 def test_nao_aceita_duas_mudancas_pendentes_nem_mudanca_vazia(conn):
     db.propor_versao(conn, "OB-01", {"prazo": "2029-12-26"}, ato_id=None, trecho=None)
     with pytest.raises(db.ErroCadastro):

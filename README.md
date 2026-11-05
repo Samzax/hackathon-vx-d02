@@ -127,6 +127,37 @@ docker run -p 8501:8501 regulaia
 
 Sem chave e sem internet, a demo roda do cache (`data/cache_ia_demo.json`). Para usar a IA de verdade, passe as chaves por variável de ambiente (`--env-file .env` ou os segredos do serviço). O `.env` nunca entra na imagem.
 
-Na AWS, a mesma imagem serve para os três caminhos: App Runner (mais simples: aponta para a imagem no ECR, porta 8501), ECS Fargate ou uma EC2 com Docker. A verificação de saúde está em `/_stcore/health`. O Bedrock entra como provedor de IA por configuração (ver [docs/ARQUITETURA.md](docs/ARQUITETURA.md)).
+Na AWS, a mesma imagem serve para os três caminhos: App Runner (mais simples: aponta para a imagem no ECR, porta 8501), ECS Fargate ou uma EC2 com Docker. A verificação de saúde está em `/_stcore/health`.
+
+### Arquitetura na AWS
+
+```mermaid
+flowchart TD
+    U[Gestor / Diretoria] --> UI[Streamlit: a torre<br/>App Runner, ou local no evento]
+    DOU[DOU: XML mensal da Imprensa Nacional] --> RD[Radar: regras em Python<br/>7.884 atos para 2]
+    RD -->|ato + obrigações candidatas| BR[Amazon Bedrock<br/>API Converse]
+    UI -->|PDF da operação| EX[Extração de texto<br/>pypdf]
+    EX -.->|página escaneada| TX[Amazon Textract<br/>opcional]
+    TX -.-> EX
+    EX -->|texto| RG[Regras em Python:<br/>ativo, documento, data]
+    RG -.->|só se a regra não fechar| BR
+    BR -->|JSON| PY[Python confere:<br/>trecho existe, data está no trecho]
+    PY --> DB[(SQLite: obrigações, versões,<br/>evidências, decisões)]
+    UI -->|aprovar, corrigir, rejeitar| DB
+    UI -->|original da evidência| S3[(Amazon S3<br/>acesso público bloqueado)]
+    DB --> UI
+```
+
+Linhas tracejadas: caminhos opcionais. O que já está no código e o que falta fazer no evento:
+
+| Serviço | No código | No evento |
+|---|---|---|
+| Amazon Bedrock (Converse) | `ClienteBedrock` em `regulaia/ia.py`, testado com cliente falso; espera 1,1 s entre chamadas (regra: menos de 1 por segundo) | `REGULAIA_BEDROCK=1` e o perfil AWS no `.env`; trocar os IDs `ID_DO_..._NO_BEDROCK` em `regulaia/modelos.toml` pelos do console e subir a linha do Bedrock para o topo da camada |
+| Amazon S3 | `regulaia/arquivos.py` guarda o PDF original de cada evidência registrada, com criptografia no servidor | Criar o bucket em us-east-1 com acesso público bloqueado e pôr o nome em `REGULAIA_S3_BUCKET` |
+| Amazon Textract | `regulaia/ocr.py`: página sem texto vai para o OCR, uma chamada por página | `REGULAIA_OCR=textract`. Sem isso, a torre avisa que o PDF é escaneado e pede a versão digital |
+| App Runner | `Dockerfile` | Construir a imagem, mandar para o ECR e criar o serviço na porta 8501 |
+| DynamoDB | Não usamos: os dados são relacionais (versões de obrigação, uma vigente e uma pendente por vez, junções por ativo) e ficam em SQLite | Para produção com várias instâncias, o caminho é Postgres (RDS): o SQL está concentrado em `regulaia/db.py` |
+
+Teste mínimo antes de confiar na conta do evento: uma chamada ao Bedrock, um PDF no S3 e um escaneado no Textract, os três pela torre. Nenhum dado pessoal vai para a conta: a demo usa só a mineradora fictícia e atos públicos do DOU.
 
 > A imagem ainda não foi construída (Docker Desktop desligado nesta máquina). Conferido sem Docker, num diretório limpo: as duas etapas de instalação do Dockerfile (`uv sync --locked --no-dev --no-install-project` e depois `uv sync --locked --no-dev`) passam, as seis abas abrem sem erro só com as dependências de produção, os dois PDFs baixam e o `.env` fica de fora. Um teste confere que tudo o que o app importa está em `[project].dependencies`. Falta conferir o build em Linux, o que leva um minuto com `docker build`.

@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS obrigacao_versao (
     criada_em       TEXT NOT NULL DEFAULT (datetime('now')),
     decidida_por    TEXT,
     decidida_em     TEXT,
+    correcao        TEXT,                       -- JSON {campo: [proposto, aprovado]} quando quem aprovou corrigiu a proposta
     UNIQUE (obrigacao_id, versao)
 );
 

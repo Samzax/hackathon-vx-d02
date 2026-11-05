@@ -172,7 +172,8 @@ def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
     import sys
     import tomllib
 
-    pacote = {"bs4": "beautifulsoup4", "dotenv": "python-dotenv"}     # módulo -> nome no PyPI
+    pacote = {"bs4": "beautifulsoup4", "dotenv": "python-dotenv", "PIL": "pillow",   # módulo -> nome no PyPI
+              "botocore": "boto3"}                                             # o botocore vem com o boto3
     deps = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))["project"]["dependencies"]
     nomes = {d.split(">")[0].split("=")[0].split("<")[0].strip().lower() for d in deps}
     locais = {"regulaia", "collector", "app"}
@@ -353,6 +354,21 @@ def test_numeros_da_analise_de_mercado_saem_dos_dados():
             f"({round(100 * g['top10_barragens'] / pnsb)}%)") in doc
     meio = [g["por_faixa_de_barragens"][k] for k in ("2 a 4", "5 a 9")]
     assert f"soma {sum(v['grupos'] for v in meio)} grupos e {sum(v['barragens'] for v in meio)} barragens" in doc
+
+    # TAM, SAM e SOM: barragens do SIGBM × R$ 27 mil por ano (premissas da aba Mercado)
+    por_barragem = (1500 + 5 * 150) * 12
+    mi = lambda x: f"{x / 1e6:.1f}".replace(".", ",")  # noqa: E731
+    entrada = sum(v["barragens"] for v in meio)
+    som = round(pnsb * 0.10)
+    assert f"| {m['barragens_mineracao']} | R$ {mi(m['barragens_mineracao'] * por_barragem)} milhões |" in doc
+    assert f"| {pnsb} | R$ {mi(pnsb * por_barragem)} milhões |" in doc
+    assert f"| {entrada} | R$ {mi(entrada * por_barragem)} milhões |" in doc
+    assert f"cerca de {round(som / (entrada / sum(v['grupos'] for v in meio)))} dos 59 grupos | {som} | "            f"R$ {mi(som * por_barragem)} milhão |" in doc
+    # custo do problema: 4 barragens, R$ 13,9 mil × 1,8 ÷ 168 h ≈ R$ 150/h, de 6 a 20 h por semana
+    hora = round(13_900 * 1.8 / 168, -1)
+    assert hora == 150
+    assert f"De R$ {round(6 * hora * 52 / 1000)} mil a R$ {round(20 * hora * 52 / 1000)} mil por ano" in doc
+    assert f"| R$ {4 * por_barragem // 1000} mil por ano |" in doc
 
     # receita: mesma conta e premissas do pitch e da aba Mercado
     br = lambda v: f"{v:.2f}".replace(".", ",")  # noqa: E731

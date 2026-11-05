@@ -14,6 +14,9 @@ APP = str(Path(__file__).resolve().parent.parent / "app.py")
 def banco_temporario(tmp_path, monkeypatch):
     monkeypatch.setattr(db, "DB_PADRAO", tmp_path / "regulaia.db")
     monkeypatch.setattr(demo, "RADAR", tmp_path / "radar.json")
+    from regulaia import arquivos
+    monkeypatch.setattr(arquivos, "PASTA", tmp_path / "evidencias")
+    monkeypatch.delenv("REGULAIA_S3_BUCKET", raising=False)
 
 
 def test_torre_abre_e_aprova_mudanca(banco_temporario):
@@ -31,6 +34,23 @@ def test_torre_abre_e_aprova_mudanca(banco_temporario):
     aprovar[0].click().run()
     assert not at.exception
     assert not [b for b in at.button if b.label == "Aprovar"]
+
+
+def test_corrigir_antes_de_aprovar(banco_temporario):
+    """Quem aprova muda a data proposta; vale a corrigida, e a decisão aparece como corrigida."""
+    from datetime import date
+
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    campo = next(d for d in at.date_input if d.label == "Prazo")
+    campo.set_value(date(2029, 12, 27)).run()
+    next(b for b in at.button if b.label == "Aprovar com correção").click().run()
+    assert not at.exception
+    assert not [b for b in at.button if b.label == "Aprovar"]
+    textos = " ".join(m.value for m in at.markdown)
+    assert "✏️ aprovada com correção" in textos
+    conn = db.conectar(db.DB_PADRAO)
+    ob01 = db.versao(conn, "OB-01")
+    assert ob01["prazo"] == "2029-12-27" and ob01["correcao"]
 
 
 def _atrasadas(at) -> int:
@@ -53,6 +73,17 @@ def test_envio_de_fir_tira_a_b3_do_atraso(banco_temporario):
     tabela = next(d.value for d in at.dataframe if "Ativo" in d.value.columns and "Responsável" in d.value.columns)
     b3 = tabela[tabela["Ativo"].str.startswith("B3")].iloc[0]
     assert b3["🔴"] == 1
+
+
+def test_pdf_escaneado_sem_ocr_avisa(banco_temporario, monkeypatch):
+    monkeypatch.delenv("REGULAIA_OCR", raising=False)
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    exemplo = next(s for s in at.selectbox if s.label.endswith("documento de exemplo"))
+    exemplo.select("FIR_B3_2026-10-1Q_escaneada.pdf").run()
+    next(b for b in at.button if b.label == "Ler documento").click().run()
+    assert not at.exception
+    assert any("o PDF é escaneado" in w.value for w in at.warning)
+    assert not [b for b in at.button if b.label.startswith("Registrar evidência")]
 
 
 def test_fir_com_anomalia_mostra_alerta(banco_temporario):
@@ -108,10 +139,10 @@ def test_viagem_no_tempo_para_a_res_220(banco_temporario):
     at = AppTest.from_file(APP, default_timeout=120).run()
     next(b for b in at.button if b.label == "Res. 220").click().run()
     assert not at.exception
-    assert str(at.date_input[0].value) == "2027-08-02"
+    assert str(at.date_input(key="hoje").value) == "2027-08-02"
     assert next(m for m in at.metric if m.label == "Dias até a Res. ANM 220/2025").value == "0"
     next(b for b in at.button if b.label == "Demo").click().run()
-    assert str(at.date_input[0].value) == "2026-11-07"
+    assert str(at.date_input(key="hoje").value) == "2026-11-07"
 
 
 def test_todas_as_visoes_em_todas_as_datas_da_viagem(banco_temporario):

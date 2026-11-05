@@ -21,6 +21,9 @@ data/raw/
 Thumbs.db
 data/anm/
 
+# Originais das evidências registradas (podem ter dado de operação real)
+data/evidencias/
+
 # Banco local
 *.db
 *.db-journal

@@ -10,6 +10,9 @@ modelos = [
   { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "high" },
   { provedor = "opencode",  modelo = "claude-haiku-5-5" },
   { provedor = "anthropic", modelo = "claude-haiku-5-5" },
+  # No evento: troque pelo ID (ou perfil de inferência) que o console do Bedrock mostrar para o Haiku 4.5
+  # e mova esta linha para o topo da lista. Só vale com REGULAIA_BEDROCK=1 no .env.
+  { provedor = "bedrock",   modelo = "ID_DO_HAIKU_4_5_NO_BEDROCK" },
 ]
 
 [camadas.3]
@@ -17,6 +20,8 @@ modelos = [
   { provedor = "deepseek",  modelo = "deepseek-reasoner" },
   { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "max" },
   { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
+  # No evento: ID do Sonnet 5 no console do Bedrock (ver comentário da camada 2).
+  { provedor = "bedrock",   modelo = "ID_DO_SONNET_5_NO_BEDROCK" },
 ]
 
 # formato: "openai" (/chat/completions) ou "anthropic" (/messages).
@@ -29,6 +34,14 @@ base = "https://api.deepseek.com/v1"
 chave = "ANTHROPIC_API_KEY"
 formato = "anthropic"
 base = "https://api.anthropic.com/v1"
+
+[provedores.bedrock]
+# Amazon Bedrock pela API Converse (boto3). "chave" aqui não é chave: REGULAIA_BEDROCK=1 liga o provedor.
+# A credencial vem do perfil AWS do ambiente (AWS_PROFILE) e nunca vai para o .env nem para o código.
+chave = "REGULAIA_BEDROCK"
+formato = "bedrock"
+regiao = "us-east-1"
+intervalo_minimo_s = 1.1      # regra do evento: menos de 1 requisição por segundo
 
 [provedores.opencode]
 # O plano Go é voltado a agentes de programação: o cliente precisa se identificar

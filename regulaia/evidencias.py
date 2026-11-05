@@ -301,9 +301,10 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
     return le
 
 
-def registrar(conn, leitura: Leitura, arquivo: str) -> int:
+def registrar(conn, leitura: Leitura, arquivo: str, guardado_em: str | None = None) -> int:
     """Grava a evidência. Se a leitura achou um gatilho, abre a obrigação por evento (prazo de 24 h,
-    o do registro no SIGBM); se o documento é a evidência de uma obrigação acionada, encerra-a."""
+    o do registro no SIGBM); se o documento é a evidência de uma obrigação acionada, encerra-a.
+    `arquivo` é o nome que as pessoas veem; `guardado_em`, onde o original ficou (pasta ou S3)."""
     if not leitura.completa:
         raise ValueError("leitura incompleta: " + "; ".join(leitura.problemas))
     aid = conn.execute("SELECT id FROM ativo WHERE codigo = ?", (leitura.ativo,)).fetchone()["id"]
@@ -313,7 +314,7 @@ def registrar(conn, leitura: Leitura, arquivo: str) -> int:
         for codigo in (c for c in leitura.acionar if c != leitura.obrigacao):   # o relatório da ISE não reabre a ISE
             db.acionar(conn, aid, codigo, leitura.data, (dia + timedelta(days=1)).isoformat(),
                        "; ".join(leitura.gatilhos), origem=arquivo)
-    return db.registrar_evidencia(conn, aid, leitura.obrigacao, leitura.periodo, arquivo=arquivo,
+    return db.registrar_evidencia(conn, aid, leitura.obrigacao, leitura.periodo, arquivo=guardado_em or arquivo,
                                   extraido={"documento": leitura.documento, "data": leitura.data,
                                             "pontuacao_maxima": leitura.pontuacao_maxima,
                                             "estado_conservacao": leitura.estado_conservacao or None,

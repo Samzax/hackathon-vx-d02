@@ -9,7 +9,7 @@ Todo número deste documento tem fonte (lista no fim) ou é marcado como **premi
 - **O problema existe e custa caro.** Das 461 barragens de mineração na Política Nacional de Segurança de Barragens (PNSB), 76 estão embargadas hoje e outras 147 já foram embargadas e liberadas: 223 (48%) passaram por embargo. A multa da Lei 14.066/2020 vai de R$ 2 mil a R$ 1 bilhão.
 - **O volume é grande e muda de base em 2027.** Uma barragem na PNSB tem de 12 a 18 obrigações e cerca de 60 entregas com data por ano só pela Res. ANM 95/2022. Em 02/08/2027 a Res. ANM 220/2025 substitui a 95, e a 220 já foi alterada antes de valer (Res. ANM 245/2026).
 - **O fiscal não vai achar o erro por você.** A ANM tem 53 servidores para fiscalizar cerca de 900 barragens, segundo a associação dos servidores. O controle é por declaração do próprio empreendedor: quem erra a data descobre no embargo.
-- **Mercado inicial bem definido.** 125 grupos econômicos com barragem na PNSB; 64 deles têm barragem de dano potencial alto (243 barragens, 144 em Minas Gerais). Com as premissas de preço da seção 4, as 461 barragens valem R$ 12,4 milhões por ano.
+- **Mercado inicial bem definido.** 125 grupos econômicos com barragem na PNSB; 64 deles têm barragem de dano potencial alto (243 barragens, 144 em Minas Gerais). Com as premissas de preço da seção 3: TAM de R$ 24,5 milhões por ano (908 barragens de mineração), SAM de R$ 12,4 milhões (as 461 da PNSB) e SOM de R$ 1,2 milhão em 3 anos (46 barragens, cerca de 13 grupos).
 - **Expansão no mesmo motor.** O SNISB tem 29.761 barragens cadastradas (água, energia, resíduos industriais), e 8.086 mineradoras recolheram CFEM em 2025. Vaso de pressão (NR-13), emergência (NR-22) e licença ambiental já rodam na demo.
 - **Concorrência existe, mas olha de cima para baixo.** Plataformas como Sigalei e Verde Ghaia respondem "o que mudou na lei?". A RegulaIA responde "o que esta barragem precisa entregar, até quando, e já entregou?", e lê o documento de campo que comprova.
 
@@ -43,6 +43,19 @@ Todo número deste documento tem fonte (lista no fim) ou é marcado como **premi
 - No cadastro da demo, feito a partir do texto oficial da Res. 95/2022, uma barragem tem de 12 a 18 obrigações e de 59 a 61 entregas com data por ano (FIR e extrato quinzenais, DCE e RISR semestrais, simulados, treinamentos, PAEBM, RCO), além das obrigações por evento e das plurianuais (RPSB).
 - Em escala: 461 barragens × cerca de 60 entregas = **cerca de 27,7 mil entregas datadas por ano** só nas barragens de mineração da PNSB. É uma estimativa a partir do cadastro da demo, não um dado da ANM.
 - Referência de custo de pessoal: engenheiro civil de geotecnia ganha em média R$ 13,9 mil por mês (CAGED, últimos 12 meses). A Prefeitura de Catalão (GO) estimou em R$ 424,8 mil um contrato de inspeções, DCE, RISR e revisão periódica de uma barragem de abastecimento.
+
+### Quanto o problema custa para uma empresa (hipótese a validar)
+
+Não há dado público do custo médio de controlar obrigações de barragem. A conta abaixo é um cenário ilustrativo, com cada premissa à vista, para ser trocada pelos números das entrevistas:
+
+| Componente | Premissa | Grupo com 4 barragens |
+|---|---|---|
+| Entregas com data por ano | 4 × cerca de 60 (cadastro da demo) | cerca de 240 |
+| Custo-hora de quem controla | Salário de R$ 13,9 mil (CAGED) × 1,8 de encargos (hipótese) ÷ 168 h | cerca de R$ 150 por hora |
+| Triagem de norma, controle de prazo e cobrança | De 6 a 20 horas por semana (hipótese; 20 h é o número que a Nomos divulga para manter a lista de normas em dia) | De R$ 47 mil a R$ 156 mil por ano |
+| Preço da RegulaIA nas premissas da seção 3 | 4 × R$ 27 mil | R$ 108 mil por ano |
+
+O que a conta mostra: só com horas economizadas, o preço se paga perto do topo da faixa (20 h por semana), não embaixo. O argumento de compra precisa somar o que não entra nessa conta: consultoria chamada às pressas, uma estrutura embargada, retrabalho na troca 95 → 220. Esses custos são reais, mas não tratamos multa ou embargo evitado como economia garantida. Por isso preço e horas são as duas primeiras perguntas das entrevistas (seção 8).
 
 ## 3. Tamanho do mercado
 
@@ -84,6 +97,19 @@ Cobrança por ativo: R$ 1.500 por barragem por mês e R$ 150 por mês para cada 
 
 Valores anuais, sempre com os 5 outros ativos a R$ 150. Por que esse preço é defensável (hipótese a validar com clientes): R$ 27 mil por ano por barragem com os ativos ligados a ela é menos de 7% do contrato de inspeção e declarações estimado por Catalão, e menos de dois meses do salário médio de um engenheiro de geotecnia, sem encargos.
 
+### TAM, SAM e SOM
+
+Mesma premissa de preço em todas as linhas: R$ 27 mil por barragem por ano, com os 5 ativos ligados a ela. Os números de barragens vêm do SIGBM; o preço é hipótese.
+
+| Recorte | Definição | Barragens | Receita por ano |
+|---|---|---|---|
+| **TAM** (mercado total do produto como ele é hoje) | Todas as barragens de mineração cadastradas no SIGBM | 908 | R$ 24,5 milhões |
+| **SAM** (o que o MVP atende) | Barragens de mineração na PNSB, que têm as obrigações da Res. 95 e da Res. 220 | 461 | R$ 12,4 milhões |
+| Segmento de entrada | Barragens dos 59 grupos com 2 a 9 barragens na PNSB | 208 | R$ 5,6 milhões |
+| **SOM** (meta em 3 anos) | 10% do SAM, vindo do segmento de entrada: cerca de 13 dos 59 grupos | 46 | R$ 1,2 milhão |
+
+A tabela de expansão abaixo não entra no TAM: barragens de água e energia e as normas de toda a mineradora pedem cadastro de normas novas, e o preço para esses ativos ainda não foi pensado.
+
 ### Expansão no mesmo motor
 
 | Camada | Tamanho | Fonte |
@@ -106,11 +132,17 @@ O modelo de dados não fala "barragem", fala **ativo**: uma obrigação tem norm
 | **Verde Ghaia (SOGI)** | Gestão de requisitos legais e riscos ligada a ISO e ESG | Base grande: 2.300 clientes declarados, 12 milhões de normas captadas | Requisito legal por empresa e sistema de gestão, não calendário de entregas por estrutura |
 | **Ius Natura** (+ Onegreen) | Requisitos legais ESG e licenciamento ambiental | Licenciamento; pertence à Vela LatAm (grupo Constellation Software), que comprou a Onegreen e a juntou à Ius Natura em 2026 | Barragem e as normas da ANM não aparecem no que divulga |
 | **LegisMap** | Monitoramento, impacto, inventário e calendário regulatório | Setores financeiro e de saúde (SUSEP, ANS, PREVIC, Bacen, ANPD) | Mineração fora do escopo divulgado |
+| **Stance** (Sistema de Requisitos Legais) | Requisitos legais de qualidade, meio ambiente, saúde e segurança nas três esferas; avisa documento perto de vencer; licenças, checklist e multi-site | Mais de 590 clientes declarados; apoio a auditorias ISO 14001 e 45001 | Barragem e ANM não aparecem no que divulga; o vencimento é de documento, não de entrega periódica por estrutura |
+| **Nomos** | Agentes de IA monitoram fontes oficiais e normas internas e mandam a nota de impacto, com prazo, obrigação e citação da fonte, como tarefa para a área; API e servidor MCP | Clientes como Braskem, LATAM, Nubank e Mercado Livre; promete ler o ato na fonte, não a notícia | Mineração e ANM fora do que divulga; a tarefa nasce da norma, não do calendário de cada ativo |
+| **Legalbot** | Do ato novo à evidência: classifica com IA, distribui a tarefa com prazo e responsável e registra a evidência com rastreabilidade | Financeiro, energia, saneamento, telecom, saúde, infraestrutura; mais de 350 fontes | ANM não está entre os reguladores que lista; a evidência é a de que a área tratou a norma, não o documento de campo que comprova a entrega do período |
+| **ProcTracker** | Citado no documento de apoio da equipe | — | Não achamos fonte pública sobre ele; fica fora da comparação até confirmar o que é |
 | **GreenLegis**, **Inteligov** | Requisitos legais (BH, desde 1999); inteligência governamental | Nichos estabelecidos | Mesmo limite: norma, não ativo |
 | **EHS globais** (Intelex, Enablon, Sphera, Cority) | Suítes de saúde, segurança e meio ambiente | Grandes grupos multinacionais | Caros, em inglês, sem as normas da ANM; implantação longa |
 | **Monitoramento geotécnico** (instrumentação, radar, piezômetros) | Dado físico da barragem | Engenharia | Não é concorrente: é fonte de evidência e parceiro de integração |
 | **Consultorias de engenharia** | Fazem DCE, RISR, RPSB | Confiança técnica do cliente | **Canal**: atendem muitas barragens e precisam do mesmo calendário |
 | **Planilha + e-mail + clipping** | Status quo | Custo zero aparente | É onde a data errada da notícia vira embargo |
+
+Nomos e Legalbot mostram que "norma vira tarefa com prazo e evidência" já é oferta conhecida. Por isso a RegulaIA não se posiciona como a única a fazer isso: o que ela faz e eles não divulgam é organizar por estrutura (cada barragem com suas entregas por período, pela norma que vale no dia) e dar baixa lendo o documento de campo que comprova a entrega.
 
 Sinal de interesse de investidor no tema: a RegDoor (inteligência regulatória com IA) levantou R$ 4,2 milhões em pré-seed com a Antler; a Sigalei levantou R$ 1,3 milhão com GVAngels; a consolidação de Ius Natura e Onegreen pelo grupo Constellation mostra que o setor compra empresas desse tipo.
 
@@ -149,7 +181,7 @@ Custos que o produto já mede: chamada de IA abaixo de US$ 0,005 por análise; c
 
 1. **Agora até 02/08/2027 (janela da troca 95 → 220):** três pilotos pagos em Minas Gerais, no segmento de 2 a 9 barragens, mais uma consultoria de engenharia como parceira de canal.
 2. **Validar preço e disposição a pagar:** dez entrevistas com gerentes de geotecnia e compliance; testar R$ 1.000, R$ 1.500 e R$ 2.500 por barragem.
-3. **Produto:** Bedrock na conta do cliente; OCR (Textract) para ficha escaneada; importação direta do SIGBM; boletim enviado por e-mail ou WhatsApp.
+3. **Produto:** ligar na conta AWS do cliente o Bedrock, o Textract (ficha escaneada) e o S3 (original das evidências), cujos adaptadores já estão no código e testados sem AWS; importação direta do SIGBM; boletim enviado por e-mail ou WhatsApp.
 4. **Expansão:** barragens de água e energia (ANA, ANEEL e órgãos estaduais), licenças ambientais estaduais e NRs para toda a mineradora.
 
 ## Fontes
@@ -176,3 +208,6 @@ Acessadas em novembro de 2026.
 18. Gestão de mudança regulatória: https://www.marketresearch.com/Deep-Insights-Research-Co-DIR-v4285/Global-Regulatory-Change-Management-Solutions-41707602 ; https://marketintelo.com/report/regulatory-change-management-software-market
 19. ICMM, Tailings Progress Report 2025: https://www.icmm.com/en-gb/research/tailings-management/2025/tailings-progress-report
 20. Res. ANM 95/2022, 220/2025 e 245/2026, e os casos da demo: este repositório (`cadastro/`, `curadoria/`, `docs/ARQUITETURA.md`).
+21. Stance, Sistema de Requisitos Legais: https://stancebrasil.com.br/solucao/requisitos-legais/
+22. Nomos: https://nomos.pro/
+23. Legalbot: https://www.legalbot.com.br/

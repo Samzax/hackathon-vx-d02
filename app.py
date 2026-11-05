@@ -13,7 +13,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from regulaia import agenda, db, demo, impacto, pdf, torre
+from regulaia import agenda, arquivos, db, demo, impacto, ocr, pdf, torre
 from regulaia import evidencias as ev
 from regulaia.ia import Roteador
 
@@ -184,13 +184,23 @@ with aba_hoje:
             nome, conteudo = ((enviado.name, enviado.getvalue()) if enviado is not None
                               else (escolhido, ev.exemplo(escolhido).read_bytes()))
             try:
-                texto_doc = ev.texto_pdf(conteudo)
+                lido_pdf = ocr.ler(conteudo)
             except Exception as e:      # arquivo corrompido, protegido por senha, não é PDF...
                 st.session_state.pop("leitura", None)
                 st.error(f"Não consegui ler {nome}: {ev.por_que_nao_abre(e)}.")
             else:
-                st.session_state["leitura"] = (nome, ev.ler(conn, texto_doc, empresa["id"], hoje,
-                                                             roteador=_roteador()))
+                if not "".join(lido_pdf.texto.split()):       # escaneado e sem OCR: nada para ler
+                    st.session_state.pop("leitura", None)
+                    st.warning(f"Não consegui ler {nome}: {lido_pdf.aviso}.")
+                else:
+                    le = ev.ler(conn, lido_pdf.texto, empresa["id"], hoje, roteador=_roteador())
+                    if lido_pdf.ocr:
+                        le.avisos.append(f"o texto de {lido_pdf.escaneadas} página(s) escaneada(s) veio do OCR "
+                                         f"({lido_pdf.ocr}): confira ativo, data e números antes de registrar")
+                    elif lido_pdf.aviso:
+                        le.avisos.append(lido_pdf.aviso)
+                    st.session_state["leitura"] = (nome, le)
+                    st.session_state["leitura_pdf"] = conteudo
         if "leitura" in st.session_state:
             nome, le = st.session_state["leitura"]
             st.markdown(f"**{nome}** · lido por {'regra' if le.metodo == 'regra' else 'IA (conferida)'}")
@@ -220,12 +230,18 @@ with aba_hoje:
             for p in le.problemas:
                 st.warning(f"{p[:1].upper()}{p[1:]}")
             for a in getattr(le, "avisos", []):     # leitura guardada antes de o campo existir
-                st.info(f"{'🤖' if 'pela IA' in a else '⏰'} {a[:1].upper()}{a[1:]}")
+                st.info(f"{'🤖' if 'pela IA' in a else '🔎' if 'OCR' in a else '⏰'} {a[:1].upper()}{a[1:]}")
             if le.completa:
                 o_que = f"{le.documento} de {le.ativo} · {agenda.rotulo_humano(le.periodo)}"
             if le.completa and not alheio and st.button(f"Registrar evidência: {o_que}", type="primary",
                                          help=f"Dá baixa em {le.obrigacao}, período {le.periodo}"):
-                ev.registrar(conn, le, nome)
+                original = st.session_state.pop("leitura_pdf", None)
+                onde = None
+                try:                        # guarda a prova (pasta local ou S3); se falhar, registra só o nome
+                    onde = arquivos.guardar(nome, original) if original else None
+                except Exception as e:
+                    st.warning(f"Não consegui guardar o original ({type(e).__name__}); a baixa foi registrada.")
+                ev.registrar(conn, le, nome, guardado_em=onde)
                 del st.session_state["leitura"]
                 st.toast(f"Evidência registrada: {o_que}"
                          + (f" · aberta em {le.ativo}: {', '.join(abre)} (24 h)" if abre else ""))
@@ -446,16 +462,36 @@ with aba_mudancas:
             if b2.button("Rejeitar", key=f"no{m.versao_id}"):
                 db.decidir(conn, m.versao_id, aprovar=False, por=visao)
                 st.rerun()
+            with st.expander("Corrigir antes de aprovar"):
+                st.caption("Se a IA errou um valor, corrija aqui. Fica registrado o que foi proposto e o que foi "
+                           "aprovado, e por quem.")
+                correcoes = {}
+                for c, (_, proposto) in m.diferencas.items():
+                    if c in db.CAMPOS_DATA:
+                        d = st.date_input(CAMPO.get(c, c), value=date.fromisoformat(proposto) if proposto else None,
+                                          format="DD/MM/YYYY", key=f"cor{m.versao_id}{c}")
+                        correcoes[c] = d.isoformat() if d else None
+                    else:
+                        correcoes[c] = st.text_input(CAMPO.get(c, c), value=proposto or "", key=f"cor{m.versao_id}{c}")
+                if st.button("Aprovar com correção", key=f"okc{m.versao_id}"):
+                    try:
+                        db.decidir(conn, m.versao_id, aprovar=True, por=visao, correcoes=correcoes)
+                        st.rerun()
+                    except db.ErroCadastro as e:
+                        st.error(f"Correção não aceita: {e}")
     decididas = conn.execute(
-        "SELECT o.codigo, v.status, v.decidida_por, v.decidida_em, a.titulo AS ato FROM obrigacao_versao v "
+        "SELECT o.codigo, v.status, v.decidida_por, v.decidida_em, v.correcao, a.titulo AS ato "
+        "FROM obrigacao_versao v "
         "JOIN obrigacao o ON o.id = v.obrigacao_id LEFT JOIN ato a ON a.id = v.ato_id "
         "WHERE v.ato_id IS NOT NULL AND v.status != 'pendente'"
     ).fetchall()
     if decididas:
         st.markdown("##### Decisões registradas")
         st.markdown("| Obrigação | Ato | Decisão | Por | Quando (Brasília) |\n|---|---|---|---|---|\n" + "\n".join(
-            f"| {r['codigo']} | {torre.nome_ato(r['ato']) or '—'} | {'❌ rejeitada' if r['status'] == 'rejeitada' else '✅ aprovada'} "
-            f"| {r['decidida_por'].split(' (')[0]} | {torre.em_brasilia(r['decidida_em'])} |" for r in decididas))
+            f"| {r['codigo']} | {torre.nome_ato(r['ato']) or '—'} | "
+            + ("❌ rejeitada" if r["status"] == "rejeitada" else "✏️ aprovada com correção" if r["correcao"]
+               else "✅ aprovada")
+            + f" | {r['decidida_por'].split(' (')[0]} | {torre.em_brasilia(r['decidida_em'])} |" for r in decididas))
 
     st.markdown("##### Histórico de uma obrigação")
     st.caption("Por que este prazo é este? Cada versão com a origem, o trecho que a sustenta e quem decidiu.")
@@ -484,6 +520,10 @@ with aba_mudancas:
                 vale = (f"vale de {_br(v['vigencia_desde'])} até {_br(v['vigencia_ate'])}" if v["vigencia_ate"]
                         else f"vale a partir de {_br(v['vigencia_desde'])}")
                 st.markdown(f"Prazo: {_br(v['prazo'])} · {vale} · {torre.dispositivo(norma_escolha, v['artigo'])}")
+            if v["correcao"]:
+                st.markdown("✏️ Corrigida por quem aprovou: " + "; ".join(
+                    f"{CAMPO.get(c, c)} proposto {_val(c, p)}, aprovado {_val(c, a)}"
+                    for c, (p, a) in json.loads(v["correcao"]).items()))
             if v["trecho"]:
                 st.caption(f"“{v['trecho']}”")
             anterior = v

@@ -8,6 +8,7 @@ Todos os nomes, números de ART e responsáveis são inventados.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
@@ -165,7 +166,42 @@ def gerar() -> list[str]:
         c.drawString(2 * cm, 1.5 * cm, AVISO)
         c.save()
         feitos.append(nome)
+    for nome, original in ESCANEADOS.items():
+        (destino / nome).write_bytes(pdf_escaneado(DOCS[original]))
+        feitos.append(nome)
     return feitos
+
+
+# cópia "escaneada" (a página é uma imagem, sem texto selecionável) para mostrar o caminho do OCR
+ESCANEADOS = {"FIR_B3_2026-10-1Q_escaneada.pdf": "FIR_B3_2026-10-1Q.pdf"}
+
+
+def pdf_escaneado(linhas: list[str]) -> bytes:
+    """Desenha as linhas numa imagem e põe a imagem numa página A4: o PDF não tem texto,
+    como o de uma ficha impressa, assinada e escaneada."""
+    from io import BytesIO
+
+    from PIL import Image, ImageDraw, ImageFont
+    from reportlab.lib.utils import ImageReader
+
+    largura, altura = 1240, 1754                       # A4 a 150 dpi
+    img = Image.new("L", (largura, altura), 255)
+    d = ImageDraw.Draw(img)
+    import reportlab
+
+    # Vera vem com o reportlab (tem acentos; a fonte padrão do Pillow não tem) e existe também no Linux do Docker
+    fonte = ImageFont.truetype(str(Path(reportlab.__file__).parent / "fonts" / "Vera.ttf"), 22)
+    y = 120
+    for linha in [*linhas, "", AVISO]:
+        d.text((110, y), linha, fill=0, font=fonte)
+        y += 36
+    png = BytesIO()
+    img.save(png, format="PNG")
+    saida = BytesIO()
+    c = canvas.Canvas(saida, pagesize=A4, invariant=True)
+    c.drawImage(ImageReader(BytesIO(png.getvalue())), 0, 0, width=A4[0], height=A4[1])
+    c.save()
+    return saida.getvalue()
 
 
 if __name__ == "__main__":

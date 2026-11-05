@@ -24,6 +24,7 @@ flowchart LR
 
 - **De cima para baixo:** norma → obrigações → o que cada ativo precisa fazer.
 - **De baixo para cima:** documento da operação → evidência → obrigação cumprida.
+- **Quem aprova pode corrigir.** Se a IA propôs um valor errado (ex.: leu 31/12 na notícia em vez de 26/12 no ato), quem aprova corrige o campo antes de aprovar. Vale o valor corrigido, e o histórico guarda o que foi proposto, o que foi aprovado e quem decidiu. A correção passa pelas mesmas conferências da proposta (data AAAA-MM-DD, regra e agenda válidas) e não pode desfazer a mudança inteira: nesse caso é rejeitar.
 - **Na torre:** cada obrigação de cada ativo aparece como 🔴 atrasada, ⚪ dado faltando no cadastro do ativo, 🟡 vence em breve, 🟢 em dia ou 🔵 por gatilho (só vale se acontecer algo: incidente, anomalia, modificação). Uma mudança aguardando aprovação aparece com ⚠️ ao lado.
 
 ## A torre: agenda e status
@@ -91,8 +92,9 @@ Documentos de exemplo, todos fictícios, em `data/exemplos/`. São gerados de fo
 | `EIE_B2_2027-08-02_recibo_SIGBM.pdf` | Recibo do EIE: encerra o registro no SIGBM, a ISE continua aberta |
 | `Relatorio_NR13_VP-101_exame_externo.pdf` | Exame externo do vaso E1 (NR-13) |
 | `Boletim_efluentes_2026-09.pdf` | Efluentes de setembro: cita a licença e a unidade, vai para a licença |
+| `FIR_B3_2026-10-1Q_escaneada.pdf` | A mesma FIR da B3, escaneada (página é imagem, sem texto): mostra o caminho do OCR |
 
-PDF sem texto (escaneado) volta com um aviso claro. O OCR fica para depois.
+PDF escaneado: a página sem texto vai para o OCR, se estiver ligado (`REGULAIA_OCR=textract`, Amazon Textract, uma chamada por página, ver `regulaia/ocr.py`). O texto do OCR passa pelas mesmas regras e a torre avisa para conferir antes de registrar. Sem OCR ligado, a torre diz que o PDF é escaneado e pede a versão digital; não tenta adivinhar.
 
 ## Saídas para quem não abre a torre
 
@@ -182,7 +184,7 @@ O código fala com uma interface única. Qual provedor e qual modelo atende cada
 | 3. Modelo forte | DeepSeek V4.1 Flash com raciocínio no máximo (`max`, mesma franquia) | Claude Sonnet, se houver chave da Anthropic ou Bedrock. Opus não: caro demais para o ganho |
 | No evento | Claude 5 no Bedrock (a família 5.5 não estaria disponível lá) | O mesmo de antes, pela internet |
 
-A OpenCode Go mistura dois formatos de API: alguns modelos usam o da OpenAI (`/chat/completions`, ex.: DeepSeek) e outros o da Anthropic (`/messages`, ex.: Haiku, Qwen). O código fala os dois, o que também cobre a Anthropic e a DeepSeek diretas. O Bedrock entra por um adaptador próprio (Converse).
+A OpenCode Go mistura dois formatos de API: alguns modelos usam o da OpenAI (`/chat/completions`, ex.: DeepSeek) e outros o da Anthropic (`/messages`, ex.: Haiku, Qwen). O código fala os dois, o que também cobre a Anthropic e a DeepSeek diretas. O Bedrock entra por um adaptador próprio, a API Converse do boto3 (`ClienteBedrock`), que serve para Claude, DeepSeek e Nova do mesmo jeito. Ele está testado com um cliente falso; a primeira chamada de verdade é no evento, com a conta da organização (ver "Arquitetura na AWS" no README).
 
 **Conta do cliente (traga sua chave).** O provedor e a chave são configuração, não código. Uma empresa pode rodar a RegulaIA com a própria conta (Bedrock na AWS dela, Anthropic, DeepSeek), e os documentos dela não passam pela nossa conta. Para mineradoras, isso responde à pergunta "para onde vão meus dados?".
 

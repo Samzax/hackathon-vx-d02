@@ -12,6 +12,7 @@ import json
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 from . import agenda as agenda_, regras
@@ -40,6 +41,9 @@ def conectar(caminho: str | Path = DB_PADRAO) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA.read_text(encoding="utf-8"))
+    # bancos criados antes da coluna de correção
+    if "correcao" not in {r["name"] for r in conn.execute("PRAGMA table_info(obrigacao_versao)")}:
+        conn.execute("ALTER TABLE obrigacao_versao ADD COLUMN correcao TEXT")
     return conn
 
 
@@ -216,14 +220,56 @@ def propor_versao(conn, codigo: str, mudancas: dict, *, ato_id: int | None,
     return cur.lastrowid
 
 
-def decidir(conn, versao_id: int, aprovar: bool, por: str) -> None:
-    """Aprova (a pendente vira vigente; a antiga, substituída) ou rejeita."""
-    row = conn.execute(
-        "SELECT obrigacao_id, status FROM obrigacao_versao WHERE id = ?", (versao_id,)
-    ).fetchone()
+CAMPOS_DATA = ("prazo", "vigencia_desde", "vigencia_ate")
+
+
+def _validar_correcoes(conn, row, correcoes: dict) -> dict:
+    """Confere a correção de quem aprova e devolve {campo: [proposto, aprovado]} só do que mudou.
+    Mesmas regras da proposta: campo que pode mudar, data AAAA-MM-DD, regra e agenda válidas;
+    e a versão corrigida ainda tem de mudar alguma coisa (senão é caso de rejeitar)."""
+    invalidos = set(correcoes) - set(CAMPOS_VERSAO)
+    if invalidos:
+        raise ErroCadastro(f"campos que não podem mudar: {sorted(invalidos)}")
+    feitas = {}
+    for campo, valor in correcoes.items():
+        valor = (str(valor).strip() or None) if valor is not None else None
+        if valor and campo in CAMPOS_DATA:
+            try:
+                date.fromisoformat(valor)
+            except ValueError:
+                raise ErroCadastro(f"{campo}: {valor!r} não é data AAAA-MM-DD") from None
+        if campo == "regra" and valor:
+            regras.validar(valor)
+        if campo == "agenda" and valor:
+            agenda_.validar(valor)
+        if valor != row[campo]:
+            feitas[campo] = [row[campo], valor]
+    vigente = conn.execute("SELECT * FROM obrigacao_versao WHERE obrigacao_id = ? AND status = 'vigente'",
+                           (row["obrigacao_id"],)).fetchone()
+    if vigente is not None:
+        final = {c: row[c] for c in CAMPOS_VERSAO} | {c: v[1] for c, v in feitas.items()}
+        if all(final[c] == vigente[c] for c in CAMPOS_VERSAO):
+            raise ErroCadastro("com a correção a obrigação fica igual à vigente: rejeite a mudança")
+    return feitas
+
+
+def decidir(conn, versao_id: int, aprovar: bool, por: str, correcoes: dict | None = None) -> None:
+    """Aprova (a pendente vira vigente; a antiga, substituída) ou rejeita.
+
+    `correcoes` ({campo: valor}) é o que quem aprova corrigiu na proposta antes de aprovar:
+    a versão vigente fica com o valor corrigido, e o proposto fica guardado em `correcao`."""
+    row = conn.execute("SELECT * FROM obrigacao_versao WHERE id = ?", (versao_id,)).fetchone()
     if row is None or row["status"] != "pendente":
         raise ErroCadastro(f"versão {versao_id} não está pendente")
+    if correcoes and not aprovar:
+        raise ErroCadastro("correção só vale para aprovar")
+    feitas = _validar_correcoes(conn, row, correcoes) if correcoes else {}
     with conn:
+        if feitas:
+            conn.execute(
+                f"UPDATE obrigacao_versao SET {', '.join(f'{c} = ?' for c in feitas)}, correcao = ? WHERE id = ?",
+                (*(v[1] for v in feitas.values()), json.dumps(feitas, ensure_ascii=False), versao_id),
+            )
         if aprovar:
             conn.execute(
                 "UPDATE obrigacao_versao SET status = 'substituida' "

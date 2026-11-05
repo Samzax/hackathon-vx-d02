@@ -1,8 +1,9 @@
 """Cliente de IA com troca de provedor por configuração, cache e custo medido.
 
-Fala dois formatos de API, o que cobre Anthropic, DeepSeek e OpenCode Go:
+Fala três formatos de API, o que cobre Anthropic, DeepSeek, OpenCode Go e Amazon Bedrock:
   - openai:    POST {base}/chat/completions
   - anthropic: POST {base}/messages
+  - bedrock:   API Converse do Bedrock (boto3), credencial pelo perfil AWS, sem chave no .env
 Quem atende cada camada está em modelos.toml. As chaves vêm do .env.
 """
 
@@ -131,6 +132,58 @@ class ClienteHTTP:
 # -------------------------------------------------------------------- roteador
 
 
+class FalhaProvedor(RuntimeError):
+    """Erro de um provedor que não fala HTTP direto (ex.: Bedrock via boto3), já sem detalhe de SDK."""
+
+
+class ClienteBedrock:
+    """Amazon Bedrock pela API Converse (boto3), a mesma para Claude, DeepSeek e Nova.
+
+    Sem chave: a credencial vem do perfil AWS do ambiente (AWS_PROFILE), e a região do AWS_REGION
+    (us-east-1 no evento). A regra do evento é menos de 1 requisição por segundo: o cliente espera
+    o intervalo mínimo entre uma chamada e outra.
+    """
+
+    def __init__(self, nome: str, cfg: dict, cliente=None, relogio=None, dormir=None):
+        import time
+
+        self.nome, self.cfg = nome, cfg
+        self.intervalo = float(cfg.get("intervalo_minimo_s", 1.1))
+        self._relogio, self._dormir = relogio or time.monotonic, dormir or time.sleep
+        self._ultima: float | None = None
+        if cliente is None:
+            from botocore.config import Config
+
+            from . import aws
+
+            cliente = aws.cliente("bedrock-runtime", cfg.get("regiao"),
+                                  config=Config(read_timeout=180, retries={"max_attempts": 2, "mode": "standard"}))
+        self.cliente = cliente
+
+    def chamar(self, modelo: Modelo, sistema: str, usuario: str, max_tokens: int,
+               sessao: str) -> tuple[str, int, int]:
+        if self._ultima is not None and (falta := self.intervalo - (self._relogio() - self._ultima)) > 0:
+            self._dormir(falta)
+        self._ultima = self._relogio()
+        try:
+            r = self.cliente.converse(
+                modelId=modelo.nome,
+                system=[{"text": sistema}],
+                messages=[{"role": "user", "content": [{"text": usuario}]}],
+                inferenceConfig={"maxTokens": max_tokens},
+            )
+        except Exception as e:      # ClientError, throttling, credencial: o roteador tenta o próximo modelo
+            raise FalhaProvedor(f"{type(e).__name__}: {str(e)[:200]}") from e
+        blocos = r.get("output", {}).get("message", {}).get("content", [])
+        texto = "".join(b.get("text", "") for b in blocos)
+        uso = r.get("usage") or {}
+        return texto, uso.get("inputTokens", 0), uso.get("outputTokens", 0)
+
+
+def _cliente(nome: str, cfg: dict, chave: str, http: httpx.Client):
+    return ClienteBedrock(nome, cfg) if cfg.get("formato") == "bedrock" else ClienteHTTP(nome, cfg, chave, http)
+
+
 class Roteador:
     """Escolhe o modelo de cada camada, usa o cache e mede o custo.
 
@@ -149,7 +202,7 @@ class Roteador:
         else:
             http = httpx.Client(timeout=timeout)
             self.provedores = {
-                nome: ClienteHTTP(nome, c, env[c["chave"]], http)
+                nome: _cliente(nome, c, env[c["chave"]], http)
                 for nome, c in self.cfg["provedores"].items()
                 if env.get(c["chave"])
             }
@@ -207,7 +260,7 @@ class Roteador:
                     modelo, sistema, usuario, max_tokens, sessao=chave[:32]
                 )
                 dados = extrair_json(texto)
-            except (httpx.HTTPError, RespostaInvalida, KeyError) as e:
+            except (httpx.HTTPError, FalhaProvedor, RespostaInvalida, KeyError) as e:
                 falhas.append(f"{modelo.rotulo}: {type(e).__name__}: {str(e)[:160]}")
                 continue
             custo = self.custo(modelo.nome, tin, tout)
