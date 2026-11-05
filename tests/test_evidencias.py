@@ -241,3 +241,26 @@ def test_na_res220_a_anomalia_abre_o_registro_no_sigbm_e_a_ise(conn):
     ev.registrar(conn, eie, "EIE_B2_2027-08-02_recibo_SIGBM.pdf")
     depois = {l.codigo: l for l in torre.painel(conn, 1, date(2027, 8, 5), DESDE, ativo="B2")}
     assert depois["OB-18"].status == agenda.GATILHO and depois["OB-19"].status == agenda.ATRASADA
+
+
+def test_ise_aberta_vai_para_o_calendario_e_o_boletim(conn):
+    """Quem só recebe o .ics ou o boletim também vê a ISE aberta, com o motivo."""
+    ev.registrar(conn, ev.ler(conn, _pdf("FIR_B2_2026-11-1Q_anomalia.pdf"), 1, HOJE),
+                 "FIR_B2_2026-11-1Q_anomalia.pdf")
+    ics = torre.calendario(conn, 1, HOJE, DESDE).replace("\r\n ", "")
+    evento = ics.split("UID:B2-R95-04-vence-20261105")[1].split("END:VEVENT")[0]
+    assert "SUMMARY:ATRASADA · B2" in evento and "Acionada em 04/11/2026" in evento
+    b = torre.boletim(conn, 1, HOJE, DESDE)
+    atrasadas = b.split("## 🔴")[1].split("##")[0]
+    assert ("**B2** · Realizar ISE" in atrasadas
+            and "venceu em 05/11/2026; acionada em 04/11/2026 por FIR_B2_2026-11-1Q_anomalia.pdf" in atrasadas)
+
+
+def test_citacao_da_res220_nao_repete_a_norma(conn):
+    assert torre.dispositivo("Res. ANM 220/2025", "Res. ANM 220/2025 art. 42") == "Res. ANM 220/2025 art. 42"
+    assert torre.dispositivo("Res. ANM 95/2022", "art. 27") == "Res. ANM 95/2022, art. 27"
+    ics = torre.calendario(conn, 1, HOJE, DESDE, dias=365 * 4).replace("\r\n ", "").replace(r"\,", ",")
+    b = torre.boletim(conn, 1, date(2027, 8, 10), DESDE)
+    for texto in (ics, b):
+        assert "Res. ANM 220/2025, Res. ANM 220/2025" not in texto
+    assert "Res. ANM 220/2025 art." in ics

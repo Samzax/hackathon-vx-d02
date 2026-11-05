@@ -44,9 +44,20 @@ class Linha:
     nota: str = ""
 
 
+def dispositivo(norma: str | None, artigo: str | None) -> str:
+    """'Res. ANM 220/2025' + 'Res. ANM 220/2025 art. 38 I' não repete a norma; 'Res. ANM 95/2022' + 'art. 27' junta."""
+    if norma and artigo and artigo.startswith(norma):
+        return artigo
+    return f"{norma}, {artigo}" if norma else (artigo or "")
+
+
 def _minuscula(texto: str) -> str:
     """'Relatório de ISE' -> 'relatório de ISE'; siglas ('FIE, EIE...') ficam como estão."""
     return texto[0].lower() + texto[1:] if len(texto) > 1 and texto[1].islower() else texto
+
+
+def _maiuscula(texto: str) -> str:
+    return texto[:1].upper() + texto[1:]
 
 
 def _empresa_ativos(conn, empresa_id: int, tipo: str | None = None) -> list[dict]:
@@ -179,7 +190,7 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
     pendentes = [m for m in mudancas(conn, empresa_id) if set(m.ativos) & set(ativos)]
 
     def item(l: Linha, extra: str) -> str:
-        return f"- **{l.ativo}** · {l.titulo} ({l.norma}, {l.artigo}) — {extra}"
+        return f"- **{l.ativo}** · {l.titulo} ({dispositivo(l.norma, l.artigo)}) — {extra}"
 
     para = responsavel or "Diretoria"
     out = [f"# Boletim regulatório — {para}", "",
@@ -189,7 +200,9 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
         out.append("Nada atrasado, nada vencendo nos próximos dias e nenhuma mudança aguardando aprovação.")
     if atrasadas:
         out += [f"## 🔴 Atrasadas ({len(atrasadas)})", ""]
-        out += [item(l, f"venceu em {_br(l.vence)}; falta: {', '.join(map(agenda.rotulo_humano, l.faltando)) or l.nota}") for l in atrasadas]
+        out += [item(l, f"venceu em {_br(l.vence)}; "
+                        + (f"falta: {', '.join(map(agenda.rotulo_humano, l.faltando))}" if l.faltando else l.nota))
+                for l in atrasadas]
         out.append("")
     if proximas:
         out += [f"## 🟡 Vencem nos próximos {janela} dias ({len(proximas)})", ""]
@@ -240,11 +253,12 @@ def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str 
         if l.ativo in ativos and l.vence and l.vence <= limite and l.status != agenda.CUMPRIDA:
             marca = "ATRASADA · " if l.status == agenda.ATRASADA else ""
             eventos.append((l.vence, f"{l.ativo}-{l.codigo}-vence",
-                            f"{marca}{l.ativo} · {l.titulo}", f"{l.norma}, {l.artigo}"))
+                            f"{marca}{l.ativo} · {l.titulo}",
+                            dispositivo(l.norma, l.artigo) + (f". {_maiuscula(l.nota)}" if l.nota else "")))
     for f in futuras(conn, empresa_id, hoje):
         if f.ativo in ativos and f.dia <= limite and not f.proposta:
             eventos.append((f.dia, f"{f.ativo}-{f.codigo}-inicio",
-                            f"Começa a valer: {f.ativo} · {f.titulo}", f"{f.norma}, {f.artigo}"))
+                            f"Começa a valer: {f.ativo} · {f.titulo}", dispositivo(f.norma, f.artigo)))
     linhas = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//RegulaIA//Torre de Controle//PT-BR",
               "CALSCALE:GREGORIAN", f"X-WR-CALNAME:RegulaIA · {_ics_texto(responsavel or 'Diretoria')}"]
     carimbo = f"{hoje:%Y%m%d}T000000Z"

@@ -33,13 +33,6 @@ CAMPO = {"prazo": "Prazo", "vigencia_desde": "Começa a valer em", "vigencia_ate
          "evidencia": "Evidência", "regra": "Regra", "agenda": "Agenda"}
 
 
-def _dispositivo(norma, artigo):
-    """'Res. ANM 220/2025' + 'Res. ANM 220/2025 art. 38 I' não repete a norma."""
-    if norma and artigo and artigo.startswith(norma):
-        return artigo
-    return f"{norma}, {artigo}" if norma else artigo
-
-
 def _curto(texto: str, n: int = 70) -> str:
     """Corta no limite de palavra e marca com reticências."""
     return texto if len(texto) <= n else texto[:n].rsplit(" ", 1)[0] + "…"
@@ -249,11 +242,11 @@ with aba_hoje:
             for l in do_ativo:
                 if l.status in (agenda.ATRASADA, torre.DADO_FALTANDO):
                     v = db.versao(conn, l.codigo)
-                    st.markdown(f"**{ROTULO[l.status]} · {l.titulo}** ({l.norma}, {l.artigo})")
+                    st.markdown(f"**{ROTULO[l.status]} · {l.titulo}** ({torre.dispositivo(l.norma, l.artigo)})")
                     if l.faltando:
                         st.markdown("Períodos sem evidência: " + ", ".join(map(agenda.rotulo_humano, l.faltando)))
                     if l.nota and not l.dados_faltando:
-                        st.markdown(l.nota[0].upper() + l.nota[1:] + ".")
+                        st.markdown(l.nota[:1].upper() + l.nota[1:] + ".")
                     if l.dados_faltando:
                         st.markdown(f"Falta no cadastro do ativo: `{'`, `'.join(l.dados_faltando)}` — "
                                     "sem esse dado não dá para dizer se a obrigação vale.")
@@ -336,7 +329,7 @@ with aba_transicao:
         with st.expander(f"**{_br(dia)}** · em {dias} dias · {len(agrupado)} obrigações · {', '.join(normas_dia)}",
                          expanded=len(agrupado) <= 6):
             st.markdown("\n".join(
-                f"- {'⏳ ' if prop else ''}{tit} — *{_dispositivo(norma, art)}* · {', '.join(ats)}"
+                f"- {'⏳ ' if prop else ''}{tit} — *{torre.dispositivo(norma, art)}* · {', '.join(ats)}"
                 for (cod, tit, norma, art, prop), ats in agrupado.items()))
 
 # ------------------------------------------------------------------ Mudanças
