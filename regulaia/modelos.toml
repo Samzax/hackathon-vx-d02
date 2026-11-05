@@ -1,0 +1,50 @@
+# Qual modelo atende cada camada. Para cada camada, vale o primeiro modelo da lista
+# cujo provedor tem chave no .env. Trocar de modelo é editar este arquivo, não o código.
+#
+# Camada 2: modelo barato, atende quase tudo.
+# Camada 3: só quando a camada 2 devolve baixa confiança ou o Python reprova a resposta.
+
+[camadas.2]
+modelos = [
+  { provedor = "deepseek",  modelo = "deepseek-chat" },
+  { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "high" },
+  { provedor = "opencode",  modelo = "claude-haiku-5-5" },
+  { provedor = "anthropic", modelo = "claude-haiku-5-5" },
+]
+
+[camadas.3]
+modelos = [
+  { provedor = "deepseek",  modelo = "deepseek-reasoner" },
+  { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "max" },
+  { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
+]
+
+# formato: "openai" (/chat/completions) ou "anthropic" (/messages).
+[provedores.deepseek]
+chave = "DEEPSEEK_API_KEY"
+formato = "openai"
+base = "https://api.deepseek.com/v1"
+
+[provedores.anthropic]
+chave = "ANTHROPIC_API_KEY"
+formato = "anthropic"
+base = "https://api.anthropic.com/v1"
+
+[provedores.opencode]
+# O plano Go é voltado a agentes de programação: o cliente precisa se identificar
+# e mandar um ID de sessão estável (x-opencode-session).
+chave = "OPENCODE_API_KEY"
+formato = "openai"
+base = "https://opencode.ai/inference/go/openai/v1"
+base_anthropic = "https://opencode.ai/inference/go/anthropic/v1"
+modelos_anthropic = ["claude-haiku-5-5", "minimax-m3", "qwen3.8-max", "qwen3.8-flash", "qwen3.7-plus"]
+cabecalho_sessao = "x-opencode-session"
+
+# US$ por milhão de tokens (entrada, saída), para medir o custo de cada chamada.
+# Fonte: https://opencode.ai/zen/go/v1/models e páginas de preço dos provedores (nov/2026).
+[precos]
+"deepseek-v4.1-flash" = [0.15, 0.60]
+"deepseek-chat"       = [0.15, 0.60]
+"deepseek-reasoner"   = [0.66, 1.98]
+"claude-haiku-5-5"    = [0.10, 0.50]
+"claude-sonnet-5-5"   = [3.00, 15.00]
