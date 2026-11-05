@@ -212,7 +212,10 @@ def pendente(l: Linha) -> str:
     Sem período pendente, a nota (gatilho, acionamento)."""
     if so_o_vencimento(l):
         return f"última evidência em {_br(l.ultima)}" if l.ultima else SEM_EVIDENCIA
-    return ", ".join(agenda.rotulo_humano(p) for p in l.faltando) or l.nota
+    rotulos = [agenda.rotulo_humano(p) for p in l.faltando]
+    if len(rotulos) > 3:                 # dez meses um por um não cabem numa linha de boletim
+        return f"{len(rotulos)} períodos entre {rotulos[0]} e {rotulos[-1]}"
+    return ", ".join(rotulos) or l.nota
 
 
 def so_o_vencimento(l: Linha) -> bool:

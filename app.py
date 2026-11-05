@@ -253,10 +253,12 @@ with aba_hoje:
                 if l.status in (agenda.ATRASADA, torre.DADO_FALTANDO):
                     v = db.versao(conn, l.codigo)
                     st.markdown(f"**{ROTULO[l.status]} · {l.titulo}** ({torre.dispositivo(l.norma, l.artigo)})")
-                    if l.faltando:
+                    herdada = bool(l.nota and l.ultima and _br(l.ultima) in l.nota)   # a nota já diz a data
+                    if l.faltando and not torre.so_o_vencimento(l):
+                        st.markdown("Períodos sem evidência: " + ", ".join(map(agenda.rotulo_humano, l.faltando)))
+                    elif l.faltando and not herdada:
                         texto = torre.pendente(l)
-                        st.markdown(texto[:1].upper() + texto[1:] + "." if torre.so_o_vencimento(l)
-                                    else "Períodos sem evidência: " + texto)
+                        st.markdown(texto[:1].upper() + texto[1:] + ".")
                     if l.nota and not l.dados_faltando:
                         st.markdown(l.nota[:1].upper() + l.nota[1:] + ".")
                     if l.dados_faltando:

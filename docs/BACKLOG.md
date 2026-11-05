@@ -65,3 +65,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Mudanças e Radar: nome do ato sem as maiúsculas do DOU, custo com vírgula, data da decisão em DD/MM/AAAA, "vale a partir de"; teste garante a linha "Conferido pelo Python"
 - [x] Quem aprova vê a agenda em português ("quinzenal, até o fim de cada quinzena"), não o código; confiança com vírgula; título do ato colado legível
 - [x] Hoje: dado faltando em português (com o nome do campo entre parênteses); entrega única mostra a última evidência
+- [x] Muitos períodos pendentes viram um intervalo no boletim e na tabela; obrigação herdada da Res. 95 não repete a data

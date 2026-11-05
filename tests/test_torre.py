@@ -248,3 +248,10 @@ def test_dado_faltando_em_portugues(serra):
     assert torre.campo_legivel("inventado") == "inventado"
     b = torre.boletim(conn, 1, HOJE, DESDE)
     assert "informar se passou por modificação estrutural (modificacao_estrutural)" in b
+
+
+def test_muitos_periodos_viram_um_intervalo(serra):
+    conn, _ = serra
+    b = torre.boletim(conn, 1, date(2027, 8, 10), DESDE)
+    assert "falta: 10 períodos entre setembro/2026 e junho/2027" in b
+    assert "falta: 4º trimestre/2026, 1º trimestre/2027, 2º trimestre/2027" in b      # até 3, por extenso
