@@ -41,3 +41,5 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Aba Como funciona (diagrama com números vivos)
 - [x] Recibo do EIR com aviso de entrega fora do prazo; upload de arquivo inválido sem quebrar a tela
 - [x] Plano de transição para download (o que continua, o que é novo, o que não tem equivalente)
+- [x] Troca de norma não zera a contagem de RPSB (herda a última execução equivalente)
+- [x] Viagem no tempo com botões (Demo, Res. 220, ZAS)

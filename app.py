@@ -81,8 +81,20 @@ with st.sidebar:
     st.caption(f"{empresa['nome']} · empresa fictícia")
     responsaveis = sorted({a["responsavel"] for a in ativos if a["responsavel"]})
     visao = st.selectbox("Quem está olhando", ["Diretoria (todos os ativos)"] + responsaveis)
-    hoje = st.date_input("Hoje", date.fromisoformat(spec.get("hoje", date.today().isoformat())),
-                         format="DD/MM/YYYY")
+    hoje_demo = date.fromisoformat(spec.get("hoje", date.today().isoformat()))
+    st.session_state.setdefault("hoje", hoje_demo)
+    hoje = st.date_input("Hoje", key="hoje", format="DD/MM/YYYY")
+
+    def _ir_para(d: date):
+        st.session_state["hoje"] = d
+
+    st.caption("Viagem no tempo:")
+    v1, v2, v3 = st.columns(3)
+    v1.button("Demo", on_click=_ir_para, args=(hoje_demo,), help=f"{hoje_demo:%d/%m/%Y}", width="stretch")
+    v2.button("Res. 220", on_click=_ir_para, args=(TROCA_NORMA,), help=f"{TROCA_NORMA:%d/%m/%Y}: troca de norma",
+              width="stretch")
+    v3.button("ZAS", on_click=_ir_para, args=(date(2029, 12, 27),),
+              help="27/12/2029: dia seguinte ao prazo da ZAS (ANM e NR-22)", width="stretch")
     desde = date.fromisoformat(spec.get("desde", "2026-05-01"))
     st.caption(f"Histórico monitorado desde {desde:%d/%m/%Y}.")
     if st.button("Recriar demo", help="Apaga decisões e volta ao estado inicial"):

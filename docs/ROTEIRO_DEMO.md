@@ -25,6 +25,7 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 ## 3. Transição e linha do tempo (45 s)
 
 - Mostrar a contagem regressiva para 02/08/2027, quando a Res. 220 substitui a 95, e os pares por tema: o que continua (FIR, RPSB), o que é novo e o que acaba.
+- Opcional: clicar em **Res. 220** (barra lateral, "Viagem no tempo"). A torre vira para 02/08/2027 e já cobra pela norma nova. **Fala:** "a RPSB não zera: a torre conta a última feita pela norma antiga." Voltar com **Demo**.
 - Na linha do tempo, abrir **26/12/2029**. No mesmo dia vencem duas obrigações sobre a ZAS: a da ANM (OB-01, o mapa de inundação, já aprovada) e a do MTE (NR-22, item 22.24.8: só os trabalhadores estritamente necessários dentro da ZAS).
   - **Fala:** "Dois reguladores, a mesma data. A torre cruza os dois sem ninguém ler as duas normas."
 

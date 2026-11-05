@@ -88,3 +88,13 @@ def test_historico_mostra_a_versao_nova_depois_de_aprovar(banco_temporario):
     assert hist.value == "OB-01"                       # a que já mudou aparece primeiro
     texto = " ".join(m.value for m in at.markdown)
     assert "Versão 2" in texto and "Resolução ANM Nº 245" in texto and "26/12/2029" in texto
+
+
+def test_viagem_no_tempo_para_a_res_220(banco_temporario):
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    next(b for b in at.button if b.label == "Res. 220").click().run()
+    assert not at.exception
+    assert str(at.date_input[0].value) == "2027-08-02"
+    assert next(m for m in at.metric if m.label == "Dias até a Res. ANM 220/2025").value == "0"
+    next(b for b in at.button if b.label == "Demo").click().run()
+    assert str(at.date_input[0].value) == "2026-11-07"
