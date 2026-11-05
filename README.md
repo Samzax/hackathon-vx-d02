@@ -16,6 +16,8 @@ Ela se atualiza por dois caminhos:
 
 Cada gestor vê só os seus ativos e ninguém precisa ler norma nenhuma.
 
+![Aba Hoje no dia da demo: 4 atrasadas, 1 dado faltando, 3 vencendo, e o mapa dos ativos](docs/img/torre_hoje.png)
+
 ## A demo
 
 A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. A empresa tem 8 ativos e 72 obrigações cadastradas, em 7 de novembro de 2026:
@@ -30,6 +32,8 @@ A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do
 | **Como funciona** | Diagrama dos dois fluxos (norma → torre e documento → torre) com os números da demo e as três garantias: a IA não decide sozinha, regra antes de IA, traga sua chave |
 
 **Caso principal.** A Res. ANM 245/2026 adiou o art. 7 §1 da Res. 220/2025 de 2/8/2027 para 26/12/2029. Esse parágrafo tira as áreas de lavra, beneficiamento e disposição de rejeitos das estruturas associadas à barragem, e quem trabalha nelas deixa de poder ficar na Zona de Autossalvamento (ZAS). Um sistema correto muda essa obrigação e deixa as outras 23 da Res. 220 iguais. A NR-22 (Portaria MTE 105/2026, item 22.24.8) dá a mesma data para barragens não alteadas a montante, também sobre quem pode ficar na ZAS. A linha do tempo mostra as duas normas, ANM e MTE, convergindo.
+
+![Aba Mudanças: a Res. 245 adia o prazo da OB-01 para 26/12/2029, com o trecho do ato e a conferência do Python](docs/img/torre_mudancas.png)
 
 ## O que está cadastrado
 

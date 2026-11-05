@@ -4,6 +4,10 @@
 # FIR, laudos e boletins são PDFs de texto pequenos; 20 MB sobra e limita o que entra.
 maxUploadSize = 20
 
+[client]
+# sem o botão "Deploy" do Streamlit na tela da demo (o menu ⋮ continua)
+toolbarMode = "minimal"
+
 [browser]
 # nada sai da máquina sem pedido: sem estatística de uso para o Streamlit
 gatherUsageStats = false

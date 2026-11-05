@@ -84,3 +84,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] README: tabela "O que os testes garantem", com teste que impede citar teste inexistente
 - [x] Mapa dos ativos cabe inteiro num projetor de 1280 px (colunas de texto com largura fixa)
 - [x] Conferidas todas as abas em 1280 px: rótulo do Mercado encurtado ("Empresas na PNSB", com explicação no ícone de ajuda)
+- [x] README com duas capturas da torre (Hoje e Mudanças), teste que confere toda imagem citada; sem botão "Deploy" do Streamlit na tela; botão "Res. 220" não corta em 1280 px

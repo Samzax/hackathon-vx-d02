@@ -19,3 +19,6 @@ data/extraido/log_*.txt
 __pycache__/
 *.pyc
 .claude/
+
+# capturas de tela do README: não fazem falta para rodar
+docs/img/

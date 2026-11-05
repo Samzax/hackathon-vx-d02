@@ -110,7 +110,7 @@ with st.sidebar:
         st.session_state["hoje"] = d
 
     st.caption("Viagem no tempo:")
-    v1, v2, v3 = st.columns(3)
+    v1, v2, v3 = st.columns([1, 1.35, 0.9], gap="small")   # "Res. 220" não pode cortar em 1280 px
     v1.button("Demo", on_click=_ir_para, args=(hoje_demo,), help=f"{hoje_demo:%d/%m/%Y}", width="stretch")
     v2.button("Res. 220", on_click=_ir_para, args=(TROCA_NORMA,), help=f"{TROCA_NORMA:%d/%m/%Y}: troca de norma",
               width="stretch")

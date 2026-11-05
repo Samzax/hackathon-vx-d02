@@ -56,6 +56,16 @@ def test_config_do_streamlit():
     cfg = tomllib.loads((RAIZ / ".streamlit" / "config.toml").read_text(encoding="utf-8"))
     assert cfg["server"]["maxUploadSize"] == 20
     assert cfg["browser"]["gatherUsageStats"] is False
+    assert cfg["client"]["toolbarMode"] == "minimal"     # sem botão "Deploy" na demo
+
+
+def test_imagens_dos_documentos_existem():
+    import re
+
+    for doc in [RAIZ / "README.md", *(RAIZ / "docs").glob("*.md")]:
+        for img in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", doc.read_text(encoding="utf-8")):
+            assert (doc.parent / img).is_file(), f"{doc.name}: {img}"
+    assert len(re.findall(r"!\[", (RAIZ / "README.md").read_text(encoding="utf-8"))) >= 2
 
 
 def test_todos_os_exemplos_estao_documentados():
@@ -91,7 +101,8 @@ def test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto():
     for f in precisa:
         assert (RAIZ / f).exists(), f
         assert not _ignorado_no_docker(f, padroes), f"{f} ficaria fora da imagem"
-    for f in [".env", ".env.local", "data/raw/sigbm.csv", "data/regulaia.db", ".git/config", ".venv/x"]:
+    for f in [".env", ".env.local", "data/raw/sigbm.csv", "data/regulaia.db", ".git/config", ".venv/x",
+              "docs/img/torre_hoje.png"]:
         assert _ignorado_no_docker(f, padroes), f"{f} entraria na imagem"
 
 
