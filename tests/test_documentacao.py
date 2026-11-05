@@ -187,3 +187,30 @@ def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
                 if pacote.get(raiz, raiz).lower() not in nomes:
                     faltando.add(f"{arq.name}: {raiz}")
     assert not faltando, f"falta em [project].dependencies: {sorted(faltando)}"
+
+
+def test_caminhos_no_codigo_com_a_mesma_caixa_do_disco():
+    """Windows não distingue 'Exemplos' de 'exemplos'; o Linux da imagem Docker distingue.
+    Todo nome de arquivo ou pasta citado no código tem de bater letra por letra com o disco."""
+    import re
+
+    ignorar = {".venv", ".git", "__pycache__", ".pytest_cache"}
+    nomes: dict[str, set[str]] = {}
+    for p in RAIZ.rglob("*"):
+        rel = p.relative_to(RAIZ)
+        if ignorar & set(rel.parts):
+            continue
+        for parte in rel.parts:
+            nomes.setdefault(parte.lower(), set()).add(parte)
+        assert rel.as_posix().isascii(), f"nome de arquivo com acento: {rel}"
+    citado = re.compile(r"""["']([\w./-]+\.(?:csv|json|pdf|zip|toml|txt|sql|md|py))["']|/\s*["']([\w.-]+)["']""")
+    errados = []
+    for arq in [RAIZ / "app.py", *(RAIZ / "regulaia").glob("*.py"), *(RAIZ / "collector").glob("*.py")]:
+        for m in citado.finditer(arq.read_text(encoding="utf-8")):
+            for parte in (m.group(1) or m.group(2)).split("/"):
+                variantes = nomes.get(parte.lower())
+                if variantes and parte not in variantes:
+                    errados.append(f"{arq.name}: {parte} (no disco: {sorted(variantes)})")
+    assert not errados, errados
+    colisoes = [v for v in nomes.values() if len(v) > 1]
+    assert not colisoes, f"nomes que só diferem na caixa: {colisoes}"
