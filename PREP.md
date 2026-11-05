@@ -48,7 +48,7 @@ Other days: 17 Oct 2025 had 295 acts (9 ANM), 24 Apr 2026 had 338 acts (13 ANM).
 | DOU act page | **Works without login** |
 | ANMlegis | **Works.** Includes amended text and notes. Pages are cp1252, not UTF-8 |
 | INLABS | **Down for scheduled maintenance.** Do not depend on it |
-| DOU open data (monthly XML ZIPs) | Page loads and points to this as the INLABS alternative. Links are behind year and month selectors, so no file has been downloaded yet |
+| DOU open data (monthly XML ZIPs) | **Works (5 Nov).** `S01082026.zip` (August 2026, Seção 1) downloaded by hand and parsed by `collector/xml_dou.py`: 7,884 acts. A small sample of it is in `tests/fixtures/dou/S01_amostra.zip` |
 
 Listing: `https://www.in.gov.br/leiturajornal?secao=do1&data=DD-MM-YYYY`
 - Acts are JSON inside `<script id="params">`, in `jsonArray`.
@@ -60,7 +60,7 @@ Full text: `https://www.in.gov.br/web/dou/-/<urlTitle>`
 Watch out for:
 - `content` looks like an excerpt, so fetch the act page for the full text.
 - Extra editions use other section codes (`do1a`, `do1e`, `do1esp`). Skipping them can miss an act.
-- Listing completeness looks right (act pages run from 1 to the last page) but has not been checked against the official XML.
+- Listing completeness checked against the official XML for 4 Aug 2026 (5 Nov): 339 acts in `do1` plus 9 in `do1e`, 23 from ANM, same as the site listing.
 - Robots rules forbid crawling (see the note at the top of this section). Terms of use still not read.
 
 ## Seed obligations
@@ -91,9 +91,9 @@ Still open, until the recording is released:
 
 ## Before Saturday
 
-- [ ] Create the GitHub repo and push the prep material
-- [ ] Build the collector and the golden test (OB-01) before Saturday
-- [ ] Draft the 5-minute pitch around the Res. 245 case
+- [x] Create the GitHub repo and push the prep material (private repo, `main`)
+- [x] Build the collector and the golden test (OB-01) before Saturday (`collector/`, `tests/test_impacto.py`)
+- [ ] Draft the 5-minute pitch around the Res. 245 case (the 3-minute demo script is ready: `docs/ROTEIRO_DEMO.md`)
 - [ ] Name one owner for data ingestion
 - [ ] Talk to someone who works in mining compliance; ask the organizers for an intro
 - [ ] Check with them that the seed list and the owner roles look realistic

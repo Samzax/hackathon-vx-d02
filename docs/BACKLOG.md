@@ -105,3 +105,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Teste da promessa "cada gestor vê só os seus ativos": para cada gestor, nenhuma aba cita ativo de outro (texto, tabelas, títulos); conferido também no navegador (Usina e Geotecnia) e com mutação (mostrar todos os ativos faz o teste falhar)
 - [x] Rejeitar conferido no navegador (versão 1 continua vigente, a 2 fica registrada como rejeitada); histórico diz "veio do cadastro inicial" em vez de "decidida por carga inicial"
 - [x] Celular (390 px): sem rolagem lateral; os 5 números do topo em duas linhas (antes ocupavam a tela inteira), rótulo sem corte e título menor. CSS só abaixo de 640 px: o desktop fica igual (conferido nas duas larguras)
+- [x] PREP.md em dia: XML mensal do DOU baixado e lido (7.884 atos), listagem conferida contra o XML, repositório e teste-ouro marcados como feitos; o pitch de 5 min continua em aberto (roteiro da demo de 3 min pronto)
