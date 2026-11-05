@@ -214,7 +214,7 @@ def test_anomalia_registrada_abre_a_ise_ate_chegar_o_relatorio(conn):
 
     ise = _linha(conn, "B2", "R95-04")
     assert ise.status == agenda.ATRASADA and ise.vence == "2026-11-05"
-    assert "acionada em 04/11/2026 por FIR_B2_2026-11-1Q_anomalia.pdf" in ise.nota
+    assert ise.nota == "acionada em 04/11/2026 por FIR_B2_2026-11-1Q_anomalia.pdf: aguardando relatório de ISE"
     # viagem no tempo: antes do fato não há nada; no próprio dia, vence logo
     antes = {l.codigo: l for l in torre.painel(conn, 1, date(2026, 11, 3), DESDE, ativo="B2")}["R95-04"]
     no_dia = {l.codigo: l for l in torre.painel(conn, 1, date(2026, 11, 4), DESDE, ativo="B2")}["R95-04"]
@@ -234,7 +234,7 @@ def test_na_res220_a_anomalia_abre_o_registro_no_sigbm_e_a_ise(conn):
     ev.registrar(conn, le, "FIR_B2_2027-08-1Q_Res220_EC3.pdf")
     depois = {l.codigo: l for l in torre.painel(conn, 1, date(2027, 8, 5), DESDE, ativo="B2")}
     assert depois["OB-18"].status == depois["OB-19"].status == agenda.ATRASADA
-    assert "aguardando registro no sigbm" in depois["OB-18"].nota
+    assert "aguardando registro no SIGBM" in depois["OB-18"].nota
 
     eie = ev.ler(conn, _pdf("EIE_B2_2027-08-02_recibo_SIGBM.pdf"), 1, DIA_220)
     assert (eie.obrigacao, eie.periodo) == ("OB-18", "2027-08-02") and not eie.avisos

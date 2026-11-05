@@ -44,6 +44,11 @@ class Linha:
     nota: str = ""
 
 
+def _minuscula(texto: str) -> str:
+    """'Relatório de ISE' -> 'relatório de ISE'; siglas ('FIE, EIE...') ficam como estão."""
+    return texto[0].lower() + texto[1:] if len(texto) > 1 and texto[1].islower() else texto
+
+
 def _empresa_ativos(conn, empresa_id: int, tipo: str | None = None) -> list[dict]:
     return [a for a in db.ativos(conn, empresa_id) if tipo is None or a["tipo"] == tipo]
 
@@ -127,7 +132,7 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
                     linha.status = agenda.ATRASADA if hoje.isoformat() > ac["prazo"] else agenda.VENCE_LOGO
                     linha.vence, linha.faltando = ac["prazo"], []
                     linha.nota = (f"acionada em {_br(ac['dia'])} por {ac['origem'] or 'documento'}: "
-                                  f"aguardando {(v['evidencia'] or 'a evidência').lower()}")
+                                  f"aguardando {_minuscula(v['evidencia'] or 'a evidência')}")
             out.append(linha)
     out.sort(key=lambda l: (l.ativo, ORDEM.get(l.status, 9), l.vence or "9999"))
     return out

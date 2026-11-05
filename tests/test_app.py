@@ -152,13 +152,16 @@ def test_anomalia_registrada_fica_na_torre_ate_o_relatorio_da_ise(banco_temporar
     at = AppTest.from_file(APP, default_timeout=120).run()
     antes = _atrasadas(at)
 
-    def ler_e_registrar(nome):
+    def ler_e_registrar(nome, aviso=None):
         next(s for s in at.selectbox if s.label.endswith("documento de exemplo")).select(nome).run()
         next(b for b in at.button if b.label == "Ler documento").click().run()
+        if aviso:
+            assert any(aviso in c.value for c in at.caption)
         next(b for b in at.button if b.label.startswith("Registrar evidência")).click().run()
         assert not at.exception
 
-    ler_e_registrar("FIR_B2_2026-11-1Q_anomalia.pdf")
+    ler_e_registrar("FIR_B2_2026-11-1Q_anomalia.pdf", aviso="Ao registrar, a torre abre R95-04 em B2")
     assert _atrasadas(at) == antes + 1                 # a ISE da B2 fica aberta e passou do prazo de 24 h
+    assert any(m.value.startswith("Acionada em 04/11/2026 por FIR_B2_2026-11-1Q_anomalia.pdf") for m in at.markdown)
     ler_e_registrar("Relatorio_ISE_B2_2026-11-06.pdf")
     assert _atrasadas(at) == antes

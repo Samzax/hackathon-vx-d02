@@ -158,6 +158,10 @@ with aba_hoje:
                 st.warning(f"O documento é de {le.ativo}, que não está entre os ativos de {visao}.")
             for g in le.gatilhos:
                 st.error(f"🚨 {g}")
+            abre = [c for c in getattr(le, "acionar", []) if c != le.obrigacao]
+            if abre and le.completa:
+                st.caption(f"Ao registrar, a torre abre {', '.join(abre)} em {le.ativo}, com prazo de 24 h. "
+                           "Fica aberta até chegar a evidência que a encerra.")
             for p in le.problemas:
                 st.warning(p)
             for a in getattr(le, "avisos", []):     # leitura guardada antes de o campo existir
@@ -166,7 +170,8 @@ with aba_hoje:
                                          type="primary"):
                 ev.registrar(conn, le, nome)
                 del st.session_state["leitura"]
-                st.toast(f"Evidência registrada: {le.ativo} {le.obrigacao} {le.periodo}")
+                st.toast(f"Evidência registrada: {le.ativo} {le.obrigacao} {le.periodo}"
+                         + (f" · aberta: {', '.join(abre)}" if abre else ""))
                 st.rerun()
 
     para = None if visao.startswith("Diretoria") else visao
@@ -247,6 +252,8 @@ with aba_hoje:
                     st.markdown(f"**{ROTULO[l.status]} · {l.titulo}** ({l.norma}, {l.artigo})")
                     if l.faltando:
                         st.markdown("Períodos sem evidência: " + ", ".join(map(agenda.rotulo_humano, l.faltando)))
+                    if l.nota and not l.dados_faltando:
+                        st.markdown(l.nota[0].upper() + l.nota[1:] + ".")
                     if l.dados_faltando:
                         st.markdown(f"Falta no cadastro do ativo: `{'`, `'.join(l.dados_faltando)}` — "
                                     "sem esse dado não dá para dizer se a obrigação vale.")
