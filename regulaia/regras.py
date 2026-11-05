@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import operator
 import re
+from functools import lru_cache
 
 _OPS = {
     ">=": operator.ge,
@@ -38,12 +39,14 @@ class RegraInvalida(ValueError):
 Condicao = tuple[str, str | None, str | None]
 
 
-def _grupos(regra: str) -> list[list[Condicao]]:
-    """'a e b ou c' -> [[a, b], [c]]; '*' -> [[]] (um grupo vazio, que sempre vale)."""
+@lru_cache(maxsize=1024)
+def _grupos(regra: str) -> tuple[tuple[Condicao, ...], ...]:
+    """'a e b ou c' -> ((a, b), (c,)); '*' -> ((),) (um grupo vazio, que sempre vale).
+    Cada regra é lida uma vez só: o painel avalia milhares de vezes as mesmas poucas regras."""
     regra = regra.strip()
     if regra == "*":
-        return [[]]
-    return [_partes(g, regra) for g in re.split(r"\s+ou\s+", regra)]
+        return ((),)
+    return tuple(tuple(_partes(g, regra)) for g in re.split(r"\s+ou\s+", regra))
 
 
 def _partes(grupo: str, regra: str) -> list[Condicao]:

@@ -44,7 +44,7 @@ O campo `vigencia_desde`/`vigencia_ate` faz a troca de norma sozinha. As 21 obri
 
 **A contagem não zera na troca de norma.** A RPSB da Res. 220 tem código novo e ainda não tem evidência própria. A torre usa a última RPSB feita pela Res. 95 no mesmo ativo, já que o tema é o mesmo, e diz isso na nota. Isso vale para toda obrigação contada da última execução (`anos:N`, `meses:N`). Assim que chega uma evidência própria, ela passa a valer.
 
-**Tempo de resposta.** Com 8 ativos e 63 obrigações, cada clique recalcula todas as abas em cerca de 0,4 s (medido com `AppTest`). Os ativos são lidos com uma consulta por ativo, não uma por obrigação.
+**Tempo de resposta.** Com 8 ativos e 72 obrigações, cada clique recalcula todas as abas em 0,3 a 0,4 s (medido com `AppTest`). Os ativos são lidos com uma consulta por ativo, não uma por obrigação. Os metadados das obrigações vêm de uma consulta só, e cada regra é lida uma vez e guardada em cache.
 
 ## Cadastro: da norma ao CSV, com uma pessoa no meio
 

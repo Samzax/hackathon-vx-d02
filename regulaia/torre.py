@@ -48,9 +48,13 @@ def _empresa_ativos(conn, empresa_id: int, tipo: str | None = None) -> list[dict
     return [a for a in db.ativos(conn, empresa_id) if tipo is None or a["tipo"] == tipo]
 
 
-def _meta(conn, codigo: str) -> dict:
-    r = conn.execute("SELECT norma, area, tipo_ativo FROM obrigacao WHERE codigo = ?", (codigo,)).fetchone()
-    return dict(r) if r else {"norma": None, "area": None, "tipo_ativo": None}
+_SEM_META = {"norma": None, "area": None, "tipo_ativo": None}
+
+
+def _metas(conn) -> dict[str, dict]:
+    """Norma, área e tipo de ativo de cada obrigação, numa consulta só."""
+    return {r["codigo"]: {"norma": r["norma"], "area": r["area"], "tipo_ativo": r["tipo_ativo"]}
+            for r in conn.execute("SELECT codigo, norma, area, tipo_ativo FROM obrigacao")}
 
 
 def _prazo_unico(v: dict) -> str | None:
@@ -82,6 +86,7 @@ def _herdadas(conn, ativo_id: int, codigo: str, titulo: str) -> tuple[list[str],
 def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = None) -> list[Linha]:
     """Status de cada obrigação que vale hoje, por ativo. `desde` é o início do monitoramento."""
     out = []
+    metas = _metas(conn)
     for a in _empresa_ativos(conn, empresa_id):
         if ativo and a["codigo"] != ativo:
             continue
@@ -89,7 +94,7 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
             v = o.vigente
             if not db.vale_em(v, hoje.isoformat()):
                 continue       # só a pendente vale hoje: aparece em mudancas()
-            meta = _meta(conn, o.codigo)
+            meta = metas.get(o.codigo, _SEM_META)
             ini = max(desde, date.fromisoformat(v["vigencia_desde"])) if v["vigencia_desde"] else desde
             linha = Linha(
                 ativo=a["codigo"], ativo_nome=a["nome"], tipo_ativo=a["tipo"], responsavel=a["responsavel"],
@@ -254,13 +259,14 @@ def transicao(conn, empresa_id: int, dia: date) -> list[Troca]:
     """Para cada ativo: o que vale na véspera e não no dia, e o contrário."""
     vespera = date.fromordinal(dia.toordinal() - 1).isoformat()
     out = []
+    metas = _metas(conn)
     for a in _empresa_ativos(conn, empresa_id):
         antes = {o.codigo: o.vigente for o in db.obrigacoes_do_ativo(conn, a["id"], em=vespera)
                  if db.vale_em(o.vigente, vespera)}
         depois = {o.codigo: o.vigente for o in db.obrigacoes_do_ativo(conn, a["id"], em=dia.isoformat())
                   if db.vale_em(o.vigente, dia.isoformat())}
-        saem = [antes[c] | _meta(conn, c) for c in sorted(set(antes) - set(depois))]
-        entram = [depois[c] | _meta(conn, c) for c in sorted(set(depois) - set(antes))]
+        saem = [antes[c] | metas.get(c, _SEM_META) for c in sorted(set(antes) - set(depois))]
+        entram = [depois[c] | metas.get(c, _SEM_META) for c in sorted(set(depois) - set(antes))]
         if saem or entram:
             out.append(Troca(a["codigo"], saem, entram))
     return out
@@ -280,9 +286,10 @@ class Futura:
 def futuras(conn, empresa_id: int, hoje: date) -> list[Futura]:
     """Linha do tempo: obrigações que passam a valer depois de hoje, por ativo."""
     out = []
+    metas = _metas(conn)
     for a in _empresa_ativos(conn, empresa_id):
         for o in db.obrigacoes_do_ativo(conn, a["id"]):
-            meta = _meta(conn, o.codigo)
+            meta = metas.get(o.codigo, _SEM_META)
             for v, proposta in ((o.vigente, False), (o.pendente, True)):
                 if v and v["vigencia_desde"] and v["vigencia_desde"] > hoje.isoformat():
                     if proposta and v["vigencia_desde"] == o.vigente["vigencia_desde"]:
@@ -343,15 +350,14 @@ class Par:
 
 def _comecam_em(conn, dia: date) -> list[dict]:
     """Obrigações que passam a valer em `dia` (a norma nova), para qualquer ativo."""
-    out = []
-    for r in conn.execute("SELECT codigo FROM obrigacao ORDER BY codigo"):
-        v = db.versao(conn, r["codigo"])
-        if v and v["vigencia_desde"] == dia.isoformat():
-            out.append(v | _meta(conn, r["codigo"]))
-    return out
+    rows = conn.execute(
+        "SELECT v.*, o.codigo, o.norma, o.area, o.tipo_ativo FROM obrigacao_versao v "
+        "JOIN obrigacao o ON o.id = v.obrigacao_id "
+        "WHERE v.status = 'vigente' AND v.vigencia_desde = ? ORDER BY o.codigo", (dia.isoformat(),))
+    return [dict(r) for r in rows]
 
 
-def pares(troca: Troca, conn=None, dia: date | None = None) -> list[Par]:
+def pares(troca: Troca, conn=None, dia: date | None = None, novas_do_dia: list[dict] | None = None) -> list[Par]:
     """Agrupa o que sai e o que entra pelo tema: mostra o que continua, o que é novo e o que acaba.
     Com `conn` e `dia`, diz também quando o tema existe na norma nova mas não vale para o ativo."""
     grupos: dict[str, Par] = {}
@@ -361,7 +367,7 @@ def pares(troca: Troca, conn=None, dia: date | None = None) -> list[Par]:
         grupos.setdefault(tema(o["titulo"]), Par(tema(o["titulo"]), [], [])).entram.append(o)
     if conn is not None and dia is not None:
         tipo = conn.execute("SELECT tipo FROM ativo WHERE codigo = ?", (troca.ativo,)).fetchone()["tipo"]
-        novas = _comecam_em(conn, dia)
+        novas = novas_do_dia if novas_do_dia is not None else _comecam_em(conn, dia)
         for p in grupos.values():
             if not p.entram and p.tema != "Outras":
                 p.so_para_outros = [o for o in novas if o["tipo_ativo"] == tipo and tema(o["titulo"]) == p.tema]
@@ -381,10 +387,11 @@ def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: s
     if not trocas:
         out.append("Nenhum dos ativos muda de obrigação nessa data.")
     novas_total = 0
+    novas_do_dia = _comecam_em(conn, dia)
     for t in trocas:
         a = ativos[t.ativo]
         out += [f"## {t.ativo} · {a['nome']} ({a['responsavel']})", ""]
-        for p in pares(t, conn, dia):
+        for p in pares(t, conn, dia, novas_do_dia):
             if p.entram and not p.saem:
                 novas_total += len(p.entram)
             out.append(f"- **{p.tema}** — {p.situacao}")
