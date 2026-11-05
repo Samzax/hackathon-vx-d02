@@ -1,0 +1,16 @@
+# Torre de controle regulatória: barragens de mineração
+
+Hackathon VX, Desafio 02. Rio de Janeiro, 7 e 8 de novembro de 2026.
+
+O sistema lê o Diário Oficial da União todos os dias, separa os atos da ANM e mostra quais obrigações de uma mineradora mudaram, com o artigo e o prazo novos.
+
+## Caso de demonstração
+
+A Resolução ANM nº 245/2026 adiou o art. 7 §1 da Res. ANM 220/2025 de 2 ago. 2027 para 26 dez. 2029. Todo o resto da Res. 220 continua como estava. Um sistema correto muda uma obrigação e deixa as outras quatorze iguais.
+
+## Conteúdo
+
+| Arquivo | O que é |
+|---|---|
+| [PREP.md](PREP.md) | Pesquisa, fontes de dados, critérios de avaliação e pendências |
+| [seed_obligations.csv](seed_obligations.csv) | 15 obrigações da Res. 220/2025. A OB-01 é o teste principal |
