@@ -88,7 +88,7 @@ Num clone novo, `uv run pytest` passa com alguns testes pulados. Eles precisam d
 - o ZIP do DOU de agosto;
 - a IA de verdade: `RUN_IA=1`.
 
-Com os textos baixados, sobram 3 pulados.
+Com os textos baixados, sobram 4 pulados: 2 precisam do ZIP do DOU e 2 da IA de verdade.
 
 A interface funciona sem chave e sem internet. As respostas da IA ficam em `data/cache_ia.db`, então a demo repete exatamente igual. Para chamar a IA de verdade, copie `.env.example` para `.env` e preencha ao menos uma chave.
 
