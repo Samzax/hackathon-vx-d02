@@ -3,6 +3,8 @@
 import csv
 from pathlib import Path
 
+import pytest
+
 RAIZ = Path(__file__).resolve().parent.parent
 
 
@@ -256,3 +258,27 @@ def test_numeros_do_pitch_saem_dos_dados():
     for trecho in ("7.884 atos → 825 da ANM → 2 para a IA → 1 muda o cadastro", "99,97%", "US$ 0,065",
                    "os 66 trechos", "menos de meio centavo de dólar"):
         assert trecho in pitch, trecho
+
+
+def test_git_nao_versiona_segredo_nem_cpf():
+    """O que vai para o GitHub: nada de .env, export bruto do SIGBM (tem CPF), banco ou cache local;
+    nenhum arquivo versionado com cara de chave de API ou de CPF formatado."""
+    import re
+    import shutil
+    import subprocess
+
+    if not shutil.which("git") or not (RAIZ / ".git").exists():
+        pytest.skip("fora de um clone do Git")
+    versionados = subprocess.run(["git", "ls-files"], cwd=RAIZ, capture_output=True, text=True,
+                                 check=True).stdout.splitlines()
+    proibidos = re.compile(r"(^|/)\.env$|(^|/)\.env\.(?!example$)|^data/raw/|^cache/|\.db$|\.pem$")
+    assert not [f for f in versionados if proibidos.search(f)]
+    chave = re.compile(r"sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|_API_KEY\s*=\s*\S{8,}")
+    cpf = re.compile(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b")
+    for f in versionados:
+        caminho = RAIZ / f
+        if caminho.suffix.lower() in {".pdf", ".zip", ".png", ".db"} or not caminho.is_file():
+            continue
+        texto = caminho.read_text(encoding="utf-8", errors="ignore")
+        assert not chave.search(texto), f"parece chave de API: {f}"
+        assert not cpf.search(texto), f"parece CPF: {f}"
