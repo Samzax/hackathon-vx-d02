@@ -124,6 +124,27 @@ def periodos(agenda: str, desde: date, ate: date) -> list[Periodo]:
     raise AgendaInvalida(f"agenda {agenda!r} não tem calendário fixo")
 
 
+def periodo_de(agenda: str, dia: date) -> str:
+    """Rótulo do período que uma execução feita em `dia` comprova."""
+    validar(agenda)
+    m = _FREQ.match(agenda)
+    if m:
+        freq = m.group(1)
+        if freq == "quinzenal":
+            return f"{dia:%Y-%m}-{'1Q' if dia.day <= 15 else '2Q'}"
+        if freq == "mensal":
+            return f"{dia:%Y-%m}"
+        if freq == "trimestral":
+            return f"{dia.year}-T{(dia.month - 1) // 3 + 1}"
+        if freq == "semestral":
+            return f"{dia.year}-S{1 if dia.month <= 6 else 2}"
+        return f"{dia.year}"
+    if agenda.startswith("datas:"):
+        # a entrega vale para a próxima data fixa (a campanha em curso)
+        return periodos(agenda, dia, dia)[0].rotulo
+    return dia.isoformat()      # anos, meses, data, unica, evento: a data da execução
+
+
 def situacao(agenda: str, evidencias: list[str], hoje: date, desde: date,
              prazo: str | None = None) -> Situacao:
     """Situação da obrigação em `hoje`, olhando os períodos desde `desde`.

@@ -1,0 +1,94 @@
+"""Gera os documentos fictícios usados na demo do leitor de evidências.
+
+Uso: uv run python -m regulaia.exemplos   (escreve em data/exemplos/)
+
+Todos os nomes, números de ART e responsáveis são inventados.
+"""
+
+from __future__ import annotations
+
+import sys
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.pdfgen import canvas
+
+from .evidencias import exemplo
+
+AVISO = "Documento fictício gerado para demonstração (Hackathon VX). Não é um documento real."
+
+DOCS = {
+    "FIR_B3_2026-10-1Q.pdf": [
+        "FICHA DE INSPEÇÃO REGULAR (FIR)",
+        "Res. ANM nº 95/2022, art. 19, I",
+        "",
+        "Empreendedor: Mineradora Serra Azul (fictícia)",
+        "Barragem: Barragem Córrego Fundo (B3)",
+        "Quinzena: 1ª quinzena de outubro de 2026",
+        "Data da inspeção: 09/10/2026",
+        "Responsável pela inspeção: Eng. Ana Ribeiro (fictícia) - ART nº 0000000000",
+        "",
+        "Item inspecionado                     Situação                 Pontuação",
+        "Crista                                Sem anomalia             0",
+        "Talude de jusante                     Erosão superficial       1",
+        "Vertedouro                            Sem anomalia             0",
+        "Instrumentação (piezômetros)          Leituras normais         0",
+        "",
+        "Pontuação máxima de anomalia: 1",
+        "Nível de emergência: sem emergência",
+    ],
+    "FIR_B2_2026-11-1Q_anomalia.pdf": [
+        "FICHA DE INSPEÇÃO REGULAR (FIR)",
+        "Res. ANM nº 95/2022, art. 19, I",
+        "",
+        "Empreendedor: Mineradora Serra Azul (fictícia)",
+        "Barragem: Barragem Serra II (B2)",
+        "Quinzena: 1ª quinzena de novembro de 2026",
+        "Data da inspeção: 04/11/2026",
+        "Responsável pela inspeção: Eng. Bruno Lima (fictício) - ART nº 0000000001",
+        "",
+        "Item inspecionado                     Situação                 Pontuação",
+        "Crista                                Trinca longitudinal      10",
+        "Talude de jusante                     Surgência com carreamento 10",
+        "Vertedouro                            Sem anomalia             0",
+        "",
+        "Pontuação máxima de anomalia: 10",
+        "Providência: comunicar a ANM e iniciar inspeção especial.",
+    ],
+    "Boletim_efluentes_2026-09.pdf": [
+        "BOLETIM DE ANÁLISE DE EFLUENTES",
+        "Licença de Operação nº 000/2023 (fictícia) - condicionante 2",
+        "",
+        "Empreendimento: Complexo Minerário Serra Azul (fictício)",
+        "Ponto de coleta: saída da estação de tratamento",
+        "Data da coleta: 22/09/2026",
+        "Laboratório: Laboratório Exemplo Ltda. (fictício)",
+        "",
+        "pH 7,1 · Sólidos suspensos 18 mg/L · Óleos e graxas < 5 mg/L",
+        "Resultado: dentro dos limites da licença",
+    ],
+}
+
+
+def gerar() -> list[str]:
+    destino = exemplo("x").parent
+    destino.mkdir(parents=True, exist_ok=True)
+    feitos = []
+    for nome, linhas in DOCS.items():
+        c = canvas.Canvas(str(destino / nome), pagesize=A4)
+        c.setTitle(nome)
+        y = A4[1] - 2.5 * cm
+        for i, linha in enumerate(linhas):
+            c.setFont("Helvetica-Bold" if i == 0 else "Courier" if "   " in linha else "Helvetica", 11)
+            c.drawString(2 * cm, y, linha)
+            y -= 0.6 * cm
+        c.setFont("Helvetica-Oblique", 8)
+        c.drawString(2 * cm, 1.5 * cm, AVISO)
+        c.save()
+        feitos.append(nome)
+    return feitos
+
+
+if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8")
+    print("\n".join(gerar()))

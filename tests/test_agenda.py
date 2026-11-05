@@ -62,3 +62,13 @@ def test_trimestral():
     assert s.status == ag.EM_DIA and s.proximo.rotulo == "2026-T4"
     s = ag.situacao("trimestral+30d", [], HOJE, date(2026, 7, 1))
     assert s.status == ag.ATRASADA and [p.rotulo for p in s.faltando] == ["2026-T3"]
+
+
+def test_periodo_de_uma_execucao():
+    assert ag.periodo_de("quinzenal+0d", date(2026, 10, 9)) == "2026-10-1Q"
+    assert ag.periodo_de("quinzenal+15d", date(2026, 10, 16)) == "2026-10-2Q"
+    assert ag.periodo_de("mensal+15d", date(2026, 9, 30)) == "2026-09"
+    assert ag.periodo_de("trimestral+30d", date(2026, 8, 1)) == "2026-T3"
+    assert ag.periodo_de("datas:03-31,09-30", date(2026, 9, 12)) == "2026-09-30"
+    assert ag.periodo_de("datas:03-31,09-30", date(2026, 10, 2)) == "2027-03-31"
+    assert ag.periodo_de("anos:3", date(2026, 11, 6)) == "2026-11-06"

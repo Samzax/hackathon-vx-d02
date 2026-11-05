@@ -1,0 +1,180 @@
+"""Leitor de evidências: um documento enviado pela operação vira a comprovação de um período.
+
+  PDF -> texto -> (regra) qual ativo, qual documento, qual data -> obrigação e período
+                 se a regra não fecha tudo, a IA tenta; o Python confere o que a IA disse
+                 contra o texto (a data tem de estar no documento, o ativo tem de existir).
+
+Além de dar baixa na obrigação, a leitura procura gatilhos: uma FIR com anomalia de
+pontuação 10 obriga uma Inspeção de Segurança Especial (Res. ANM 95/2022, art. 27).
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from datetime import date
+from pathlib import Path
+
+from . import agenda, db
+from .triagem import datas, normalizar
+
+VERSAO_PROMPT = "evidencia-v1"
+
+# palavra-chave no documento -> palavra-chave no título da obrigação
+DOCUMENTOS = {
+    "ficha de inspecao regular": ("FIR", "fir"),
+    "extrato de inspecao regular": ("EIR", "eir"),
+    "relatorio de inspecao de seguranca regular": ("RISR", "risr"),
+    "declaracao de condicao de estabilidade": ("DCE", "dce"),
+    "revisao periodica de seguranca": ("RPSB", "rpsb"),
+    "declaracao de conformidade e operacionalidade": ("DCO", "dco"),
+    "exercicio simulado": ("Simulado", "simulad"),
+    "relatorio de inspecao de seguranca do vaso": ("Inspeção NR-13", "exame externo"),
+    "boletim de analise de efluentes": ("Efluentes", "efluentes"),
+}
+
+SISTEMA = """Você lê documentos de conformidade de uma mineradora (fichas de inspeção, relatórios,
+laudos, boletins). Responda só com JSON:
+{"ativo": "código do ativo da lista ou null", "documento": "tipo do documento em poucas palavras",
+ "data": "AAAA-MM-DD da execução ou inspeção, ou null", "pontuacao_maxima": número ou null}
+Use só o que está escrito no documento; se não estiver, use null."""
+
+
+@dataclass
+class Leitura:
+    ativo: str | None = None
+    documento: str | None = None
+    obrigacao: str | None = None
+    data: str | None = None
+    periodo: str | None = None
+    pontuacao_maxima: int | None = None
+    metodo: str = "regra"                 # regra | ia
+    problemas: list[str] = field(default_factory=list)
+    gatilhos: list[str] = field(default_factory=list)
+
+    @property
+    def completa(self) -> bool:
+        return bool(self.ativo and self.obrigacao and self.periodo) and not self.problemas
+
+
+def texto_pdf(caminho_ou_bytes) -> str:
+    from io import BytesIO
+
+    from pypdf import PdfReader
+
+    fonte = BytesIO(caminho_ou_bytes) if isinstance(caminho_ou_bytes, (bytes, bytearray)) else str(caminho_ou_bytes)
+    return "\n".join((p.extract_text() or "") for p in PdfReader(fonte).pages)
+
+
+def _ativos_citados(texto_n: str, ativos: list[dict]) -> list[str]:
+    """Código entre parênteses ("(B3)") vale mais que nome; nome só inteiro ("Serra I" não casa "Serra II")."""
+    por_codigo = [a["codigo"] for a in ativos
+                  if re.search(rf"\(\s*{re.escape(a['codigo'].lower())}\s*\)", texto_n)]
+    if por_codigo:
+        return por_codigo
+    return [a["codigo"] for a in ativos
+            if re.search(rf"(?<!\w){re.escape(normalizar(a['nome']))}(?!\w)", texto_n)]
+
+
+def _data(texto: str) -> date | None:
+    m = re.search(r"data d[ae] (?:inspe[cç][aã]o|execu[cç][aã]o|realiza[cç][aã]o|coleta)\s*:?\s*"
+                  r"(\d{1,2}/\d{1,2}/\d{4})", texto, re.I)
+    if m:
+        d, mth, a = (int(x) for x in m.group(1).split("/"))
+        return date(a, mth, d)
+    ds = sorted(datas(texto))
+    return ds[0] if len(ds) == 1 else None
+
+
+def _pontuacao(texto_n: str) -> int | None:
+    m = re.search(r"pontuacao maxima[^0-9]{0,40}(\d{1,2})", texto_n)
+    return int(m.group(1)) if m else None
+
+
+def _obrigacao(conn, ativo_id: int, chave: str, hoje: str) -> dict | None:
+    for o in db.obrigacoes_do_ativo(conn, ativo_id, em=hoje):
+        if o.dados_faltando or not db.vale_em(o.vigente, hoje):
+            continue
+        if re.search(rf"\b{chave}", normalizar(o.vigente["titulo"])):
+            return o.vigente
+    return None
+
+
+def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura:
+    ativos = db.ativos(conn, empresa_id)
+    tn = normalizar(texto)
+    le = Leitura()
+    tipo = next(((nome, chave) for k, (nome, chave) in DOCUMENTOS.items() if k in tn), None)
+    citados = _ativos_citados(tn, ativos)
+    if len(citados) > 1 and tipo:
+        # desempate: o ativo que tem obrigação vigente desse tipo de documento
+        ids = {a["codigo"]: a["id"] for a in ativos}
+        citados = [c for c in citados if _obrigacao(conn, ids[c], tipo[1], hoje.isoformat())]
+    le.ativo = citados[0] if len(citados) == 1 else None
+    d = _data(texto)
+    le.pontuacao_maxima = _pontuacao(tn)
+
+    if (le.ativo is None or tipo is None or d is None) and roteador is not None:
+        lista = ", ".join(f"{a['codigo']} = {a['nome']}" for a in ativos)
+        try:
+            r = roteador.pedir_json("evidencia", 2, SISTEMA, f"ATIVOS: {lista}\n\nDOCUMENTO:\n{texto[:12000]}",
+                                    VERSAO_PROMPT, max_tokens=800)
+            le.metodo = "ia"
+            ia = r.dados
+            if le.ativo is None and ia.get("ativo") in {a["codigo"] for a in ativos}:
+                le.ativo = ia["ativo"]
+            if d is None and ia.get("data"):
+                try:
+                    proposta = date.fromisoformat(str(ia["data"]))
+                    if proposta in datas(texto):        # a IA não inventa data: tem de estar no texto
+                        d = proposta
+                    else:
+                        le.problemas.append(f"a data {proposta:%d/%m/%Y} indicada pela IA não está no documento")
+                except ValueError:
+                    pass
+            if tipo is None and ia.get("documento"):
+                doc = normalizar(str(ia["documento"]))
+                tipo = next(((n, c) for k, (n, c) in DOCUMENTOS.items() if c in doc or k in doc), None)
+            if le.pontuacao_maxima is None and isinstance(ia.get("pontuacao_maxima"), int):
+                le.pontuacao_maxima = ia["pontuacao_maxima"]
+        except Exception as e:  # sem IA: segue com o que a regra achou
+            le.problemas.append(f"IA indisponível: {str(e)[:80]}")
+
+    if le.ativo is None:
+        le.problemas.append("não foi possível identificar o ativo")
+    if tipo is None:
+        le.problemas.append("tipo de documento não reconhecido")
+    if d is None:
+        le.problemas.append("data de execução não encontrada")
+    if le.ativo and tipo:
+        le.documento = tipo[0]
+        aid = next(a["id"] for a in ativos if a["codigo"] == le.ativo)
+        ob = _obrigacao(conn, aid, tipo[1], hoje.isoformat())
+        if ob is None:
+            le.problemas.append(f"{le.ativo} não tem obrigação vigente de {tipo[0]}")
+        else:
+            le.obrigacao = ob["codigo"]
+            if d:
+                le.data = d.isoformat()
+                if d > hoje:
+                    le.problemas.append("data de execução no futuro")
+                else:
+                    le.periodo = agenda.periodo_de(ob["agenda"], d)
+    if le.pontuacao_maxima is not None and le.pontuacao_maxima >= 10:
+        le.gatilhos.append("Anomalia com pontuação 10: Inspeção de Segurança Especial obrigatória "
+                           "(Res. ANM 95/2022, art. 27) e registro no SIGBM em até 24 horas (art. 21)")
+    return le
+
+
+def registrar(conn, leitura: Leitura, arquivo: str) -> int:
+    if not leitura.completa:
+        raise ValueError("leitura incompleta: " + "; ".join(leitura.problemas))
+    aid = conn.execute("SELECT id FROM ativo WHERE codigo = ?", (leitura.ativo,)).fetchone()["id"]
+    return db.registrar_evidencia(conn, aid, leitura.obrigacao, leitura.periodo, arquivo=arquivo,
+                                  extraido={"documento": leitura.documento, "data": leitura.data,
+                                            "pontuacao_maxima": leitura.pontuacao_maxima,
+                                            "metodo": leitura.metodo})
+
+
+def exemplo(nome: str) -> Path:
+    return db.ROOT / "data" / "exemplos" / nome

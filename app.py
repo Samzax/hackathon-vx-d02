@@ -11,7 +11,9 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from regulaia import agenda, db, demo, torre
+from regulaia import agenda, db, demo, impacto, torre
+from regulaia import evidencias as ev
+from regulaia.ia import Roteador
 
 st.set_page_config(page_title="RegulaIA · Torre de Controle", page_icon="🗼", layout="wide")
 
@@ -58,6 +60,15 @@ def _conexao(caminho: str):
     return conn
 
 
+@st.cache_resource
+def _roteador():
+    """IA só para o que a regra não resolve; sem chave no .env, fica só a regra (e o cache)."""
+    try:
+        return Roteador(db.conectar(impacto.CACHE_IA))
+    except Exception:
+        return None
+
+
 conn = _conexao(str(db.DB_PADRAO))
 spec = _spec()
 empresa = conn.execute("SELECT id, nome FROM empresa").fetchone()
@@ -96,6 +107,37 @@ with aba_hoje:
     cols = st.columns(5)
     for col, s in zip(cols, [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO]):
         col.metric(ROTULO[s], cont[s])
+
+    with st.expander("📄 Enviar evidência — a operação manda o documento, a torre dá baixa sozinha"):
+        st.caption("O texto é lido por regra (qual ativo, qual documento, qual data). Só se a regra não fechar "
+                   "a IA ajuda, e o Python confere: a data tem de estar escrita no documento.")
+        c1, c2 = st.columns(2)
+        enviado = c1.file_uploader("Documento em PDF", type=["pdf"])
+        exemplos_pdf = sorted(p.name for p in ev.exemplo("x").parent.glob("*.pdf"))
+        escolhido = c2.selectbox("…ou um documento de exemplo", ["—"] + exemplos_pdf)
+        if st.button("Ler documento", disabled=enviado is None and escolhido == "—"):
+            nome, conteudo = ((enviado.name, enviado.getvalue()) if enviado is not None
+                              else (escolhido, ev.exemplo(escolhido).read_bytes()))
+            st.session_state["leitura"] = (nome, ev.ler(conn, ev.texto_pdf(conteudo), empresa["id"], hoje,
+                                                         roteador=_roteador()))
+        if "leitura" in st.session_state:
+            nome, le = st.session_state["leitura"]
+            st.markdown(f"**{nome}** · lido por {'regra' if le.metodo == 'regra' else 'IA (conferida)'}")
+            st.dataframe(pd.DataFrame([{
+                "Ativo": le.ativo or "—", "Documento": le.documento or "—", "Obrigação": le.obrigacao or "—",
+                "Data de execução": _br(le.data), "Período comprovado": le.periodo or "—",
+                "Pontuação máxima": le.pontuacao_maxima if le.pontuacao_maxima is not None else "—",
+            }]), hide_index=True, width="stretch")
+            for g in le.gatilhos:
+                st.error(f"🚨 {g}")
+            for p in le.problemas:
+                st.warning(p)
+            if le.completa and st.button(f"Registrar evidência de {le.ativo} · {le.obrigacao} · {le.periodo}",
+                                         type="primary"):
+                ev.registrar(conn, le, nome)
+                del st.session_state["leitura"]
+                st.toast(f"Evidência registrada: {le.ativo} {le.obrigacao} {le.periodo}")
+                st.rerun()
 
     st.markdown("##### Mapa dos ativos")
     st.caption("🔴 atrasada · ⚪ dado faltando no cadastro · 🟡 vence em até 30 dias (5 para quinzenal/mensal) · "
