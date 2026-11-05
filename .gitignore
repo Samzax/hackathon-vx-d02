@@ -26,3 +26,6 @@ data/anm/
 *.db-journal
 data/extraido/log_*.txt
 data/radar_demo.json
+
+# PDF da análise de mercado gerado na raiz (sai do docs/ANALISE_MERCADO.md)
+/analise_de_mercado.pdf

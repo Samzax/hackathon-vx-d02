@@ -47,3 +47,29 @@ def test_plano_de_transicao_em_pdf_tem_todas_as_barragens(conn):
                      "B4 · Barragem Vale do Cedro"):
         assert barragem in texto
     assert "?" not in texto
+
+
+def test_tabela_subtitulo_e_lista_numerada_viram_pdf_sem_marcacao():
+    md = ("# Título\n\n### Subseção\n\n| Recorte | Barragens |\n|---|---|\n| Na **PNSB** | 461 |\n"
+          "| Em `MG` | 189 |\n\n1. Primeiro passo\n2. Segundo passo\n")
+    paginas, texto = _texto(pdf.de_markdown(md, "Teste"))
+    assert paginas == 1
+    for trecho in ("Subseção", "Recorte", "Barragens", "Na PNSB", "461", "Em MG", "189", "1.", "Primeiro passo"):
+        assert trecho in texto, trecho
+    for cru in ("|", "---", "###", "**", "`"):
+        assert cru not in texto, cru
+
+
+def test_analise_de_mercado_vira_pdf(tmp_path):
+    """A entrega de análise de mercado sai do Markdown do repositório pela linha de comando."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    raiz = Path(__file__).resolve().parent.parent
+    saida = tmp_path / "analise.pdf"
+    subprocess.run([sys.executable, "-m", "regulaia.pdf", str(raiz / "docs" / "ANALISE_MERCADO.md"), str(saida),
+                    "Análise de mercado"], cwd=raiz, check=True, capture_output=True)
+    paginas, texto = _texto(saida.read_bytes())
+    assert paginas >= 4 and "Análise de mercado e viabilidade" in texto and "Fontes" in texto
+    assert "|" not in texto and "**" not in texto

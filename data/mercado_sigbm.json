@@ -21,5 +21,65 @@
     "Nível de Emergência 2": 6,
     "Nível de Emergência 3": 1
   },
-  "nota": "Empresas contadas por CPF/CNPJ distinto. O arquivo bruto fica fora do Git (data/raw/sigbm/) porque traz CPF de pessoas físicas."
+  "nota": "Empresas contadas por CPF/CNPJ distinto. O arquivo bruto fica fora do Git (data/raw/sigbm/) porque traz CPF de pessoas físicas.",
+  "pnsb_por_embargo": {
+    "Não Embargada": 238,
+    "Desembargada": 147,
+    "Embargada": 76
+  },
+  "pnsb_por_dano_potencial": {
+    "Alto": 243,
+    "Médio": 161,
+    "Baixo": 57
+  },
+  "pnsb_por_categoria_risco": {
+    "Baixo": 310,
+    "Médio": 84,
+    "Alto": 67
+  },
+  "pnsb_por_uf": {
+    "MG": 189,
+    "MT": 83,
+    "PA": 83,
+    "BA": 22,
+    "SP": 16,
+    "AP": 12
+  },
+  "pnsb_dce_ultima_campanha": {
+    "2º Campanha 2026 - Atestado": 425,
+    "2º Campanha 2026 - Não Atestado": 15,
+    "2º Campanha 2026 - Não Enviado": 14,
+    "Extraordinária ou Exigência de Fiscalização - Não Atestado": 4,
+    "-": 2,
+    "Extraordinária ou Exigência de Fiscalização - Atestado": 1
+  },
+  "pnsb_dpa_alto": {
+    "barragens": 243,
+    "empresas": 64,
+    "em_mg": 144
+  },
+  "grupos_por_raiz_cnpj": {
+    "total": 125,
+    "por_faixa_de_barragens": {
+      "1": {
+        "grupos": 61,
+        "barragens": 61
+      },
+      "2 a 4": {
+        "grupos": 48,
+        "barragens": 136
+      },
+      "5 a 9": {
+        "grupos": 11,
+        "barragens": 72
+      },
+      "10 ou mais": {
+        "grupos": 5,
+        "barragens": 192
+      }
+    },
+    "maior_grupo_barragens": 88,
+    "top10_barragens": 230
+  },
+  "nota_grupos": "Grupos contados pela raiz do CNPJ (8 primeiros dígitos), que junta filiais de uma mesma empresa; por isso dá um a menos que as empresas contadas por CPF/CNPJ distinto."
 }

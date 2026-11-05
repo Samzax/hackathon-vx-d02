@@ -65,7 +65,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | Cada trecho citado no cadastro existe no texto oficial (66 trechos) | `tests/test_trechos.py` |
 | Anomalia abre a ISE e ela só fecha com o relatório; na Res. 220 a regra é a do art. 42 | `tests/test_evidencias.py` |
 | ANM e MTE vencem juntas na ZAS depois de aprovada a Res. 245; sem aprovação, nada muda | `test_zas_aprovada_vence_junto_com_a_nr22_no_painel` |
-| Os números da documentação e do roteiro batem com o cadastro, a demo e o DOU | `tests/test_documentacao.py`, `test_numeros_do_funil_na_tela_e_nos_documentos` |
+| Os números da documentação, do roteiro e da análise de mercado batem com o cadastro, a demo, o DOU e o SIGBM | `tests/test_documentacao.py`, `test_numeros_do_funil_na_tela_e_nos_documentos`, `test_numeros_da_analise_de_mercado_saem_dos_dados` |
 | O boletim não contradiz o amarelo da tela; o PDF sai sem emoji quebrado nem marcação crua | `test_boletim_bate_com_o_amarelo_da_torre`, `tests/test_pdf.py` |
 | Cada gestor só vê os ativos dele, em todas as abas (texto, tabelas e títulos), e não registra documento de ativo de outro gestor | `test_cada_gestor_so_ve_os_ativos_dele`, `test_gestor_nao_registra_documento_de_ativo_alheio` |
 | A imagem Docker leva o que a demo precisa e deixa de fora `.env` e dados brutos | `test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto` |
@@ -79,9 +79,10 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | `collector/` | Leitor do XML mensal do DOU (dados abertos) |
 | [data/serra_azul.json](data/serra_azul.json), [data/historico_serra_azul.json](data/historico_serra_azul.json) | A empresa da demo e o histórico de entregas, com as falhas planejadas |
 | `data/exemplos/` | PDFs fictícios para o leitor de evidência |
-| [data/mercado_sigbm.json](data/mercado_sigbm.json) | Números de mercado com fonte: barragens e empresas no SIGBM |
+| [data/mercado_sigbm.json](data/mercado_sigbm.json) | Números de mercado com fonte: barragens, empresas, embargos, dano potencial e concentração no SIGBM (só agregados) |
 | [docs/ARQUITETURA.md](docs/ARQUITETURA.md) | Decisões de arquitetura e custos medidos |
 | [docs/ROTEIRO_DEMO.md](docs/ROTEIRO_DEMO.md) | Roteiro da demo de 3 minutos, com as falas |
+| [docs/ANALISE_MERCADO.md](docs/ANALISE_MERCADO.md) | Análise de mercado e viabilidade (entrega do hackathon): problema, tamanho do mercado, concorrência, diferencial, modelo de negócio, riscos e próximos passos, com fontes; números do SIGBM conferidos por teste |
 | [docs/PITCH.md](docs/PITCH.md) | Rascunho do pitch de 5 minutos (problema, por que agora, demo, viabilidade, mercado), com números conferidos por teste |
 | [PREP.md](PREP.md) | Pesquisa, fontes de dados, critérios de avaliação |
 
@@ -95,6 +96,7 @@ uv run pytest
 uv run streamlit run app.py                                     # a torre (interface)
 uv run python -m regulaia.demo                                  # só monta o banco da demo
 uv run python -m regulaia.exemplos                              # gera os PDFs de exemplo
+uv run python -m regulaia.pdf docs/ANALISE_MERCADO.md analise_de_mercado.pdf "Análise de mercado"   # a análise em PDF
 uv run python -m regulaia.fontes                                # baixa os textos oficiais das normas (data/raw/normas)
 uv run python -m collector.xml_dou data/raw/dou/S01082026.zip   # funil do mês
 uv run python -m regulaia.impacto data/raw/dou/S01082026.zip    # impacto com IA (precisa de chave no .env)

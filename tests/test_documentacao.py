@@ -282,3 +282,75 @@ def test_git_nao_versiona_segredo_nem_cpf():
         texto = caminho.read_text(encoding="utf-8", errors="ignore")
         assert not chave.search(texto), f"parece chave de API: {f}"
         assert not cpf.search(texto), f"parece CPF: {f}"
+
+
+def test_numeros_da_analise_de_mercado_saem_dos_dados():
+    """docs/ANALISE_MERCADO.md: cada número do SIGBM sai de data/mercado_sigbm.json; a receita, das premissas
+    da aba Mercado; as entregas por barragem, do cadastro da demo."""
+    import json
+    from datetime import date
+
+    from regulaia import agenda, db, demo
+
+    doc = (RAIZ / "docs" / "ANALISE_MERCADO.md").read_text(encoding="utf-8")
+    m = json.loads((RAIZ / "data" / "mercado_sigbm.json").read_text(encoding="utf-8"))
+    pnsb = m["barragens_na_pnsb"]
+    emb = m["pnsb_por_embargo"]
+    ja = emb["Embargada"] + emb["Desembargada"]
+    assert (f"Das {pnsb} barragens de mineração na Política Nacional de Segurança de Barragens (PNSB), "
+            f"{emb['Embargada']} estão embargadas hoje e outras {emb['Desembargada']} já foram embargadas e "
+            f"liberadas: {ja} ({round(100 * ja / pnsb)}%) passaram por embargo") in doc
+    alto = m["pnsb_dpa_alto"]
+    assert f"{alto['empresas']} deles têm barragem de dano potencial alto ({alto['barragens']} barragens, " \
+           f"{alto['em_mg']} em Minas Gerais)" in doc
+    assert f"| Na PNSB com dano potencial alto | {alto['barragens']} | {alto['empresas']} grupos |" in doc
+    assert f"| Dano potencial alto em Minas Gerais | {alto['em_mg']} |" in doc
+    assert f"| Embargadas hoje | {emb['Embargada']} |" in doc
+    alerta = sum(n for k, n in m["pnsb_por_nivel_emergencia"].items() if k != "Sem emergência")
+    assert f"| Em nível de alerta ou emergência | {alerta} |" in doc
+    assert f"| Na PNSB | {pnsb} | {m['empresas_com_barragem_na_pnsb']} empresas " \
+           f"({m['grupos_por_raiz_cnpj']['total']} grupos pela raiz do CNPJ) |" in doc
+    assert f"| Barragens de mineração cadastradas | {m['barragens_mineracao']} | {m['empresas']} empresas |" in doc
+    assert f"| Na PNSB em Minas Gerais | {m['mg']['barragens_na_pnsb']} | " \
+           f"{m['mg']['empresas_com_barragem_na_pnsb']} empresas |" in doc
+    sit = m["pnsb_por_situacao"]
+    assert f"Situação das {pnsb}: {sit['Ativa']} ativas, {sit['Em descaracterização']} em descaracterização" in doc
+    assert f"| Barragens de mineração fora da PNSB | {m['barragens_mineracao'] - pnsb} | SIGBM |" in doc
+
+    g = m["grupos_por_raiz_cnpj"]
+    for faixa, v in g["por_faixa_de_barragens"].items():
+        assert f"| {faixa} | {v['grupos']} | {v['barragens']} |" in doc, faixa
+    assert (f"o maior grupo tem {g['maior_grupo_barragens']} barragens "
+            f"({round(100 * g['maior_grupo_barragens'] / pnsb)}%); os 10 maiores têm {g['top10_barragens']} "
+            f"({round(100 * g['top10_barragens'] / pnsb)}%)") in doc
+    meio = [g["por_faixa_de_barragens"][k] for k in ("2 a 4", "5 a 9")]
+    assert f"soma {sum(v['grupos'] for v in meio)} grupos e {sum(v['barragens'] for v in meio)} barragens" in doc
+
+    # receita: mesma conta e premissas do pitch e da aba Mercado
+    br = lambda v: f"{v:.2f}".replace(".", ",")  # noqa: E731
+    for preco in (1000, 1500, 2500):
+        anual = pnsb * (preco + 5 * 150) * 12 / 1e6
+        assert f"| R$ {preco:,} | ".replace(",", ".") + " | ".join(
+            f"R$ {br(anual * a)} mi" for a in (0.05, 0.10, 0.25, 1)) + " |" in doc, preco
+    assert f"Conta: {pnsb} × (R$ 1.500 + 5 × R$ 150) × 12 = **R$ 12,4 milhões por ano**" in doc
+
+    # entregas por ano: o cadastro da demo
+    conn = db.conectar(":memory:")
+    demo.montar(conn)
+    por_barragem = []
+    for a in db.ativos(conn, 1):
+        if not a["codigo"].startswith("B"):
+            continue
+        obs = [o.vigente for o in db.obrigacoes_do_ativo(conn, a["id"], em="2026-06-01") if o.vigente]
+        n = 0
+        for v in obs:
+            try:
+                n += len(agenda.periodos(v["agenda"], date(2026, 1, 1), date(2026, 12, 31)))
+            except agenda.AgendaInvalida:
+                pass
+        por_barragem.append((len(obs), n))
+    assert f"de {min(o for o, _ in por_barragem)} a {max(o for o, _ in por_barragem)} obrigações e de " \
+           f"{min(n for _, n in por_barragem)} a {max(n for _, n in por_barragem)} entregas com data por ano" in doc
+    assert all(59 <= n <= 61 for _, n in por_barragem)             # "cerca de 60" continua verdade
+    mil = f"{pnsb * 60 / 1000:.1f}".replace(".", ",")
+    assert f"{pnsb} barragens × cerca de 60 entregas = **cerca de {mil} mil entregas datadas por ano**" in doc
