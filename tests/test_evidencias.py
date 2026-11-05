@@ -94,3 +94,19 @@ def test_ia_completa_o_ativo_quando_a_regra_nao_acha(conn):
     le = ev.ler(conn, texto, 1, HOJE, roteador=_IA({"ativo": "B3", "data": None}))
     assert (le.ativo, le.periodo, le.metodo) == ("B3", "2026-10-1Q", "ia")
     assert le.completa
+
+
+def test_relatorio_nr13_tira_o_vaso_do_atraso(conn):
+    assert _linha(conn, "E1", "N13-03").status == agenda.ATRASADA
+    le = ev.ler(conn, _pdf("Relatorio_NR13_VP-101_exame_externo.pdf"), 1, HOJE)
+    assert (le.ativo, le.obrigacao, le.periodo) == ("E1", "N13-03", "2026-11-03")   # pelo nome, sem código
+    ev.registrar(conn, le, "Relatorio_NR13_VP-101_exame_externo.pdf")
+    depois = _linha(conn, "E1", "N13-03")
+    assert depois.status == agenda.EM_DIA and depois.vence == "2029-11-03"           # +3 anos (Tabela 2)
+
+
+def test_relatorio_nr13_de_exame_interno_vai_para_a_outra_obrigacao(conn):
+    texto = ("Relatório de inspeção de segurança do vaso de pressão\n"
+             "Equipamento: VP-101 Reservatório de ar comprimido da usina\n"
+             "Tipo de exame: interno\nData da inspeção: 03/11/2026")
+    assert ev.ler(conn, texto, 1, HOJE).obrigacao == "N13-04"

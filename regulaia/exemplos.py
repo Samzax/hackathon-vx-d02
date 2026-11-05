@@ -55,6 +55,25 @@ DOCS = {
         "Pontuação máxima de anomalia: 10",
         "Providência: comunicar a ANM e iniciar inspeção especial.",
     ],
+    "Relatorio_NR13_VP-101_exame_externo.pdf": [
+        "RELATÓRIO DE INSPEÇÃO DE SEGURANÇA DO VASO DE PRESSÃO",
+        "NR-13, item 13.5.4 · exame externo periódico",
+        "",
+        "Estabelecimento: Mineradora Serra Azul (fictícia) - usina de beneficiamento",
+        "Equipamento: VP-101 Reservatório de ar comprimido da usina",
+        "Categoria do vaso: III · Serviço Próprio de Inspeção (SPIE): não",
+        "Tipo de exame: externo",
+        "Data da inspeção: 03/11/2026",
+        "Profissional habilitado: Eng. Carla Souza (fictícia) - ART nº 0000000002",
+        "",
+        "Item verificado                       Resultado",
+        "Placa de identificação                Legível",
+        "Válvula de segurança                  Calibrada (certificado vigente)",
+        "Manômetro                             Aferido",
+        "Costado e soldas (visual)             Sem corrosão ou deformação",
+        "",
+        "Conclusão: vaso apto para operação.",
+    ],
     "Boletim_efluentes_2026-09.pdf": [
         "BOLETIM DE ANÁLISE DE EFLUENTES",
         "Licença de Operação nº 000/2023 (fictícia) - condicionante 2",
@@ -75,7 +94,7 @@ def gerar() -> list[str]:
     destino.mkdir(parents=True, exist_ok=True)
     feitos = []
     for nome, linhas in DOCS.items():
-        c = canvas.Canvas(str(destino / nome), pagesize=A4)
+        c = canvas.Canvas(str(destino / nome), pagesize=A4, invariant=True)   # mesmo PDF a cada geração
         c.setTitle(nome)
         y = A4[1] - 2.5 * cm
         for i, linha in enumerate(linhas):

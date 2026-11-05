@@ -105,6 +105,9 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
     tn = normalizar(texto)
     le = Leitura()
     tipo = next(((nome, chave) for k, (nome, chave) in DOCUMENTOS.items() if k in tn), None)
+    if tipo and tipo[1] == "exame externo" and re.search(r"tipo de exame\s*:?\s*interno|exame interno", tn) \
+            and "exame externo" not in tn:
+        tipo = ("Inspeção NR-13 (exame interno)", "exame interno")
     citados = _ativos_citados(tn, ativos)
     if len(citados) > 1 and tipo:
         # desempate: o ativo que tem obrigação vigente desse tipo de documento
