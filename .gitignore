@@ -32,3 +32,6 @@ data/radar_demo.json
 
 # PDF da análise de mercado gerado na raiz (sai do docs/ANALISE_MERCADO.md)
 /analise_de_mercado.pdf
+
+# slides e docs gerados para o Google (docs/slides/gerar.js)
+docs/slides/saida/
