@@ -53,3 +53,11 @@ def test_config_do_streamlit():
     cfg = tomllib.loads((RAIZ / ".streamlit" / "config.toml").read_text(encoding="utf-8"))
     assert cfg["server"]["maxUploadSize"] == 20
     assert cfg["browser"]["gatherUsageStats"] is False
+
+
+def test_todos_os_exemplos_estao_documentados():
+    from regulaia import exemplos
+
+    arquitetura = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
+    faltando = [n for n in exemplos.DOCS if f"`{n}`" not in arquitetura]
+    assert not faltando, f"documente em ARQUITETURA.md: {faltando}"

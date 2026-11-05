@@ -69,3 +69,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Leitor de evidência: acionamento diz o nome da obrigação aberta e o documento que a encerra; aviso de atraso com maiúscula
 - [x] Leitor de evidência diz por que não achou o ativo (código não cadastrado, dois ativos citados); problemas com maiúscula
 - [x] .streamlit/config.toml: upload até 20 MB e sem estatística de uso também fora do Docker
+- [x] ARQUITETURA lista os 8 documentos de exemplo com o que cada um mostra; teste impede a lista de ficar velha

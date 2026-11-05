@@ -78,10 +78,16 @@ Ficam de fora só as obrigações únicas comprovadas por plano ou requerimento,
 
 Documentos de exemplo, todos fictícios, em `data/exemplos/`. São gerados de forma determinística por `uv run python -m regulaia.exemplos`:
 
-- FIR comum e FIR com anomalia;
-- recibo do EIR;
-- relatório de exame externo de vaso (NR-13);
-- boletim de efluentes.
+| Arquivo | O que mostra |
+|---|---|
+| `FIR_B3_2026-10-1Q.pdf` | FIR atrasada da B3: dá baixa na quinzena |
+| `EIR_B3_2026-10-1Q_recibo_SIGBM.pdf` | Recibo do EIR enviado 7 dias depois do prazo: comprova, mas avisa o atraso |
+| `FIR_B2_2026-11-1Q_anomalia.pdf` | Anomalia com pontuação 10 (Res. 95): abre a ISE da B2 com prazo de 24 h |
+| `Relatorio_ISE_B2_2026-11-06.pdf` | Relatório da ISE: encerra a obrigação aberta pela anomalia |
+| `FIR_B2_2027-08-1Q_Res220_EC3.pdf` | FIR no modelo da Res. 220 com EC3 = 5: abre o registro no SIGBM e a ISE |
+| `EIE_B2_2027-08-02_recibo_SIGBM.pdf` | Recibo do EIE: encerra o registro no SIGBM, a ISE continua aberta |
+| `Relatorio_NR13_VP-101_exame_externo.pdf` | Exame externo do vaso E1 (NR-13) |
+| `Boletim_efluentes_2026-09.pdf` | Efluentes de setembro: cita a licença e a unidade, vai para a licença |
 
 PDF sem texto (escaneado) volta com um aviso claro. O OCR fica para depois.
 
