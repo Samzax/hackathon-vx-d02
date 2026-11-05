@@ -196,3 +196,11 @@ def test_por_norma_explica_a_ausencia_da_res220(banco_temporario):
     assert any(c.value.startswith("A Res. ANM 220/2025 ainda não aparece: entra em 02/08/2027") for c in at.caption)
     next(b for b in at.button if b.label == "Res. 220").click().run()
     assert not any(c.value.startswith("A Res. ANM 220/2025 ainda não aparece") for c in at.caption)
+
+
+def test_viagem_no_tempo_explica_os_atrasos(banco_temporario):
+    """Na data da Res. 220 os atrasos sobem porque o histórico da demo para em 07/11/2026: a tela diz isso."""
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    assert not [i for i in at.info if i.value.startswith("Viagem no tempo")]
+    next(b for b in at.button if b.label == "Res. 220").click().run()
+    assert [i for i in at.info if i.value.startswith("Viagem no tempo: 02/08/2027. As entregas da demo vão até 07/11/2026")]

@@ -72,3 +72,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] ARQUITETURA lista os 8 documentos de exemplo com o que cada um mostra; teste impede a lista de ficar velha
 - [x] Teste confere o funil de agosto (7.884 → 825) da tela e dos documentos contra o ZIP do DOU
 - [x] "Por norma" explica por que a Res. 220 ainda não aparece; comandos do README conferidos
+- [x] Viagem no tempo avisa que o histórico da demo para em 07/11/2026 (explica os atrasos de 2027); pergunta no roteiro

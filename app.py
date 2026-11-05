@@ -118,6 +118,10 @@ codigos_meus = {a["codigo"] for a in meus}
 st.title("Torre de Controle Regulatória")
 st.caption("Cada obrigação com a norma, o dispositivo e o trecho literal que a cria. "
            "Mudanças só valem depois de aprovadas por uma pessoa.")
+if hoje > hoje_demo:
+    st.info(f"Viagem no tempo: {hoje:%d/%m/%Y}. As entregas da demo vão até {hoje_demo:%d/%m/%Y}; "
+            "o que venceu depois disso aparece atrasado porque ninguém registrou a entrega. "
+            "O ponto aqui é ver o que a torre passa a cobrar, e de qual norma.", icon="🕰️")
 
 aba_hoje, aba_transicao, aba_mudancas, aba_radar, aba_mercado, aba_como = st.tabs(
     ["Hoje", "Transição e linha do tempo", "Mudanças", "Radar do DOU", "Mercado", "Como funciona"])
