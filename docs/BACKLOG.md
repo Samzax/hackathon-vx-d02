@@ -92,3 +92,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Colunas de status do mapa e da tabela "Por norma" com o nome ao passar o mouse (não depender só da cor); cabeçalho com texto foi testado e cortava os nomes em 1280 px
 - [x] Calendário .ics: lembrete no dia em que a obrigação fica amarela na torre (5 dias antes para quinzenal/mensal, 30 para o resto), sem lembrete para atrasada; prazos não marcam o gestor como ocupado; validado com a biblioteca icalendar
 - [x] Boletim não contradiz a torre: a seção de 30 dias mostra quantas já estão em amarelo (3, igual ao topo da aba Hoje) e marca cada uma com 🟡 (teste)
+- [x] Custos citados (ARQUITETURA e roteiro: Res. 95 US$ 0,065, NR-13 US$ 0,045, NR-22 US$ 0,009; análise por ato entre US$ 0,0005 e 0,002) conferidos contra o que a IA cobrou, com teste

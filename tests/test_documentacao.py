@@ -136,3 +136,25 @@ def test_readme_cita_testes_que_existem():
         assert f"def {nome}" in codigo, nome
     for arquivo in re.findall(r"`(tests/[\w/]+\.py)`", secao):
         assert (RAIZ / arquivo).exists(), arquivo
+
+
+def test_custos_citados_batem_com_o_que_foi_gasto():
+    """Custos de extração na ARQUITETURA e no roteiro vêm de data/extraido/*.json (o que a IA cobrou)."""
+    import json
+
+    def usd(x: float, casas: int = 3) -> str:
+        return f"US$ {x:.{casas}f}".replace(".", ",")
+
+    arq = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
+    roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
+    custo = {n: json.loads((RAIZ / "data" / "extraido" / f"{n}.json").read_text(encoding="utf-8"))["custo_usd"]
+             for n in ("res95_2022", "nr13", "nr22")}
+    assert f"Res. ANM 95/2022 (norma inteira) | 1 vez por norma | {usd(custo['res95_2022'])} |" in arq
+    assert f"NR-13 | 1 vez por norma | {usd(custo['nr13'])} |" in arq
+    assert f"NR-22 (capítulo de barragens) | 1 vez por norma | {usd(custo['nr22'])} |" in arq
+    assert f"Res. 95 inteira custou {usd(custo['res95_2022'])}. A NR-13, {usd(custo['nr13'])}" in roteiro
+    radar = json.loads((RAIZ / "data" / "radar_demo.json").read_text(encoding="utf-8")) \
+        if (RAIZ / "data" / "radar_demo.json").exists() else None
+    if radar:      # gerado por demo.preparar (fora do Git): por ato, a análise fica na faixa citada
+        for r in radar:
+            assert 0.0005 <= r.get("custo_original_usd", r["custo_usd"]) <= 0.002, r["ato"]
