@@ -85,6 +85,13 @@ def texto_pdf(caminho_ou_bytes) -> str:
     return "\n".join((p.extract_text() or "") for p in PdfReader(fonte).pages)
 
 
+def por_que_nao_abre(erro: Exception) -> str:
+    """O que dizer ao operador quando o arquivo não abre como PDF (sem nome de exceção na tela)."""
+    if type(erro).__name__ in ("FileNotDecryptedError", "WrongPasswordError"):
+        return "o PDF está protegido por senha: mande uma cópia sem senha"
+    return "o arquivo não parece um PDF válido (corrompido ou com outra extensão)"
+
+
 def _ativos_citados(texto_n: str, ativos: list[dict]) -> list[str]:
     """Código entre parênteses ("(B3)") vale mais que nome; nome só inteiro ("Serra I" não casa "Serra II")."""
     por_codigo = [a["codigo"] for a in ativos

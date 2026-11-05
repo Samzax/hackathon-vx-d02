@@ -87,3 +87,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] README com duas capturas da torre (Hoje e Mudanças), teste que confere toda imagem citada; sem botão "Deploy" do Streamlit na tela; botão "Res. 220" não corta em 1280 px
 - [x] Conferidas as seis abas no tema escuro (tudo legível); no Mercado, rótulo "Outros ativos por barragem" encurtado (detalhe no ícone de ajuda) para os três campos ficarem alinhados
 - [x] Teste do roteiro: todo botão/aba em negrito existe no app e todo PDF citado existe nos exemplos; fala de abertura nomeia as 5 normas
+- [x] PDF que não abre vira frase para o operador ("protegido por senha: mande uma cópia sem senha" / "não parece um PDF válido"), sem nome de exceção na tela; PDF só com senha de dono abre normalmente (teste)

@@ -273,3 +273,29 @@ def test_diz_por_que_nao_achou_o_ativo(conn):
     dois = ev.ler(conn, "Ficha de Inspeção Regular (B1) e (B2). Data de inspeção: 05/11/2026", 1, HOJE)
     assert dois.problemas[0] == "o documento cita mais de um ativo (B1, B2): não dá para saber de qual é"
     assert not desconhecido.completa and not dois.completa
+
+
+def test_pdf_que_nao_abre_vira_frase_para_o_operador():
+    from io import BytesIO
+
+    from pypdf import PdfReader, PdfWriter
+
+    original = PdfReader(str(ev.exemplo("FIR_B3_2026-10-1Q.pdf")))
+
+    def cifrado(senha_de_leitura: str) -> bytes:
+        w = PdfWriter()
+        for p in original.pages:
+            w.add_page(p)
+        w.encrypt(user_password=senha_de_leitura, owner_password="dono")
+        b = BytesIO()
+        w.write(b)
+        return b.getvalue()
+
+    # só a senha do dono (impede editar/imprimir): abre normalmente
+    assert "FICHA DE INSPE" in ev.texto_pdf(cifrado(""))
+    for conteudo, esperado in [(cifrado("segredo"), "protegido por senha"),
+                               (b"isto nao e pdf", "não parece um PDF válido")]:
+        with pytest.raises(Exception) as erro:
+            ev.texto_pdf(conteudo)
+        frase = ev.por_que_nao_abre(erro.value)
+        assert esperado in frase and "Error" not in frase

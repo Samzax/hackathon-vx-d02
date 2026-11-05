@@ -161,7 +161,7 @@ with aba_hoje:
                 texto_doc = ev.texto_pdf(conteudo)
             except Exception as e:      # arquivo corrompido, protegido por senha, não é PDF...
                 st.session_state.pop("leitura", None)
-                st.error(f"Não consegui abrir {nome} como PDF ({type(e).__name__}).")
+                st.error(f"Não consegui ler {nome}: {ev.por_que_nao_abre(e)}.")
             else:
                 st.session_state["leitura"] = (nome, ev.ler(conn, texto_doc, empresa["id"], hoje,
                                                              roteador=_roteador()))
