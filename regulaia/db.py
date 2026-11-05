@@ -251,6 +251,17 @@ def registrar_evidencia(conn, ativo_id: int, codigo: str, periodo: str, *,
     ).fetchone()["id"]
 
 
+def evidencias_do_ativo(conn, ativo_id: int, limite: int = 10) -> list[dict]:
+    """As evidências mais recentes de um ativo (as que chegaram por último primeiro), com o
+    que o leitor extraiu do documento, para responder 'o que comprova isto?'."""
+    rows = conn.execute(
+        "SELECT e.id, o.codigo, e.periodo, e.arquivo, e.recebida_em, e.extraido FROM evidencia e "
+        "JOIN obrigacao o ON o.id = e.obrigacao_id WHERE e.ativo_id = ? ORDER BY e.id DESC LIMIT ?",
+        (ativo_id, limite),
+    ).fetchall()
+    return [dict(r) | {"extraido": json.loads(r["extraido"]) if r["extraido"] else None} for r in rows]
+
+
 def evidencias(conn, ativo_id: int, codigo: str) -> list[str]:
     """Períodos já comprovados, em ordem."""
     return [r["periodo"] for r in conn.execute(

@@ -130,3 +130,12 @@ def test_envio_no_prazo_nao_gera_aviso(conn):
     texto = "Extrato de Inspeção Regular (B3)\nData da inspeção: 09/10/2026\nData do envio: 20/10/2026"
     le = ev.ler(conn, texto, 1, HOJE)
     assert le.periodo == "2026-10-1Q" and not le.avisos
+
+
+def test_evidencias_do_ativo_mostra_a_mais_nova_primeiro_com_o_que_foi_lido(conn):
+    le = ev.ler(conn, _pdf("EIR_B3_2026-10-1Q_recibo_SIGBM.pdf"), 1, HOJE)
+    ev.registrar(conn, le, "EIR_B3_2026-10-1Q_recibo_SIGBM.pdf")
+    b3 = next(a for a in db.ativos(conn, 1) if a["codigo"] == "B3")
+    [ultima, *_] = db.evidencias_do_ativo(conn, b3["id"])
+    assert (ultima["codigo"], ultima["periodo"]) == ("R95-02", "2026-10-1Q")
+    assert ultima["extraido"]["metodo"] == "regra" and "depois do prazo" in ultima["extraido"]["avisos"][0]

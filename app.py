@@ -39,6 +39,11 @@ def _dispositivo(norma, artigo):
     return f"{norma}, {artigo}" if norma else artigo
 
 
+def _curto(texto: str, n: int = 70) -> str:
+    """Corta no limite de palavra e marca com reticências."""
+    return texto if len(texto) <= n else texto[:n].rsplit(" ", 1)[0] + "…"
+
+
 def _br(valor):
     """AAAA-MM-DD -> DD/MM/AAAA; o resto passa como está."""
     try:
@@ -245,6 +250,22 @@ with aba_hoje:
                                     "sem esse dado não dá para dizer se a obrigação vale.")
                     if v.get("trecho"):
                         st.caption(f"“{v['trecho']}”")
+            recentes = db.evidencias_do_ativo(conn, a["id"], limite=8)
+            if recentes:
+                titulos = {l.codigo: l.titulo for l in do_ativo}
+                with st.popover("📎 O que comprova: " + ("a última evidência" if len(recentes) == 1
+                                                       else f"as últimas {len(recentes)} evidências")):
+                    linhas_ev = []
+                    for e in recentes:
+                        x = e["extraido"] or {}
+                        lido = {"regra": "lido por regra", "ia": "lido por IA, conferido"}.get(
+                            x.get("metodo"), "histórico da demo")
+                        aviso = "".join(f"  \n  ⏰ {av}" for av in x.get("avisos") or [])
+                        linhas_ev.append(
+                            f"- **{agenda.rotulo_humano(e['periodo'])}** · {e['codigo']} "
+                            f"{_curto(titulos.get(e['codigo'], ''))}  \n"
+                            f"  <small>{(e['arquivo'] or '—').split('/')[-1]} · {lido}</small>{aviso}")
+                    st.markdown("\n".join(linhas_ev), unsafe_allow_html=True)
 
 # ------------------------------------------------------------------ Transição
 
