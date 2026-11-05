@@ -183,3 +183,11 @@ def test_evidencia_propria_vale_mais_que_a_herdada(serra):
     db.registrar_evidencia(conn, b2["id"], "OB-06", "2027-09-01")
     l = {l.codigo: l for l in torre.painel(conn, 1, date(2027, 10, 1), DESDE, ativo="B2")}["OB-06"]
     assert l.vence == "2030-09-01" and "R95-05" not in l.nota
+
+
+def test_condicionantes_da_licenca_nao_somem_depois_da_validade(serra):
+    """LC 140/2011 art. 14 §4: renovação pedida a tempo prorroga a licença; as condicionantes seguem."""
+    conn, _ = serra
+    depois = {l.codigo for l in torre.painel(conn, 1, date(2027, 8, 2), DESDE, ativo="L1")}
+    assert {"LO-01", "LO-02", "LO-05"} <= depois
+    assert "LO-06" not in depois                    # o pedido de renovação é que tem data para acabar

@@ -43,3 +43,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Plano de transição para download (o que continua, o que é novo, o que não tem equivalente)
 - [x] Troca de norma não zera a contagem de RPSB (herda a última execução equivalente)
 - [x] Viagem no tempo com botões (Demo, Res. 220, ZAS)
+- [x] Varredura da interface: 8 visões x 3 datas sem erro; condicionantes da licença não somem após a validade
