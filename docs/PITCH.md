@@ -74,7 +74,7 @@ Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é a
 
 ## 9 · Próximos passos (4:35 – 4:55)
 
-- **Na tela:** linha do tempo até 02/08/2027 com três marcos: pilotos, preço validado, troca da norma. Nomes e papéis do time.
+- **Na tela:** linha do tempo até 02/08/2027 com três marcos: pilotos, preço validado, troca da norma. Embaixo, o time: Daniel Couto, Larissa Albuquerque, Monique Cardoso, Rildo Parasio e Samuel Araujo.
 - **Fala:** "Até a troca da norma, em agosto de 2027: três pilotos pagos em Minas Gerais, uma consultoria parceira e o preço validado em dez entrevistas. Depois, barragens de água e energia e as normas de toda a mineradora, no mesmo motor."
 
 ## 10 · Fechamento (4:55 – 5:00)
