@@ -127,7 +127,7 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
                     linha.status = agenda.ATRASADA if hoje.isoformat() > ac["prazo"] else agenda.VENCE_LOGO
                     linha.vence, linha.faltando = ac["prazo"], []
                     linha.nota = (f"acionada em {_br(ac['dia'])} por {ac['origem'] or 'documento'}: "
-                                  "aguardando o relatório da inspeção")
+                                  f"aguardando {(v['evidencia'] or 'a evidência').lower()}")
             out.append(linha)
     out.sort(key=lambda l: (l.ativo, ORDEM.get(l.status, 9), l.vence or "9999"))
     return out

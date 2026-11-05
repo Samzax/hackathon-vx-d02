@@ -36,6 +36,7 @@ DOCUMENTOS = {
     "boletim de analise de efluentes": ("Efluentes", "efluentes"),
     "relatorio de conformidade e operacionalidade": ("RCO", "rco"),
     "relatorio conclusivo de inspecao especial": ("RCIE", "ise"),
+    "extrato de inspecao especial": ("EIE (registro no SIGBM)", "reportar no sigbm"),
     "relatorio de inspecao de seguranca especial": ("ISE", "ise"),
     "processo de gestao de riscos": ("PGRBM", "pgrbm"),
     "treinamento interno do paebm": ("Treinamento do PAEBM", "treinamento"),
@@ -142,7 +143,9 @@ def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date) -> None:
     if ise and "220/2025" in f"{ise.get('fonte')} {ise.get('artigo')}":
         cinco = [c for c in _EC_ISE if le.estado_conservacao.get(c) == 5]
         if cinco:
-            le.acionar.append(ise["codigo"])
+            # art. 38 §4: registro no SIGBM em 24 h; art. 42: a ISE. São duas obrigações, as duas abrem.
+            sigbm = _obrigacao(conn, aid, "reportar no sigbm", hoje.isoformat())
+            le.acionar += [o["codigo"] for o in (sigbm, ise) if o]
             le.gatilhos.append(f"Anomalia com {', '.join(c + ' = 5' for c in cinco)}: Inspeção de Segurança "
                                "Especial obrigatória (Res. ANM 220/2025, art. 42) e registro no SIGBM em até "
                                "24 horas (art. 38 §4)")

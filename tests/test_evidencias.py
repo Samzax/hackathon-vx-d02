@@ -226,9 +226,18 @@ def test_anomalia_registrada_abre_a_ise_ate_chegar_o_relatorio(conn):
     assert _linha(conn, "B2", "R95-04").status == agenda.GATILHO
 
 
-def test_na_res220_a_anomalia_abre_a_ob19(conn):
+def test_na_res220_a_anomalia_abre_o_registro_no_sigbm_e_a_ise(conn):
+    """Res. 220: EC3 = 5 abre a OB-18 (SIGBM em 24 h, art. 38 §4) e a OB-19 (ISE, art. 42).
+    O recibo do EIE encerra só a OB-18; a ISE continua aberta até o relatório."""
     le = ev.ler(conn, _pdf("FIR_B2_2027-08-1Q_Res220_EC3.pdf"), 1, DIA_220)
-    assert le.acionar == ["OB-19"]
+    assert le.acionar == ["OB-18", "OB-19"]
     ev.registrar(conn, le, "FIR_B2_2027-08-1Q_Res220_EC3.pdf")
-    ob19 = {l.codigo: l for l in torre.painel(conn, 1, date(2027, 8, 5), DESDE, ativo="B2")}["OB-19"]
-    assert ob19.status == agenda.ATRASADA
+    depois = {l.codigo: l for l in torre.painel(conn, 1, date(2027, 8, 5), DESDE, ativo="B2")}
+    assert depois["OB-18"].status == depois["OB-19"].status == agenda.ATRASADA
+    assert "aguardando registro no sigbm" in depois["OB-18"].nota
+
+    eie = ev.ler(conn, _pdf("EIE_B2_2027-08-02_recibo_SIGBM.pdf"), 1, DIA_220)
+    assert (eie.obrigacao, eie.periodo) == ("OB-18", "2027-08-02") and not eie.avisos
+    ev.registrar(conn, eie, "EIE_B2_2027-08-02_recibo_SIGBM.pdf")
+    depois = {l.codigo: l for l in torre.painel(conn, 1, date(2027, 8, 5), DESDE, ativo="B2")}
+    assert depois["OB-18"].status == agenda.GATILHO and depois["OB-19"].status == agenda.ATRASADA

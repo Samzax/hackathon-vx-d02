@@ -53,5 +53,5 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] ISE pela norma do dia: pontuação 10 (Res. 95) ou EC1/EC3/EC4/EC5 = 5 (Res. 220), com FIR de exemplo no modelo novo
 - [x] Todos os trechos do cadastro (Res. 95, Res. 220, NR-13, NR-22) conferidos por teste contra o texto oficial; `regulaia.fontes` baixa os textos
 - [x] Leitor de evidência cobre todas as obrigações periódicas do cadastro (RCO, PGRBM, PAEBM, NR-22, condicionantes da licença); tipo pelo título
-- [x] Anomalia registrada abre a ISE do ativo (prazo de 24 h) até o relatório da inspeção encerrar
+- [x] Anomalia registrada abre a ISE do ativo (prazo de 24 h) até o relatório da inspeção encerrar; na Res. 220 abre também o registro no SIGBM (recibo do EIE encerra)
 - [x] Regras com "ou"; plano de transição diz quando o tema existe na norma nova mas não vale para o ativo
