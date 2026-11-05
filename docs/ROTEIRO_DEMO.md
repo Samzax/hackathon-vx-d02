@@ -44,4 +44,5 @@ Antes de começar: `uv run streamlit run app.py`, barra lateral com "Hoje" em 07
 | Quanto custa cadastrar uma norma nova? | A extração da Res. 95 inteira custou US$ 0,065. A NR-13, US$ 0,045 |
 | Qual o tamanho do mercado? | Aba **Mercado**: 461 barragens de 126 empresas na PNSB (SIGBM). Preço e adoção são premissas que dá para mudar na hora |
 | Como sei que o cadastro está certo? | Cada obrigação da Res. 220 cita o parágrafo que a cria, e um teste confere o trecho contra o texto oficial. A conferência achou um "≥" que virava ">" no site da ANM e nove obrigações que faltavam |
+| Quando a norma muda, o leitor de documentos muda junto? | Sim. Botão **Res. 220** na barra lateral, depois `FIR_B2_2027-08-1Q_Res220_EC3.pdf`. Pela Res. 95 a ISE vinha de pontuação 10. Pela Res. 220 (art. 42) vem de EC1, EC3, EC4 ou EC5 = 5. O alerta cita o artigo novo, e EC2 = 5 sozinho não dispara |
 | Dá para testar com outro ato? | Sim: aba **Radar**, "Teste com um ato seu". Cole qualquer texto; se nenhuma obrigação for tocada, a IA nem é chamada |
