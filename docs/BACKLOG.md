@@ -24,3 +24,10 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
       mas mostra MTE e ANM com a mesma data para a ZAS (26/12/2029): virou cadastro N22-ZAS1/2 e linha do tempo
 - [x] Leitor de evidência (FIR em PDF -> período e campos): regra + IA conferida, gatilho de ISE, envio na aba Hoje
 - [x] Atualizar README e docs/ARQUITETURA.md com a torre, agenda, curadoria e custos medidos
+
+## Extras feitos na mesma noite
+
+- [x] Demo roda num clone novo sem `.env` (cache da IA versionado em `data/cache_ia_demo.json`, com teste)
+- [x] Radar mostra o custo original de cada análise mesmo vinda do cache
+- [x] PDFs/zips como binário no Git (`.gitattributes`)
+- [x] Roteiro da demo de 3 minutos: `docs/ROTEIRO_DEMO.md`

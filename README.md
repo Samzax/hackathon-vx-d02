@@ -58,6 +58,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | `data/exemplos/` | PDFs fictícios para o leitor de evidência |
 | [data/mercado_sigbm.json](data/mercado_sigbm.json) | Números de mercado com fonte: barragens e empresas no SIGBM |
 | [docs/ARQUITETURA.md](docs/ARQUITETURA.md) | Decisões de arquitetura e custos medidos |
+| [docs/ROTEIRO_DEMO.md](docs/ROTEIRO_DEMO.md) | Roteiro da demo de 3 minutos, com as falas |
 | [PREP.md](PREP.md) | Pesquisa, fontes de dados, critérios de avaliação |
 
 ## Como rodar
