@@ -23,6 +23,9 @@ def test_numeros_do_cadastro_na_documentacao():
     assert f"as {res220} da Res. 220/2025" in arquitetura
     assert f"Cada uma das {res220} obrigações" in arquitetura
     assert f"outras {res220 - 1} da Res. 220" in readme and f"outras {res220 - 1} da Res. 220" in roteiro
+    prep = (RAIZ / "PREP.md").read_text(encoding="utf-8")
+    res95 = _linhas(RAIZ / "cadastro" / "res95_2022.csv")
+    assert f"`seed_obligations.csv` has {res220} obligations" in prep and f"({res95} obligations" in prep
 
 
 def test_numero_de_tipos_de_documento():

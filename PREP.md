@@ -20,7 +20,7 @@ Use these two details in the pitch:
 - **The press got the date wrong.** [ANM's own news post](https://www.gov.br/anm/pt-br/assuntos/noticias/novas-regras-para-zonas-de-autossalvamento-de-barragens-de-mineracao-devem-ser-implementadas-ate-2029) says 31 Dec 2029; the act says 26 Dec 2029. The product quotes the act, not the news.
 - **Only art. 7 §1 moved.** Art. 7 caput still takes effect on 2 Aug 2027. A correct system changes one obligation and leaves the others alone.
 
-Art. 86 revokes Res. 95/2022, 130/2023 and 175/2024 from 2 Aug 2027. Until then Res. 95/2022 still applies, so `seed_obligations.csv` is the register from that date. It is not today's calendar. Today's calendar needs rows from Res. 95/2022, which have not been checked.
+Art. 86 revokes Res. 95/2022, 130/2023 and 175/2024 from 2 Aug 2027. Until then Res. 95/2022 still applies, so `seed_obligations.csv` is the register from that date, not today's calendar. Today's calendar comes from `cadastro/res95_2022.csv` (21 obligations, valid until 1 Aug 2027). Both registers quote the paragraph that creates each obligation, and `tests/test_trechos.py` checks every quote against the official text.
 
 ## Findings on 5 Nov
 
@@ -65,7 +65,7 @@ Watch out for:
 
 ## Seed obligations
 
-`seed_obligations.csv` has 15 obligations. Article, deadline and scope were read from the ANMlegis text. Owners are fictional roles. OB-01 is the golden test: after processing Res. 245/2026, only that row should change.
+`seed_obligations.csv` has 24 obligations from Res. 220/2025 (it started with 15; a check against the official text found 9 missing). Article, deadline and scope were read from the ANMlegis text. Owners are fictional roles. OB-01 is the golden test: after processing Res. 245/2026, only that row should change.
 
 ## Organizer meeting (Meet, 5 Nov)
 
