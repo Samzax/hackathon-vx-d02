@@ -216,3 +216,43 @@ def test_caminhos_no_codigo_com_a_mesma_caixa_do_disco():
     assert not errados, errados
     colisoes = [v for v in nomes.values() if len(v) > 1]
     assert not colisoes, f"nomes que só diferem na caixa: {colisoes}"
+
+
+def test_numeros_do_pitch_saem_dos_dados():
+    """docs/PITCH.md: mercado do SIGBM, conta da receita com as premissas da aba Mercado, números da demo."""
+    import json
+    from collections import Counter
+    from datetime import date
+
+    from regulaia import agenda, db, demo, torre
+
+    pitch = (RAIZ / "docs" / "PITCH.md").read_text(encoding="utf-8")
+    m = json.loads((RAIZ / "data" / "mercado_sigbm.json").read_text(encoding="utf-8"))
+    alerta = sum(n for nivel, n in m["pnsb_por_nivel_emergencia"].items() if nivel != "Sem emergência")
+    assert f"As {m['empresas_com_barragem_na_pnsb']} empresas com barragem" in pitch
+    assert f"{m['barragens_na_pnsb']} barragens, vão refazer" in pitch
+    assert f"Hoje, {alerta} dessas barragens estão em nível de alerta ou emergência" in pitch
+    assert f"as outras {m['barragens_mineracao'] - m['barragens_na_pnsb']} barragens de mineração" in pitch
+
+    # premissas = valores iniciais da aba Mercado no app.py
+    app = (RAIZ / "app.py").read_text(encoding="utf-8")
+    assert '"Preço por barragem por mês (R$)", 0, 50_000, 1_500' in app
+    assert '"Outros ativos por barragem", 0, 50, 5' in app
+    assert '"Preço por outro ativo por mês (R$)", 0, 10_000, 150' in app
+    assert '"Adoção entre as barragens na PNSB (%)", 1, 100, 10)' in app
+    anual = m["barragens_na_pnsb"] * (1500 + 5 * 150) * 12
+    assert f"R$ {anual / 1e6:.1f} milhões por ano".replace(".", ",") in pitch
+    assert f"com 10% de adoção, R$ {anual * 0.10 / 1e6:.1f} milhão".replace(".", ",") in pitch
+    assert f"Conta: {m['barragens_na_pnsb']} × (R$ 1.500 + 5 × R$ 150) × 12" in pitch
+
+    # números da demo
+    conn = db.conectar(":memory:")
+    demo.montar(conn)
+    n = Counter(l.status for l in torre.painel(conn, 1, date(2026, 11, 7), date(2026, 5, 1)))
+    assert (f"{n[agenda.ATRASADA]} atrasadas, {n[torre.DADO_FALTANDO]} dado faltando, "
+            f"{n[agenda.VENCE_LOGO]} vencendo") in pitch
+    ativos = conn.execute("SELECT COUNT(*) FROM ativo").fetchone()[0]
+    assert f"{ativos} ativos, 72 obrigações de 5 normas" in pitch
+    for trecho in ("7.884 atos → 825 da ANM → 2 para a IA → 1 muda o cadastro", "99,97%", "US$ 0,065",
+                   "os 66 trechos", "menos de meio centavo de dólar"):
+        assert trecho in pitch, trecho

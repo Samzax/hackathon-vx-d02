@@ -82,6 +82,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | [data/mercado_sigbm.json](data/mercado_sigbm.json) | Números de mercado com fonte: barragens e empresas no SIGBM |
 | [docs/ARQUITETURA.md](docs/ARQUITETURA.md) | Decisões de arquitetura e custos medidos |
 | [docs/ROTEIRO_DEMO.md](docs/ROTEIRO_DEMO.md) | Roteiro da demo de 3 minutos, com as falas |
+| [docs/PITCH.md](docs/PITCH.md) | Rascunho do pitch de 5 minutos (problema, por que agora, demo, viabilidade, mercado), com números conferidos por teste |
 | [PREP.md](PREP.md) | Pesquisa, fontes de dados, critérios de avaliação |
 
 ## Como rodar
