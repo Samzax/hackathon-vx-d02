@@ -105,11 +105,11 @@ Mais duas proteções:
 | Extrair obrigações da NR-13 | 1 vez por norma | US$ 0,045 |
 | Extrair obrigações da NR-22 (capítulo de barragens) | 1 vez por norma | US$ 0,009 |
 | Analisar o impacto de um ato candidato do DOU | ~2 mil tokens de entrada | US$ 0,0005 a 0,002 |
-| Funil de um mês do DOU (7.884 atos) | 825 da mineração → 2 candidatos para a IA | menos de US$ 0,01 |
+| Funil de um mês do DOU (7.884 atos) | 825 da ANM → 2 candidatos para a IA | menos de US$ 0,01 |
 
 As regras resolvem 99,97% do volume. A IA só vê o que sobrou, e cada resposta fica em cache.
 
-**A demo roda sem chave e sem internet.** As respostas de impacto usadas na demo estão em `data/cache_ia_demo.json`, no Git. Num clone novo, `demo.preparar` carrega esse arquivo no cache local antes de rodar o radar. Sem ele, a aba "Mudanças" ficaria vazia e não daria erro (há teste para isso). Para atualizar o arquivo: `uv run python -m regulaia.demo --exportar-cache`.
+**A demo roda sem chave e sem internet.** As respostas de IA da demo (análises de impacto e extração das normas) estão em `data/cache_ia_demo.json`, no Git, com o custo original de cada chamada. Num clone novo, `demo.preparar` carrega esse arquivo no cache local antes de rodar o radar. Sem ele, a aba "Mudanças" ficaria vazia e não daria erro (há teste para isso). Para atualizar o arquivo: `uv run python -m regulaia.demo --exportar-cache`.
 
 ## Provedores de IA: troca por configuração
 

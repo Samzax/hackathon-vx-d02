@@ -104,7 +104,8 @@ class Analise:
     motivo: str = ""
     confianca: float | None = None
     modelos: list[str] = field(default_factory=list)
-    custo_usd: float = 0.0
+    custo_usd: float = 0.0            # gasto nesta execução (resposta em cache não é paga de novo)
+    custo_original_usd: float = 0.0   # quanto as respostas custaram quando foram pedidas pela primeira vez
     revisao_humana: bool = False      # a IA não chegou a uma resposta que o Python aprovasse
 
     @property
@@ -165,6 +166,7 @@ def analisar(conn, roteador: Roteador, identificacao: str, ato_texto: str) -> An
             continue
         analise.modelos.append(r.modelo.rotulo + (" (cache)" if r.do_cache else ""))
         analise.custo_usd += 0.0 if r.do_cache else r.custo_usd
+        analise.custo_original_usd += r.custo_usd or 0.0
         mudancas, motivo, confianca = _ler(r.dados, ato_texto, cadastro)
         analise.mudancas, analise.motivo, analise.confianca = mudancas, motivo, confianca
         if not analise.reprovadas and confianca >= CONFIANCA_MINIMA:

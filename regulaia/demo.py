@@ -86,7 +86,7 @@ CACHE_DEMO = ROOT / "data" / "cache_ia_demo.json"     # respostas da IA usadas n
 _COLUNAS_CACHE = ("chave", "tarefa", "provedor", "modelo", "resposta", "tokens_in", "tokens_out", "custo_usd")
 
 
-def exportar_cache(cache, destino: Path = CACHE_DEMO, tarefas=("impacto",)) -> int:
+def exportar_cache(cache, destino: Path = CACHE_DEMO, tarefas=("impacto", "extrator")) -> int:
     """Copia do cache local (fora do Git) as respostas que a demo precisa."""
     marcas = ",".join("?" * len(tarefas))
     linhas = [dict(r) for r in cache.execute(
@@ -134,6 +134,7 @@ def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU, cache: Path |
     RADAR.write_text(json.dumps([
         {"ato": an.ato, "candidatas": [c.codigo for c in an.candidatas], "motivo": an.motivo,
          "confianca": an.confianca, "modelos": an.modelos, "custo_usd": an.custo_usd,
+         "custo_original_usd": an.custo_original_usd,
          "revisao_humana": an.revisao_humana,
          "mudancas": [{"obrigacao": m.obrigacao, "campo": m.campo, "valor_novo": m.valor_novo,
                        "reprovada": m.reprovada} for m in an.mudancas]}

@@ -87,6 +87,7 @@ with st.sidebar:
     st.caption(f"Histórico monitorado desde {desde:%d/%m/%Y}.")
     if st.button("Recriar demo", help="Apaga decisões e volta ao estado inicial"):
         _conexao.clear()
+        st.session_state.pop("leitura", None)
         st.rerun()
 
 meus = [a for a in ativos if visao.startswith("Diretoria") or a["responsavel"] == visao]
@@ -317,4 +318,5 @@ with aba_radar:
             st.caption(r["motivo"])
             st.caption(f"Obrigações enviadas à IA: {', '.join(r['candidatas']) or 'nenhuma'} · "
                        f"modelo: {' → '.join(r['modelos'])} · confiança {r['confianca']} · "
-                       f"custo US\\$ {r['custo_usd']:.4f}")
+                       f"custo US\\$ {r.get('custo_original_usd', r['custo_usd']):.4f}"
+                       + (" (resposta já em cache: não foi paga de novo)" if not r["custo_usd"] else ""))
