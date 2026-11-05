@@ -24,7 +24,49 @@ flowchart LR
 
 - **De cima para baixo:** norma → obrigações → o que cada ativo precisa fazer.
 - **De baixo para cima:** documento da operação → evidência → obrigação cumprida.
-- **Na torre:** cada obrigação de cada ativo aparece como 🟢 em dia, 🟡 vencendo, 🔴 atrasada ou sem evidência, ou 🔵 mudou (aguardando aprovação).
+- **Na torre:** cada obrigação de cada ativo aparece como 🔴 atrasada, ⚪ dado faltando no cadastro do ativo, 🟡 vence em breve, 🟢 em dia ou 🔵 por gatilho (só vale se acontecer algo: incidente, anomalia, modificação). Uma mudança aguardando aprovação aparece com ⚠️ ao lado.
+
+## A torre: agenda e status
+
+Cada obrigação tem uma `agenda` curta que a máquina lê (`regulaia/agenda.py`):
+
+| Agenda | Exemplo | Uso |
+|---|---|---|
+| `quinzenal+15d`, `mensal+10d`, `trimestral+30d`, `semestral+30d`, `anual+0d` | FIR quinzenal | Período de calendário mais a folga para entregar |
+| `datas:03-31,09-30` | Campanhas da DCE | Datas fixas todo ano |
+| `anos:3`, `meses:6` | Exame externo do vaso (NR-13) | Contado da última execução |
+| `unica` | Mapa da ZAS até 26/12/2029 | Uma vez, até o `prazo` (que uma norma nova pode mudar) |
+| `evento` | ISE depois de anomalia | Sem calendário: depende de gatilho |
+
+O status vem de comparar os períodos vencidos com as evidências recebidas. "Dado faltando" aparece quando a regra de aplicabilidade precisa de um atributo que o cadastro do ativo não tem. Por exemplo, o cadastro da B4 não diz se ela passou por modificação estrutural, então não dá para saber se ela deve uma RPSB nova (Res. 95, R95-08). A torre mostra a dúvida em vez de esconder a obrigação.
+
+O campo `vigencia_desde`/`vigencia_ate` faz a troca de norma sozinha. As 21 obrigações da Res. 95/2022 valem até 1/8/2027 e as 15 da Res. 220/2025 a partir de 2/8/2027. A aba "Transição" agrupa as duas por tema (FIR, RPSB, PAEBM…) para mostrar o que continua, o que é novo e o que acaba.
+
+## Cadastro: da norma ao CSV, com uma pessoa no meio
+
+```
+norma (ANMlegis ou PDF) -> unidades (artigos / itens) -> blocos de ~9 mil caracteres
+   -> IA propõe obrigações em JSON -> Python confere -> data/extraido/*.json
+   -> pessoa escolhe e ajusta (curadoria/*.csv) -> regulaia.curadoria -> cadastro/*.csv
+```
+
+- **O Python confere cada proposta da IA.** O trecho citado tem de estar no texto do bloco e o dispositivo citado tem de pertencer ao bloco. A regra de aplicabilidade tem de ser válida e só usar atributos que existem no cadastro daquele tipo de ativo. A proposta que falha fica marcada como reprovada, com o motivo.
+- **Repetível.** A curadoria guarda só as escolhas (artigo + parte do título + ajustes). Rodar de novo gera o mesmo CSV a partir da extração versionada.
+- **Leitura das normas.** A da ANM vem do ANMlegis (HTML por artigo). A NR vem do PDF, por item (`22.24.8`). O leitor pula o sumário, junta itens repetidos e descarta os revogados.
+
+## Leitor de evidência
+
+Quem opera a barragem manda o PDF (FIR, relatório do vaso, boletim de efluentes) e a torre dá baixa na obrigação certa (`regulaia/evidencias.py`):
+
+1. **Regra.** Acha o ativo (código entre parênteses ou nome inteiro: "Serra I" não casa "Serra II"), o tipo de documento por palavra-chave e a data de execução.
+2. **Desempate.** Se mais de um ativo é citado, fica o que tem obrigação vigente daquele tipo de documento. Um boletim de efluentes que cita a licença e a unidade vai para a licença.
+3. **IA só se a regra não fechar.** A data que ela indicar tem de estar escrita no documento; se não estiver, a leitura fica com um problema e não é registrada.
+4. **Período.** A data vira o período que a evidência comprova (`2026-10-1Q`, `2026-09`, a própria data para `anos:N`).
+5. **Gatilhos.** Uma FIR com pontuação 10 avisa que a Inspeção de Segurança Especial é obrigatória e que o registro no SIGBM tem prazo de 24 horas.
+
+## O que a demo mostrou sobre as normas
+
+**A ANM e o MTE dão a mesma data para a ZAS.** A Res. ANM 245/2026 adiou o mapa de inundação com a Zona de Autossalvamento para 26/12/2029. A NR-22 (item 22.24.8, Portaria MTE 105/2026) dá a mesma data para barragens não alteadas a montante; para as alteadas a montante, a exigência é imediata. Uma barragem passa a ter duas obrigações, de dois reguladores, com o mesmo prazo. A linha do tempo mostra isso sem ninguém ler as duas normas.
 
 ## Banco de dados: SQLite
 
@@ -54,6 +96,20 @@ O cadastro inicial está em `seed_obligations.csv`, legível e revisável no Git
 Mais duas proteções:
 - **Cache por conteúdo.** A tabela `analise_ia` guarda cada resposta pela chave sha256(tarefa + modelo + prompt + entrada). O mesmo ato nunca é pago duas vezes, e o custo total fica medido.
 - **A IA nunca decide sozinha.** O Python confere se o trecho citado existe no ato e se o artigo bate com a obrigação, e uma pessoa aprova a mudança.
+
+### Custos medidos (DeepSeek V4.1 Flash via OpenCode Go)
+
+| Tarefa | Quanto | Custo |
+|---|---|---|
+| Extrair obrigações da Res. ANM 95/2022 (norma inteira) | 1 vez por norma | US$ 0,065 |
+| Extrair obrigações da NR-13 | 1 vez por norma | US$ 0,045 |
+| Extrair obrigações da NR-22 (capítulo de barragens) | 1 vez por norma | US$ 0,009 |
+| Analisar o impacto de um ato candidato do DOU | ~2 mil tokens de entrada | US$ 0,0005 a 0,002 |
+| Funil de um mês do DOU (7.884 atos) | 825 da mineração → 2 candidatos para a IA | menos de US$ 0,01 |
+
+As regras resolvem 99,97% do volume. A IA só vê o que sobrou, e cada resposta fica em cache.
+
+**A demo roda sem chave e sem internet.** As respostas de impacto usadas na demo estão em `data/cache_ia_demo.json`, no Git. Num clone novo, `demo.preparar` carrega esse arquivo no cache local antes de rodar o radar. Sem ele, a aba "Mudanças" ficaria vazia e não daria erro (há teste para isso). Para atualizar o arquivo: `uv run python -m regulaia.demo --exportar-cache`.
 
 ## Provedores de IA: troca por configuração
 

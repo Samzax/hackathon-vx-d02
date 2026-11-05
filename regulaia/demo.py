@@ -82,9 +82,34 @@ def gerar_historico(conn, ids: dict[str, int], spec: dict) -> int:
 
 AMOSTRA_DOU = ROOT / "tests" / "fixtures" / "dou" / "S01_amostra.zip"
 RADAR = ROOT / "data" / "radar_demo.json"
+CACHE_DEMO = ROOT / "data" / "cache_ia_demo.json"     # respostas da IA usadas na demo (vai pro Git)
+_COLUNAS_CACHE = ("chave", "tarefa", "provedor", "modelo", "resposta", "tokens_in", "tokens_out", "custo_usd")
 
 
-def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU) -> tuple:
+def exportar_cache(cache, destino: Path = CACHE_DEMO, tarefas=("impacto",)) -> int:
+    """Copia do cache local (fora do Git) as respostas que a demo precisa."""
+    marcas = ",".join("?" * len(tarefas))
+    linhas = [dict(r) for r in cache.execute(
+        f"SELECT {', '.join(_COLUNAS_CACHE)} FROM analise_ia WHERE tarefa IN ({marcas}) ORDER BY chave",
+        tarefas)]
+    destino.write_text(json.dumps(linhas, ensure_ascii=False, indent=1), encoding="utf-8")
+    return len(linhas)
+
+
+def semear_cache(cache, origem: Path = CACHE_DEMO) -> int:
+    """Num clone novo o cache está vazio: carrega as respostas da demo, sem sobrescrever nada."""
+    if not origem.exists():
+        return 0
+    linhas = json.loads(origem.read_text(encoding="utf-8"))
+    with cache:
+        cache.executemany(
+            f"INSERT OR IGNORE INTO analise_ia ({', '.join(_COLUNAS_CACHE)}) "
+            f"VALUES ({', '.join('?' * len(_COLUNAS_CACHE))})",
+            [tuple(l[c] for c in _COLUNAS_CACHE) for l in linhas])
+    return len(linhas)
+
+
+def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU, cache: Path | None = None) -> tuple:
     """Banco pronto para a interface: cadastro, empresa, histórico e o radar do DOU
     já rodado (Res. 245 e 246). Usa o cache de IA; sem chave, só o que está em cache."""
     from collector.xml_dou import load_month
@@ -94,7 +119,9 @@ def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU) -> tuple:
     conn = db.conectar(Path(caminho or db.DB_PADRAO))
     db.limpar(conn)     # no Windows o arquivo pode estar aberto pela interface
     ids = montar(conn)
-    roteador = Roteador(db.conectar(impacto.CACHE_IA))
+    conn_cache = db.conectar(Path(cache or impacto.CACHE_IA))
+    semear_cache(conn_cache)
+    roteador = Roteador(conn_cache)
     analises = []
     for a in load_month(dou):
         if not (a.is_anm and a.is_normative):
@@ -117,6 +144,10 @@ def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU) -> tuple:
 def main(argv: list[str]) -> int:
     from . import torre
 
+    if argv[:1] == ["--exportar-cache"]:
+        from . import impacto
+        print(f"{exportar_cache(db.conectar(impacto.CACHE_IA))} respostas em {CACHE_DEMO}")
+        return 0
     caminho = Path(argv[0]) if argv else db.DB_PADRAO
     conn = db.conectar(caminho)
     db.limpar(conn)

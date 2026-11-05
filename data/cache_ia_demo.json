@@ -1,0 +1,102 @@
+[
+ {
+  "chave": "528c002cc0d043994bde562be44958b94ae942aab61a3e3b69cfe258736d9b97",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"A Resolução apenas prorroga prazos processuais com termo final entre 02/04/2026 e 13/07/2026 que dependam do Protocolo Digital, Dados Cadastrais ou Dados Minerários, e exclui expressamente o SIGBM, o RAL e a DIPEM (§ 2º, II) e as obrigações cujo descumprimento possa trazer risco à saúde, à vida, ao meio ambiente e ao patrimônio (§ 1º). Nenhuma das obrigações do cadastro tem prazo nesse intervalo, depende desses sistemas ou se enquadra fora das ressalvas, portanto nada muda.\", \"confianca\": 0.95}",
+  "tokens_in": 2222,
+  "tokens_out": 403,
+  "custo_usd": 0.0005751
+ },
+ {
+  "chave": "6a7141bb741e866398b7cd44f32c7c28c84dcc73029e68eea27e650949cea6eb",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"OB-01\", \"campo\": \"vigencia_desde\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"A obrigação decorre do § 1º do art. 7º da Res. ANM 220/2025, cuja entrada em vigor o ato expressamente desloca para 26 de dezembro de 2029.\"}], \"motivo\": \"O ato dá nova redação ao art. 87 da Resolução ANM nº 220/2025 apenas para fixar as datas de entrada em vigor: 22/04/2027 para os arts. 76 e 77, 02/08/2027 para os demais artigos e 26/12/2029 para o § 1º do art. 7º. Só a obrigação vinculada ao § 1º do art. 7º (OB-01) tem sua data de vigência alterada; as demais permanecem em 02/08/2027, valor que o ato mantém.\", \"confianca\": 0.88}",
+  "tokens_in": 1764,
+  "tokens_out": 1141,
+  "custo_usd": 0.0009492000000000001
+ },
+ {
+  "chave": "96e796da149790311a0b1b7f4d2bd72b23d149abbe9804ed8cacc1065bc429fd",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"A Resolução prorroga apenas prazos processuais com termo final entre 02/04/2026 e 13/07/2026 que dependam dos sistemas Protocolo Digital, Dados Cadastrais ou Dados Minerários, e exclui expressamente os prazos do SIGBM, RAL e DIPEM (§2º, II) e as obrigações cujo descumprimento envolva risco à saúde, à vida, ao meio ambiente e ao patrimônio (§1º). Nenhuma das obrigações do cadastro é prazo processual nesses sistemas dentro da janela de prorrogação: as obrigações de segurança de barragens (ZAS, RPSB/SIGBM, evacuação) estão excluídas e as demais têm prazos próprios (15/03, por evento, 2029) não alcançados pelo ato.\", \"confianca\": 0.88}",
+  "tokens_in": 2162,
+  "tokens_out": 666,
+  "custo_usd": 0.0007239
+ },
+ {
+  "chave": "c6db09f62ae0174dad68a9ba954afb6a1a9eac8ff68305edde274c5cc8851689",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"A Resolução prorroga prazos processuais dependentes do Protocolo Digital, Dados Cadastrais e Dados Minerários, mas exclui expressamente os prazos referentes ao SIGBM (art. 1º, §2º, II) e ressalva obrigações cujo descumprimento possa trazer risco à vida, ao meio ambiente e ao patrimônio (art. 1º, §1º). Todas as obrigações do cadastro são de segurança de barragens, com evidência de DCE no SIGBM, de modo que nenhuma tem prazo alterado.\", \"confianca\": 0.95}",
+  "tokens_in": 2077,
+  "tokens_out": 341,
+  "custo_usd": 0.0005161499999999999
+ },
+ {
+  "chave": "c97a892e3cc63afca1f903e5159e2adc842faeb20a8350a8659f88c9900140ac",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"O ato prorroga apenas prazos processuais com termo final entre 02/04/2026 e 13/07/2026 que dependam dos sistemas Protocolo Digital, Dados Cadastrais ou Dados Minerários, excluindo expressamente os prazos do SIGBM, RAL e DIPEM e as obrigações cujo descumprimento possa trazer risco à saúde, à vida, ao meio ambiente e ao patrimônio. Nenhuma das obrigações do cadastro tem prazo com termo final nesse intervalo e dependente desses sistemas, de modo que não há campo a alterar.\", \"confianca\": 0.9}",
+  "tokens_in": 2221,
+  "tokens_out": 481,
+  "custo_usd": 0.00062175
+ },
+ {
+  "chave": "d02b932b355f24dae3dfde09fa83b21c763cc5dd7867288808a4a80c578a0eaf",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"OB-01\", \"campo\": \"vigencia_desde\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"O art. 87, inciso III, fixa a entrada em vigor do § 1º do art. 7º em 26 de dezembro de 2029, deslocando a vigência da obrigação que trata desse dispositivo.\"}, {\"obrigacao\": \"OB-01\", \"campo\": \"prazo\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"Como o prazo da obrigação coincide com a data de entrada em vigor do art. 7º, § 1º, ele também passa a ser 2029-12-26.\"}], \"motivo\": \"A Resolução ANM nº 245/2026 dá nova redação ao art. 87 da Resolução ANM nº 220/2025, postergando para 26/12/2029 a entrada em vigor do § 1º do art. 7º e mantendo em 02/08/2027 a dos demais artigos (ressalvados os arts. 76 e 77, com 22/04/2027). Só a obrigação que trata do art. 7º, § 1º (OB-01) muda; as demais já tinham vigência/prazo em 2027-08-02, data mantida pelo ato.\", \"confianca\": 0.93}",
+  "tokens_in": 1935,
+  "tokens_out": 930,
+  "custo_usd": 0.00084825
+ },
+ {
+  "chave": "e118dc6735ed0ed1b5ad89559425faaa9cae251fff6c36a0726df0aed5e423d6",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"OB-01\", \"campo\": \"vigencia_desde\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"O ato fixa em 26 de dezembro de 2029 a entrada em vigor do § 1º do art. 7º da Resolução ANM nº 220/2025, dispositivo que fundamenta a obrigação.\"}, {\"obrigacao\": \"OB-01\", \"campo\": \"prazo\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"O prazo da obrigação coincidia com a data de entrada em vigor do dispositivo e passa a acompanhar a nova data de 26 de dezembro de 2029.\"}], \"motivo\": \"O ato apenas reescreve o art. 87 da Resolução ANM nº 220/2025 para escalonar a entrada em vigor, fixando 26 de dezembro de 2029 para o § 1º do art. 7º. Só a obrigação vinculada a esse dispositivo (OB-01) muda; as demais mantêm seus prazos e vigências, inclusive as da Resolução ANM nº 95/2022, cuja aplicação no período de transição o ato preserva.\", \"confianca\": 0.9}",
+  "tokens_in": 1991,
+  "tokens_out": 1146,
+  "custo_usd": 0.00098625
+ },
+ {
+  "chave": "eb1b593390f1d1d78de134f71544744f1bb4289b2ee3741f0d3675c83a3434df",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"O ato prorroga prazos processuais com termo final entre 02/04/2026 e 13/07/2026 que dependam do Protocolo Digital, Dados Cadastrais ou Dados Minerários, mas exclui expressamente os prazos referentes ao SIGBM (§2º, II) e as obrigações cujo descumprimento possa trazer risco à saúde, à vida, ao meio ambiente e ao patrimônio (§1º). A única obrigação do cadastro com prazo dentro da janela (R95-10, DCO via SIGBM, 01/06-30/06) está excluída; as demais não têm termo final no período ou não dependem dos sistemas citados.\", \"confianca\": 0.9}",
+  "tokens_in": 2193,
+  "tokens_out": 500,
+  "custo_usd": 0.0006289500000000001
+ },
+ {
+  "chave": "f3521eba4454b014873562245cd859dd695fb2c536044fb3f8dc2bf482b384e6",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"OB-01\", \"campo\": \"vigencia_desde\", \"valor_atual\": \"2027-08-02\", \"valor_novo\": \"2029-12-26\", \"trecho\": \"III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.\", \"justificativa\": \"O ato fixa expressamente a entrada em vigor do § 1º do art. 7º em 26 de dezembro de 2029, deslocando o início de vigência da obrigação.\"}], \"motivo\": \"A Resolução altera o art. 87 para postergar para 2029-12-26 a entrada em vigor do § 1º do art. 7º; as demais obrigações permanecem com início em 2027-08-02.\", \"confianca\": 0.92}",
+  "tokens_in": 1876,
+  "tokens_out": 2651,
+  "custo_usd": 0.001872
+ },
+ {
+  "chave": "f9049c71204d307d5893673dbc72eb9cbec321466bf15a694eb986629d859f8c",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"A Resolução prorroga apenas prazos processuais dependentes dos sistemas Protocolo Digital, Dados Cadastrais e Dados Minerários, com termo final entre 02/04/2026 e 13/07/2026, e exclui expressamente os prazos do SIGBM, do RAL e da DIPEM (art. 1º, §2º, II). Nenhuma das obrigações do cadastro se enquadra no escopo: as vinculadas ao SIGBM (OB-06 e R95-10) estão excluídas, e as demais não dependem dos sistemas citados nem têm prazo no período abrangido.\", \"confianca\": 0.9}",
+  "tokens_in": 2224,
+  "tokens_out": 449,
+  "custo_usd": 0.000603
+ }
+]
