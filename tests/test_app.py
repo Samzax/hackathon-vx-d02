@@ -169,7 +169,7 @@ def test_anomalia_registrada_fica_na_torre_ate_o_relatorio_da_ise(banco_temporar
         next(b for b in at.button if b.label.startswith("Registrar evidência")).click().run()
         assert not at.exception
 
-    ler_e_registrar("FIR_B2_2026-11-1Q_anomalia.pdf", aviso="Ao registrar, a torre abre R95-04 em B2")
+    ler_e_registrar("FIR_B2_2026-11-1Q_anomalia.pdf", aviso="Ao registrar, a torre abre em B2, com prazo de 24 h: **R95-04 · Realizar ISE")
     assert _atrasadas(at) == antes + 1                 # a ISE da B2 fica aberta e passou do prazo de 24 h
     assert any(m.value.startswith("Acionada em 04/11/2026 por FIR_B2_2026-11-1Q_anomalia.pdf") for m in at.markdown)
     ler_e_registrar("Relatorio_ISE_B2_2026-11-06.pdf")
@@ -182,3 +182,10 @@ def test_detalhe_do_ativo_sem_codigo_cru(banco_temporario):
     texto = " ".join(m.value for m in at.markdown)
     assert "Última evidência em 30/10/2023." in texto and "Períodos sem evidência: 30/10/2026" not in texto
     assert "**se passou por modificação estrutural** (`modificacao_estrutural`)" in texto
+
+
+def test_aviso_de_atraso_comeca_com_maiuscula(banco_temporario):
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    next(s for s in at.selectbox if s.label.endswith("documento de exemplo")).select("EIR_B3_2026-10-1Q_recibo_SIGBM.pdf").run()
+    next(b for b in at.button if b.label == "Ler documento").click().run()
+    assert any(i.value.lstrip("⏰ ").startswith("Enviado em 06/11/2026, 7 dias depois do prazo") for i in at.info)

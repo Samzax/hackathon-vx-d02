@@ -163,12 +163,16 @@ with aba_hoje:
                 st.error(f"🚨 {g}")
             abre = [c for c in getattr(le, "acionar", []) if c != le.obrigacao]
             if abre and le.completa:
-                st.caption(f"Ao registrar, a torre abre {', '.join(abre)} em {le.ativo}, com prazo de 24 h. "
-                           "Fica aberta até chegar a evidência que a encerra.")
+                abertas = []
+                for c in abre:
+                    v = db.versao(conn, c) or {}
+                    abertas.append(f"**{c} · {v.get('titulo', c)}** (encerra com: {v.get('evidencia') or 'a evidência'})")
+                st.caption(f"Ao registrar, a torre abre em {le.ativo}, com prazo de 24 h: " + "; ".join(abertas)
+                           + ". Fica aberta até chegar esse documento.")
             for p in le.problemas:
                 st.warning(p)
             for a in getattr(le, "avisos", []):     # leitura guardada antes de o campo existir
-                st.info(f"⏰ {a}")
+                st.info(f"⏰ {a[:1].upper()}{a[1:]}")
             if le.completa and st.button(f"Registrar evidência de {le.ativo} · {le.obrigacao} · {le.periodo}",
                                          type="primary"):
                 ev.registrar(conn, le, nome)
