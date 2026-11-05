@@ -39,6 +39,7 @@ Seguir o [roteiro](ROTEIRO_DEMO.md) em versão curta:
 
 ## Ensaio
 
+- As falas somam cerca de 300 palavras, uns 2 minutos a 150 palavras por minuto; sobra 2 min 30 s para a demo e uns 30 s de folga.
 - Cronometrar duas vezes; se passar de 5 min, cortar primeiro o passo 3 da demo (Transição).
 - Antes de subir: barra lateral em 07/11/2026, "Diretoria (todos os ativos)", **Recriar demo**.
 - Perguntas prováveis e respostas curtas: tabela "Se perguntarem" do [roteiro](ROTEIRO_DEMO.md).
