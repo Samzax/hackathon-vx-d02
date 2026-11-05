@@ -103,3 +103,16 @@ def test_semanal_comeca_na_segunda_e_vence_depois_do_domingo():
 ])
 def test_agenda_acompanha_a_periodicidade(texto, atual, esperado):
     assert ag.agenda_para(texto, atual) == esperado
+
+
+@pytest.mark.parametrize("agenda, texto", [
+    ("quinzenal+0d", "quinzenal, até o fim de cada quinzena"),
+    ("quinzenal+15d", "quinzenal, até 15 dias depois de cada quinzena"),
+    ("anos:3", "a cada 3 anos, contados da última execução"),
+    ("anos:1", "a cada ano, contado da última execução"),
+    ("datas:03-31,09-30", "todo ano em 31/03, 30/09"),
+    ("data:2027-08-02", "uma vez, até 02/08/2027"),
+    ("evento", "quando houver o gatilho"),
+])
+def test_descrever_agenda(agenda, texto):
+    assert ag.descrever(agenda) == texto

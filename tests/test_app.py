@@ -96,6 +96,7 @@ def test_historico_mostra_a_versao_nova_depois_de_aprovar(banco_temporario):
     assert "sem fim" not in texto and "vale a partir de 02/08/2027" in texto
     custos = " ".join(c.value for c in at.caption if "custo" in c.value)
     assert r"US\$ 0," in custos and r"US\$ 0." not in custos
+    assert "confiança 0," in custos and "confiança 0." not in custos
 
 
 def test_viagem_no_tempo_para_a_res_220(banco_temporario):
@@ -140,7 +141,7 @@ def test_ato_ficticio_vira_mudanca_pendente(banco_temporario, monkeypatch):
     assert not at.exception
     assert len([b for b in at.button if b.label == "Aprovar"]) == 2       # Res. 245 e o ato de teste
     tabela = " ".join(m.value for m in at.markdown)
-    assert "| Agenda | quinzenal+0d | **semanal+0d** |" in tabela          # a agenda acompanha, por regra
+    assert "| Agenda | quinzenal, até o fim de cada quinzena | **semanal, até o fim de cada semana** |" in tabela  # por regra
 
 
 def test_fir_no_modelo_da_res220_dispara_ise_na_viagem_no_tempo(banco_temporario):

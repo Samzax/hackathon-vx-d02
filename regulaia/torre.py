@@ -212,7 +212,9 @@ def _o_que_falta(l: Linha) -> str:
     return f"falta: {texto}" if l.faltando and not _so_o_vencimento(l) else texto
 
 
-def _valor(v) -> str:
+def _valor(v, campo: str | None = None) -> str:
+    if campo == "agenda" and v:
+        return agenda.descrever(v)
     try:
         return _br(str(v)) if v else "—"
     except ValueError:
@@ -258,7 +260,7 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
     if pendentes:
         out += [f"## ⚠️ Mudanças de norma aguardando aprovação ({len(pendentes)})", ""]
         for m in pendentes:
-            campos = "; ".join(f"{CAMPOS.get(c, c)}: {_valor(a)} → {_valor(b)}"
+            campos = "; ".join(f"{CAMPOS.get(c, c)}: {_valor(a, c)} → {_valor(b, c)}"
                                for c, (a, b) in m.diferencas.items())
             out.append(f"- **{m.codigo}** · {m.titulo} — {m.ato}: {campos} "
                        f"(ativos: {', '.join(sorted(set(m.ativos) & set(ativos)))})")

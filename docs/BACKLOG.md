@@ -63,3 +63,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Pendência de entrega única mostra a data da última evidência (ex.: PGRBM de 30/06/2025 vira atrasado na Res. 220)
 - [x] Transição: coluna da Res. 220 sem a norma repetida; plano (.md) cita a norma dos dois lados; RPSB por alteamento com periodicidade legível (curadoria)
 - [x] Mudanças e Radar: nome do ato sem as maiúsculas do DOU, custo com vírgula, data da decisão em DD/MM/AAAA, "vale a partir de"; teste garante a linha "Conferido pelo Python"
+- [x] Quem aprova vê a agenda em português ("quinzenal, até o fim de cada quinzena"), não o código; confiança com vírgula; título do ato colado legível

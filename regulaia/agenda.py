@@ -170,6 +170,31 @@ def agenda_para(periodicidade: str, agenda_atual: str) -> str | None:
     return nova if nova != agenda_atual else None
 
 
+_PERIODO = {"semanal": "semana", "quinzenal": "quinzena", "mensal": "mês", "trimestral": "trimestre",
+            "semestral": "semestre", "anual": "ano"}
+
+
+def descrever(agenda: str | None) -> str:
+    """A agenda em português, para quem aprova uma mudança: 'quinzenal+15d' ->
+    'quinzenal, até 15 dias depois de cada quinzena'."""
+    a = (agenda or "").strip()
+    if m := _FREQ.match(a):
+        freq, dias = m.group(1), int(m.group(2))
+        quando = (f"até o fim de cada {_PERIODO[freq]}" if dias == 0
+                  else f"até {dias} {'dia' if dias == 1 else 'dias'} depois de cada {_PERIODO[freq]}")
+        return f"{freq}, {quando}"
+    if m := re.fullmatch(r"(anos|meses):(\d+)", a):
+        n, unidade = int(m.group(2)), m.group(1)
+        if n == 1:
+            return f"a cada {'ano' if unidade == 'anos' else 'mês'}, contado da última execução"
+        return f"a cada {n} {unidade}, contados da última execução"
+    if m := re.fullmatch(r"datas:(.+)", a):
+        return "todo ano em " + ", ".join(f"{d[3:5]}/{d[0:2]}" for d in m.group(1).split(","))
+    if m := re.fullmatch(r"data:(\d{4})-(\d\d)-(\d\d)", a):
+        return f"uma vez, até {m.group(3)}/{m.group(2)}/{m.group(1)}"
+    return {"unica": "uma vez, até o prazo", "evento": "quando houver o gatilho"}.get(a, a)
+
+
 _MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto",
           "setembro", "outubro", "novembro", "dezembro"]
 

@@ -43,6 +43,11 @@ def _usd(valor: float, casas: int = 4) -> str:
     return "US\\$ " + f"{valor:.{casas}f}".replace(".", ",")
 
 
+def _val(campo, valor):
+    """Valor de um campo de obrigação para quem aprova: datas em DD/MM/AAAA, agenda em português."""
+    return agenda.descrever(valor) if campo == "agenda" and valor else _br(valor)
+
+
 def _br(valor):
     """AAAA-MM-DD -> DD/MM/AAAA; o resto passa como está."""
     try:
@@ -350,7 +355,7 @@ with aba_mudancas:
             st.markdown(f"#### {m.codigo} · {m.titulo}")
             st.caption(f"Origem: {m.ato or m.fonte} · publicado no DOU em {_br(m.publicado_em)}")
             st.markdown("| Campo | Hoje | Proposto |\n|---|---|---|\n" + "\n".join(
-                f"| {CAMPO.get(c, c)} | {_br(a)} | **{_br(b)}** |" for c, (a, b) in m.diferencas.items()))
+                f"| {CAMPO.get(c, c)} | {_val(c, a)} | **{_val(c, b)}** |" for c, (a, b) in m.diferencas.items()))
             if m.trecho:
                 st.markdown(f"> {m.trecho}")
             r = radar_por_ato.get(m.ato)
@@ -398,7 +403,7 @@ with aba_mudancas:
             if anterior:
                 mudou = db.diferencas(anterior, v)
                 if mudou:
-                    st.markdown("; ".join(f"{CAMPO.get(c, c)}: {_br(a)} → **{_br(b)}**" for c, (a, b) in mudou.items()))
+                    st.markdown("; ".join(f"{CAMPO.get(c, c)}: {_val(c, a)} → **{_val(c, b)}**" for c, (a, b) in mudou.items()))
             else:
                 vale = (f"vale de {_br(v['vigencia_desde'])} até {_br(v['vigencia_ate'])}" if v["vigencia_ate"]
                         else f"vale a partir de {_br(v['vigencia_desde'])}")
@@ -432,7 +437,7 @@ with aba_radar:
             st.markdown(f"**{torre.nome_ato(r['ato'])}** — {'muda ' + ', '.join(sorted({x['obrigacao'] for x in mud})) if mud else 'não muda o cadastro'}")
             st.caption(r["motivo"])
             st.caption(f"Obrigações enviadas à IA: {', '.join(r['candidatas']) or 'nenhuma'} · "
-                       f"modelo: {' → '.join(r['modelos'])} · confiança {r['confianca']} · "
+                       f"modelo: {' → '.join(r['modelos'])} · confiança {str(r['confianca']).replace('.', ',')} · "
                        f"custo {_usd(r.get('custo_original_usd', r['custo_usd']))}"
                        + (" (resposta já em cache: não foi paga de novo)" if not r["custo_usd"] else ""))
 
@@ -462,7 +467,7 @@ with aba_radar:
                                                      impacto.analisar(conn, rot, titulo_ato, texto_ato))
     if "analise_teste" in st.session_state:
         titulo_ato, texto_salvo, an = st.session_state["analise_teste"]
-        st.markdown(f"**{titulo_ato}**")
+        st.markdown(f"**{torre.nome_ato(titulo_ato)}**")
         if an.candidatas:
             st.markdown("Candidatas escolhidas pela regra: " + " · ".join(
                 f"`{c.codigo}` ({', '.join(c.motivos[:2])})" for c in an.candidatas))
