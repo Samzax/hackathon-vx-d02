@@ -559,7 +559,8 @@ with aba_mercado:
                "não dados.")
     p1, p2, p3 = st.columns(3)
     preco = p1.number_input("Preço por barragem por mês (R$)", 0, 50_000, 1_500, step=250)
-    outros = p2.number_input("Outros ativos por barragem (vasos, licenças, unidades)", 0, 50, 5)
+    outros = p2.number_input("Outros ativos por barragem", 0, 50, 5,
+                             help="Vasos de pressão, licenças ambientais e unidades de mineração ligados a cada barragem")
     preco_outro = p3.number_input("Preço por outro ativo por mês (R$)", 0, 10_000, 150, step=50)
     adocao = st.slider("Adoção entre as barragens na PNSB (%)", 1, 100, 10)
     por_barragem = preco + outros * preco_outro
