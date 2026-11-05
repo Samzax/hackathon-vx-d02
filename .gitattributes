@@ -1,3 +1,5 @@
 *.pdf binary
 *.zip binary
 *.db binary
+Dockerfile text eol=lf
+.dockerignore text eol=lf
