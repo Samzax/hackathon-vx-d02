@@ -168,6 +168,21 @@ with aba_hoje:
     } for a in meus])
     st.dataframe(mapa, hide_index=True, width="stretch")
 
+    with st.expander("Por norma: quem cobra o quê"):
+        normas = sorted({l.norma for l in linhas if l.norma})
+        def _orgao(norma: str) -> str:
+            return ("ANM" if "ANM" in norma else "MTE" if norma.startswith("NR-")
+                    else "Órgão ambiental" if norma.startswith(("LO ", "LC 140")) else "—")
+
+        st.dataframe(pd.DataFrame([{
+            "Órgão": _orgao(n),
+            "Norma": n,
+            "Obrigações": len({l.codigo for l in linhas if l.norma == n}),
+            "Ativos": ", ".join(sorted({l.ativo for l in linhas if l.norma == n})),
+            **{ROTULO[s].split()[0]: sum(1 for l in linhas if l.norma == n and l.status == s)
+               for s in [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO]},
+        } for n in normas]), hide_index=True, width="stretch")
+
     def _tabela(ls):
         return pd.DataFrame([{
             "Status": ROTULO.get(l.status, l.status),
