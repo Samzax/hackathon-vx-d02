@@ -45,6 +45,15 @@ class Linha:
     agenda: str = ""                       # DSL da versão que vale (ver agenda.py)
 
 
+def titulo_do_ato(texto: str, limite: int = 150) -> str:
+    """Identificação de um ato colado: a primeira linha até o ano ("PORTARIA Nº 123, DE 3 DE
+    NOVEMBRO DE 2026"), sem levar junto o começo do texto quando tudo vem numa linha só."""
+    linha = next((l.strip() for l in texto.splitlines() if l.strip()), "")
+    if m := re.match(r".*?\b(19|20)\d\d\b", linha):
+        return m.group(0)[:limite]
+    return re.split(r"(?<=\.)\s", linha, maxsplit=1)[0][:limite]
+
+
 def em_brasilia(utc: str | None, com_hora: bool = True) -> str:
     """'2026-11-05 16:53:43' (UTC, como o SQLite grava) -> '05/11/2026 13:53'. Brasília é UTC-3
     o ano todo desde 2019 (sem horário de verão); perto da meia-noite a data muda junto."""

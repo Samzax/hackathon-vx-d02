@@ -509,7 +509,7 @@ with aba_radar:
     texto_ato = st.text_area("Texto do ato", key="ato_teste", height=180,
                              placeholder="Cole aqui o texto de uma resolução, portaria, instrução normativa…")
     if st.button("Analisar ato", type="primary", disabled=not (texto_ato or "").strip()):
-        titulo_ato = texto_ato.strip().splitlines()[0][:150]
+        titulo_ato = torre.titulo_do_ato(texto_ato)
         rot = _roteador()
         if rot is None:
             st.error("Não consegui iniciar o roteador de IA (veja modelos.toml e .env).")
@@ -523,7 +523,8 @@ with aba_radar:
         if an.candidatas:
             st.markdown("Candidatas escolhidas pela regra: " + " · ".join(
                 f"`{c.codigo}` ({', '.join(c.motivos[:2])})" for c in an.candidatas))
-        st.caption(an.motivo or "—")
+        if an.candidatas:      # sem candidata, o aviso de custo zero lá embaixo já diz tudo
+            st.caption(an.motivo or "—")
         if an.modelos:
             st.caption(f"Modelo: {' → '.join(an.modelos)} · custo da análise {_usd(an.custo_original_usd)}"
                        + (" (resposta já em cache: não foi paga de novo)" if an.custo_original_usd and not an.custo_usd else ""))

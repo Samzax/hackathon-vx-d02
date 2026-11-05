@@ -311,3 +311,13 @@ def test_hora_da_decisao_em_brasilia():
     assert torre.em_brasilia("2026-11-05 16:53:43") == "05/11/2026 13:53"
     assert torre.em_brasilia("2026-11-06 01:30:00", com_hora=False) == "05/11/2026"   # 22h30 do dia 5 em Brasília
     assert torre.em_brasilia(None) == "—"
+
+
+def test_titulo_do_ato_colado_para_no_ano():
+    assert torre.titulo_do_ato("PORTARIA Nº 123, DE 3 DE NOVEMBRO DE 2026. O DIRETOR-GERAL resolve: Art. 1º …") \
+        == "PORTARIA Nº 123, DE 3 DE NOVEMBRO DE 2026"
+    assert torre.titulo_do_ato("\n  RESOLUÇÃO ANM Nº 245, DE 31 DE JULHO DE 2026\nArt. 1º …") \
+        == "RESOLUÇÃO ANM Nº 245, DE 31 DE JULHO DE 2026"
+    assert torre.titulo_do_ato("Aviso sem data. Segunda frase.") == "Aviso sem data."
+    assert torre.nome_ato(torre.titulo_do_ato("PORTARIA Nº 123, DE 3 DE NOVEMBRO DE 2026. O DIRETOR")) \
+        == "Portaria nº 123, de 3 de novembro de 2026"
