@@ -264,3 +264,12 @@ def test_citacao_da_res220_nao_repete_a_norma(conn):
     for texto in (ics, b):
         assert "Res. ANM 220/2025, Res. ANM 220/2025" not in texto
     assert "Res. ANM 220/2025 art." in ics
+
+
+def test_diz_por_que_nao_achou_o_ativo(conn):
+    """Quem mandou o documento precisa saber o que corrigir: código desconhecido ou dois ativos."""
+    desconhecido = ev.ler(conn, "Ficha de Inspeção Regular da barragem (B9). Data de inspeção: 05/11/2026", 1, HOJE)
+    assert desconhecido.problemas[0].startswith("o documento cita B9, que não é ativo cadastrado")
+    dois = ev.ler(conn, "Ficha de Inspeção Regular (B1) e (B2). Data de inspeção: 05/11/2026", 1, HOJE)
+    assert dois.problemas[0] == "o documento cita mais de um ativo (B1, B2): não dá para saber de qual é"
+    assert not desconhecido.completa and not dois.completa

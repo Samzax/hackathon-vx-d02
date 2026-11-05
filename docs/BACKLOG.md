@@ -67,3 +67,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Hoje: dado faltando em português (com o nome do campo entre parênteses); entrega única mostra a última evidência
 - [x] Muitos períodos pendentes viram um intervalo no boletim e na tabela; obrigação herdada da Res. 95 não repete a data
 - [x] Leitor de evidência: acionamento diz o nome da obrigação aberta e o documento que a encerra; aviso de atraso com maiúscula
+- [x] Leitor de evidência diz por que não achou o ativo (código não cadastrado, dois ativos citados); problemas com maiúscula

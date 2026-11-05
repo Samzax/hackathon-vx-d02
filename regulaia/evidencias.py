@@ -95,6 +95,18 @@ def _ativos_citados(texto_n: str, ativos: list[dict]) -> list[str]:
             if re.search(rf"(?<!\w){re.escape(normalizar(a['nome']))}(?!\w)", texto_n)]
 
 
+def _por_que_sem_ativo(texto_n: str, citados: list[str], ativos: list[dict]) -> str:
+    """Diz o motivo, para quem mandou o documento saber o que corrigir."""
+    if len(citados) > 1:
+        return f"o documento cita mais de um ativo ({', '.join(citados)}): não dá para saber de qual é"
+    cadastrados = sorted(a["codigo"] for a in ativos)
+    estranhos = sorted({m.upper() for m in re.findall(r"\(\s*([a-z]{1,2}\d{1,3})\s*\)", texto_n)} - set(cadastrados))
+    if estranhos:
+        return (f"o documento cita {', '.join(estranhos)}, que não é ativo cadastrado da empresa "
+                f"(cadastrados: {', '.join(cadastrados)})")
+    return "não foi possível identificar o ativo: o documento não cita o código entre parênteses, ex.: (B3), nem o nome"
+
+
 def _data(texto: str) -> date | None:
     m = re.search(r"data d[ae] (?:inspe[cç][aã]o|execu[cç][aã]o|realiza[cç][aã]o|coleta)\s*:?\s*"
                   r"(\d{1,2}/\d{1,2}/\d{4})", texto, re.I)
@@ -218,7 +230,7 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
             le.problemas.append(f"IA indisponível: {str(e)[:80]}")
 
     if le.ativo is None:
-        le.problemas.append("não foi possível identificar o ativo")
+        le.problemas.append(_por_que_sem_ativo(tn, citados, ativos))
     if tipo is None:
         le.problemas.append("tipo de documento não reconhecido")
     if d is None:
