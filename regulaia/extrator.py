@@ -142,7 +142,7 @@ def conferir(p: Proposta, bloco_texto: str, ids_bloco: set[str], tipo: str) -> s
         regras.validar(p.regra)
     except regras.RegraInvalida as e:
         return f"regra inválida: {e}"
-    desconhecidos = {c for c, _, _ in regras._partes(p.regra)} - set(VOCABULARIO[tipo])
+    desconhecidos = regras.campos(p.regra) - set(VOCABULARIO[tipo])
     if desconhecidos:
         return f"regra usa atributo desconhecido: {sorted(desconhecidos)}"
     if not p.titulo.strip():

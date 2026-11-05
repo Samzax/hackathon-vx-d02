@@ -7,6 +7,8 @@ A regra é um texto curto, legível por quem não programa:
     dpa = alto                          igualdade (texto, número ou verdadeiro/falso)
     dpa2 > 4                            comparação numérica (>, <, >=, <=, !=)
     dpa2 > 4 e mapa_inundacao_validado  todas as condições ("e")
+    dpa = alto ou dpa2 >= 4             basta uma ("ou"); "e" vale antes de "ou":
+                                        "a e b ou c" é "(a e b) ou c"
 
 Atributo ausente no ativo nunca satisfaz a condição: na dúvida, a obrigação
 não é atribuída em silêncio, e a torre mostra o dado que falta (ver faltantes()).
@@ -25,7 +27,7 @@ _OPS = {
     "<": operator.lt,
     "=": operator.eq,
 }
-# O valor é uma palavra só (alto, 4, 2.5); "dpa2 > 4 ou x" é erro, não o texto "4 ou x".
+# O valor é uma palavra só (alto, 4, 2.5): em "dpa2 > 4 ou x", "ou" separa duas condições.
 _COND = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*(?:(>=|<=|!=|>|<|=)\s*([^\s]+))?\s*$")
 
 
@@ -33,12 +35,20 @@ class RegraInvalida(ValueError):
     pass
 
 
-def _partes(regra: str) -> list[tuple[str, str | None, str | None]]:
+Condicao = tuple[str, str | None, str | None]
+
+
+def _grupos(regra: str) -> list[list[Condicao]]:
+    """'a e b ou c' -> [[a, b], [c]]; '*' -> [[]] (um grupo vazio, que sempre vale)."""
     regra = regra.strip()
     if regra == "*":
-        return []
+        return [[]]
+    return [_partes(g, regra) for g in re.split(r"\s+ou\s+", regra)]
+
+
+def _partes(grupo: str, regra: str) -> list[Condicao]:
     partes = []
-    for trecho in re.split(r"\s+e\s+", regra):
+    for trecho in re.split(r"\s+e\s+", grupo):
         m = _COND.match(trecho)
         if not m:
             raise RegraInvalida(f"condição inválida: {trecho!r} em {regra!r}")
@@ -71,27 +81,42 @@ def _normaliza(v):
 
 
 def validar(regra: str) -> None:
-    _partes(regra)
+    _grupos(regra)
+
+
+def _vale(cond: Condicao, atributos: dict) -> bool | None:
+    """True/False, ou None se o ativo não informa o atributo."""
+    campo, op, alvo = cond
+    atual = atributos.get(campo)
+    if atual is None:
+        return None
+    if op is None:
+        return bool(atual)
+    a, b = _normaliza(atual), _valor(alvo)
+    if isinstance(a, float) != isinstance(b, float):
+        # comparar número com texto é erro de cadastro, não "falso"
+        raise RegraInvalida(f"{campo}: {atual!r} não se compara com {alvo!r}")
+    return _OPS[op](a, b)
 
 
 def faltantes(regra: str, atributos: dict) -> list[str]:
-    """Atributos que a regra usa e o ativo não informa."""
-    return [campo for campo, _, _ in _partes(regra) if atributos.get(campo) is None]
+    """Atributos que o ativo não informa e de que a decisão depende. Se a regra já vale,
+    ou se cada alternativa já falha por um dado conhecido, nada falta."""
+    if aplica(regra, atributos):
+        return []
+    falta: list[str] = []
+    for grupo in _grupos(regra):
+        valores = [_vale(c, atributos) for c in grupo]
+        if False in valores:
+            continue           # esta alternativa já não vale, com ou sem o dado que falta
+        falta += [c[0] for c, v in zip(grupo, valores) if v is None and c[0] not in falta]
+    return falta
 
 
 def aplica(regra: str, atributos: dict) -> bool:
-    for campo, op, alvo in _partes(regra):
-        atual = atributos.get(campo)
-        if atual is None:
-            return False
-        if op is None:
-            if not bool(atual):
-                return False
-            continue
-        a, b = _normaliza(atual), _valor(alvo)
-        if isinstance(a, float) != isinstance(b, float):
-            # comparar número com texto é erro de cadastro, não "falso"
-            raise RegraInvalida(f"{campo}: {atual!r} não se compara com {alvo!r}")
-        if not _OPS[op](a, b):
-            return False
-    return True
+    return any(all(_vale(c, atributos) is True for c in grupo) for grupo in _grupos(regra))
+
+
+def campos(regra: str) -> set[str]:
+    """Atributos que a regra usa."""
+    return {c for grupo in _grupos(regra) for c, _, _ in grupo}

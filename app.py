@@ -301,18 +301,17 @@ with aba_transicao:
             c0.markdown("**Tema**")
             c1.markdown("**Hoje · Res. 95/2022**")
             c2.markdown("**A partir de 02/08/2027 · Res. 220/2025**")
-            for par in torre.pares(t):
-                if par.saem and par.entram:
-                    situacao = "🔁 continua, com regra nova"
-                elif par.entram:
-                    situacao = "🆕 nova"
-                else:
-                    situacao = "➖ sem equivalente no cadastro da 220"
+            for par in torre.pares(t, conn, TROCA_NORMA):
                 st.divider()
                 c0, c1, c2 = st.columns([1.2, 2, 2])
-                c0.markdown(f"**{par.tema}**  \n<small>{situacao}</small>", unsafe_allow_html=True)
+                c0.markdown(f"**{par.tema}**  \n<small>{par.situacao}</small>", unsafe_allow_html=True)
                 c1.markdown(_lista(par.saem), unsafe_allow_html=True)
-                c2.markdown(_lista(par.entram), unsafe_allow_html=True)
+                if par.so_para_outros:
+                    c2.markdown("Não vale para este ativo. Na Res. 220:\n" + "\n".join(
+                        f"- {o['titulo']}  \n  <small>{o['artigo']} · só para {o['aplica_se_a']}</small>"
+                        for o in par.so_para_outros), unsafe_allow_html=True)
+                else:
+                    c2.markdown(_lista(par.entram), unsafe_allow_html=True)
 
     st.markdown("##### Linha do tempo: o que ainda vai passar a valer")
     st.caption("Datas de entrada em vigor por ativo, de todas as normas do cadastro. "

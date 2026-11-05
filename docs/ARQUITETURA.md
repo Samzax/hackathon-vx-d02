@@ -107,19 +107,26 @@ Ficou de fora o DynamoDB, que o primeiro rascunho sugeria. Os dados são relacio
 
 **Obrigações nunca são sobrescritas.** Cada mudança cria uma versão nova, ligada ao ato que a causou e ao trecho citado. Ela fica `pendente` até uma pessoa aprovar. Isso dá a comparação antes/depois, a resposta para "por que esse prazo é esse?" e o histórico de quem decidiu.
 
-O cadastro inicial está em `seed_obligations.csv`, legível e revisável no GitHub. A coluna `regra` diz a quais ativos cada obrigação se aplica (a sintaxe está em `regulaia/regras.py`).
+O cadastro inicial está em `seed_obligations.csv`, legível e revisável no GitHub. A coluna `regra` diz a quais ativos cada obrigação se aplica, com `e` e `ou` ("dpa = alto ou dpa2 >= 4", art. 20 §3). A sintaxe está em `regulaia/regras.py`. Um atributo que falta no ativo só aparece como "dado faltando" quando a decisão depende dele.
 
 ### O cadastro da Res. 220 conferido contra o texto oficial
 
-Cada uma das 19 obrigações traz na coluna `trecho` o parágrafo da Res. 220 que a cria, copiado do texto consolidado do ANMlegis. Um teste confere que cada trecho existe, palavra por palavra, no texto baixado.
+Cada uma das 24 obrigações traz na coluna `trecho` o parágrafo da Res. 220 que a cria, copiado do texto consolidado do ANMlegis. Um teste confere que cada trecho existe, palavra por palavra, no texto baixado.
 
 A conferência achou três coisas:
 - **O "≥" do ANMlegis é um ">" sublinhado** (`<u>&gt;</u>`). Extrair só o texto perde o sublinhado, e "DPA2 ≥ 4" vira "DPA2 > 4". A barragem B1 tem DPA2 = 4 exatamente, então o erro tiraria dela os treinamentos semestrais, o seminário e a DCO. O leitor de normas agora converte o sublinhado de volta para ≥ e ≤.
-- **Faltavam quatro obrigações.**
-  - OB-16, art. 54 §2: exercício simulado prático anual para DPA2 ≥ 4. Sem ela, o plano de transição da B1 mostrava "simulado sem equivalente".
+- **Faltavam nove obrigações.** O plano de transição mostrava cada uma como "sem equivalente na norma nova":
+  - OB-16, art. 54 §2: exercício simulado prático anual para DPA2 ≥ 4.
   - OB-17, art. 56 §1: seminário a pedido da prefeitura para DPA2 < 4.
   - OB-18, art. 38 §4: anomalia EC = 5 no SIGBM em 24 h.
   - OB-19, art. 42: ISE.
+  - OB-20, art. 20 §2: monitoramento automatizado.
+  - OB-21, art. 20 §3: vídeo 24 h, para "DPA alto ou DPA2 ≥ 4"; foi preciso o `ou` nas regras.
+  - OB-22, art. 49: sirenes.
+  - OB-23, art. 59: PGRBM a cada 2 anos.
+  - OB-24, art. 46 §4: cópias do PAEBM para a defesa civil.
+
+  Com elas, o plano de transição só aponta o que de fato deixa de valer. Na B3 (DPA2 = 2), os treinamentos semestrais e as sirenes saem. O plano diz o motivo: a Res. 220 só os cobra de DPA2 ≥ 4.
 - **A regra da ISE mudou de escala.** Pela Res. 95 é pontuação 10; pela Res. 220, coluna EC = 5. O leitor de evidências segue a norma do dia.
 
 ## Custo da IA: cada camada só passa adiante o que não conseguiu resolver

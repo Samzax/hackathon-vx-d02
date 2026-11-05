@@ -49,8 +49,8 @@ def _empresa_ativos(conn, empresa_id: int, tipo: str | None = None) -> list[dict
 
 
 def _meta(conn, codigo: str) -> dict:
-    r = conn.execute("SELECT norma, area FROM obrigacao WHERE codigo = ?", (codigo,)).fetchone()
-    return dict(r) if r else {"norma": None, "area": None}
+    r = conn.execute("SELECT norma, area, tipo_ativo FROM obrigacao WHERE codigo = ?", (codigo,)).fetchone()
+    return dict(r) if r else {"norma": None, "area": None, "tipo_ativo": None}
 
 
 def _prazo_unico(v: dict) -> str | None:
@@ -304,9 +304,11 @@ TEMAS = [
     ("Treinamento do PAEBM", ("treinamento",)),
     ("Exercício simulado", ("simulad",)),
     ("Seminário orientativo", ("seminario",)),
+    ("Cópias do PAEBM", ("copias",)),
+    ("Sirenes e alerta", ("sirene",)),
     ("Zona de Autossalvamento", ("zas", "autossalvamento")),
     ("Emergência", ("emergencia", "ise", "anomalia", "incidente")),
-    ("Monitoramento", ("monitoramento", "sirene")),
+    ("Monitoramento", ("monitoramento", "video")),
     ("PGRBM", ("pgrbm", "gestao de riscos")),
 ]
 
@@ -325,15 +327,44 @@ class Par:
     tema: str
     saem: list[dict]
     entram: list[dict]
+    # o tema existe na norma nova, mas com regra que exclui este ativo (ex.: só DPA2 ≥ 4)
+    so_para_outros: list[dict] = field(default_factory=list)
+
+    @property
+    def situacao(self) -> str:
+        if self.saem and self.entram:
+            return "🔁 continua, com regra nova"
+        if self.entram:
+            return "🆕 nova: preparar antes da data"
+        if self.so_para_outros:
+            return "➖ deixa de valer para este ativo: na nova norma o tema só vale para outros casos"
+        return "➖ sem equivalente no cadastro da nova norma: conferir antes de abandonar"
 
 
-def pares(troca: Troca) -> list[Par]:
-    """Agrupa o que sai e o que entra pelo tema: mostra o que continua, o que é novo e o que acaba."""
+def _comecam_em(conn, dia: date) -> list[dict]:
+    """Obrigações que passam a valer em `dia` (a norma nova), para qualquer ativo."""
+    out = []
+    for r in conn.execute("SELECT codigo FROM obrigacao ORDER BY codigo"):
+        v = db.versao(conn, r["codigo"])
+        if v and v["vigencia_desde"] == dia.isoformat():
+            out.append(v | _meta(conn, r["codigo"]))
+    return out
+
+
+def pares(troca: Troca, conn=None, dia: date | None = None) -> list[Par]:
+    """Agrupa o que sai e o que entra pelo tema: mostra o que continua, o que é novo e o que acaba.
+    Com `conn` e `dia`, diz também quando o tema existe na norma nova mas não vale para o ativo."""
     grupos: dict[str, Par] = {}
     for o in troca.saem:
         grupos.setdefault(tema(o["titulo"]), Par(tema(o["titulo"]), [], [])).saem.append(o)
     for o in troca.entram:
         grupos.setdefault(tema(o["titulo"]), Par(tema(o["titulo"]), [], [])).entram.append(o)
+    if conn is not None and dia is not None:
+        tipo = conn.execute("SELECT tipo FROM ativo WHERE codigo = ?", (troca.ativo,)).fetchone()["tipo"]
+        novas = _comecam_em(conn, dia)
+        for p in grupos.values():
+            if not p.entram and p.tema != "Outras":
+                p.so_para_outros = [o for o in novas if o["tipo_ativo"] == tipo and tema(o["titulo"]) == p.tema]
     ordem = [n for n, _ in TEMAS] + ["Outras"]
     return sorted(grupos.values(), key=lambda p: ordem.index(p.tema))
 
@@ -353,17 +384,14 @@ def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: s
     for t in trocas:
         a = ativos[t.ativo]
         out += [f"## {t.ativo} · {a['nome']} ({a['responsavel']})", ""]
-        for p in pares(t):
-            if p.saem and p.entram:
-                rotulo = "🔁 continua, com regra nova"
-            elif p.entram:
-                rotulo = "🆕 nova: preparar antes da data"
+        for p in pares(t, conn, dia):
+            if p.entram and not p.saem:
                 novas_total += len(p.entram)
-            else:
-                rotulo = "➖ sem equivalente no cadastro da nova norma: conferir antes de abandonar"
-            out.append(f"- **{p.tema}** — {rotulo}")
+            out.append(f"- **{p.tema}** — {p.situacao}")
             out += [f"  - antes: {o['titulo']} ({o['artigo']})" for o in p.saem]
             out += [f"  - depois: {o['titulo']} ({o['artigo']})" for o in p.entram]
+            out += [f"  - na nova norma: {o['titulo']} ({o['artigo']}), só para {o['aplica_se_a']}"
+                    for o in p.so_para_outros]
         out.append("")
     if trocas:
         out.insert(4, f"{len(trocas)} ativos afetados · {novas_total} obrigações sem equivalente na norma atual.\n")

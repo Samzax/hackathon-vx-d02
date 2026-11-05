@@ -11,7 +11,7 @@ TRECHO_245 = "III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º."
 @pytest.fixture
 def conn():
     c = db.conectar(":memory:")
-    assert db.carregar_obrigacoes_csv(c, SEED) == 19
+    assert db.carregar_obrigacoes_csv(c, SEED) == 24
     return c
 
 

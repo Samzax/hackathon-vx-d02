@@ -66,7 +66,7 @@ def test_conferencias_reprovam():
         "trecho": BOA | {"trecho": "a ficha será enviada em até 48 horas"},
         "artigo": BOA | {"artigo": "art. 40"},
         "atributo": BOA | {"regra": "porte = grande"},
-        "regra": BOA | {"regra": "dpa = alto ou cri = alto"},
+        "regra": BOA | {"regra": "dpa2 >= alto"},
     }
     res = _extrair(list(casos.values()))
     motivos = [p.reprovada for p in res.propostas]

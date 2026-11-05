@@ -166,6 +166,20 @@ def test_plano_de_transicao(serra):
     assert "Nenhum dos ativos muda" in so_usina
 
 
+def test_plano_explica_o_que_deixa_de_valer_por_ativo(serra):
+    """B3 (DPA2 = 2) perde os treinamentos semestrais e as sirenes: a Res. 220 só cobra de DPA2 ≥ 4.
+    B1 (DPA2 = 4, no limite) não perde nada: o "≥" do texto foi conferido."""
+    conn, _ = serra
+    p = torre.plano_transicao(conn, 1, date(2027, 8, 2), HOJE)
+    b1 = p.split("## B1")[1].split("## B2")[0]
+    b3 = p.split("## B3")[1].split("## B4")[0]
+    assert "➖" not in b1
+    assert "**Treinamento do PAEBM** — ➖ deixa de valer para este ativo" in b3
+    assert "(Res. ANM 220/2025 art. 54), só para Barragens com DPA2 ≥ 4" in b3
+    assert "**Sirenes e alerta** — ➖ deixa de valer" in b3
+    assert "sem equivalente no cadastro" not in p
+
+
 def test_rpsb_da_220_conta_a_ultima_rpsb_feita_pela_95(serra):
     """Na troca de norma a RPSB não 'zera': a última feita pela Res. 95 continua valendo."""
     conn, _ = serra
