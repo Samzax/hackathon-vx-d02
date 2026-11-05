@@ -1,0 +1,24 @@
+{
+  "nota": "Histórico fictício da Mineradora Serra Azul. Tudo foi cumprido desde 'desde', menos as 'falhas'. 'ultimas' dá a data da última execução das obrigações de longo prazo (padrão: a data 'desde'). 'cumpridas' marca obrigações de evento único já feitas.",
+  "hoje": "2026-11-07",
+  "desde": "2026-05-01",
+  "falhas": [
+    {"ativo": "B3", "obrigacao": "R95-01", "periodo": "2026-10-1Q", "nota": "FIR da 1ª quinzena de outubro não foi preenchida"},
+    {"ativo": "B3", "obrigacao": "R95-02", "periodo": "2026-10-1Q", "nota": "sem FIR, o EIR também não foi enviado"},
+    {"ativo": "L1", "obrigacao": "LO-02", "periodo": "2026-09", "nota": "boletim de efluentes de setembro não chegou do laboratório"}
+  ],
+  "ultimas": {
+    "B1:R95-05": "2024-03-10",
+    "B2:R95-05": "2025-02-14",
+    "B4:R95-05": "2023-11-20",
+    "B3:R95-06": "2022-08-30",
+    "B2:R95-09": "2024-12-01",
+    "*:R95-16": "2025-06-30",
+    "E1:N13-03": "2023-10-30",
+    "E2:N13-03": "2024-05-15",
+    "E1:N13-04": "2021-10-30",
+    "E2:N13-04": "2021-05-15",
+    "U1:N22-08": "2025-12-10"
+  },
+  "cumpridas": {}
+}

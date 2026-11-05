@@ -98,12 +98,13 @@ def candidatas(ato_texto: str, obrigacoes: list[dict], limite: int = 6) -> list[
     +5 se o ato cita a norma em que a obrigação se baseia
     +4 se, além disso, cita o mesmo artigo
     +1 por termo relevante em comum (máx. 4), ex.: SIGBM, PAEBM, ZAS
+    Sem citação da norma, um termo só não basta (precisa de dois em comum).
     """
     refs = referencias(ato_texto)
     termos_ato = _termos(ato_texto)
     out = []
     for ob in obrigacoes:
-        ref_ob = referencias(ob["artigo"])
+        ref_ob = referencias(f'{ob.get("fonte") or ""} {ob["artigo"]}')
         pontos, motivos = 0, []
         if refs.normas & ref_ob.normas:
             pontos += 5
@@ -113,7 +114,7 @@ def candidatas(ato_texto: str, obrigacoes: list[dict], limite: int = 6) -> list[
                 pontos += 4
                 motivos.append(f"cita o art. {', '.join(sorted(comuns, key=int))}")
         termos = termos_ato & _termos(" ".join([ob["titulo"], ob.get("evidencia") or "", ob["aplica_se_a"]]))
-        if termos:
+        if termos and (pontos or len(termos) >= 2):
             pontos += min(len(termos), 4)
             motivos.append("termos: " + ", ".join(sorted(termos)[:4]))
         if pontos:

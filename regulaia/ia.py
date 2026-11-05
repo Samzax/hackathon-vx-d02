@@ -187,15 +187,21 @@ class Roteador:
 
     def pedir_json(self, tarefa: str, camada: int, sistema: str, usuario: str,
                    versao_prompt: str, max_tokens: int = 4000) -> Resposta:
+        # 1) cache de qualquer modelo da camada, mesmo sem chave: a demo roda sem internet
+        todos = [Modelo(m["provedor"], m["modelo"], m.get("esforco"))
+                 for m in self.cfg["camadas"][str(camada)]["modelos"]]
+        for modelo in todos:
+            chave = self._chave(tarefa, modelo, versao_prompt, sistema, usuario)
+            if (row := self._do_cache(chave)) is not None:
+                return Resposta(json.loads(row["resposta"]), modelo, row["tokens_in"],
+                                row["tokens_out"], row["custo_usd"], do_cache=True)
+        # 2) chamada de verdade, na ordem da camada, só nos provedores com chave
         modelos = self.candidatos(camada)
         if not modelos:
             raise SemProvedor(f"nenhum provedor da camada {camada} tem chave no .env")
         falhas = []
         for modelo in modelos:
             chave = self._chave(tarefa, modelo, versao_prompt, sistema, usuario)
-            if (row := self._do_cache(chave)) is not None:
-                return Resposta(json.loads(row["resposta"]), modelo, row["tokens_in"],
-                                row["tokens_out"], row["custo_usd"], do_cache=True, tentativas=falhas)
             try:
                 texto, tin, tout = self.provedores[modelo.provedor].chamar(
                     modelo, sistema, usuario, max_tokens, sessao=chave[:32]

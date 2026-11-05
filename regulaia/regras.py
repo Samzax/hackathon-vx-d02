@@ -4,7 +4,7 @@ A regra é um texto curto, legível por quem não programa:
 
     *                                   vale para todos os ativos do tipo
     trabalhadores_zas                   atributo verdadeiro
-    dpa = alto                          igualdade (texto ou número)
+    dpa = alto                          igualdade (texto, número ou verdadeiro/falso)
     dpa2 > 4                            comparação numérica (>, <, >=, <=, !=)
     dpa2 > 4 e mapa_inundacao_validado  todas as condições ("e")
 
@@ -46,11 +46,15 @@ def _partes(regra: str) -> list[tuple[str, str | None, str | None]]:
     return partes
 
 
+_BOOL = {"verdadeiro": True, "true": True, "sim": True, "falso": False, "false": False, "nao": False}
+
+
 def _valor(texto: str):
     try:
         return float(texto)
     except ValueError:
-        return texto.strip().lower()
+        t = texto.strip().lower()
+        return _BOOL.get(t, t)
 
 
 def _normaliza(v):

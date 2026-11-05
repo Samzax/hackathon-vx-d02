@@ -26,6 +26,8 @@ def test_dpa2_igual_a_4_entra_no_art_39_i(serra):
 def test_toda_barragem_tem_risr_por_um_dos_incisos_do_art_39(serra):
     conn, ids = serra
     for codigo, ativo_id in ids.items():
+        if not codigo.startswith("B"):
+            continue
         obs = _codigos(conn, ativo_id)
         assert len(obs & {"OB-04", "OB-05"}) == 1, codigo
 

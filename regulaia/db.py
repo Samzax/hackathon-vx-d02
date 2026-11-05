@@ -13,7 +13,7 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import regras
+from . import agenda as agenda_, regras
 
 SCHEMA = Path(__file__).with_name("schema.sql")
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,7 +21,7 @@ DB_PADRAO = ROOT / "data" / "regulaia.db"
 
 # Campos de uma versão que uma mudança regulatória pode alterar.
 CAMPOS_VERSAO = (
-    "titulo", "artigo", "aplica_se_a", "regra", "periodicidade", "prazo",
+    "titulo", "artigo", "aplica_se_a", "regra", "periodicidade", "agenda", "prazo",
     "vigencia_desde", "vigencia_ate", "responsavel", "evidencia",
 )
 
@@ -34,7 +34,8 @@ def conectar(caminho: str | Path = DB_PADRAO) -> sqlite3.Connection:
     """Abre (ou cria) o banco e aplica o esquema. Use ':memory:' nos testes."""
     if caminho != ":memory:":
         Path(caminho).parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(caminho)
+    # check_same_thread=False: a interface (Streamlit) usa a conexão em outra thread
+    conn = sqlite3.connect(caminho, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA.read_text(encoding="utf-8"))
@@ -95,12 +96,14 @@ def carregar_obrigacoes_csv(conn, caminho: str | Path, tipo_ativo: str = "barrag
 
     Colunas obrigatórias: id, artigo, obrigacao, aplica_se_a, regra, periodicidade,
     prazo, vigencia_desde, responsavel_ficticio, evidencia, fonte.
-    Opcionais: vigencia_ate, area, norma, tipo_ativo.
+    Opcionais: agenda (padrão "evento"), vigencia_ate, area, norma, tipo_ativo, trecho.
     """
     n = 0
     with open(caminho, encoding="utf-8", newline="") as f:
         for linha in csv.DictReader(f):
             regras.validar(linha["regra"])
+            agenda = (linha.get("agenda") or "evento").strip()
+            agenda_.validar(agenda)
             with conn:
                 ob_id = conn.execute(
                     "INSERT INTO obrigacao (codigo, tipo_ativo, norma, area) VALUES (?, ?, ?, ?)",
@@ -109,13 +112,14 @@ def carregar_obrigacoes_csv(conn, caminho: str | Path, tipo_ativo: str = "barrag
                 ).lastrowid
                 conn.execute(
                     "INSERT INTO obrigacao_versao (obrigacao_id, versao, titulo, artigo, "
-                    "aplica_se_a, regra, periodicidade, prazo, vigencia_desde, vigencia_ate, "
-                    "responsavel, evidencia, fonte, status, decidida_por, decidida_em) "
-                    "VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'vigente', 'carga inicial', datetime('now'))",
+                    "aplica_se_a, regra, periodicidade, agenda, prazo, vigencia_desde, vigencia_ate, "
+                    "responsavel, evidencia, fonte, trecho, status, decidida_por, decidida_em) "
+                    "VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'vigente', 'carga inicial', datetime('now'))",
                     (ob_id, linha["obrigacao"], linha["artigo"], linha["aplica_se_a"],
-                     linha["regra"], linha["periodicidade"], linha["prazo"],
+                     linha["regra"], linha["periodicidade"], agenda, linha["prazo"],
                      linha["vigencia_desde"] or None, linha.get("vigencia_ate") or None,
-                     linha["responsavel_ficticio"], linha["evidencia"], linha["fonte"]),
+                     linha["responsavel_ficticio"], linha["evidencia"], linha["fonte"],
+                     linha.get("trecho") or None),
                 )
             n += 1
     return n
@@ -170,6 +174,8 @@ def propor_versao(conn, codigo: str, mudancas: dict, *, ato_id: int | None,
         raise ErroCadastro(f"a mudança proposta para {codigo} não altera nada")
     if "regra" in mudancas:
         regras.validar(mudancas["regra"])
+    if "agenda" in mudancas:
+        agenda_.validar(mudancas["agenda"])
 
     nova = {c: atual[c] for c in CAMPOS_VERSAO} | mudancas
     proxima = conn.execute(
@@ -211,6 +217,36 @@ def decidir(conn, versao_id: int, aprovar: bool, por: str) -> None:
 def diferencas(antes: dict, depois: dict) -> dict[str, tuple]:
     """Campos que mudaram entre duas versões: {campo: (antes, depois)}."""
     return {c: (antes[c], depois[c]) for c in CAMPOS_VERSAO if antes[c] != depois[c]}
+
+
+# ------------------------------------------------------------------ evidência
+
+
+def registrar_evidencia(conn, ativo_id: int, codigo: str, periodo: str, *,
+                        arquivo: str | None = None, recebida_em: str | None = None,
+                        extraido: dict | None = None) -> int:
+    """Grava a comprovação de um período (idempotente por ativo + obrigação + período)."""
+    ob = _obrigacao_id(conn, codigo)
+    with conn:
+        conn.execute(
+            "INSERT INTO evidencia (ativo_id, obrigacao_id, periodo, arquivo, recebida_em, extraido) "
+            "VALUES (?, ?, ?, ?, COALESCE(?, datetime('now')), ?) "
+            "ON CONFLICT(ativo_id, obrigacao_id, periodo) DO UPDATE SET arquivo = excluded.arquivo",
+            (ativo_id, ob, periodo, arquivo, recebida_em,
+             json.dumps(extraido, ensure_ascii=False) if extraido else None),
+        )
+    return conn.execute(
+        "SELECT id FROM evidencia WHERE ativo_id = ? AND obrigacao_id = ? AND periodo = ?",
+        (ativo_id, ob, periodo),
+    ).fetchone()["id"]
+
+
+def evidencias(conn, ativo_id: int, codigo: str) -> list[str]:
+    """Períodos já comprovados, em ordem."""
+    return [r["periodo"] for r in conn.execute(
+        "SELECT e.periodo FROM evidencia e JOIN obrigacao o ON o.id = e.obrigacao_id "
+        "WHERE e.ativo_id = ? AND o.codigo = ? ORDER BY e.periodo", (ativo_id, codigo),
+    )]
 
 
 # ------------------------------------------------------ obrigações de um ativo

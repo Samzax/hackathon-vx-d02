@@ -51,7 +51,8 @@ CREATE TABLE IF NOT EXISTS obrigacao_versao (
     artigo          TEXT NOT NULL,
     aplica_se_a     TEXT NOT NULL,              -- texto para pessoas
     regra           TEXT NOT NULL,              -- texto para a máquina (ver regras.py)
-    periodicidade   TEXT,
+    periodicidade   TEXT,                       -- texto para pessoas
+    agenda          TEXT NOT NULL DEFAULT 'evento', -- texto para a máquina (ver agenda.py)
     prazo           TEXT,
     vigencia_desde  TEXT,                       -- AAAA-MM-DD: a partir de quando vale
     vigencia_ate    TEXT,                       -- AAAA-MM-DD: último dia em que vale (vazio = sem fim)

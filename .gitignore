@@ -25,3 +25,4 @@ data/anm/
 *.db
 *.db-journal
 data/extraido/log_*.txt
+data/radar_demo.json

@@ -135,6 +135,16 @@ def test_mesma_entrada_vem_do_cache(serra, atos):
     assert rot.custo_total() == pytest.approx((1000 * 0.15 + 200 * 0.60) / 1e6)
 
 
+def test_cache_vale_mesmo_sem_chave(serra, atos):
+    """A demo roda sem internet: o que já foi analisado vem do cache, sem provedor."""
+    conn, _ = serra
+    rot, _ = _roteador(conn, {"high": CERTA_245, "max": CERTA_245})
+    ato = atos["Resolução ANM Nº 245"]
+    impacto.analisar(conn, rot, ato.identifica, ato.text)
+    an = impacto.analisar(conn, Roteador(conn, env={}), ato.identifica, ato.text)
+    assert an.modelos[0].endswith("(cache)") and an.aprovadas and not an.revisao_humana
+
+
 def test_sem_chave_nenhuma_pede_revisao_humana(serra, atos):
     conn, _ = serra
     rot = Roteador(conn, env={})

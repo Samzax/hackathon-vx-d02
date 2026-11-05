@@ -1,0 +1,64 @@
+from datetime import date
+
+import pytest
+
+from regulaia import agenda as ag
+
+HOJE = date(2026, 11, 5)
+DESDE = date(2026, 9, 1)
+
+
+def test_quinzenal_em_dia_e_atrasada():
+    feitos = ["2026-09-1Q", "2026-09-2Q", "2026-10-1Q"]
+    s = ag.situacao("quinzenal+15d", feitos, HOJE, DESDE)
+    # 2026-10-2Q vence em 15/11: ainda não venceu, mas está a 10 dias
+    assert s.status == ag.EM_DIA and s.proximo.rotulo == "2026-10-2Q"
+    s = ag.situacao("quinzenal+15d", ["2026-09-1Q", "2026-10-1Q"], HOJE, DESDE)
+    assert s.status == ag.ATRASADA and [p.rotulo for p in s.faltando] == ["2026-09-2Q"]
+
+
+def test_quinzenal_vence_logo():
+    feitos = ["2026-09-1Q", "2026-09-2Q", "2026-10-1Q"]
+    s = ag.situacao("quinzenal+15d", feitos, date(2026, 11, 12), DESDE)
+    assert s.status == ag.VENCE_LOGO and s.proximo.vence == date(2026, 11, 15)
+
+
+def test_datas_fixas_campanha_da_dce():
+    s = ag.situacao("datas:03-31,09-30", [], HOJE, date(2026, 6, 1))
+    assert s.status == ag.ATRASADA and s.faltando[0].rotulo == "2026-09-30"
+    s = ag.situacao("datas:03-31,09-30", ["2026-09-30"], HOJE, date(2026, 6, 1))
+    assert s.status == ag.EM_DIA and s.proximo.rotulo == "2027-03-31"
+
+
+def test_a_cada_n_anos_conta_da_ultima_execucao():
+    s = ag.situacao("anos:3", ["2023-12-01"], HOJE, DESDE)
+    assert s.status == ag.VENCE_LOGO and s.proximo.vence == date(2026, 12, 1)
+    s = ag.situacao("anos:3", ["2023-06-01"], HOJE, DESDE)
+    assert s.status == ag.ATRASADA
+    assert ag.situacao("anos:3", [], HOJE, DESDE).status == ag.ATRASADA
+
+
+def test_data_unica_e_evento():
+    assert ag.situacao("data:2027-08-02", [], HOJE, DESDE).status == ag.EM_DIA
+    assert ag.situacao("data:2026-11-20", [], HOJE, DESDE).status == ag.VENCE_LOGO
+    assert ag.situacao("data:2026-10-01", [], HOJE, DESDE).status == ag.ATRASADA
+    assert ag.situacao("data:2026-10-01", ["2026-09-20"], HOJE, DESDE).status == ag.CUMPRIDA
+    assert ag.situacao("evento", [], HOJE, DESDE).status == ag.GATILHO
+
+
+def test_agenda_invalida():
+    for ruim in ("semanal+1d", "datas:3-31", "anos:x", "data:2026-13-01", ""):
+        with pytest.raises((ag.AgendaInvalida, ValueError)):
+            ag.validar(ruim)
+
+
+def test_unica_le_o_prazo_da_obrigacao():
+    assert ag.situacao("unica", [], HOJE, DESDE, prazo="2026-11-20").status == ag.VENCE_LOGO
+    assert ag.situacao("unica", [], HOJE, DESDE, prazo="2029-12-26").status == ag.EM_DIA
+
+
+def test_trimestral():
+    s = ag.situacao("trimestral+30d", ["2026-T3"], HOJE, date(2026, 7, 1))
+    assert s.status == ag.EM_DIA and s.proximo.rotulo == "2026-T4"
+    s = ag.situacao("trimestral+30d", [], HOJE, date(2026, 7, 1))
+    assert s.status == ag.ATRASADA and [p.rotulo for p in s.faltando] == ["2026-T3"]

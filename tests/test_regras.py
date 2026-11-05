@@ -39,3 +39,9 @@ def test_comparar_numero_com_texto_e_erro_de_cadastro():
 def test_regra_mal_escrita(regra):
     with pytest.raises(RegraInvalida):
         validar(regra)
+
+
+def test_verdadeiro_e_falso_comparam_com_booleanos():
+    assert aplica("inserida_pnsb = verdadeiro", {"inserida_pnsb": True})
+    assert not aplica("inserida_pnsb = verdadeiro", {"inserida_pnsb": False})
+    assert aplica("inserida_pnsb = falso e cri = alto", {"inserida_pnsb": False, "cri": "alto"})

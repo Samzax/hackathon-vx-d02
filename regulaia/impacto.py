@@ -21,7 +21,7 @@ from pathlib import Path
 from . import db, triagem
 from .ia import Roteador, SemProvedor
 
-VERSAO_PROMPT = "impacto-v2"
+VERSAO_PROMPT = "impacto-v3"
 CAMPOS = ("prazo", "vigencia_desde", "vigencia_ate", "periodicidade", "aplica_se_a", "titulo", "evidencia")
 CAMPOS_DATA = ("prazo", "vigencia_desde", "vigencia_ate")
 CONFIANCA_MINIMA = 0.7
@@ -39,7 +39,9 @@ Regras:
 5. Se o ato mantém um valor igual ao que já está no cadastro, isso não é mudança.
 6. Campos que podem mudar: prazo, vigencia_desde, vigencia_ate, periodicidade, aplica_se_a, titulo, evidencia.
    vigencia_ate é o último dia em que a obrigação vale (use quando o ato revoga ou encerra a obrigação).
-7. Se nenhuma obrigação muda, devolva "mudancas": [] e explique em "motivo".
+7. Se o ato muda a data de entrada em vigor e a obrigação tem prazo igual a essa data
+   (a obrigação vence no dia em que começa a valer), aponte as duas mudanças: vigencia_desde e prazo.
+8. Se nenhuma obrigação muda, devolva "mudancas": [] e explique em "motivo".
 
 Responda só com um objeto JSON, sem texto fora dele:
 {
