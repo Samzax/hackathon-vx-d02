@@ -103,3 +103,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Botão e aviso de registro em português ("Registrar evidência: FIR de B3 · 1ª quinzena de outubro/2026"); o código da obrigação e do período ficam na dica. Fluxo da FIR com anomalia conferido no navegador: abre a ISE da B2 (atrasadas 4 -> 5)
 - [x] Ato colado no Radar: título para no ano ("Portaria nº 123, de 3 de novembro de 2026"), sem engolir o começo do texto nem rebaixar nomes próprios; sem candidata, um aviso só (custo zero). Conferido no navegador
 - [x] Teste da promessa "cada gestor vê só os seus ativos": para cada gestor, nenhuma aba cita ativo de outro (texto, tabelas, títulos); conferido também no navegador (Usina e Geotecnia) e com mutação (mostrar todos os ativos faz o teste falhar)
+- [x] Rejeitar conferido no navegador (versão 1 continua vigente, a 2 fica registrada como rejeitada); histórico diz "veio do cadastro inicial" em vez de "decidida por carga inicial"

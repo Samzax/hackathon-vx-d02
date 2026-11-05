@@ -449,9 +449,11 @@ with aba_mudancas:
             selo = {"vigente": "🟢 vigente", "substituida": "⚪ substituída", "pendente": "⏳ pendente",
                     "rejeitada": "❌ rejeitada"}[v["status"]]
             origem = torre.nome_ato(v["ato"]) or v["fonte"] or "cadastro inicial"
-            st.markdown(f"**Versão {v['versao']}** · {selo} · origem: {origem}"
-                        + (f" · decidida por {v['decidida_por'].split(' (')[0]} em {torre.em_brasilia(v['decidida_em'], com_hora=False)}"
-                           if v["decidida_por"] else ""))
+            quando = torre.em_brasilia(v["decidida_em"], com_hora=False)
+            quem = (v["decidida_por"] or "").split(" (")[0]
+            decisao = ("" if not quem else f" · veio do cadastro inicial em {quando}" if quem == "carga inicial"
+                       else f" · decidida por {quem} em {quando}")
+            st.markdown(f"**Versão {v['versao']}** · {selo} · origem: {origem}{decisao}")
             if anterior:
                 mudou = db.diferencas(anterior, v)
                 if mudou:

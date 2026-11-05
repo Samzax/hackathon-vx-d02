@@ -96,6 +96,8 @@ def test_historico_mostra_a_versao_nova_depois_de_aprovar(banco_temporario):
     assert "Versão 2" in texto and "Resolução ANM nº 245, de 31 de julho de 2026" in texto and "26/12/2029" in texto
     versoes = [m.value for m in at.markdown if m.value.startswith("**Versão")]
     assert versoes and not [v for v in versoes if "UTC" in v]
+    assert "veio do cadastro inicial em" in versoes[0] and "decidida por carga inicial" not in texto
+    assert "decidida por Diretoria em" in versoes[1]
     assert "sem fim" not in texto and "vale a partir de 02/08/2027" in texto
     custos = " ".join(c.value for c in at.caption if "custo" in c.value)
     assert r"US\$ 0," in custos and r"US\$ 0." not in custos
