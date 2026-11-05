@@ -51,6 +51,11 @@ def dispositivo(norma: str | None, artigo: str | None) -> str:
     return f"{norma}, {artigo}" if norma else (artigo or "")
 
 
+def artigo_curto(norma: str | None, artigo: str | None) -> str:
+    """Só o dispositivo, para quando a norma já está no cabeçalho: 'art. 38 I'."""
+    return (artigo or "").removeprefix(norma or "").strip()
+
+
 def _minuscula(texto: str) -> str:
     """'Relatório de ISE' -> 'relatório de ISE'; siglas ('FIE, EIE...') ficam como estão."""
     return texto[0].lower() + texto[1:] if len(texto) > 1 and texto[1].islower() else texto
@@ -441,9 +446,9 @@ def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: s
             if p.entram and not p.saem:
                 novas_total += len(p.entram)
             out.append(f"- **{p.tema}** — {p.situacao}")
-            out += [f"  - antes: {o['titulo']} ({o['artigo']})" for o in p.saem]
-            out += [f"  - depois: {o['titulo']} ({o['artigo']})" for o in p.entram]
-            out += [f"  - na nova norma: {o['titulo']} ({o['artigo']}), só para {o['aplica_se_a']}"
+            out += [f"  - antes: {o['titulo']} ({dispositivo(o['norma'], o['artigo'])})" for o in p.saem]
+            out += [f"  - depois: {o['titulo']} ({dispositivo(o['norma'], o['artigo'])})" for o in p.entram]
+            out += [f"  - na nova norma: {o['titulo']} ({dispositivo(o['norma'], o['artigo'])}), só para {o['aplica_se_a']}"
                     for o in p.so_para_outros]
         out.append("")
     if trocas:

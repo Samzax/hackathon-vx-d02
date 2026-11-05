@@ -213,7 +213,7 @@ with aba_hoje:
             "Status": ROTULO.get(l.status, l.status),
             "Obrigação": l.titulo,
             "Norma": l.norma,
-            "Dispositivo": l.artigo.removeprefix(l.norma or "").strip() if l.artigo else "",
+            "Dispositivo": torre.artigo_curto(l.norma, l.artigo),
             "Vencimento": date.fromisoformat(l.vence).strftime("%d/%m/%Y") if l.vence else "",
             "Pendente": torre.pendente(l),
             "Evidência": l.evidencia,
@@ -291,7 +291,7 @@ with aba_transicao:
     def _lista(os_):
         if not os_:
             return "—"
-        return "\n".join(f"- {o['titulo']}  \n  <small>{o['artigo']} · {o['periodicidade'] or '—'}</small>"
+        return "\n".join(f"- {o['titulo']}  \n  <small>{torre.artigo_curto(o['norma'], o['artigo'])} · {o['periodicidade'] or '—'}</small>"
                          for o in os_)
 
     for t in trocas:
@@ -308,7 +308,7 @@ with aba_transicao:
                 c1.markdown(_lista(par.saem), unsafe_allow_html=True)
                 if par.so_para_outros:
                     c2.markdown("Não vale para este ativo. Na Res. 220:\n" + "\n".join(
-                        f"- {o['titulo']}  \n  <small>{o['artigo']} · só para {o['aplica_se_a']}</small>"
+                        f"- {o['titulo']}  \n  <small>{torre.artigo_curto(o['norma'], o['artigo'])} · só para {o['aplica_se_a']}</small>"
                         for o in par.so_para_outros), unsafe_allow_html=True)
                 else:
                     c2.markdown(_lista(par.entram), unsafe_allow_html=True)

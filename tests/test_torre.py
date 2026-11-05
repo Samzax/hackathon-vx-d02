@@ -215,3 +215,21 @@ def test_boletim_nao_repete_a_data_quando_falta_uma_entrega_so(serra):
     assert "venceu em 15/10/2026; falta: 1ª quinzena de outubro/2026" in b      # FIR da B3
     depois = torre.boletim(conn, 1, date(2027, 8, 10), DESDE)
     assert "falta: entrega única" not in depois and "falta: 10/03/2027" not in depois
+
+
+def test_plano_de_transicao_cita_a_norma_dos_dois_lados(serra):
+    """O plano é um arquivo solto: 'antes' e 'depois' dizem de que norma é cada artigo, sem repetir."""
+    conn, _ = serra
+    p = torre.plano_transicao(conn, 1, date(2027, 8, 2), HOJE)
+    assert "(Res. ANM 95/2022, art. 19 I)" in p and "(Res. ANM 220/2025 art. 38 I)" in p
+    assert "(art. 19 I)" not in p and "Res. ANM 220/2025, Res. ANM 220/2025" not in p
+    assert torre.artigo_curto("Res. ANM 220/2025", "Res. ANM 220/2025 art. 38 I") == "art. 38 I"
+    assert torre.artigo_curto("Res. ANM 95/2022", "art. 19 I") == "art. 19 I"
+
+
+def test_rpsb_alteamento_continuo_tem_periodicidade_legivel():
+    import csv
+    from pathlib import Path
+
+    with open(Path(__file__).parent.parent / "cadastro" / "res95_2022.csv", encoding="utf-8") as f:
+        assert not [r["id"] for r in csv.DictReader(f) if " N " in r["periodicidade"]]

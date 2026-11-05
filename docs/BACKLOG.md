@@ -61,3 +61,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Documentação descreve certo o art. 7 §1 da Res. 220 (quem pode ficar na ZAS), não "mapa de inundação"
 - [x] Boletim e tabela da torre dizem "sem evidência registrada" em vez de repetir a data de vencimento; coluna Dispositivo sem a norma repetida
 - [x] Pendência de entrega única mostra a data da última evidência (ex.: PGRBM de 30/06/2025 vira atrasado na Res. 220)
+- [x] Transição: coluna da Res. 220 sem a norma repetida; plano (.md) cita a norma dos dois lados; RPSB por alteamento com periodicidade legível (curadoria)
