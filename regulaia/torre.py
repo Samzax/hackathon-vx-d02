@@ -167,6 +167,24 @@ def _br(iso: str | None) -> str:
     return date.fromisoformat(iso).strftime("%d/%m/%Y") if iso else "—"
 
 
+SEM_EVIDENCIA = "sem evidência registrada"
+
+
+def pendente(l: Linha) -> str:
+    """Períodos sem evidência, em português. Quando o único período é o próprio vencimento
+    (entrega única, RPSB, exame do vaso), repetir a data não diz nada: diz que não há evidência.
+    Sem período pendente, a nota (gatilho, acionamento)."""
+    rotulos = [agenda.rotulo_humano(p) for p in l.faltando]
+    if len(rotulos) == 1 and (rotulos[0] == _br(l.vence) or l.faltando[0] == "unico"):
+        return SEM_EVIDENCIA
+    return ", ".join(rotulos) or l.nota
+
+
+def _o_que_falta(l: Linha) -> str:
+    texto = pendente(l) or SEM_EVIDENCIA
+    return f"falta: {texto}" if l.faltando and texto != SEM_EVIDENCIA else texto
+
+
 def _valor(v) -> str:
     try:
         return _br(str(v)) if v else "—"
@@ -200,9 +218,7 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
         out.append("Nada atrasado, nada vencendo nos próximos dias e nenhuma mudança aguardando aprovação.")
     if atrasadas:
         out += [f"## 🔴 Atrasadas ({len(atrasadas)})", ""]
-        out += [item(l, f"venceu em {_br(l.vence)}; "
-                        + (f"falta: {', '.join(map(agenda.rotulo_humano, l.faltando))}" if l.faltando else l.nota))
-                for l in atrasadas]
+        out += [item(l, f"venceu em {_br(l.vence)}; {_o_que_falta(l)}") for l in atrasadas]
         out.append("")
     if proximas:
         out += [f"## 🟡 Vencem nos próximos {janela} dias ({len(proximas)})", ""]

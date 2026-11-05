@@ -205,3 +205,13 @@ def test_condicionantes_da_licenca_nao_somem_depois_da_validade(serra):
     depois = {l.codigo for l in torre.painel(conn, 1, date(2027, 8, 2), DESDE, ativo="L1")}
     assert {"LO-01", "LO-02", "LO-05"} <= depois
     assert "LO-06" not in depois                    # o pedido de renovação é que tem data para acabar
+
+
+def test_boletim_nao_repete_a_data_quando_falta_uma_entrega_so(serra):
+    """'venceu em 30/10/2026; falta: 30/10/2026' não diz nada; períodos de verdade continuam listados."""
+    conn, _ = serra
+    b = torre.boletim(conn, 1, HOJE, DESDE)
+    assert "venceu em 30/10/2026; sem evidência registrada" in b                 # exame externo do vaso E1
+    assert "venceu em 15/10/2026; falta: 1ª quinzena de outubro/2026" in b      # FIR da B3
+    depois = torre.boletim(conn, 1, date(2027, 8, 10), DESDE)
+    assert "falta: entrega única" not in depois and "falta: 10/03/2027" not in depois

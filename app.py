@@ -213,9 +213,9 @@ with aba_hoje:
             "Status": ROTULO.get(l.status, l.status),
             "Obrigação": l.titulo,
             "Norma": l.norma,
-            "Dispositivo": l.artigo,
+            "Dispositivo": l.artigo.removeprefix(l.norma or "").strip() if l.artigo else "",
             "Vencimento": date.fromisoformat(l.vence).strftime("%d/%m/%Y") if l.vence else "",
-            "Pendente": ", ".join(map(agenda.rotulo_humano, l.faltando)) or l.nota,
+            "Pendente": torre.pendente(l),
             "Evidência": l.evidencia,
             "Mudança aguardando": "⚠️" if l.mudanca_pendente else "",
         } for l in ls])
