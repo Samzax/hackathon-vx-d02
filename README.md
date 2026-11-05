@@ -97,4 +97,4 @@ Sem chave e sem internet, a demo roda do cache (`data/cache_ia_demo.json`). Para
 
 Na AWS, a mesma imagem serve para os três caminhos: App Runner (mais simples: aponta para a imagem no ECR, porta 8501), ECS Fargate ou uma EC2 com Docker. A verificação de saúde está em `/_stcore/health`. O Bedrock entra como provedor de IA por configuração (ver [docs/ARQUITETURA.md](docs/ARQUITETURA.md)).
 
-> A imagem ainda não foi construída nesta máquina (Docker Desktop desligado). Conferido sem Docker: o app abre sem erro só com as dependências de produção (`uv sync --no-dev`).
+> A imagem ainda não foi construída (Docker Desktop desligado nesta máquina). Conferido sem Docker, num diretório limpo: as duas etapas de instalação do Dockerfile (`uv sync --locked --no-dev --no-install-project` e depois `uv sync --locked --no-dev`) passam, o app abre sem erro só com as dependências de produção e o `.env` fica de fora. Falta conferir o build em Linux, o que leva um minuto com `docker build`.
