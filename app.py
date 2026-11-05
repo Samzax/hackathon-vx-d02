@@ -17,6 +17,20 @@ from regulaia import evidencias as ev
 from regulaia.ia import Roteador
 
 st.set_page_config(page_title="RegulaIA · Torre de Controle", page_icon="🗼", layout="wide")
+# no celular o Streamlit empilha as colunas: os 5 números do topo ocupariam a tela inteira.
+# Só abaixo de 640 px, linha de métricas fica 3 por linha e com número menor; no desktop nada muda.
+st.html("""<style>
+@media (max-width: 640px) {
+  [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]) {
+    flex-direction: row !important; flex-wrap: wrap !important; gap: 0.25rem 0.75rem !important; }
+  [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]) > [data-testid="stColumn"] {
+    min-width: 28% !important; flex: 1 1 28% !important; width: auto !important; }
+  [data-testid="stMetricValue"] { font-size: 1.6rem !important; }
+  [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {
+    white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
+  h1 { font-size: 1.9rem !important; }
+}
+</style>""")
 
 ROTULO = {
     agenda.ATRASADA: "🔴 Atrasada",
