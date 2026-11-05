@@ -45,3 +45,11 @@ def test_numeros_do_topo_no_roteiro():
     roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
     assert (f"{n[agenda.ATRASADA]} atrasadas, {n[torre.DADO_FALTANDO]} dado faltando, "
             f"{n[agenda.VENCE_LOGO]} vencendo") in roteiro
+
+
+def test_config_do_streamlit():
+    import tomllib
+
+    cfg = tomllib.loads((RAIZ / ".streamlit" / "config.toml").read_text(encoding="utf-8"))
+    assert cfg["server"]["maxUploadSize"] == 20
+    assert cfg["browser"]["gatherUsageStats"] is False

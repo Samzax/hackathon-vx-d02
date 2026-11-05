@@ -1,0 +1,9 @@
+# Lido quando o Streamlit roda a partir da raiz do repositório (local e no Docker).
+
+[server]
+# FIR, laudos e boletins são PDFs de texto pequenos; 20 MB sobra e limita o que entra.
+maxUploadSize = 20
+
+[browser]
+# nada sai da máquina sem pedido: sem estatística de uso para o Streamlit
+gatherUsageStats = false
