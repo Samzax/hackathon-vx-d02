@@ -26,6 +26,10 @@ ROTULO = {
     agenda.CUMPRIDA: "✅ Cumprida",
     agenda.GATILHO: "🔵 Por gatilho",
 }
+# cabeçalho das tabelas: só a cor (cabe em 1280 px); o nome aparece na legenda e ao passar o mouse
+COLUNA = {s: ROTULO[s].split()[0] for s in (agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO,
+                                             agenda.EM_DIA, agenda.GATILHO)}
+_DICA_STATUS = {COLUNA[s]: st.column_config.NumberColumn(help=ROTULO[s].split(" ", 1)[1]) for s in COLUNA}
 TIPO = {"barragem": "Barragem", "unidade": "Unidade", "equipamento": "Equipamento", "licenca": "Licença"}
 TROCA_NORMA = date(2027, 8, 2)   # Res. ANM 220/2025 substitui a Res. ANM 95/2022
 CAMPO = {"prazo": "Prazo", "vigencia_desde": "Começa a valer em", "vigencia_ate": "Deixa de valer após",
@@ -218,13 +222,13 @@ with aba_hoje:
     mapa = pd.DataFrame([{
         "Ativo": f"{a['codigo']} · {a['nome']}",
         "Responsável": a["responsavel"],
-        **{ROTULO[s].split()[0]: sum(1 for l in linhas if l.ativo == a["codigo"] and l.status == s)
-           for s in [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO]},
+        **{COLUNA[s]: sum(1 for l in linhas if l.ativo == a["codigo"] and l.status == s)
+           for s in COLUNA},
     } for a in meus])
     # texto com largura fixa: a tabela inteira cabe num projetor de 1280 px sem rolar de lado
     st.dataframe(mapa, hide_index=True, width="stretch", column_config={
         "Ativo": st.column_config.TextColumn(width="medium"),
-        "Responsável": st.column_config.TextColumn(width="medium")})
+        "Responsável": st.column_config.TextColumn(width="medium"), **_DICA_STATUS})
 
     with st.expander("Por norma: quem cobra o quê"):
         normas = sorted({l.norma for l in linhas if l.norma})
@@ -237,9 +241,9 @@ with aba_hoje:
             "Norma": n,
             "Obrigações": len({l.codigo for l in linhas if l.norma == n}),
             "Ativos": ", ".join(sorted({l.ativo for l in linhas if l.norma == n})),
-            **{ROTULO[s].split()[0]: sum(1 for l in linhas if l.norma == n and l.status == s)
-               for s in [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO, agenda.EM_DIA, agenda.GATILHO]},
-        } for n in normas]), hide_index=True, width="stretch")
+            **{COLUNA[s]: sum(1 for l in linhas if l.norma == n and l.status == s)
+               for s in COLUNA},
+        } for n in normas]), hide_index=True, width="stretch", column_config=_DICA_STATUS)
         if hoje < TROCA_NORMA:
             st.caption(f"A Res. ANM 220/2025 ainda não aparece: entra em {TROCA_NORMA:%d/%m/%Y} no lugar da "
                        "Res. 95/2022. O que muda está na aba Transição e linha do tempo.")
