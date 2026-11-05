@@ -27,10 +27,13 @@ Requer o [uv](https://docs.astral.sh/uv/). Ele instala o Python 3.13 e as depend
 ```bash
 uv sync
 uv run pytest
+uv run streamlit run app.py                                     # a torre (interface)
 uv run python -m regulaia.demo                                  # monta o banco da demo
 uv run python -m collector.xml_dou data/raw/dou/S01082026.zip   # funil do mês
 uv run python -m regulaia.impacto data/raw/dou/S01082026.zip    # impacto com IA (precisa de chave no .env)
 RUN_IA=1 uv run pytest tests/test_ia_real.py -v                 # casos de ouro com o modelo real
+uv run python -m regulaia.extrator ORIGEM NORMA TIPO DESTINO    # norma -> obrigações propostas (IA)
+uv run python -m regulaia.curadoria ...                         # escolhas humanas -> cadastro/*.csv
 ```
 
 Para a IA, copie `.env.example` para `.env` e preencha ao menos uma chave. As respostas ficam em `data/cache_ia.db`: rodar de novo não custa nada e dá a mesma resposta, o que deixa a demo repetível sem internet.
