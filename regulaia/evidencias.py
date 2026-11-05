@@ -104,6 +104,9 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
     ativos = db.ativos(conn, empresa_id)
     tn = normalizar(texto)
     le = Leitura()
+    if len(tn.split()) < 5:
+        le.problemas.append("o PDF não tem texto (parece escaneado): ainda não fazemos OCR")
+        return le
     tipo = next(((nome, chave) for k, (nome, chave) in DOCUMENTOS.items() if k in tn), None)
     if tipo and tipo[1] == "exame externo" and re.search(r"tipo de exame\s*:?\s*interno|exame interno", tn) \
             and "exame externo" not in tn:

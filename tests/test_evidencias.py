@@ -110,3 +110,9 @@ def test_relatorio_nr13_de_exame_interno_vai_para_a_outra_obrigacao(conn):
              "Equipamento: VP-101 Reservatório de ar comprimido da usina\n"
              "Tipo de exame: interno\nData da inspeção: 03/11/2026")
     assert ev.ler(conn, texto, 1, HOJE).obrigacao == "N13-04"
+
+
+def test_pdf_escaneado_diz_que_nao_tem_texto(conn):
+    le = ev.ler(conn, "  \n ", 1, HOJE, roteador=_IA({"ativo": "B3"}))
+    assert le.problemas == ["o PDF não tem texto (parece escaneado): ainda não fazemos OCR"]
+    assert le.metodo == "regra"                     # nem chama a IA

@@ -129,6 +129,8 @@ with aba_hoje:
                 "Data de execução": _br(le.data), "Período comprovado": le.periodo or "—",
                 "Pontuação máxima": le.pontuacao_maxima if le.pontuacao_maxima is not None else "—",
             }]), hide_index=True, width="stretch")
+            if le.ativo and le.ativo not in codigos_meus:
+                st.warning(f"O documento é de {le.ativo}, que não está entre os ativos de {visao}.")
             for g in le.gatilhos:
                 st.error(f"🚨 {g}")
             for p in le.problemas:
