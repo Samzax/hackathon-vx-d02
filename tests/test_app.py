@@ -131,3 +131,5 @@ def test_ato_ficticio_vira_mudanca_pendente(banco_temporario, monkeypatch):
     next(b for b in at.button if b.label.startswith("Enviar para aprovação")).click().run()
     assert not at.exception
     assert len([b for b in at.button if b.label == "Aprovar"]) == 2       # Res. 245 e o ato de teste
+    tabela = " ".join(m.value for m in at.markdown)
+    assert "| Agenda | quinzenal+0d | **semanal+0d** |" in tabela          # a agenda acompanha, por regra

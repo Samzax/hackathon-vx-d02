@@ -2,6 +2,7 @@
 
 Cada obrigação tem uma `agenda` em texto curto, que a máquina lê:
 
+  semanal+3d        semanas de segunda a domingo; vence 3 dias após o domingo
   quinzenal+15d     períodos 1–15 e 16–fim do mês; vence 15 dias após o fim do período
   mensal+10d        mês a mês; vence 10 dias após o fim do mês
   trimestral+30d    trimestres do ano civil
@@ -15,7 +16,7 @@ Cada obrigação tem uma `agenda` em texto curto, que a máquina lê:
   evento            depende de um gatilho (incidente, modificação...): sem calendário
 
 Cada execução comprovada é uma evidência com um `periodo`:
-  quinzenal "2026-10-2Q" | mensal "2026-10" | trimestral "2026-T3" | semestral "2026-S2" | anual "2026"
+  semanal "2026-W44" | quinzenal "2026-10-2Q" | mensal "2026-10" | trimestral "2026-T3" | semestral "2026-S2" | anual "2026"
   datas "2026-09-30" (a data que vence) | anos/meses/data: a data em que foi feita
 """
 
@@ -52,7 +53,7 @@ class Situacao:
     nota: str = ""
 
 
-_FREQ = re.compile(r"^(quinzenal|mensal|trimestral|semestral|anual)\+(\d+)d$")
+_FREQ = re.compile(r"^(semanal|quinzenal|mensal|trimestral|semestral|anual)\+(\d+)d$")
 
 
 def validar(agenda: str) -> None:
@@ -89,7 +90,10 @@ def periodos(agenda: str, desde: date, ate: date) -> list[Periodo]:
         freq, folga = m.group(1), timedelta(days=int(m.group(2)))
         out, d = [], desde
         while True:
-            if freq == "quinzenal":
+            if freq == "semanal":
+                ano, semana, _ = d.isocalendar()
+                rot, fim = f"{ano}-W{semana:02d}", d + timedelta(days=6 - d.weekday())
+            elif freq == "quinzenal":
                 if d.day <= 15:
                     rot, fim = f"{d:%Y-%m}-1Q", date(d.year, d.month, 15)
                 else:
@@ -130,6 +134,9 @@ def periodo_de(agenda: str, dia: date) -> str:
     m = _FREQ.match(agenda)
     if m:
         freq = m.group(1)
+        if freq == "semanal":
+            ano, semana, _ = dia.isocalendar()
+            return f"{ano}-W{semana:02d}"
         if freq == "quinzenal":
             return f"{dia:%Y-%m}-{'1Q' if dia.day <= 15 else '2Q'}"
         if freq == "mensal":
@@ -145,6 +152,24 @@ def periodo_de(agenda: str, dia: date) -> str:
     return dia.isoformat()      # anos, meses, data, unica, evento: a data da execução
 
 
+_PALAVRA_FREQ = {"semanal": "semanal", "quinzenal": "quinzenal", "mensal": "mensal",
+                 "trimestral": "trimestral", "semestral": "semestral", "anual": "anual"}
+
+
+def agenda_para(periodicidade: str, agenda_atual: str) -> str | None:
+    """Uma norma nova muda a periodicidade em texto ('Semanal'); a agenda acompanha por regra,
+    mantendo a folga de entrega. Só para agendas de calendário e quando o texto não deixa dúvida."""
+    m = _FREQ.match(agenda_atual or "")
+    if not m:
+        return None
+    t = (periodicidade or "").lower()
+    achadas = {f for palavra, f in _PALAVRA_FREQ.items() if re.search(rf"\b{palavra}(?:mente)?\b", t)}
+    if len(achadas) != 1:
+        return None
+    nova = f"{achadas.pop()}+{m.group(2)}d"
+    return nova if nova != agenda_atual else None
+
+
 _MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto",
           "setembro", "outubro", "novembro", "dezembro"]
 
@@ -153,6 +178,9 @@ def rotulo_humano(periodo: str) -> str:
     """'2026-10-1Q' -> '1ª quinzena de outubro/2026'; datas viram DD/MM/AAAA."""
     if m := re.fullmatch(r"(\d{4})-(\d\d)-([12])Q", periodo):
         return f"{m.group(3)}ª quinzena de {_MESES[int(m.group(2)) - 1]}/{m.group(1)}"
+    if m := re.fullmatch(r"(\d{4})-W(\d\d)", periodo):
+        segunda = date.fromisocalendar(int(m.group(1)), int(m.group(2)), 1)
+        return f"semana de {segunda:%d/%m/%Y}"
     if m := re.fullmatch(r"(\d{4})-(\d\d)", periodo):
         return f"{_MESES[int(m.group(2)) - 1]}/{m.group(1)}"
     if m := re.fullmatch(r"(\d{4})-T([1-4])", periodo):
@@ -213,7 +241,7 @@ def situacao(agenda: str, evidencias: list[str], hoje: date, desde: date,
     proximo = next((p for p in ps if p.vence >= hoje and p.rotulo not in feitos), None)
     if faltando:
         return Situacao(ATRASADA, proximo, faltando, ultima)
-    aviso = AVISO_DIAS_CURTO if agenda.startswith(("quinzenal", "mensal")) else AVISO_DIAS
+    aviso = AVISO_DIAS_CURTO if agenda.startswith(("semanal", "quinzenal", "mensal")) else AVISO_DIAS
     if proximo and (proximo.vence - hoje).days <= aviso:
         return Situacao(VENCE_LOGO, proximo, [], ultima)
     return Situacao(EM_DIA, proximo, [], ultima)

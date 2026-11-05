@@ -32,7 +32,7 @@ Cada obrigação tem uma `agenda` curta que a máquina lê (`regulaia/agenda.py`
 
 | Agenda | Exemplo | Uso |
 |---|---|---|
-| `quinzenal+15d`, `mensal+10d`, `trimestral+30d`, `semestral+30d`, `anual+0d` | FIR quinzenal | Período de calendário mais a folga para entregar |
+| `semanal+3d`, `quinzenal+15d`, `mensal+10d`, `trimestral+30d`, `semestral+30d`, `anual+0d` | FIR quinzenal | Período de calendário mais a folga para entregar. Quando uma norma muda a periodicidade em texto ("Semanal"), a agenda acompanha por regra e mantém a folga |
 | `datas:03-31,09-30` | Campanhas da DCE | Datas fixas todo ano |
 | `anos:3`, `meses:6` | Exame externo do vaso (NR-13) | Contado da última execução |
 | `unica` | Mapa da ZAS até 26/12/2029 | Uma vez, até o `prazo` (que uma norma nova pode mudar) |

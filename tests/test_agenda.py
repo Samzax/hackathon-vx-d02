@@ -47,7 +47,7 @@ def test_data_unica_e_evento():
 
 
 def test_agenda_invalida():
-    for ruim in ("semanal+1d", "datas:3-31", "anos:x", "data:2026-13-01", ""):
+    for ruim in ("diaria+1d", "semanal", "datas:3-31", "anos:x", "data:2026-13-01", ""):
         with pytest.raises((ag.AgendaInvalida, ValueError)):
             ag.validar(ruim)
 
@@ -84,3 +84,22 @@ def test_periodo_de_uma_execucao():
 ])
 def test_rotulo_humano(periodo, esperado):
     assert ag.rotulo_humano(periodo) == esperado
+
+
+def test_semanal_comeca_na_segunda_e_vence_depois_do_domingo():
+    ps = ag.periodos("semanal+3d", date(2027, 4, 1), date(2027, 4, 12))
+    assert [(p.rotulo, p.fim, p.vence) for p in ps][:2] == [
+        ("2027-W13", date(2027, 4, 4), date(2027, 4, 7)), ("2027-W14", date(2027, 4, 11), date(2027, 4, 14))]
+    assert ag.periodo_de("semanal+3d", date(2027, 4, 7)) == "2027-W14"
+    assert ag.rotulo_humano("2027-W14") == "semana de 05/04/2027"
+
+
+@pytest.mark.parametrize("texto, atual, esperado", [
+    ("Semanal", "quinzenal+0d", "semanal+0d"),
+    ("Mensalmente, até o dia 10", "trimestral+30d", "mensal+30d"),
+    ("Quinzenal", "quinzenal+15d", None),              # não mudou
+    ("Semanal ou mensal", "quinzenal+0d", None),       # ambíguo: deixa para a pessoa
+    ("Semanal", "anos:3", None),                        # agenda por execução: não mexe
+])
+def test_agenda_acompanha_a_periodicidade(texto, atual, esperado):
+    assert ag.agenda_para(texto, atual) == esperado

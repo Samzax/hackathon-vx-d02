@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-from . import db, triagem
+from . import agenda, db, triagem
 from .ia import Roteador, SemProvedor
 
 VERSAO_PROMPT = "impacto-v3"
@@ -191,6 +191,12 @@ def aplicar(conn, analise: Analise, ato_id: int) -> list[int]:
             trechos[m.obrigacao].append(m.trecho)
     ids = []
     for codigo, campos in por_ob.items():
+        if "periodicidade" in campos and "agenda" not in campos:
+            # a agenda que a torre usa acompanha a periodicidade nova (regra, não IA)
+            atual = db.versao(conn, codigo)
+            nova = agenda.agenda_para(campos["periodicidade"], atual["agenda"]) if atual else None
+            if nova:
+                campos["agenda"] = nova
         ids.append(db.propor_versao(
             conn, codigo, campos, ato_id=ato_id,
             trecho=" […] ".join(trechos[codigo]), fonte=analise.ato,

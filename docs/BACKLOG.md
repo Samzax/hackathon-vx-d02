@@ -48,3 +48,4 @@ ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem C
 - [x] Tema claro conferido; diagrama legível nos dois temas
 - [x] Cada ativo mostra o que comprova (últimas evidências)
 - [x] Radar: teste com um ato colado (regra -> IA -> Python -> aprovação), com exemplo fictício no cache
+- [x] Agenda semanal; mudança de periodicidade aprovada leva a agenda junto (regra, não IA)
