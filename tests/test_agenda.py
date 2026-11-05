@@ -72,3 +72,15 @@ def test_periodo_de_uma_execucao():
     assert ag.periodo_de("datas:03-31,09-30", date(2026, 9, 12)) == "2026-09-30"
     assert ag.periodo_de("datas:03-31,09-30", date(2026, 10, 2)) == "2027-03-31"
     assert ag.periodo_de("anos:3", date(2026, 11, 6)) == "2026-11-06"
+
+
+@pytest.mark.parametrize("periodo, esperado", [
+    ("2026-10-1Q", "1ª quinzena de outubro/2026"),
+    ("2026-09", "setembro/2026"),
+    ("2026-T3", "3º trimestre/2026"),
+    ("2026-S2", "2º semestre/2026"),
+    ("2026-10-30", "30/10/2026"),
+    ("2026", "2026"),
+])
+def test_rotulo_humano(periodo, esperado):
+    assert ag.rotulo_humano(periodo) == esperado

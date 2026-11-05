@@ -145,6 +145,29 @@ def periodo_de(agenda: str, dia: date) -> str:
     return dia.isoformat()      # anos, meses, data, unica, evento: a data da execução
 
 
+_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto",
+          "setembro", "outubro", "novembro", "dezembro"]
+
+
+def rotulo_humano(periodo: str) -> str:
+    """'2026-10-1Q' -> '1ª quinzena de outubro/2026'; datas viram DD/MM/AAAA."""
+    if m := re.fullmatch(r"(\d{4})-(\d\d)-([12])Q", periodo):
+        return f"{m.group(3)}ª quinzena de {_MESES[int(m.group(2)) - 1]}/{m.group(1)}"
+    if m := re.fullmatch(r"(\d{4})-(\d\d)", periodo):
+        return f"{_MESES[int(m.group(2)) - 1]}/{m.group(1)}"
+    if m := re.fullmatch(r"(\d{4})-T([1-4])", periodo):
+        return f"{m.group(2)}º trimestre/{m.group(1)}"
+    if m := re.fullmatch(r"(\d{4})-S([12])", periodo):
+        return f"{m.group(2)}º semestre/{m.group(1)}"
+    if re.fullmatch(r"\d{4}-\d\d-\d\d", periodo):
+        return date.fromisoformat(periodo).strftime("%d/%m/%Y")
+    if periodo == "primeira":
+        return "primeira execução (nenhuma registrada)"
+    if periodo == "unico":
+        return "entrega única"
+    return periodo
+
+
 def situacao(agenda: str, evidencias: list[str], hoje: date, desde: date,
              prazo: str | None = None) -> Situacao:
     """Situação da obrigação em `hoje`, olhando os períodos desde `desde`.

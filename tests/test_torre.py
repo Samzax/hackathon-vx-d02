@@ -114,3 +114,24 @@ def test_zas_mte_e_anm_na_mesma_data(serra):
                      ato_id=ato, trecho=TRECHO_245)
     linha = [f for f in torre.futuras(conn, 1, HOJE) if f.ativo == "B2" and f.codigo == "OB-01"]
     assert {(f.dia, f.proposta) for f in linha} == {("2027-08-02", False), ("2029-12-26", True)}
+
+
+def test_boletim_da_diretoria_tem_tudo(serra):
+    conn, _ = serra
+    ato = db.registrar_ato(conn, "dou", "res-245", "Resolução ANM Nº 245", texto=TRECHO_245)
+    db.propor_versao(conn, "OB-01", {"prazo": "2029-12-26", "vigencia_desde": "2029-12-26"},
+                     ato_id=ato, trecho=TRECHO_245)
+    b = torre.boletim(conn, 1, HOJE, DESDE)
+    assert "## 🔴 Atrasadas (4)" in b
+    assert "1ª quinzena de outubro/2026" in b and "2026-10-1Q" not in b
+    assert "Requerer a renovação da licença" in b                  # L1 vence em 15/11
+    assert "⚪ Falta dado no cadastro" in b and "modificacao_estrutural" in b
+    assert "OB-01" in b and "26/12/2029" in b and "começa a valer em" in b
+
+
+def test_boletim_do_gestor_so_tem_os_ativos_dele(serra):
+    conn, _ = serra
+    b = torre.boletim(conn, 1, HOJE, DESDE, responsavel="Manutenção da Usina")
+    assert "1 ativo ·" in b and "**E1**" in b
+    assert "**B3**" not in b and "**L1**" not in b
+    assert "Mudanças de norma" not in b

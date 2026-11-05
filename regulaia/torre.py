@@ -106,6 +106,70 @@ def resumo(linhas: list[Linha]) -> dict[str, dict[str, int]]:
     return out
 
 
+CAMPOS = {"prazo": "prazo", "vigencia_desde": "começa a valer em", "vigencia_ate": "deixa de valer após",
+          "periodicidade": "periodicidade", "aplica_se_a": "aplica-se a", "titulo": "obrigação",
+          "evidencia": "evidência", "regra": "regra", "agenda": "agenda"}
+
+
+def _br(iso: str | None) -> str:
+    return date.fromisoformat(iso).strftime("%d/%m/%Y") if iso else "—"
+
+
+def _valor(v) -> str:
+    try:
+        return _br(str(v)) if v else "—"
+    except ValueError:
+        return str(v)
+
+
+def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | None = None,
+            janela: int = 30) -> str:
+    """Boletim em Markdown para um gestor (ou a diretoria): o que está atrasado, o que vence
+    nos próximos `janela` dias, o que falta no cadastro e as mudanças aguardando aprovação.
+    É o que iria por e-mail toda segunda; aqui só é gerado, nunca enviado."""
+    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id)
+              if responsavel is None or a["responsavel"] == responsavel}
+    linhas = [l for l in painel(conn, empresa_id, hoje, desde) if l.ativo in ativos]
+    atrasadas = [l for l in linhas if l.status == agenda.ATRASADA]
+    faltando = [l for l in linhas if l.status == DADO_FALTANDO]
+    limite = date.fromordinal(hoje.toordinal() + janela).isoformat()
+    proximas = sorted((l for l in linhas if l.status in (agenda.VENCE_LOGO, agenda.EM_DIA)
+                       and l.vence and l.vence <= limite), key=lambda l: l.vence)
+    pendentes = [m for m in mudancas(conn, empresa_id) if set(m.ativos) & set(ativos)]
+
+    def item(l: Linha, extra: str) -> str:
+        return f"- **{l.ativo}** · {l.titulo} ({l.norma}, {l.artigo}) — {extra}"
+
+    para = responsavel or "Diretoria"
+    out = [f"# Boletim regulatório — {para}", "",
+           f"Semana de {hoje:%d/%m/%Y} · {len(ativos)} {'ativo' if len(ativos) == 1 else 'ativos'} · "
+           f"{len(linhas)} obrigações aplicáveis", ""]
+    if not (atrasadas or faltando or proximas or pendentes):
+        out.append("Nada atrasado, nada vencendo nos próximos dias e nenhuma mudança aguardando aprovação.")
+    if atrasadas:
+        out += [f"## 🔴 Atrasadas ({len(atrasadas)})", ""]
+        out += [item(l, f"venceu em {_br(l.vence)}; falta: {', '.join(map(agenda.rotulo_humano, l.faltando)) or l.nota}") for l in atrasadas]
+        out.append("")
+    if proximas:
+        out += [f"## 🟡 Vencem nos próximos {janela} dias ({len(proximas)})", ""]
+        out += [item(l, f"até {_br(l.vence)}") for l in proximas]
+        out.append("")
+    if faltando:
+        out += [f"## ⚪ Falta dado no cadastro ({len(faltando)})", ""]
+        out += [item(l, "informar " + ", ".join(l.dados_faltando)) for l in faltando]
+        out.append("")
+    if pendentes:
+        out += [f"## ⚠️ Mudanças de norma aguardando aprovação ({len(pendentes)})", ""]
+        for m in pendentes:
+            campos = "; ".join(f"{CAMPOS.get(c, c)}: {_valor(a)} → {_valor(b)}"
+                               for c, (a, b) in m.diferencas.items())
+            out.append(f"- **{m.codigo}** · {m.titulo} — {m.ato}: {campos} "
+                       f"(ativos: {', '.join(sorted(set(m.ativos) & set(ativos)))})")
+        out.append("")
+    out.append("Gerado pela RegulaIA. Cada item traz a norma e o dispositivo; o trecho literal está na torre.")
+    return "\n".join(out)
+
+
 # ------------------------------------------------------------------ transição
 
 

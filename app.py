@@ -140,6 +140,16 @@ with aba_hoje:
                 st.toast(f"Evidência registrada: {le.ativo} {le.obrigacao} {le.periodo}")
                 st.rerun()
 
+    para = None if visao.startswith("Diretoria") else visao
+    texto_boletim = torre.boletim(conn, empresa["id"], hoje, desde, responsavel=para)
+    with st.expander(f"📨 Boletim da semana — {para or 'Diretoria'}"):
+        st.caption("O que cada gestor receberia toda segunda, só com os ativos dele. "
+                   "Aqui o boletim é só gerado; nada é enviado.")
+        st.download_button("Baixar boletim (.md)", texto_boletim,
+                           file_name=f"boletim_{hoje:%Y-%m-%d}_{(para or 'diretoria').replace(' ', '_')}.md",
+                           mime="text/markdown")
+        st.markdown(texto_boletim.split("\n", 2)[2].replace("\n## ", "\n#### "))   # sem o título grande
+
     st.markdown("##### Mapa dos ativos")
     st.caption("🔴 atrasada · ⚪ dado faltando no cadastro · 🟡 vence em até 30 dias (5 para quinzenal/mensal) · "
                "🟢 em dia · 🔵 depende de gatilho")
@@ -158,7 +168,7 @@ with aba_hoje:
             "Norma": l.norma,
             "Dispositivo": l.artigo,
             "Vencimento": date.fromisoformat(l.vence).strftime("%d/%m/%Y") if l.vence else "",
-            "Pendente": ", ".join(l.faltando) or l.nota,
+            "Pendente": ", ".join(map(agenda.rotulo_humano, l.faltando)) or l.nota,
             "Evidência": l.evidencia,
             "Mudança aguardando": "⚠️" if l.mudanca_pendente else "",
         } for l in ls])
@@ -187,7 +197,7 @@ with aba_hoje:
                     v = db.versao(conn, l.codigo)
                     st.markdown(f"**{ROTULO[l.status]} · {l.titulo}** ({l.norma}, {l.artigo})")
                     if l.faltando:
-                        st.markdown(f"Períodos sem evidência: `{'`, `'.join(l.faltando)}`")
+                        st.markdown("Períodos sem evidência: " + ", ".join(map(agenda.rotulo_humano, l.faltando)))
                     if l.dados_faltando:
                         st.markdown(f"Falta no cadastro do ativo: `{'`, `'.join(l.dados_faltando)}` — "
                                     "sem esse dado não dá para dizer se a obrigação vale.")
