@@ -68,3 +68,14 @@ def test_clone_novo_sem_chave_mostra_o_radar(tmp_path, monkeypatch):
     conn, _, analises = demo.preparar(tmp_path / "r.db", cache=tmp_path / "vazio.db")
     assert any(m.obrigacao == "OB-01" for an in analises for m in an.mudancas)
     assert [m.codigo for m in torre.mudancas(conn, 1)] == ["OB-01"]
+
+
+def test_mercado_faz_a_conta_com_as_premissas(banco_temporario):
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    valores = {m.label: m.value for m in at.metric}
+    assert valores["Barragens na PNSB"] == "461"
+    # 461 barragens × (R$ 1.500 + 5 × R$ 150) × 12 = R$ 12,4 mi; 10% = R$ 1,2 mi
+    assert valores["Receita anual se todas as barragens da PNSB usassem"] == "R$ 12,4 mi"
+    assert valores["Receita anual com 10% de adoção"] == "R$ 1,2 mi"
+    next(s for s in at.slider if s.label.startswith("Adoção")).set_value(100).run()
+    assert {m.label: m.value for m in at.metric}["Receita anual com 100% de adoção"] == "R$ 12,4 mi"

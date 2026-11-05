@@ -97,8 +97,8 @@ st.title("Torre de Controle Regulatória")
 st.caption("Cada obrigação com a norma, o dispositivo e o trecho literal que a cria. "
            "Mudanças só valem depois de aprovadas por uma pessoa.")
 
-aba_hoje, aba_transicao, aba_mudancas, aba_radar = st.tabs(
-    ["Hoje", "Transição e linha do tempo", "Mudanças", "Radar do DOU"])
+aba_hoje, aba_transicao, aba_mudancas, aba_radar, aba_mercado = st.tabs(
+    ["Hoje", "Transição e linha do tempo", "Mudanças", "Radar do DOU", "Mercado"])
 
 # ------------------------------------------------------------------ Hoje
 
@@ -330,3 +330,51 @@ with aba_radar:
                        f"modelo: {' → '.join(r['modelos'])} · confiança {r['confianca']} · "
                        f"custo US\\$ {r.get('custo_original_usd', r['custo_usd']):.4f}"
                        + (" (resposta já em cache: não foi paga de novo)" if not r["custo_usd"] else ""))
+
+# ------------------------------------------------------------------ Mercado
+
+with aba_mercado:
+    mercado = json.loads((db.ROOT / "data" / "mercado_sigbm.json").read_text(encoding="utf-8"))
+    st.markdown("##### Quem precisa disso (dados públicos do SIGBM)")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Barragens de mineração", f"{mercado['barragens_mineracao']:,}".replace(",", "."))
+    m2.metric("Empresas responsáveis", mercado["empresas"])
+    m3.metric("Barragens na PNSB", mercado["barragens_na_pnsb"])
+    m4.metric("Empresas com barragem na PNSB", mercado["empresas_com_barragem_na_pnsb"])
+    emerg = {k: v for k, v in mercado["pnsb_por_nivel_emergencia"].items() if k != "Sem emergência"}
+    st.caption(f"Fonte: {mercado['fonte']} (exportado em {_br(mercado['exportado_em'])}). "
+               f"Em Minas Gerais: {mercado['mg']['barragens_na_pnsb']} barragens na PNSB, de "
+               f"{mercado['mg']['empresas_com_barragem_na_pnsb']} empresas. "
+               f"{sum(emerg.values())} barragens estão hoje em nível de alerta ou emergência.")
+
+    st.markdown("##### Por que agora")
+    st.markdown(
+        f"- Em **{TROCA_NORMA:%d/%m/%Y}** a Res. ANM 220/2025 substitui a Res. 95/2022: as "
+        f"**{mercado['empresas_com_barragem_na_pnsb']} empresas** com barragem na PNSB terão de refazer o "
+        f"mapa de obrigações. Faltam {(TROCA_NORMA - hoje).days} dias.\n"
+        "- A própria regra já mudou antes de valer: a Res. 245/2026 adiou parte dela para 2029. "
+        "Quem acompanha norma em planilha não vê isso.\n"
+        "- A mesma mineradora responde a ANM, MTE (NR-13, NR-22) e órgão ambiental. A torre junta tudo por ativo.")
+
+    st.markdown("##### Tamanho da oportunidade (premissas ajustáveis)")
+    st.caption("Os números de barragens e empresas são do SIGBM. Preço e adoção são premissas para discussão, "
+               "não dados.")
+    p1, p2, p3 = st.columns(3)
+    preco = p1.number_input("Preço por barragem por mês (R$)", 0, 50_000, 1_500, step=250)
+    outros = p2.number_input("Outros ativos por barragem (vasos, licenças, unidades)", 0, 50, 5)
+    preco_outro = p3.number_input("Preço por outro ativo por mês (R$)", 0, 10_000, 150, step=50)
+    adocao = st.slider("Adoção entre as barragens na PNSB (%)", 1, 100, 10)
+    por_barragem = preco + outros * preco_outro
+    tam = mercado["barragens_na_pnsb"] * por_barragem * 12
+    som = tam * adocao / 100
+    r1, r2 = st.columns(2)
+    def _num(v: float, casas: int = 0) -> str:
+        """Número no formato brasileiro: 1.234,5"""
+        return f"{v:,.{casas}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+    r1.metric("Receita anual se todas as barragens da PNSB usassem", f"R$ {_num(tam / 1e6, 1)} mi")
+    r2.metric(f"Receita anual com {adocao}% de adoção", f"R$ {_num(som / 1e6, 1)} mi")
+    fora = mercado["barragens_mineracao"] - mercado["barragens_na_pnsb"]
+    st.caption(f"Conta: {mercado['barragens_na_pnsb']} barragens × (R\\$ {_num(preco)} + {outros} × "
+               f"R\\$ {_num(preco_outro)}) × 12 meses. Fora da conta: as {fora} barragens de mineração fora da "
+               "PNSB e outros setores com o mesmo problema (energia, saneamento, óleo e gás).")
