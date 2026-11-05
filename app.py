@@ -464,11 +464,13 @@ with aba_como:
     radar_c = json.loads(demo.RADAR.read_text(encoding="utf-8")) if demo.RADAR.exists() else []
     custo_radar = sum(r.get("custo_original_usd", r["custo_usd"]) for r in radar_c)
     custo_txt = f"{custo_radar:.4f}".replace(".", ",")
+    escuro = getattr(st.context.theme, "type", None) == "dark"
+    cor_rotulo = "#b0b0b0" if escuro else "#555555"     # rótulo das setas legível nos dois temas
     st.markdown("##### Dois caminhos para a mesma torre")
     st.graphviz_chart(f"""
 digraph {{
   rankdir=TB; bgcolor="transparent"; nodesep=0.35; ranksep=0.35; node [shape=box style="rounded,filled" fillcolor="#f0f2f6" fontname="Helvetica" fontsize=11];
-  edge [fontname="Helvetica" fontsize=9 color="#888888" fontcolor="#aaaaaa"];
+  edge [fontname="Helvetica" fontsize=9 color="#888888" fontcolor="{cor_rotulo}"];
   dou [label="Diário Oficial\n7.884 atos/mês"];
   regra [label="Regras e busca local\n(órgão, tipo, artigo citado)\ncusto zero"];
   ia [label="IA barata, com cache\nUS$ {custo_txt} na demo" fillcolor="#fff4d6"];
