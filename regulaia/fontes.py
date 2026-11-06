@@ -4,7 +4,7 @@ Uso: uv run python -m regulaia.fontes [--forcar]
 
 Salva em data/raw/normas/ (fora do Git). Arquivo que já existe não é baixado de novo.
 Com os textos baixados, tests/test_trechos.py confere cada trecho citado no cadastro.
-O ANMlegis serve as páginas em cp1252; elas são gravadas em UTF-8.
+O ANMlegis serve as páginas em cp1252 sem dizer; todas são gravadas em UTF-8.
 """
 
 from __future__ import annotations
@@ -26,6 +26,12 @@ _PORTARIAS = _MTE + "/assuntos/inspecao-do-trabalho/seguranca-e-saude-no-trabalh
 FONTES: dict[str, tuple[str, str]] = {
     "res95_2022.html": ("Res. ANM 95/2022 (texto consolidado)", _ANMLEGIS.format(numero=95, ano=2022)),
     "res220_2025.html": ("Res. ANM 220/2025 (texto consolidado, com a Res. 245/2026)", _ANMLEGIS.format(numero=220, ano=2025)),
+    # O Planalto derruba conexões que não vêm de navegador: se o download falhar, abrir a URL no navegador e
+    # salvar a página com este nome (o teste confere os trechos em qualquer das duas versões)
+    "lei_12334_2010.html": ("Lei 12.334/2010 (PNSB, texto compilado com a Lei 14.066/2020)",
+                            "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12334.htm"),
+    "lei_mg_23291_2019.html": ("Lei MG 23.291/2019 (política estadual de segurança de barragens, texto atualizado)",
+                               "https://www.almg.gov.br/legislacao-mineira/texto/LEI/23291/2019/"),
     "nr-13-atualizada-2023-b.pdf": ("NR-13", _NRS + "nr-13-atualizada-2023-b.pdf"),
     "nr-22-atualizada-2026.pdf": ("NR-22", _NRS + "nr-22-atualizada-2026.pdf"),
     "portaria-mte-no-105-altera-a-nr-22-anexo-iii-nr-09-e-aprova-o-anexo-v-poeiras-minerais-ii.pdf": (
@@ -47,10 +53,17 @@ def baixar(forcar: bool = False, destino: Path = DESTINO) -> list[str]:
             alvo = destino / nome
             if alvo.exists() and not forcar:
                 continue
-            r = http.get(url)
-            r.raise_for_status()
+            try:
+                r = http.get(url)
+                r.raise_for_status()
+            except httpx.HTTPError as e:
+                feitos.append(f"{nome}: FALHOU ({type(e).__name__}); abra {url} no navegador e salve em {alvo}")
+                continue
             if nome.endswith(".html"):
-                alvo.write_text(r.content.decode("cp1252", errors="replace"), encoding="utf-8")
+                # o ANMlegis não declara o charset (é cp1252); quem declara (a ALMG, em UTF-8) é respeitado
+                texto = r.text if "charset" in r.headers.get("content-type", "") else r.content.decode(
+                    "cp1252", errors="replace")
+                alvo.write_text(texto, encoding="utf-8")
             else:
                 if not r.content.startswith(b"%PDF"):
                     raise ValueError(f"{url} não devolveu um PDF")

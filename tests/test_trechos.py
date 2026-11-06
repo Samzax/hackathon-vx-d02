@@ -18,6 +18,8 @@ NR22 = "nr-22-atualizada-2026.pdf"
 FONTES = {
     "seed_obligations.csv": ["res220_2025.html"],
     "cadastro/res95_2022.csv": ["res95_2022.html"],
+    "cadastro/lei12334.csv": ["lei_12334_2010.html"],
+    "cadastro/lei_mg_23291.csv": ["lei_mg_23291_2019.html"],
     "cadastro/nr13.csv": ["nr-13-atualizada-2023-b.pdf"],
     "cadastro/nr22.csv": [NR22],
     "cadastro/nr22_zas.csv": [NR22,

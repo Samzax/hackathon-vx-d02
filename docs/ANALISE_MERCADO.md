@@ -74,7 +74,7 @@ O que tiramos disso:
 
 ### Quanto trabalho é isso (estimativa)
 
-- No cadastro da demo, feito a partir do texto oficial da Res. 95/2022, uma barragem tem de 12 a 18 obrigações e de 59 a 61 entregas com data por ano (FIR e extrato quinzenais, DCE e RISR semestrais, simulados, treinamentos, PAEBM, RCO), além das obrigações por evento e das plurianuais (RPSB).
+- No cadastro da demo, feito a partir do texto oficial das normas, uma barragem tem de 32 a 39 obrigações federais e de 59 a 61 entregas com data por ano (FIR e extrato quinzenais, DCE e RISR semestrais, simulados, treinamentos, PAEBM, RCO), além das obrigações por evento e das plurianuais (RPSB). Em Minas Gerais, a Lei 23.291/2019 leva a conta a de 46 a 53 obrigações e de 62 a 66 entregas com data por ano (auditoria técnica de segurança e análise semestral de água e poeira dos rejeitos).
 - Em escala: 461 barragens × cerca de 60 entregas = **cerca de 27,7 mil entregas datadas por ano** só nas barragens de mineração da PNSB. É uma estimativa a partir do cadastro da demo, não um dado da ANM.
 - Referência de custo de pessoal: engenheiro civil de geotecnia ganha em média R$ 13,9 mil por mês (CAGED, últimos 12 meses). A Prefeitura de Catalão (GO) estimou em R$ 424,8 mil um contrato de inspeções, DCE, RISR e revisão periódica de uma barragem de abastecimento.
 

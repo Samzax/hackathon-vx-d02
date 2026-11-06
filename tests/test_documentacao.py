@@ -222,7 +222,8 @@ def test_caminhos_no_codigo_com_a_mesma_caixa_do_disco():
     Todo nome de arquivo ou pasta citado no código tem de bater letra por letra com o disco."""
     import re
 
-    ignorar = {".venv", ".git", "__pycache__", ".pytest_cache"}
+    # node_modules e o build do Next são de terceiros e gerados: os nomes deles não são citados pelo código
+    ignorar = {".venv", ".git", "__pycache__", ".pytest_cache", "node_modules", ".next", "out", "cdk.out"}
     nomes: dict[str, set[str]] = {}
     for p in RAIZ.rglob("*"):
         rel = p.relative_to(RAIZ)
@@ -420,20 +421,27 @@ def test_numeros_da_analise_de_mercado_saem_dos_dados():
     # entregas por ano: o cadastro da demo
     conn = db.conectar(":memory:")
     demo.montar(conn)
-    por_barragem = []
+    # as federais valem para qualquer barragem da PNSB; a lei de Minas soma as suas nas barragens em MG
+    federal, com_mg = [], []
     for a in db.ativos(conn, 1):
         if not a["codigo"].startswith("B"):
             continue
-        obs = [o.vigente for o in db.obrigacoes_do_ativo(conn, a["id"], em="2026-06-01") if o.vigente]
-        n = 0
-        for v in obs:
-            try:
-                n += len(agenda.periodos(v["agenda"], date(2026, 1, 1), date(2026, 12, 31)))
-            except agenda.AgendaInvalida:
-                pass
-        por_barragem.append((len(obs), n))
-    assert f"de {min(o for o, _ in por_barragem)} a {max(o for o, _ in por_barragem)} obrigações e de " \
-           f"{min(n for _, n in por_barragem)} a {max(n for _, n in por_barragem)} entregas com data por ano" in doc
-    assert all(59 <= n <= 61 for _, n in por_barragem)             # "cerca de 60" continua verdade
+        obs = [o for o in db.obrigacoes_do_ativo(conn, a["id"], em="2026-06-01") if o.vigente]
+        for lista, so_federal in ((federal, True), (com_mg, False)):
+            vs = [o.vigente for o in obs if not (so_federal and o.codigo.startswith("MG-"))]
+            n = 0
+            for v in vs:
+                try:
+                    n += len(agenda.periodos(v["agenda"], date(2026, 1, 1), date(2026, 12, 31)))
+                except agenda.AgendaInvalida:
+                    pass
+            lista.append((len(vs), n))
+
+    def faixa(pares, i):
+        return f"{min(p[i] for p in pares)} a {max(p[i] for p in pares)}"
+
+    assert f"de {faixa(federal, 0)} obrigações federais e de {faixa(federal, 1)} entregas com data por ano" in doc
+    assert f"de {faixa(com_mg, 0)} obrigações e de {faixa(com_mg, 1)} entregas com data por ano" in doc
+    assert all(59 <= n <= 61 for _, n in federal)                  # "cerca de 60" continua verdade
     mil = f"{pnsb * 60 / 1000:.1f}".replace(".", ",")
     assert f"{pnsb} barragens × cerca de 60 entregas = **cerca de {mil} mil entregas datadas por ano**" in doc

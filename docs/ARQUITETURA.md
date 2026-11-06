@@ -45,7 +45,7 @@ O campo `vigencia_desde`/`vigencia_ate` faz a troca de norma sozinha. As 21 obri
 
 **A contagem não zera na troca de norma.** A RPSB da Res. 220 tem código novo e ainda não tem evidência própria. A torre usa a última RPSB feita pela Res. 95 no mesmo ativo, já que o tema é o mesmo, e diz isso na nota. Isso vale para toda obrigação contada da última execução (`anos:N`, `meses:N`). Assim que chega uma evidência própria, ela passa a valer.
 
-**Tempo de resposta.** Com 8 ativos e 72 obrigações, cada clique recalcula todas as abas em 0,3 a 0,4 s (medido com `AppTest`). Os ativos são lidos com uma consulta por ativo, não uma por obrigação. Os metadados das obrigações vêm de uma consulta só, e cada regra é lida uma vez e guardada em cache.
+**Tempo de resposta.** Com 8 ativos e 72 obrigações (a medição é de antes das leis federal e mineira), cada clique recalcula todas as abas em 0,3 a 0,4 s (medido com `AppTest`). Os ativos são lidos com uma consulta por ativo, não uma por obrigação. Os metadados das obrigações vêm de uma consulta só, e cada regra é lida uma vez e guardada em cache.
 
 ## Cadastro: da norma ao CSV, com uma pessoa no meio
 
@@ -110,6 +110,10 @@ Os dois são só gerados para download. Mandar por e-mail fica para a versão co
 ## O que a demo mostrou sobre as normas
 
 **A ANM e o MTE dão a mesma data para a ZAS.** A Res. ANM 245/2026 adiou para 26/12/2029 o art. 7 §1 da Res. 220: as áreas de lavra, beneficiamento e disposição de rejeitos deixam de contar como estruturas da barragem, e quem trabalha nelas não pode mais ficar na Zona de Autossalvamento. A NR-22 (item 22.24.8, Portaria MTE 105/2026) dá a mesma data para barragens não alteadas a montante; para as alteadas a montante, a exigência é imediata. Uma barragem passa a ter duas obrigações sobre o mesmo assunto (quem pode ficar na ZAS), de dois reguladores, com o mesmo prazo. A linha do tempo mostra isso sem ninguém ler as duas normas.
+
+**A lei federal já restringe a ZAS desde 2020.** O art. 18-A §2º da Lei 12.334/2010 (incluído pela Lei 14.066/2020) só admite na ZAS os trabalhadores estritamente necessários à operação e à manutenção da barragem, sem data futura. A NR-22 fixa 26/12/2029 para barragens não alteadas a montante, mas sobre uma lista própria de atividades. Na B2, que tem trabalhadores na ZAS, a obrigação da lei já aparece hoje na torre; as da Res. 220 e da NR-22 aparecem na linha do tempo, com as datas futuras. Quem lesse só a NR-22 acharia que tem até 2029.
+
+**Minas cobra mais que a União.** A Lei MG 23.291/2019 exige auditoria técnica de segurança por equipe independente credenciada todo ano para barragem de alto potencial de dano ambiental, com relatório e DCE até 1º de setembro (art. 17), e põe o relatório e o PAE para ciência e assinatura do conselho de administração (art. 18). A classificação estadual não está no SIGBM: numa mineradora importada de MG, ela aparece como dado faltando, e a auditoria não é presumida.
 
 ## Banco de dados: SQLite
 

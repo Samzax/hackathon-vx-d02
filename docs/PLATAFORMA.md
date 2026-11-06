@@ -55,7 +55,10 @@ REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
 
 ### Fase 2 (paralelo, depois da fase 1)
 - [ ] 2A front Next.js (tipos gerados de `api/openapi.json`)
-- [ ] 2B AWS CDK: ECS Fargate, RDS, S3, Bedrock, Textract, EventBridge (radar diário), SQS, Secrets, CloudWatch
+- [x] 2B AWS CDK (`infra/`, commit 49c404b): ALB + ECS Fargate (API e front na mesma origem, migração no start),
+      RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
+      06:00 BRT), Secrets Manager, CloudWatch com 3 alarmes, sem NAT. `tests/test_infra.py` confere a pilha;
+      `npx aws-cdk@2 synth` sem aviso. Falta o deploy na conta do evento (IDs do Bedrock em `modelos.toml`).
 - [ ] 2C servidor MCP + chat
 
 ### Fase 3
@@ -110,13 +113,15 @@ REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
 
 ## Próximo
 
-1. **Mais normas de verdade no catálogo**, pelo mesmo caminho das atuais: `regulaia/fontes.py` baixa o
-   texto oficial, `regulaia/extrator.py` propõe (com IA), `curadoria/*.csv` escolhe, `regulaia/curadoria.py`
-   gera, `tests/test_trechos.py` confere o trecho literal; norma curta pode ser curada à mão, como
-   `cadastro/nr22_zas.csv`. Pedidos do usuário: Lei 12.334/2010 (PNSB), lei estadual de MG de barragens,
-   outras resoluções da ANM, outras NRs aplicáveis à mineração; sempre com o trecho literal conferido
-   contra o texto oficial. Em 06/11 o Planalto derrubou a conexão do `regulaia.fontes` (connection reset)
-   e o normas.leg.br só serve a página com JavaScript: falta uma fonte oficial que baixe sem navegador.
-   Antes de pôr norma nova, conferir que as candidatas da triagem dos atos em cache (Res. 245, 246 e o ato
-   fictício) não mudam: o prompt da IA leva as candidatas, e se mudar o cache da demo deixa de valer.
+1. **Mais normas de verdade no catálogo.** Entraram, curadas à mão com trecho literal conferido por
+   `tests/test_trechos.py`:
+   - `cadastro/lei12334.csv`: Lei 12.334/2010 (PNSB) compilada com a Lei 14.066/2020, 23 obrigações do
+     empreendedor (art. 17, PAE do art. 12, PSB do art. 8º, art. 18, 18-A e 2º-A). O Planalto derruba conexão
+     que não vem de navegador: o texto foi salvo do navegador, sem os trechos riscados (revogados).
+   - `cadastro/lei_mg_23291.csv`: Lei MG 23.291/2019 (texto atualizado da ALMG, baixa sem navegador),
+     18 obrigações, só para `uf = MG`. A auditoria técnica de segurança depende do novo atributo
+     `potencial_dano_ambiental` (classificação estadual), que o SIGBM não traz: em empresa importada, dado faltando.
+   Total: 113 obrigações, 107 trechos conferidos. Os números da demo (4 atrasadas, 1 dado faltando,
+   3 vencendo) e o cache de IA dos atos da demo não mudaram. Próximas candidatas: outras resoluções da ANM
+   (Res. 130/2023, 175/2024), Decreto MG 48.140/2021 (descaracterização), NR-01 (GRO) para a unidade.
 2. Conferir o `testes-postgres` no próximo CI (acima).
