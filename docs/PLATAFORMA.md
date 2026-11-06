@@ -59,7 +59,11 @@ REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
       RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
       06:00 BRT), Secrets Manager, CloudWatch com 3 alarmes, sem NAT. `tests/test_infra.py` confere a pilha;
       `npx aws-cdk@2 synth` sem aviso. Falta o deploy na conta do evento (IDs do Bedrock em `modelos.toml`).
-- [ ] 2C servidor MCP + chat
+- [x] 2C servidor MCP (`agente/`): 11 ferramentas de leitura sobre a API com o token de serviço,
+      `REGULAIA_EMPRESA` prende o escopo numa cliente, erro da API vira erro de ferramenta legível; stdio e
+      streamable HTTP. `tests/test_agente.py` contra a API real; conferido com um cliente MCP de verdade (stdio).
+- [ ] 2C chat "Pergunte à torre" no front: rota na API (ex.: `POST /api/v1/pergunta`) que roda o Claude
+      (Bedrock na AWS) com as mesmas ferramentas no escopo da sessão, e a tela no front (sessão do front).
 
 ### Fase 3
 - [ ] GitHub Actions: ruff, pytest (SQLite e Postgres), front, docker build, cdk synth

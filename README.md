@@ -98,6 +98,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | [app.py](app.py) | A interface (Streamlit) |
 | `regulaia/` | Banco, versões, regras, agenda, torre, extrator, impacto, leitor de evidência, boletim e plano em PDF |
 | `collector/` | Leitor do XML mensal do DOU (dados abertos) |
+| `agente/` | Servidor MCP: o Claude (ou outro cliente MCP) consulta a torre pela API, só leitura |
 | [data/serra_azul.json](data/serra_azul.json), [data/historico_serra_azul.json](data/historico_serra_azul.json) | A empresa da demo e o histórico de entregas, com as falhas planejadas |
 | `data/exemplos/` | PDFs fictícios para o leitor de evidência |
 | [data/mercado_sigbm.json](data/mercado_sigbm.json) | Números de mercado com fonte: barragens, empresas, embargos, dano potencial e concentração no SIGBM (só agregados) |
@@ -127,7 +128,7 @@ uv run python -m regulaia.curadoria ...                         # escolhas human
 ```
 
 Num clone novo, `uv run pytest` passa com alguns testes pulados. Eles precisam de arquivos que ficam fora do Git:
-- os textos oficiais das normas: baixe com `uv run python -m regulaia.fontes`;
+- os textos oficiais das normas: baixe com `uv run python -m regulaia.fontes` (o Planalto derruba conexão que não vem de navegador: se a Lei 12.334 falhar, o comando diz a URL para abrir no navegador e onde salvar);
 - o ZIP do DOU de agosto;
 - a IA de verdade: `RUN_IA=1`.
 
@@ -136,6 +137,27 @@ Com os textos baixados, sobram 4 pulados: 2 precisam do ZIP do DOU e 2 da IA de 
 A interface funciona sem chave e sem internet. As respostas da IA ficam em `data/cache_ia.db`, então a demo repete exatamente igual. Para chamar a IA de verdade, copie `.env.example` para `.env` e preencha ao menos uma chave.
 
 O ZIP mensal vem do [portal de dados abertos da Imprensa Nacional](https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados) (Seção 1, ano e mês) e fica em `data/raw/dou/`, fora do Git. O coletor não acessa o site do DOU, porque o `robots.txt` de www.in.gov.br proíbe robôs.
+
+## Agente (MCP): pergunte à torre de dentro do Claude
+
+`agente/` é um servidor [MCP](https://modelcontextprotocol.io) que consulta a torre pela API, com o token de serviço: as mesmas regras de acesso e a mesma auditoria do front. Com ele, o Claude Desktop (ou qualquer cliente MCP) responde "o que está atrasado na B3 e por qual artigo?", "o que muda para a B2 quando a Res. 220 entrar?" ou "esse ato novo mexe em quê?", citando norma, dispositivo e o trecho literal.
+
+São 11 ferramentas, todas de leitura: empresas, pendências, ativos, ficha do ativo, obrigações, histórico de uma obrigação, mudanças aguardando decisão, linha do tempo, boletim, radar do DOU e análise de um ato. A análise chama a IA, mas não grava nada. O agente não aprova mudança nem registra entrega: isso é de gente, na torre, com nome na auditoria.
+
+```bash
+REGULAIA_TOKEN_SERVICO=... uv run uvicorn api.main:app            # a API (ou a da AWS)
+REGULAIA_TOKEN_SERVICO=... uv run python -m agente                 # stdio
+REGULAIA_TOKEN_SERVICO=... uv run python -m agente --http          # streamable HTTP em 127.0.0.1:8100/mcp
+```
+
+No Claude Desktop (`claude_desktop_config.json`):
+
+```json
+{"mcpServers": {"regulaia": {"command": "uv", "args": ["run", "--directory", "CAMINHO/DO/REPO", "python", "-m", "agente"],
+  "env": {"REGULAIA_API_URL": "http://localhost:8000", "REGULAIA_TOKEN_SERVICO": "...", "REGULAIA_EMPRESA": "Mineradora Serra Azul"}}}}
+```
+
+`REGULAIA_EMPRESA` prende o agente a uma empresa (para entregar a uma cliente); sem ela, o token de serviço vê todas. Os testes (`tests/test_agente.py`) chamam as ferramentas contra a API real com o banco da demo.
 
 ## Link público antes da AWS
 

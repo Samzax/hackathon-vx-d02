@@ -28,6 +28,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
+    # o agente MCP (agente/) roda do lado de quem usa (Claude Desktop, outro cliente MCP), não na imagem
+    "mcp>=2.3",
     "pytest>=8",
 ]
 infra = [
