@@ -9,10 +9,12 @@ falam só com esta API. O domínio continua em `regulaia/`, igual para SQLite e 
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from regulaia import db, demo, usuarios
 
@@ -85,7 +87,22 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
         log.exception("erro inesperado", extra={"extra_json": {"request_id": rid, "rota": request.url.path}})
         return JSONResponse({"detail": "erro inesperado", "request_id": rid}, status_code=500)
 
+    _servir_front(app, Path(cfg.front))
     return app
+
+
+def _servir_front(app: FastAPI, pasta: Path) -> None:
+    """O front exportado (front/out) na mesma origem da API: o cookie de sessão e o CSRF valem sem CORS.
+    Rota da API que não existe continua respondendo JSON, não a página 404 do front."""
+    if not (pasta / "index.html").exists():
+        return
+
+    @app.api_route(PREFIXO + "/{resto:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+                   include_in_schema=False)
+    def rota_inexistente(resto: str):
+        raise HTTPException(404, "Not Found")
+
+    app.mount("/", StaticFiles(directory=pasta, html=True), name="front")
 
 
 app = criar_app()

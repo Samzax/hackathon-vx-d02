@@ -35,6 +35,8 @@ class Config:
     montar_demo: bool = field(default_factory=lambda: _bool("REGULAIA_MONTAR_DEMO", True))
     # token de serviço para o agente MCP e jobs (Bearer); vazio desliga
     token_servico: str | None = field(default_factory=lambda: os.environ.get("REGULAIA_TOKEN_SERVICO") or None)
+    # o front (Next.js exportado): servido pela própria API, na mesma origem, se a pasta existir
+    front: str = field(default_factory=lambda: os.environ.get("REGULAIA_FRONT") or str(db.ROOT / "front" / "out"))
 
     @property
     def postgres(self) -> bool:

@@ -14,7 +14,7 @@ def _seguro(nome: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]+", "_", nome)[-80:] or "documento.pdf"
 
 
-def guardar(cfg: Config, sha256: str, nome: str, dados: bytes) -> str:
+def guardar(cfg: Config, sha256: str, nome: str, dados: bytes, tipo: str | None = None) -> str:
     chave = f"evidencias/{sha256[:2]}/{sha256}/{_seguro(nome)}"
     if pasta := pasta_local(cfg):
         destino = pasta / chave
@@ -27,5 +27,5 @@ def guardar(cfg: Config, sha256: str, nome: str, dados: bytes) -> str:
     bucket, _, prefixo = cfg.armazenamento.removeprefix("s3://").partition("/")
     chave = f"{prefixo.rstrip('/')}/{chave}" if prefixo else chave
     aws.cliente("s3").put_object(Bucket=bucket, Key=chave, Body=dados, ServerSideEncryption="AES256",
-                                 ContentType="application/pdf")
+                                 ContentType=tipo or "application/pdf")
     return f"s3://{bucket}/{chave}"

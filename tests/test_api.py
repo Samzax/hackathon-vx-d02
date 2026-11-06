@@ -476,6 +476,156 @@ def test_conta_sem_empresa_nao_entra(cliente, cfg):
     assert r.status_code == 403 and "regulaia_sessao" not in cliente.cookies
 
 
+# ----------------------------------------------------------------- o que o front usa
+
+
+def _ativo_id(c, emp: int, codigo: str) -> int:
+    return next(a["id"] for a in c.get(_url(f"/empresas/{emp}/ativos")).json() if a["codigo"] == codigo)
+
+
+def test_eu_traz_o_hoje_da_torre(cliente):
+    assert entrar(cliente)["hoje"] == "2026-11-07"
+
+
+def test_painel_traz_o_trecho_literal_e_os_periodos_em_portugues(cliente):
+    entrar(cliente)
+    linhas = cliente.get(_url(f"/empresas/{_empresa(cliente)}/painel")).json()["linhas"]
+    fir = next(l for l in linhas if (l["ativo"], l["codigo"]) == ("B1", "R95-01"))
+    assert fir["trecho"].startswith("I - preencher, quinzenalmente")
+    assert fir["ultima_rotulo"] == agenda.rotulo_humano(fir["ultima"]) and "quinzena" in fir["ultima_rotulo"]
+    assert fir["agenda_descricao"] == "quinzenal, até o fim de cada quinzena"
+    falta = next(l for l in linhas if l["status"] == torre.DADO_FALTANDO)
+    assert falta["dados_faltando_rotulos"] == [torre.campo_legivel(c) for c in falta["dados_faltando"]]
+    atrasada = next(l for l in linhas if l["status"] == agenda.ATRASADA and l["faltando"])
+    assert atrasada["faltando_rotulos"] == [agenda.rotulo_humano(p) for p in atrasada["faltando"]]
+
+
+def test_mapa_so_na_demo_e_licenca_sem_posicao(cliente):
+    entrar(cliente)
+    ativos = {a["codigo"]: a for a in cliente.get(_url(f"/empresas/{_empresa(cliente)}/ativos")).json()}
+    pos = json.loads((db.ROOT / "data" / "posicoes_demo.json").read_text(encoding="utf-8"))
+    assert ativos["B3"]["posicao"] == pos["B3"] and ativos["L1"]["posicao"] is None
+
+
+def test_resumo_areas_e_campos_do_cadastro(cliente, cfg):
+    entrar(cliente)
+    emp = _empresa(cliente)
+    r = cliente.get(_url(f"/empresas/{emp}/resumo")).json()
+    conn = db.conectar(cfg.banco)
+    n_ob, n_normas = conn.execute("SELECT COUNT(*), COUNT(DISTINCT norma) FROM obrigacao").fetchone()
+    n_ev = conn.execute("SELECT COUNT(*) FROM evidencia").fetchone()[0]
+    conn.close()
+    assert (r["ativos"], r["obrigacoes"], r["normas"], r["evidencias"]) == (8, n_ob, n_normas, n_ev) and n_ev
+    a = cliente.get(_url(f"/empresas/{emp}/areas")).json()
+    assert "Gerência de Geotecnia" in a["areas"] and "Gerência de Geotecnia" in a["com_conta"]
+    campos = {c["campo"]: c for c in cliente.get(_url("/cadastro/campos")).json()}
+    assert campos["trabalhadores_zas"]["tipo"] == "booleano" and "Autossalvamento" in campos["trabalhadores_zas"]["pergunta"]
+    assert {"valor": "etapa_unica", "rotulo": "etapa única"} in campos["metodo_construtivo"]["opcoes"]
+
+
+def test_entrega_com_comprovante_mostra_o_periodo_antes_e_o_arquivo_depois(cliente):
+    entrar(cliente)
+    emp = _empresa(cliente)
+    b3 = _ativo_id(cliente, emp, "B3")
+    atrasada = next(l for l in cliente.get(_url(f"/ativos/{b3}")).json()["linhas"] if l["status"] == agenda.ATRASADA)
+    p = cliente.get(_url("/entregas/periodo"), params={"ativo_id": b3, "codigo": atrasada["codigo"]}).json()
+    assert p["rotulo"] == agenda.rotulo_humano(p["periodo"])
+    up = cliente.post(_url("/comprovantes"), params={"ativo_id": b3},
+                      files={"arquivo": ("laudo.pdf", b"%PDF-1.4 laudo", "application/pdf")})
+    assert up.status_code == 201, up.text
+    assert Path(up.json()["guardado_em"]).read_bytes() == b"%PDF-1.4 laudo"
+    r = cliente.post(_url("/entregas"), json={"ativo_id": b3, "codigo": atrasada["codigo"],
+                                              "arquivo": up.json()["guardado_em"]})
+    assert r.status_code == 201 and r.json()["periodo"] == p["periodo"]
+    h = cliente.get(_url(f"/ativos/{b3}/obrigacoes/{atrasada['codigo']}/historico")).json()
+    assert any(e["arquivo_nome"] == "laudo.pdf" and e["baixa_manual"] for e in h["evidencias"])
+    assert any(e["tipo"] == "entrega" for e in h["eventos"])
+    como(cliente, "usina@serraazul.demo")       # ativo de outra área: nem o comprovante
+    assert cliente.post(_url("/comprovantes"), params={"ativo_id": b3},
+                        files={"arquivo": ("x.pdf", b"x", "application/pdf")}).status_code == 403
+
+
+def test_mudanca_traz_a_analise_o_tamanho_e_a_decisao_fica_registrada(cliente):
+    entrar(cliente, CURADORIA)
+    emp = _empresa(cliente)
+    ob01 = next(m for m in cliente.get(_url(f"/empresas/{emp}/mudancas")).json() if m["codigo"] == "OB-01")
+    assert ob01["decide"] and ob01["norma"] == "Res. ANM 220/2025" and ob01["analise"]["candidatas"]
+    assert ob01["tamanho"].startswith("Muda 1 obrigação (OB-01). As outras 23 da Res. ANM 220/2025 ficam iguais.")
+    assert "as datas propostas aparecem no trecho" in ob01["conferencia"]
+    prazo = next(c for c in ob01["campos"] if c["campo"] == "prazo")
+    assert prazo["data"] and (prazo["vigente_texto"], prazo["proposto_texto"]) == ("02/08/2027", "26/12/2029")
+    assert not cliente.get(_url(f"/empresas/{emp}/decisoes")).json()
+    assert cliente.post(_url(f"/mudancas/{ob01['versao_id']}/decisao"), json={"aprovar": True}).status_code == 200
+    d = cliente.get(_url(f"/empresas/{emp}/decisoes")).json()
+    assert [(x["codigo"], x["aprovada"], x["corrigida"]) for x in d] == [("OB-01", True, False)]
+    assert d[0]["decidida_por"] == "Curadoria RegulaIA" and d[0]["ato_nome"].startswith("Resolução ANM nº 245")
+    obs = cliente.get(_url(f"/empresas/{emp}/obrigacoes")).json()
+    assert obs[0]["codigo"] == "OB-01" and obs[0]["mudou"]
+    h = cliente.get(_url("/obrigacoes/OB-01/historico")).json()
+    assert h[-1]["ato_nome"] == d[0]["ato_nome"] and h[-1]["dispositivo"] == "Res. ANM 220/2025 art. 7 §1"
+
+
+def test_radar_traz_o_funil_e_o_ato_de_exemplo_e_analisado_do_cache(cliente):
+    entrar(cliente)
+    r = cliente.get(_url("/radar")).json()
+    funil = json.loads((db.ROOT / "data" / "funil_dou.json").read_text(encoding="utf-8"))
+    assert (r["funil"]["atos"], r["funil"]["anm"]) == (funil["atos"], funil["anm"])
+    assert r["funil"]["normativos"] == len(r["analises"]) and r["funil"]["mudam"] == 1
+    ex = cliente.get(_url("/radar/exemplo")).json()
+    an = cliente.post(_url("/radar/analise"), json={"texto": ex["texto"]})
+    assert an.status_code == 200, an.text
+    an = an.json()
+    assert an["ato"] == ex["identificacao"] and an["aprovadas"] >= 1
+    assert an["candidatas"][0]["motivos"] and all(m["trecho"] for m in an["mudancas"])
+
+
+def test_transicao_vigencias_e_plano(cliente):
+    entrar(cliente)
+    emp = _empresa(cliente)
+    t = cliente.get(_url(f"/empresas/{emp}/transicao")).json()
+    assert all(x["ativo_nome"] and x["saem"] + x["entram"] for x in t)
+    assert any(p["so_para_outros"] for x in t for p in x["temas"])     # "só para DPA2 ≥ 4"
+    faixas = {(f["ativo"], f["norma"]): f for f in cliente.get(_url(f"/empresas/{emp}/vigencias")).json()}
+    assert faixas[("B1", "Res. ANM 95/2022")]["ate"] == "2027-08-01"
+    assert faixas[("B1", "Res. ANM 220/2025")]["desde"] == "2027-08-02"
+    assert cliente.get(_url(f"/empresas/{emp}/plano-transicao")).text.startswith("# Plano de transição")
+    assert cliente.get(_url(f"/empresas/{emp}/plano-transicao"), params={"formato": "pdf"}).content[:4] == b"%PDF"
+
+
+def test_documentos_de_exemplo_so_os_da_lista(cliente):
+    entrar(cliente)
+    nomes = [x["nome"] for x in cliente.get(_url("/evidencias/exemplos")).json()]
+    assert "FIR_B3_2026-10-1Q.pdf" in nomes
+    assert cliente.get(_url("/evidencias/exemplos/FIR_B3_2026-10-1Q.pdf")).content[:4] == b"%PDF"
+    assert cliente.get(_url("/evidencias/exemplos/..%2F..%2Fpyproject.toml")).status_code == 404
+    lido = cliente.post(_url("/evidencias/leitura"), params={"empresa_id": _empresa(cliente)},
+                        files={"arquivo": ("FIR_B2_2026-11-1Q_anomalia.pdf",
+                                           evidencias.exemplo("FIR_B2_2026-11-1Q_anomalia.pdf").read_bytes(),
+                                           "application/pdf")}).json()
+    assert lido["leitura"]["gatilhos"] and lido["abre"] and lido["periodo_rotulo"]
+
+
+def test_sigbm_busca_diz_alertas_e_ufs(cliente):
+    entrar(cliente)
+    r = cliente.get(_url("/sigbm/busca"), params={"termo": "33.592.510/0001-54"}).json()
+    vale = r["achadas"][0]
+    assert vale["nome"] == "VALE S.A." and vale["na_pnsb"] and "MG" in vale["ufs"] and r["exportado_em"]
+
+
+def test_api_serve_o_front_na_mesma_origem(cfg, tmp_path):
+    front = tmp_path / "front"
+    (front / "caixa").mkdir(parents=True)
+    (front / "index.html").write_text("<html>torre</html>", encoding="utf-8")
+    (front / "caixa" / "index.html").write_text("<html>caixa</html>", encoding="utf-8")
+    from dataclasses import replace
+    with TestClient(criar_app(replace(cfg, front=str(front)))) as c:
+        assert c.get("/").text == "<html>torre</html>" and "caixa" in c.get("/caixa/").text
+        assert c.get("/health").json()["status"] == "ok"
+        r = c.get(_url("/nao-existe"))
+        assert r.status_code == 404 and r.json()["detail"] == "Not Found"
+        assert c.post(_url("/auth/demo")).status_code == 200
+
+
 # ----------------------------------------------------------------- contrato
 
 
