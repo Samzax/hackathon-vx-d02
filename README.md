@@ -16,27 +16,41 @@ Ela se atualiza por dois caminhos:
 
 Cada gestor vê só os seus ativos e ninguém precisa ler norma nenhuma.
 
-![Aba Hoje no dia da demo: 4 atrasadas, 1 dado faltando, 3 vencendo, e o mapa dos ativos](docs/img/torre_hoje.png)
+![Caixa de entrada no dia da demo: 4 atrasadas, 1 dado faltando, 3 vencendo, cada pendência com o botão que resolve](docs/img/torre_hoje.png)
 
 ## A demo
 
 A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. A empresa tem 8 ativos e 72 obrigações cadastradas, em 7 de novembro de 2026:
 
+As abas seguem quem usa: a operação (caixa de entrada, ativos, entregas), o regulatório (mudanças, radar, transição) e o "sobre" do pitch. Um número, um item da caixa ou uma linha do mapa levam direto à tela certa, já filtrada.
+
 | Aba | O que mostra |
 |---|---|
-| **Hoje** | Status de cada obrigação por ativo (🔴 atrasada, ⚪ dado faltando no cadastro, 🟡 vence em breve, 🟢 em dia, 🔵 por gatilho). Também recebe documentos: o PDF de uma FIR dá baixa na quinzena, e uma anomalia que obriga Inspeção de Segurança Especial dispara o aviso: pontuação 10 pela Res. 95, EC = 5 pela Res. 220. Registrada, a anomalia abre a ISE do ativo, que fica atrasada até chegar o relatório da inspeção. Gera o boletim da semana de cada gestor (PDF ou texto) e um calendário .ics com os vencimentos e um lembrete no dia em que a obrigação fica amarela (só download; nada é enviado) |
-| **Entregas** | O dia a dia: filtros (status, ativo, norma, responsável, texto, prazo), seleção de uma ou várias obrigações para registrar a entrega (com comprovante opcional), passar para outro responsável ou comentar, com o histórico de quem fez o quê. Calendário do mês período a período, exportação para Excel e .ics, e a prévia do boletim de cada responsável |
-| **Transição e linha do tempo** | O que muda quando a Res. ANM 220/2025 substitui a Res. 95/2022 (2/8/2027), por tema: o que continua, o que é novo, o que deixa de valer para aquele ativo (e por quê: "só para DPA2 ≥ 4"), com o plano de transição para baixar em PDF. Mostra também as datas futuras de cada ativo |
-| **Mudanças** | Versões propostas por atos novos, com antes/depois, o trecho do ato e a conferência do Python. Só valem depois de aprovadas. Embaixo, o histórico de cada obrigação: todas as versões, a origem e quem decidiu |
-| **Radar do DOU** | O funil de um mês do DOU (7.884 atos → 825 da ANM → 2 candidatos → 1 mudança) e o custo real da IA. Embaixo, "Teste com um ato seu": cole qualquer texto e veja a triagem, a análise e a conferência, e mande para aprovação |
-| **Mercado** | Barragens e empresas no SIGBM (com fonte), por que agora e uma conta de receita com premissas ajustáveis |
-| **Como funciona** | Diagrama dos dois fluxos (norma → torre e documento → torre) com os números da demo e as três garantias: a IA não decide sozinha, regra antes de IA, traga sua chave |
+| **Caixa de entrada** | O que precisa de decisão ou ação, cada item com o botão que resolve: mudança de norma aguardando aprovação (**Decidir →**), atrasadas e vencendo (**Registrar entrega**, num diálogo com comprovante opcional), dado faltando (**Completar cadastro**, na ficha do ativo). Os cinco números do topo (atrasada, dado faltando, vence em breve, em dia, por gatilho, cada um com sua cor) abrem a aba Entregas já filtrada. Também recebe documentos: o PDF de uma FIR dá baixa na quinzena, e uma anomalia que obriga Inspeção de Segurança Especial dispara o aviso: pontuação 10 pela Res. 95, EC = 5 pela Res. 220. Registrada, a anomalia abre a ISE do ativo, que fica atrasada até chegar o relatório da inspeção. Gera o boletim da semana de cada gestor (PDF ou texto) e um calendário .ics com os vencimentos e um lembrete no dia em que a obrigação fica amarela (só download; nada é enviado) |
+| **Ativos** | O mapa das barragens e instalações, cada ponto com a cor do pior status (na demo, posições fictícias; empresa importada do SIGBM fica sem mapa, porque o arquivo público vai sem coordenadas), a tabela dos ativos (contagem por status) e, ao clicar num ponto ou numa linha, a ficha do ativo: pendências com o trecho literal da norma e o botão de entrega, todas as obrigações, o que comprova (últimas evidências) e o cadastro, onde se preenche o dado que falta. Também a visão por norma e órgão |
+| **Entregas** | O dia a dia: filtros (status, ativo, norma, responsável, texto, prazo), seleção de uma ou várias obrigações para registrar a entrega (com comprovante opcional), passar para outro responsável ou comentar, com o histórico de quem fez o quê. Calendário do mês clicável (cada dia com a cor do pior vencimento; o dia clicado lista os vencimentos com o botão de entrega), exportação para Excel e .ics, e a prévia do boletim de cada responsável |
+| **Regulatório → Mudanças** | Versões propostas por atos novos, com antes/depois, o trecho do ato e a conferência do Python. Só valem depois de aprovadas. Embaixo, o histórico de cada obrigação: todas as versões, a origem e quem decidiu |
+| **Regulatório → Radar do DOU** | O funil de um mês do DOU (7.884 atos → 825 da ANM → 2 candidatos → 1 mudança) e o custo real da IA. Embaixo, "Teste com um ato seu": cole qualquer texto e veja a triagem, a análise e a conferência, e mande para aprovação |
+| **Regulatório → Transição e linha do tempo** | O que muda quando a Res. ANM 220/2025 substitui a Res. 95/2022 (2/8/2027), por tema: o que continua, o que é novo, o que deixa de valer para aquele ativo (e por quê: "só para DPA2 ≥ 4"), com o plano de transição para baixar em PDF. A linha do tempo é um Gantt: uma barra por norma em cada ativo até 2030, losangos nas datas em que obrigações passam a valer (laranja quando a data vem de mudança ainda não aprovada); clicar num losango abre a lista daquele dia |
+| **Sobre → Mercado** | Barragens e empresas no SIGBM (com fonte), por que agora e uma conta de receita com premissas ajustáveis |
+| **Sobre → Como funciona** | Diagrama dos dois fluxos (norma → torre e documento → torre) com os números da demo e as três garantias: a IA não decide sozinha, regra antes de IA, traga sua chave |
 
 **Sua mineradora em 30 segundos.** O botão **➕ Sua mineradora (SIGBM)** na barra lateral busca uma empresa real pelo CNPJ ou pelo nome no SIGBM público e monta a torre com as barragens dela. A torre não presume o que o SIGBM não diz: pontuação do DPA, trabalhadores na ZAS, mapa de inundação validado, alteamento contínuo, modificação estrutural e a data da última RPSB aparecem como **dado faltando**, para a empresa preencher. Embargo, nível de emergência e DCE ou DCO não atestada no SIGBM aparecem como alerta. A cobrança começa na data escolhida: o que venceu antes não vira atraso inventado. O arquivo [data/sigbm_barragens_pj.csv](data/sigbm_barragens_pj.csv) tem só as linhas de empresa (CNPJ) do export público, sem CPF e sem coordenadas, e é gerado por `uv run python -m regulaia.sigbm extrair`.
 
+**Contas e acessos.** Para entrar na torre é preciso uma conta, e o que cada pessoa vê vem do papel dela:
+
+| Papel | O que vê e faz |
+|---|---|
+| **TI** | Só a página **Usuários e acessos**: cria contas, muda papel e área, desativa e troca senha. Não vê dado regulatório. A torre nunca fica sem uma conta de TI ativa |
+| **Diretoria** | Todos os ativos. Decide qual área responde por cada ativo, na ficha do ativo (aba Cadastro) |
+| **Regulatório** | Todos os ativos (é quem aprova as mudanças de norma) |
+| **Gestor de área** | Só os ativos e as obrigações da sua área, sem seletor de visão |
+
+A **conta de teste** troca de visão pela barra lateral ("Quem está olhando": Diretoria, cada gestor ou a TI) e é a única que vê **Recriar demo**. O botão **Entrar na demo** da tela de entrada usa a conta de teste da Serra Azul, que não tem senha. As outras contas da demo estão em [data/usuarios_demo.json](data/usuarios_demo.json), todas com a senha desse arquivo. No link público, troque essa senha por `REGULAIA_SENHA_DEMO` nos *Secrets*. A senha fica guardada com scrypt e sal próprio, e o que se faz na torre (entrega, aprovação, troca de área) fica assinado com o nome da conta. As contas não somem no **Recriar demo**. Somem se o servidor recomeçar do zero, como no Streamlit Cloud: aí voltam só as da demo.
+
 **Caso principal.** A Res. ANM 245/2026 adiou o art. 7 §1 da Res. 220/2025 de 2/8/2027 para 26/12/2029. Esse parágrafo tira as áreas de lavra, beneficiamento e disposição de rejeitos das estruturas associadas à barragem, e quem trabalha nelas deixa de poder ficar na Zona de Autossalvamento (ZAS). Um sistema correto muda essa obrigação e deixa as outras 23 da Res. 220 iguais. A NR-22 (Portaria MTE 105/2026, item 22.24.8) dá a mesma data para barragens não alteadas a montante, também sobre quem pode ficar na ZAS. A linha do tempo mostra as duas normas, ANM e MTE, convergindo.
 
-![Aba Mudanças: a Res. 245 adia o prazo da OB-01 para 26/12/2029, com o trecho do ato e a conferência do Python](docs/img/torre_mudancas.png)
+![Regulatório → Mudanças: a Res. 245 adia o prazo da OB-01 para 26/12/2029, com o trecho do ato e a conferência do Python](docs/img/torre_mudancas.png)
 
 ## O que está cadastrado
 

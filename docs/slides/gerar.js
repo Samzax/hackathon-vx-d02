@@ -224,18 +224,33 @@ function caixa(s, o) { s.addShape(pres.shapes.ROUNDED_RECTANGLE, { rectRadius: 0
                  [208, 1.6, "dos 59 grupos com 2 a 9 barragens", "entrada: R$ 5,6 mi por ano"],
                  [46, 1.1, "meta em 3 anos: 10% da PNSB, ~13 grupos", "SOM: R$ 1,2 mi por ano"]];
   funil.forEach(([n, w, rot, rec], i) => {
-    const y = 1.3 + i * 0.82;
-    caixa(s, { x: 0.5, y, w, h: 0.66, fill: { color: i === 3 ? COR.ambar : COR.noite } });
-    texto(s, String(n), { x: 0.65, y, w: w - 0.2, h: 0.66, fontSize: 22, bold: true,
+    const y = 1.2 + i * 0.7;
+    caixa(s, { x: 0.5, y, w, h: 0.58, fill: { color: i === 3 ? COR.ambar : COR.noite } });
+    texto(s, String(n), { x: 0.65, y, w: w - 0.2, h: 0.58, fontSize: 20, bold: true,
                           color: i === 3 ? COR.noite : COR.branco, valign: "middle" });
     texto(s, [
       { text: rot, options: { fontSize: 11, color: COR.cinza, breakLine: true } },
       { text: rec, options: { fontSize: 13, bold: true, color: COR.tinta } },
-    ], { x: 0.5 + w + 0.15, y, w: 6.05 - (0.5 + w + 0.15), h: 0.66, valign: "middle" });
+    ], { x: 0.5 + w + 0.15, y, w: 6.05 - (0.5 + w + 0.15), h: 0.58, valign: "middle" });
   });
 
-  caixa(s, { x: 6.3, y: 1.3, w: 3.2, h: 3.12, fill: { color: COR.palido } });
-  texto(s, "Como ganha dinheiro", { x: 6.5, y: 1.42, w: 3.2, h: 0.4, fontSize: 15, bold: true, color: COR.tinta });
+  // a escada: o SAM é a porta de entrada, não o tamanho do negócio
+  texto(s, "Mesmo motor, outro cadastro", { x: 0.5, y: 4.02, w: 9, h: 0.28, fontSize: 12, bold: true, color: COR.tinta });
+  const escada = [["461 barragens da PNSB", "a porta de entrada"],
+                  ["8.086 mineradoras", "a mineradora inteira: NR-13, NR-22, licença (já na demo)"],
+                  ["29.761 barragens do país", "água, energia e resíduos (SNISB)"]];
+  escada.forEach(([n, d], i) => {
+    const x = 0.5 + i * 3.1;
+    caixa(s, { x, y: 4.32, w: 2.8, h: 0.55, fill: { color: i === 0 ? COR.palido : COR.branco }, line: { color: COR.cinza, width: 0.5 } });
+    texto(s, [
+      { text: n, options: { fontSize: 12, bold: true, color: COR.tinta, breakLine: true } },
+      { text: d, options: { fontSize: 9, color: COR.cinza } },
+    ], { x: x + 0.1, y: 4.32, w: 2.65, h: 0.55, valign: "middle" });
+    if (i < 2) texto(s, "→", { x: x + 2.8, y: 4.32, w: 0.3, h: 0.55, fontSize: 16, bold: true, color: COR.cinza, align: "center", valign: "middle" });
+  });
+
+  caixa(s, { x: 6.3, y: 1.2, w: 3.2, h: 2.68, fill: { color: COR.palido } });
+  texto(s, "Como ganha dinheiro", { x: 6.5, y: 1.3, w: 3.2, h: 0.4, fontSize: 15, bold: true, color: COR.tinta });
   const modelo = [["Assinatura por ativo", "R$ 1.500 por barragem por mês + R$ 150 por outro ativo"],
                   ["Implantação", "valor único: SIGBM, normas, responsáveis"],
                   ["Licença para consultoria", "que também é canal de venda"]];
@@ -243,10 +258,10 @@ function caixa(s, o) { s.addShape(pres.shapes.ROUNDED_RECTANGLE, { rectRadius: 0
     texto(s, [
       { text: t, options: { fontSize: 13, bold: true, color: COR.tinta, breakLine: true } },
       { text: d, options: { fontSize: 11, color: COR.cinza } },
-    ], { x: 6.5, y: 1.9 + i * 0.8, w: 2.9, h: 0.72, valign: "top" });
+    ], { x: 6.5, y: 1.75 + i * 0.7, w: 2.9, h: 0.66, valign: "top" });
   });
-  texto(s, "Preço a validar com 10 entrevistas e 3 pilotos pagos. Barragens: SIGBM, 05/11/2026.",
-        { x: 0.5, y: 4.65, w: 9, h: 0.35, fontSize: 12, italic: true, color: COR.cinza });
+  texto(s, "Preço a validar com 10 entrevistas e 3 pilotos pagos. Barragens: SIGBM, 05/11/2026; SNISB: ANA, RSB 2026; CFEM: ANM, 2025.",
+        { x: 0.5, y: 4.92, w: 8.4, h: 0.28, fontSize: 10, italic: true, color: COR.cinza });
 }
 
 // ---------- 8 · Concorrência ----------

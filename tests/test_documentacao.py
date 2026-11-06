@@ -39,7 +39,7 @@ def test_numero_de_tipos_de_documento():
 
 
 def test_numeros_do_topo_no_roteiro():
-    """O roteiro manda apontar os números do topo da aba Hoje; eles saem do painel da demo."""
+    """O roteiro manda apontar os números do topo da caixa de entrada; eles saem do painel da demo."""
     from collections import Counter
     from datetime import date
 
@@ -119,7 +119,8 @@ def test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto():
                if l.strip() and not l.startswith("#")]
     precisa = ["app.py", "seed_obligations.csv", "cadastro/res95_2022.csv", "data/cache_ia_demo.json",
                "data/historico_serra_azul.json", "data/serra_azul.json", "data/mercado_sigbm.json",
-               "tests/fixtures/dou/S01_amostra.zip", ".streamlit/config.toml", "uv.lock", ".env.example"]
+               "tests/fixtures/dou/S01_amostra.zip", ".streamlit/config.toml", "uv.lock", ".env.example",
+               "assets/marca.svg", "assets/logo_claro.svg", "assets/logo_escuro.svg", "data/posicoes_demo.json"]
     for f in precisa:
         assert (RAIZ / f).exists(), f
         assert not _ignorado_no_docker(f, padroes), f"{f} ficaria fora da imagem"

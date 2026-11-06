@@ -10,7 +10,7 @@ Todo número deste documento tem fonte (lista no fim) ou é marcado como **premi
 - **O volume é grande e muda de base em 2027.** Uma barragem na PNSB tem de 12 a 18 obrigações e cerca de 60 entregas com data por ano só pela Res. ANM 95/2022. Em 02/08/2027 a Res. ANM 220/2025 substitui a 95, e a 220 já foi alterada antes de valer (Res. ANM 245/2026).
 - **O fiscal não vai achar o erro por você.** A ANM tem 53 servidores para fiscalizar cerca de 900 barragens, segundo a associação dos servidores. O controle é por declaração do próprio empreendedor: quem erra a data descobre no embargo.
 - **Mercado inicial bem definido.** 125 grupos econômicos com barragem na PNSB; 64 deles têm barragem de dano potencial alto (243 barragens, 144 em Minas Gerais). Com as premissas de preço da seção 3: TAM de R$ 24,5 milhões por ano (908 barragens de mineração), SAM de R$ 12,4 milhões (as 461 da PNSB) e SOM de R$ 1,2 milhão em 3 anos (46 barragens, cerca de 13 grupos).
-- **Expansão no mesmo motor.** O SNISB tem 29.761 barragens cadastradas (água, energia, resíduos industriais), e 8.086 mineradoras recolheram CFEM em 2025. Vaso de pressão (NR-13), emergência (NR-22) e licença ambiental já rodam na demo.
+- **Expansão no mesmo motor: mesmo motor, outro cadastro.** Barragens de mineração são a porta de entrada; o mercado de verdade é compliance por ativo na mineradora inteira, e depois em todas as barragens do país. O SNISB tem 29.761 barragens cadastradas (água, energia, resíduos industriais), e 8.086 mineradoras recolheram CFEM em 2025. Vaso de pressão (NR-13), emergência (NR-22) e licença ambiental já rodam na demo.
 - **Concorrência existe, mas olha de cima para baixo.** Plataformas como Sigalei e Verde Ghaia respondem "o que mudou na lei?". A RegulaIA responde "o que esta barragem precisa entregar, até quando, e já entregou?", e lê o documento de campo que comprova.
 
 ## 2. O problema
@@ -145,6 +145,8 @@ Mesma premissa de preço em todas as linhas: R$ 27 mil por barragem por ano, com
 A tabela de expansão abaixo não entra no TAM: barragens de água e energia e as normas de toda a mineradora pedem cadastro de normas novas, e o preço para esses ativos ainda não foi pensado.
 
 ### Expansão no mesmo motor
+
+A escada em uma frase: **mesmo motor, outro cadastro.** Primeiro as barragens de mineração da PNSB (o mercado inicial acima), depois a mineradora inteira (vasos de pressão, NR-22, licenças: o degrau que a demo já roda), depois as barragens de água, energia e resíduos. Cada degrau pede o cadastro de normas novas, não um produto novo.
 
 | Camada | Tamanho | Fonte |
 |---|---|---|

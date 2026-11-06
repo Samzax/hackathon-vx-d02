@@ -5,12 +5,14 @@ description = "Torre de controle regulatória: Hackathon VX, Desafio 02"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "altair>=6",
     "beautifulsoup4>=4.12",
     "boto3>=1.40",
     "httpx>=0.28.1",
     "openpyxl>=3.1.5",
     "pandas>=2",
     "pillow>=11",
+    "pydeck>=0.9",
     "pypdf>=6.21.4",
     "python-dotenv>=1.2.4",
     "reportlab>=5.1.0",

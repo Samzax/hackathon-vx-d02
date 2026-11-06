@@ -133,3 +133,19 @@ CREATE TABLE IF NOT EXISTS evento (
     por           TEXT,
     em            TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Quem entra na torre. A área é o mesmo texto do responsável do cadastro: é ela que diz
+-- o que um gestor vê. Fica fora do "Recriar demo": conta criada pela TI não some com os dados.
+CREATE TABLE IF NOT EXISTS usuario (
+    id             INTEGER PRIMARY KEY,
+    email          TEXT NOT NULL UNIQUE,              -- sempre minúsculo
+    nome           TEXT NOT NULL,
+    papel          TEXT NOT NULL CHECK (papel IN ('admin', 'diretoria', 'regulatorio', 'gestor')),
+    area           TEXT,                              -- obrigatória para gestor
+    senha          TEXT,                              -- scrypt$sal$hash; vazio: conta de teste da demo
+    teste          INTEGER NOT NULL DEFAULT 0 CHECK (teste IN (0, 1)),   -- troca de visão à vontade
+    ativa          INTEGER NOT NULL DEFAULT 1 CHECK (ativa IN (0, 1)),
+    criado_por     TEXT,
+    criado_em      TEXT NOT NULL DEFAULT (datetime('now')),
+    ultimo_acesso  TEXT
+);

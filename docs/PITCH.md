@@ -50,9 +50,9 @@ Como o tempo está dividido, e qual critério cada parte carrega:
 
 Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é ao vivo. Cada linha abaixo é um corte do vídeo.
 
-- **0:00 Hoje.** 8 ativos, 72 obrigações de 5 normas; 4 atrasadas, 1 dado faltando, 3 vencendo. **Narração:** "Uma mineradora fictícia, com barragens, vasos de pressão e licença. O que vence, por ativo, sem ninguém ler norma."
+- **0:00 Caixa de entrada.** 8 ativos, 72 obrigações de 5 normas; 4 atrasadas, 1 dado faltando, 3 vencendo, cada pendência com o botão que resolve. **Narração:** "Uma mineradora fictícia, com barragens, vasos de pressão e licença. O que precisa de ação, por ativo, sem ninguém ler norma."
 - **0:20 Documento de campo.** Ler `FIR_B2_2026-11-1Q_anomalia.pdf`: aparece o alerta vermelho. **Narração:** "A ficha de inspeção chega em PDF. A regra lê barragem, documento e data, sem IA. A anomalia obriga uma inspeção especial em 24 horas, e a torre abre essa obrigação."
-- **0:45 Mudança de norma.** Aba **Mudanças**, antes e depois da OB-01, clicar em **Aprovar**. **Narração:** "O radar achou a Resolução 245 e propôs a mudança, com o trecho do ato. Mudou uma obrigação; as outras 23 ficaram iguais. Só vale depois que alguém aprova."
+- **0:45 Mudança de norma.** **Decidir →** na caixa abre **Mudanças**: antes e depois da OB-01, clicar em **Aprovar**. **Narração:** "O radar achou a Resolução 245 e propôs a mudança, com o trecho do ato. Mudou uma obrigação; as outras 23 ficaram iguais. Só vale depois que alguém aprova."
 - **1:10 Transição.** Botão **Res. 220**: a torre vira para 02/08/2027 e cobra pela norma nova. **Narração:** "No dia da troca, a torre já cobra pela norma nova e não perde o que foi feito pela antiga."
 - **1:30 Radar e gestor.** Funil 7.884 atos → 825 da ANM → 2 para a IA → 1 muda o cadastro; trocar para *Manutenção da Usina*. **Narração:** "Um mês inteiro do Diário Oficial virou duas chamadas de IA. E cada gestor vê só os ativos dele."
 
@@ -68,8 +68,10 @@ Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é a
 - **Na tela:**
   - à esquerda, o funil 908 → 461 → 208 → 46 barragens (cadastradas → na política nacional → grupos de 2 a 9 barragens → meta em 3 anos), com "R$ 24,5 mi · R$ 12,4 mi · R$ 1,2 mi por ano" ao lado das etapas que viram receita (TAM, SAM, SOM);
   - à direita, o modelo em três linhas: assinatura por ativo; implantação; licença para consultoria, que também é canal de venda;
-  - embaixo, uma linha: "preço a validar com 10 entrevistas e 3 pilotos pagos".
-- **Fala:** "Começamos pelos 59 grupos que têm de 2 a 9 barragens: dor de consolidar, pouco time de sistemas. Cobrando por ativo, só as 461 barragens da PNSB dão R$ 12,4 milhões por ano; com 10% de adoção, R$ 1,2 milhão. Fora dessa conta ficam as outras 447 barragens de mineração, as 29.761 barragens do país e as 8.086 mineradoras que pagam royalty."
+  - embaixo, a escada numa faixa só, com o título "Mesmo motor, outro cadastro": 461 barragens da PNSB (a porta de entrada) → a mineradora inteira, 8.086 pagam CFEM (NR-13, NR-22 e licença já rodam na demo) → 29.761 barragens do país (água, energia, resíduos; SNISB);
+  - no rodapé: "preço a validar com 10 entrevistas e 3 pilotos pagos".
+- **Fala:** "Começamos pelos 59 grupos que têm de 2 a 9 barragens: dor de consolidar, pouco time de sistemas. Cobrando por ativo, só as 461 barragens da PNSB dão R$ 12,4 milhões por ano; com 10% de adoção, R$ 1,2 milhão. Mas o motor é por ativo, não por barragem: mesmo motor, outro cadastro. Depois vêm as outras 447 barragens de mineração, a mineradora inteira, em 8.086 mineradoras que pagam royalty, e as 29.761 barragens do país."
+- **Por que a escada:** o SAM de R$ 12,4 milhões é pequeno para quem investe; o mercado de verdade é compliance por ativo na mineradora inteira. A demo prova o degrau do meio: vaso de pressão (NR-13), unidade (NR-22) e licença rodam no mesmo motor das barragens.
 - **Premissas, não dados** (dá para mudar ao vivo na aba **Mercado**): R$ 1.500 por barragem por mês, 5 outros ativos por barragem a R$ 150 por mês cada, 10% de adoção. Conta: 461 × (R$ 1.500 + 5 × R$ 150) × 12.
 
 ## 8 · Concorrência (4:15 – 4:35)
@@ -88,7 +90,7 @@ Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é a
 
 ## Ensaio
 
-- As falas e a narração somam cerca de 560 palavras: 3 min 45 s a 150 palavras por minuto. O resto do tempo é o vídeo mostrando a tela entre uma narração e outra, e uma pausa depois do número de abertura. Um teste conta as palavras e falha se passar de 750.
+- As falas e a narração somam cerca de 580 palavras: perto de 3 min 50 s a 150 palavras por minuto. O slide 7 ficou no limite dos 30 s: se apertar, a escada fica só na tela. O resto do tempo é o vídeo mostrando a tela entre uma narração e outra, e uma pausa depois do número de abertura. Um teste conta as palavras e falha se passar de 750.
 - Cronometrar duas vezes com o vídeo rodando. Se passar de 5 min, cortar primeiro o corte "Transição" do vídeo e depois o slide 9 para uma frase.
 - O vídeo é gravado antes, com a barra lateral em 07/11/2026, "Diretoria (todos os ativos)" e **Recriar demo**. Ter o arquivo do vídeo local, além do link, caso a internet falhe.
 - Não há perguntas: as respostas que mais importam já estão nos slides 6 (a IA errar), 7 (premissas de preço) e 8 (concorrência). A tabela "Se perguntarem" do [roteiro](ROTEIRO_DEMO.md) fica para as mentorias e para conversas depois do pitch.

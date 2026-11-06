@@ -107,6 +107,21 @@ def atualizar_atributos(conn, ativo_id: int, novos: dict, por: str | None = None
     return atual
 
 
+def definir_responsavel(conn, ativo_id: int, area: str | None, por: str | None = None) -> bool:
+    """Qual área responde pelo ativo (a Diretoria decide). Fica no histórico; True se mudou."""
+    r = conn.execute("SELECT responsavel FROM ativo WHERE id = ?", (ativo_id,)).fetchone()
+    if r is None:
+        raise ErroCadastro(f"ativo {ativo_id} não existe")
+    nova = (area or "").strip() or None
+    if nova == r["responsavel"]:
+        return False
+    with conn:
+        conn.execute("UPDATE ativo SET responsavel = ? WHERE id = ?", (nova, ativo_id))
+        conn.execute("INSERT INTO evento (ativo_id, tipo, texto, por) VALUES (?, 'cadastro', ?, ?)",
+                     (ativo_id, f"área responsável: {r['responsavel'] or 'ninguém'} → {nova or 'ninguém'}", por))
+    return True
+
+
 def _legivel(v) -> str:
     if isinstance(v, bool):
         return "sim" if v else "não"
