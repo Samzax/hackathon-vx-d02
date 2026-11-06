@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+/* tema escuro pelo atributo data-tema no <html> (o script do layout escolhe antes de pintar) */
+@custom-variant dark (&:where([data-tema="escuro"], [data-tema="escuro"] *));
+
+/* Identidade: petróleo sóbrio, cara de software de engenharia. Cor só onde tem significado:
+   a marca (ações) e o status das obrigações. */
+:root {
+  color-scheme: light;
+  --fundo: #ffffff;
+  --fundo-2: #f3f5f7;
+  --fundo-3: #e9edf1;
+  --lateral: #f3f5f7;
+  --borda: #e1e5ea;
+  --borda-forte: #c9d0d8;
+  --texto: #1b2128;
+  --texto-2: #5b6470;
+  --texto-3: #7a838e;
+  --marca: #1e6a80;
+  --marca-forte: #16566a;
+  --marca-suave: #e2eff3;
+  --sobre-marca: #ffffff;
+
+  --atrasada: #c23b3b;
+  --atrasada-fundo: #fbeaea;
+  --faltando: #7d4fb8;
+  --faltando-fundo: #f1eafa;
+  --vence: #8a6400;
+  --vence-marca: #e0ad1a;
+  --vence-fundo: #fcf3d4;
+  --emdia: #2b8452;
+  --emdia-fundo: #e5f3ea;
+  --gatilho: #2f6db5;
+  --gatilho-fundo: #e7eff9;
+  --proposta: #c26a12;
+  --sombra: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
+  /* séries dos gráficos (linha do tempo): ordem fixa, validada para daltonismo */
+  --serie-1: #2a78d6;
+  --serie-2: #eb6834;
+  --serie-3: #1baf7a;
+  --serie-4: #eda100;
+  --serie-5: #e87ba4;
+  --serie-6: #008300;
+  --serie-7: #6250d6;
+  --serie-8: #e34948;
+}
+
+[data-tema="escuro"] {
+  color-scheme: dark;
+  --fundo: #0f1318;
+  --fundo-2: #171c23;
+  --fundo-3: #1f252e;
+  --lateral: #13181e;
+  --borda: #262d36;
+  --borda-forte: #36404c;
+  --texto: #e4e7eb;
+  --texto-2: #a3abb5;
+  --texto-3: #87909b;
+  --marca: #5aafc6;
+  --marca-forte: #7cc3d6;
+  --marca-suave: #17323b;
+  --sobre-marca: #0b1a1f;
+
+  --atrasada: #ee6e6e;
+  --atrasada-fundo: #3a1c1e;
+  --faltando: #b893f2;
+  --faltando-fundo: #2c2140;
+  --vence: #ecc659;
+  --vence-marca: #e9bf3f;
+  --vence-fundo: #3a3016;
+  --emdia: #5bc08a;
+  --emdia-fundo: #17321f;
+  --gatilho: #6ea3e6;
+  --gatilho-fundo: #182a40;
+  --proposta: #eba244;
+  --sombra: 0 1px 2px rgb(0 0 0 / 40%);
+  --serie-1: #3987e5;
+  --serie-2: #d95926;
+  --serie-3: #199e70;
+  --serie-4: #c98500;
+  --serie-5: #d55181;
+  --serie-6: #008300;
+  --serie-7: #9085e9;
+  --serie-8: #e66767;
+}
+
+@theme inline {
+  --color-fundo: var(--fundo);
+  --color-fundo-2: var(--fundo-2);
+  --color-fundo-3: var(--fundo-3);
+  --color-lateral: var(--lateral);
+  --color-borda: var(--borda);
+  --color-borda-forte: var(--borda-forte);
+  --color-texto: var(--texto);
+  --color-texto-2: var(--texto-2);
+  --color-texto-3: var(--texto-3);
+  --color-marca: var(--marca);
+  --color-marca-forte: var(--marca-forte);
+  --color-marca-suave: var(--marca-suave);
+  --color-sobre-marca: var(--sobre-marca);
+  --color-atrasada: var(--atrasada);
+  --color-atrasada-fundo: var(--atrasada-fundo);
+  --color-faltando: var(--faltando);
+  --color-faltando-fundo: var(--faltando-fundo);
+  --color-vence: var(--vence);
+  --color-vence-marca: var(--vence-marca);
+  --color-vence-fundo: var(--vence-fundo);
+  --color-emdia: var(--emdia);
+  --color-emdia-fundo: var(--emdia-fundo);
+  --color-gatilho: var(--gatilho);
+  --color-gatilho-fundo: var(--gatilho-fundo);
+  --color-proposta: var(--proposta);
+  --shadow-cartao: var(--sombra);
+  --font-sans: "Inter Variable", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html {
+  background: var(--fundo);
+  color: var(--texto);
+  font-size: 15px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 2px;
+}
+
+dialog::backdrop {
+  background: rgb(10 14 19 / 55%);
+}
+
+/* o mapa (Leaflet) segue o tema */
+.leaflet-container {
+  background: var(--fundo-2);
+  font-family: var(--font-sans);
+}
+/* fundo do mapa discreto: as cores ficam para o status dos ativos */
+/* (o leaflet.css põe `filter: inherit` no ladrilho: daí o seletor mais específico) */
+.leaflet-container .leaflet-tile {
+  filter: grayscale(0.75) contrast(0.95);
+}
+[data-tema="escuro"] .leaflet-container .leaflet-tile {
+  filter: grayscale(0.8) invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9);
+}
+.leaflet-tooltip.rotulo-ativo {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--texto);
+  font-weight: 700;
+  font-size: 12px;
+  text-shadow: 0 0 3px var(--fundo), 0 0 3px var(--fundo);
+}
+.leaflet-tooltip.rotulo-ativo::before {
+  display: none;
+}

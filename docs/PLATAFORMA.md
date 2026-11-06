@@ -31,6 +31,12 @@ uv run python -m api.contrato                    # regera api/openapi.json depoi
 docker compose up --build                         # Postgres + API, igual à AWS
 REGULAIA_DATABASE_URL=postgresql://... uv run alembic upgrade head
 REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
+
+cd front && npm ci                                # o front (Node 22.12+)
+npm run dev                                       # http://localhost:3000, falando com a API na 8000
+npm run build                                     # front/out: a API serve em http://localhost:8000
+npm run tipos                                     # regera src/lib/api-tipos.ts depois do api.contrato
+npm test && npm run e2e                           # vitest; Playwright contra a API real (depois do build)
 ```
 
 ## Estado
@@ -54,7 +60,28 @@ REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
 - [ ] Pool de conexões (psycopg_pool) no lugar de uma conexão por requisição
 
 ### Fase 2 (paralelo, depois da fase 1)
-- [ ] 2A front Next.js (tipos gerados de `api/openapi.json`)
+- [x] 2A front Next.js em `front/`: substitui o Streamlit como interface principal, todas as telas do README.
+      - Next.js 16 (App Router) + TypeScript + Tailwind 4, `output: "export"`: site estático que a própria API
+        serve na mesma origem (`api/main.py` monta `front/out` se existir; `REGULAIA_FRONT` muda a pasta; rota
+        `/api/v1/...` que não existe continua 404 em JSON). A imagem (`api/Dockerfile`) compila o front num
+        estágio Node e copia o `out/`. Em dev, Next na 3000 e API na 8000 (CORS com credenciais).
+      - Tipos gerados de `api/openapi.json` (`npm run tipos`, conferidos no CI com `--check`); cliente
+        `openapi-fetch` com `credentials: "include"` e `X-CSRF-Token` (cookie `regulaia_csrf`) em toda escrita;
+        React Query com chave `["torre", visão, empresa, hoje]`, e toda escrita invalida a torre.
+      - Nada de regra no front: rótulos, períodos, campos do cadastro, quem decide, conferência e o que mudou
+        vêm da API. Rotas novas para isso: `cadastro/campos`, `empresas/{id}/areas`, `resumo`, `vigencias`,
+        `plano-transicao`, `obrigacoes`, `decisoes`, `ativos/{id}/obrigacoes/{codigo}/historico`,
+        `entregas/periodo`, `comprovantes` (arquivo da entrega), `evidencias/exemplos`, `radar/exemplo`;
+        `Ativo.posicao` (mapa, de `data/posicoes_demo.json`), `Eu.hoje`, e na versão de uma obrigação `mudou`
+        (o que mudou em relação à anterior) e `corrigido` (proposto → aprovado por quem decidiu).
+      - Marca própria, claro e escuro (segue o sistema, troca na barra lateral), cores de status da torre
+        como variáveis CSS (`globals.css`), mapa Leaflet com ladrilhos do OpenStreetMap, Gantt em SVG,
+        usável no celular (menu em gaveta, tabelas com rolagem).
+      - Testes: vitest (formatação, cliente da API, status, markdown) e Playwright (`front/e2e/`): a API de
+        verdade num SQLite novo servindo o `out/`, cinco cenários (entrar na demo e ver as 4 atrasadas,
+        registrar uma entrega, gestor só com a área dele, curadoria aprovando a Res. 245, TI só com contas e
+        auditoria). CI: jobs `front` (tipos, lint, typecheck, vitest, build) e `front-e2e`.
+      - Em aberto: o Streamlit (`app.py`) continua na `main` até a troca; "Pergunte à torre" (2C) ainda não.
 - [x] 2B AWS CDK (`infra/`, commit 49c404b): ALB + ECS Fargate (API e front na mesma origem, migração no start),
       RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
       06:00 BRT), Secrets Manager, CloudWatch com 3 alarmes, sem NAT. `tests/test_infra.py` confere a pilha;

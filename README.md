@@ -91,12 +91,15 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | Empresa importada do SIGBM não ganha atraso inventado; o que o SIGBM não informa vira dado faltando, e preencher tira do dado faltando | `tests/test_sigbm.py`, `test_importar_mineradora_do_sigbm_e_operar` |
 | Passou do teto de gasto de IA do dia, só regra e cache; o que já foi pago continua valendo | `test_teto_diario_de_ia_corta_chamada_paga_mas_nao_o_cache` |
 | A imagem Docker leva o que a demo precisa e deixa de fora `.env` e dados brutos | `test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto` |
+| No front, contra a API real: entrar na demo, ver as 4 atrasadas, registrar uma entrega, o gestor vendo só a área dele, a curadoria aprovando a Res. 245 | `front/e2e/torre.spec.ts` (Playwright) |
 
 ## Conteúdo
 
 | Caminho | O que é |
 |---|---|
-| [app.py](app.py) | A interface (Streamlit) |
+| `front/` | A interface de produto (Next.js, branch `plataforma`): estática, servida pela própria API |
+| `api/` | A API (FastAPI): sessão, papéis, escopo por área, auditoria; contrato em [api/openapi.json](api/openapi.json) |
+| [app.py](app.py) | A interface da demo (Streamlit) |
 | `regulaia/` | Banco, versões, regras, agenda, torre, extrator, impacto, leitor de evidência, boletim e plano em PDF |
 | `collector/` | Leitor do XML mensal do DOU (dados abertos) |
 | `agente/` | Servidor MCP: o Claude (ou outro cliente MCP) consulta a torre pela API, só leitura |
@@ -126,6 +129,20 @@ uv run python -m regulaia.impacto data/raw/dou/S01082026.zip    # impacto com IA
 RUN_IA=1 uv run pytest tests/test_ia_real.py -v                 # casos de ouro com o modelo real
 uv run python -m regulaia.extrator ORIGEM NORMA TIPO DESTINO    # norma -> obrigações propostas (IA)
 uv run python -m regulaia.curadoria ...                         # escolhas humanas -> cadastro/*.csv
+```
+
+### A API e o front de produto
+
+O front (`front/`, Next.js + TypeScript + Tailwind) fala só com a API e é exportado como site estático. Em produção a própria API serve `front/out` na mesma origem, então o cookie de sessão e o CSRF valem sem CORS. Precisa do Node 22.12 ou mais novo.
+
+```bash
+uv run uvicorn api.main:app --reload    # a API em http://localhost:8000 (docs em /docs)
+cd front && npm ci
+npm run dev                             # o front em http://localhost:3000, falando com a API na 8000
+npm run build                           # gera front/out: a API passa a servir a torre em http://localhost:8000
+npm run tipos                           # regera os tipos depois de `uv run python -m api.contrato`
+npm test                                # vitest: formatação, cliente da API, cores de status
+npm run e2e                             # Playwright (depois do build): sobe a API num SQLite novo e testa no Chromium
 ```
 
 Num clone novo, `uv run pytest` passa com alguns testes pulados. Eles precisam de arquivos que ficam fora do Git:

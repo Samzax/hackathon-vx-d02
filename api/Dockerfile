@@ -7,6 +7,18 @@
 #   docker run regulaia-api python -m api.jobs radar
 # Segredos (URL do banco, chaves de IA, token do agente) entram por variável de ambiente,
 # vindos do Secrets Manager na AWS; nunca na imagem (.env está no .dockerignore).
+#
+# O front (Next.js exportado, estático) é compilado num estágio próprio e servido pela própria API
+# na mesma origem (api/main.py monta front/out): cookie de sessão e CSRF sem CORS.
+
+FROM node:24-slim AS front
+
+ENV NEXT_TELEMETRY_DISABLED=1
+WORKDIR /front
+COPY front/package.json front/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY front/ ./
+RUN npm run build
 
 FROM python:3.13-slim
 
@@ -24,6 +36,7 @@ RUN uv sync --locked --no-dev --no-install-project
 
 COPY . .
 RUN uv sync --locked --no-dev
+COPY --from=front /front/out /app/front/out
 
 RUN useradd --create-home regulaia && mkdir -p /app/data/uploads && chown -R regulaia /app
 USER regulaia

@@ -64,6 +64,63 @@ jobs:
           uv run alembic upgrade head
       - run: uv run pytest -q --durations=15
 
+  front:
+    # o front da torre: tipos conferidos contra o contrato da API, lint, tipos, vitest e o build estático
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: front
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+      - run: npm ci
+      - name: Tipos gerados conferem com api/openapi.json
+        run: npm run tipos:conferir
+      - run: npm run lint -- --max-warnings 0
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  front-e2e:
+    # de ponta a ponta no Chromium: a API de verdade (SQLite novo) servindo o front exportado
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+      - name: Build do front
+        working-directory: front
+        run: |
+          npm ci
+          npm run build
+      - name: Chromium do Playwright
+        working-directory: front
+        run: npx playwright install --with-deps chromium
+      - name: Playwright (sobe a API sozinho, front/e2e/servidor.mjs)
+        working-directory: front
+        run: npm run e2e
+      - name: Relatório do Playwright (se falhou)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright
+          path: |
+            front/playwright-report/
+            front/test-results/
+          retention-days: 7
+
   imagem:
     runs-on: ubuntu-latest
     steps:
@@ -78,6 +135,7 @@ jobs:
           curl -fsS http://localhost:8000/health
           curl -fsS -X POST -c c.txt http://localhost:8000/api/v1/auth/demo > /dev/null
           curl -fsS -b c.txt http://localhost:8000/api/v1/empresas
+          curl -fsS http://localhost:8000/entrar/ | grep -q "Entrar na demo"
           docker compose down -v
       - name: Logs da API (se falhou)
         if: failure()
