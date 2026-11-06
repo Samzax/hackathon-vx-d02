@@ -30,6 +30,10 @@ dev = [
     "httpx>=0.28.1",
     "pytest>=8",
 ]
+infra = [
+    "aws-cdk-lib>=2.200",
+    "constructs>=10",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

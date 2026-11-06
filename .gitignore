@@ -38,3 +38,6 @@ docs/slides/saida/
 
 # Documentos enviados pela API (local; na AWS ficam no S3)
 data/uploads/
+
+# CDK
+infra/cdk.out/
