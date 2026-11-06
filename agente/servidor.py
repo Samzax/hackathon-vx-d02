@@ -45,10 +45,11 @@ def _linha(l: dict, com_trecho: bool = True) -> dict:
         "dispositivo": l.get("dispositivo") or l.get("artigo"), "status": l["status"],
         "vence": l.get("vence"), "area": l.get("area"), "responsavel": l.get("responsavel"),
     }
-    if l.get("faltando_rotulos"):
-        out["periodos_faltando"] = l["faltando_rotulos"]
-    if l.get("dados_faltando_rotulos"):
-        out["dados_faltando"] = l["dados_faltando_rotulos"]
+    # os rótulos legíveis ("1ª quinzena de out/2026") vêm nas versões novas da API; senão, o código do período
+    if faltando := l.get("faltando_rotulos") or l.get("faltando"):
+        out["periodos_faltando"] = faltando
+    if dados := l.get("dados_faltando_rotulos") or l.get("dados_faltando"):
+        out["dados_faltando"] = dados
     if l.get("mudanca_pendente"):
         out["mudanca_pendente"] = True
     if com_trecho and l.get("trecho"):
