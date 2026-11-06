@@ -240,6 +240,16 @@
   "custo_usd": 0.0007239
  },
  {
+  "chave": "9e9893d3559199057605b283d6229cf6fa5f272fc5574e5312852836d3c21af7",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"O ato prorroga, de forma excepcional, apenas prazos processuais com termo final entre 02/04/2026 e 13/07/2026 que dependam dos sistemas Protocolo Digital, Dados Cadastrais ou Dados Minerários, e exclui expressamente os prazos do SIGBM, do RAL e da DIPEM (§2º, II) e as obrigações cujo descumprimento possa trazer risco à saúde, à vida, ao meio ambiente e ao patrimônio (§1º). Nenhuma das obrigações do cadastro tem prazo coincidente com essa janela, e as vinculadas ao SIGBM (DCE/RPSB e DCO) estão excluídas, de modo que o cadastro permanece inalterado.\", \"confianca\": 0.9}",
+  "tokens_in": 2264,
+  "tokens_out": 488,
+  "custo_usd": 0.0006324
+ },
+ {
   "chave": "a42903cf994b5b2e8dc239215dd35e6c290f0875bc9900660cd242406ed5a95e",
   "tarefa": "extrator",
   "provedor": "opencode",
