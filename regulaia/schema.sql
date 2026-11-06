@@ -40,7 +40,9 @@ CREATE TABLE IF NOT EXISTS obrigacao (
     codigo      TEXT NOT NULL UNIQUE,           -- OB-01, R95-03...
     tipo_ativo  TEXT NOT NULL,
     norma       TEXT,                           -- Res. ANM 220/2025, NR-13...
-    area        TEXT                            -- barragem, emergencia, ambiental, equipamento...
+    area        TEXT,                           -- barragem, emergencia, ambiental, equipamento...
+    empresa     TEXT                            -- vazio: norma pública (vale para todas); senão, só desta empresa
+                                                -- (condicionante de licença, TAC, procedimento interno)
 );
 
 CREATE TABLE IF NOT EXISTS obrigacao_versao (
@@ -147,7 +149,9 @@ CREATE TABLE IF NOT EXISTS usuario (
     ativa          INTEGER NOT NULL DEFAULT 1 CHECK (ativa IN (0, 1)),
     criado_por     TEXT,
     criado_em      TEXT NOT NULL DEFAULT (datetime('now')),
-    ultimo_acesso  TEXT
+    ultimo_acesso  TEXT,
+    empresa        TEXT,                              -- nome da empresa cliente: só vê o que é dela
+    plataforma     INTEGER NOT NULL DEFAULT 0 CHECK (plataforma IN (0, 1))   -- equipe da RegulaIA (curadoria)
 );
 
 -- Trilha de auditoria da API: toda escrita, com quem, quando, de onde e o resultado.
@@ -159,7 +163,8 @@ CREATE TABLE IF NOT EXISTS auditoria (
     alvo        TEXT,
     detalhe     TEXT,
     request_id  TEXT,
-    resultado   TEXT NOT NULL
+    resultado   TEXT NOT NULL,
+    empresa     TEXT                -- de qual cliente é a ação (vazio: plataforma)
 );
 CREATE INDEX IF NOT EXISTS auditoria_em ON auditoria(em);
 

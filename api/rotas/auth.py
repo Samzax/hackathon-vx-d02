@@ -5,11 +5,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 
-from regulaia import db, usuarios
+from regulaia import usuarios
 
 from .. import auditoria
 from ..banco import conexao
-from ..seguranca import VISAO_DIRETORIA, VISAO_TI, Escopo, abrir_sessao, escopo, fechar_sessao
+from ..seguranca import (VISAO_CURADORIA, VISAO_DIRETORIA, VISAO_TI, Escopo, abrir_sessao, areas_da_empresa,
+                         empresa_da_conta, escopo, escopo_da_conta, fechar_sessao)
 
 rota = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -20,7 +21,7 @@ class Login(BaseModel):
 
 
 class Visao(BaseModel):
-    visao: str = Field(examples=[VISAO_DIRETORIA, "Gerência de Geotecnia", VISAO_TI])
+    visao: str = Field(examples=[VISAO_DIRETORIA, "Gerência de Geotecnia", VISAO_TI, VISAO_CURADORIA])
 
 
 class Eu(BaseModel):
@@ -31,6 +32,8 @@ class Eu(BaseModel):
     papel_efetivo: str = Field(description="o papel com que a pessoa age agora (na conta de teste, o da visão)")
     area: str | None
     teste: bool
+    empresa: str | None = Field(description="a empresa cliente que a sessão vê; vazio na plataforma (vê todas)")
+    plataforma: bool = Field(description="age como a equipe da RegulaIA (curadoria das normas públicas)")
     visao: str
     visoes: list[str] = Field(description="visões que a conta pode escolher (só a conta de teste tem mais de uma)")
     csrf: str | None = None
@@ -39,22 +42,24 @@ class Eu(BaseModel):
 def _eu(conn, e: Escopo, csrf: str | None = None) -> Eu:
     u = e.usuario
     visoes = [e.visao]
-    if u["teste"]:
-        areas = sorted({a["responsavel"] for emp in db.empresas(conn) for a in db.ativos(conn, emp["id"])
-                        if a["responsavel"]} | set(db.responsaveis(conn).values()))
-        visoes = [VISAO_DIRETORIA, *areas, VISAO_TI]
+    if u["teste"]:      # as áreas são as da empresa da conta, mesmo olhando como a curadoria
+        visoes = [VISAO_DIRETORIA, *areas_da_empresa(conn, empresa_da_conta(conn, u)), VISAO_TI, VISAO_CURADORIA]
     return Eu(id=u["id"], email=u["email"], nome=u["nome"], papel=u["papel"], papel_efetivo=e.papel,
-              area=u.get("area"), teste=bool(u["teste"]), visao=e.visao, visoes=visoes, csrf=csrf)
+              area=u.get("area"), teste=bool(u["teste"]), empresa=e.empresa, plataforma=e.plataforma,
+              visao=e.visao, visoes=visoes, csrf=csrf)
 
 
 def _entrar(conn, request: Request, resposta: Response, u: dict) -> Eu:
-    csrf = abrir_sessao(conn, request.app.state.cfg, resposta, u)
     request.state.usuario = u["email"]
+    request.state.empresa = None if u.get("plataforma") else u.get("empresa")
+    try:
+        e = escopo_da_conta(conn, u, VISAO_DIRETORIA if u["teste"] else None)
+    except HTTPException:       # conta sem empresa (ou com empresa que não está na torre)
+        auditoria.registrar(conn, request, "login", u["email"], resultado="recusado")
+        raise
+    csrf = abrir_sessao(conn, request.app.state.cfg, resposta, u)
     auditoria.registrar(conn, request, "login", u["email"])
-    from ..seguranca import Escopo as _E
-    visao = VISAO_DIRETORIA if u["teste"] else (u["area"] or "")
-    papel = usuarios.DIRETORIA if u["teste"] else u["papel"]
-    return _eu(conn, _E(u, papel, None if u["teste"] else u.get("area"), visao, u["nome"]), csrf)
+    return _eu(conn, e, csrf)
 
 
 @rota.post("/login", response_model=Eu, summary="Entrar com e-mail e senha")
@@ -62,6 +67,8 @@ def login(dados: Login, request: Request, resposta: Response, conn=Depends(conex
     u = usuarios.autenticar(conn, dados.email, dados.senha)
     if u is None:
         request.state.usuario = dados.email.strip().lower()
+        conta = usuarios.por_email(conn, dados.email)     # a tentativa fica na trilha da empresa da conta
+        request.state.empresa = conta.get("empresa") if conta and not conta.get("plataforma") else None
         auditoria.registrar(conn, request, "login", dados.email, resultado="recusado")
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "e-mail ou senha não conferem")
     return _entrar(conn, request, resposta, u)
@@ -82,7 +89,7 @@ def logout(request: Request, resposta: Response, conn=Depends(conexao)):
     return resposta
 
 
-@rota.get("/me", response_model=Eu, summary="Quem está na sessão e com qual visão")
+@rota.get("/me", response_model=Eu, summary="Quem está na sessão, de qual empresa e com qual visão")
 def eu(e: Escopo = Depends(escopo), conn=Depends(conexao)):
     return _eu(conn, e)
 

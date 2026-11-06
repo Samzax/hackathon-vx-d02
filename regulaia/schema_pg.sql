@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS obrigacao (
     codigo      TEXT COLLATE "C" NOT NULL UNIQUE,
     tipo_ativo  TEXT COLLATE "C" NOT NULL,
     norma       TEXT COLLATE "C",
-    area        TEXT COLLATE "C"
+    area        TEXT COLLATE "C",
+    empresa     TEXT COLLATE "C"
 );
 
 CREATE TABLE IF NOT EXISTS obrigacao_versao (
@@ -136,7 +137,9 @@ CREATE TABLE IF NOT EXISTS usuario (
     ativa          INTEGER NOT NULL DEFAULT 1 CHECK (ativa IN (0, 1)),
     criado_por     TEXT COLLATE "C",
     criado_em      TEXT COLLATE "C" NOT NULL DEFAULT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
-    ultimo_acesso  TEXT COLLATE "C"
+    ultimo_acesso  TEXT COLLATE "C",
+    empresa        TEXT COLLATE "C",
+    plataforma     INTEGER NOT NULL DEFAULT 0 CHECK (plataforma IN (0, 1))
 );
 
 -- Trilha de auditoria da API: toda escrita, com quem, quando, de onde e o resultado.
@@ -148,7 +151,8 @@ CREATE TABLE IF NOT EXISTS auditoria (
     alvo        TEXT COLLATE "C",
     detalhe     TEXT COLLATE "C",
     request_id  TEXT COLLATE "C",
-    resultado   TEXT COLLATE "C" NOT NULL
+    resultado   TEXT COLLATE "C" NOT NULL,
+    empresa     TEXT COLLATE "C"
 );
 CREATE INDEX IF NOT EXISTS auditoria_em ON auditoria(em);
 

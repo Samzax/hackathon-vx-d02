@@ -17,7 +17,7 @@ from regulaia import db, evidencias
 from .. import armazenamento, auditoria
 from ..banco import conexao, roteador
 from ..config import hoje_padrao
-from ..seguranca import Escopo, regulatorio
+from ..seguranca import Escopo, empresa_visivel, regulatorio
 
 rota = APIRouter(prefix="/evidencias", tags=["evidências"])
 LIMITE_BYTES = 20 * 1024 * 1024
@@ -25,6 +25,7 @@ LIMITE_BYTES = 20 * 1024 * 1024
 
 class Leitura(BaseModel):
     ativo: str | None = None
+    empresa_id: int | None = None     # o código do ativo (B3) só é único dentro da empresa
     documento: str | None = None
     obrigacao: str | None = None
     data: str | None = None
@@ -52,10 +53,13 @@ class Registro(BaseModel):
     guardado_em: str | None = None
 
 
-def _pode(conn, e: Escopo, codigo_ativo: str | None) -> None:
+def _pode(conn, e: Escopo, empresa_id: int | None, codigo_ativo: str | None) -> None:
+    if empresa_id is None:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "leitura sem empresa: leia o documento de novo")
+    empresa_visivel(conn, e, empresa_id)      # a leitura de outra cliente: 404
     if e.ve_tudo or not codigo_ativo:
         return
-    r = conn.execute("SELECT responsavel FROM ativo WHERE codigo = ?", (codigo_ativo,)).fetchone()
+    r = db.ativo_por_codigo(conn, empresa_id, codigo_ativo)
     if r is None or r["responsavel"] != e.area:
         raise HTTPException(status.HTTP_403_FORBIDDEN, f"{codigo_ativo} é de outra área: quem registra é o gestor dele")
 
@@ -63,6 +67,7 @@ def _pode(conn, e: Escopo, codigo_ativo: str | None) -> None:
 @rota.post("/leitura", response_model=ResultadoLeitura, summary="Ler um documento (PDF) sem gravar nada")
 async def ler(request: Request, empresa_id: int, arquivo: UploadFile = File(...), hoje: date | None = None,
               e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+    empresa_visivel(conn, e, empresa_id)
     dados = await arquivo.read(LIMITE_BYTES + 1)
     if len(dados) > LIMITE_BYTES:
         raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "documento maior que 20 MB")
@@ -81,7 +86,7 @@ async def ler(request: Request, empresa_id: int, arquivo: UploadFile = File(...)
 
 @rota.post("/registro", status_code=201, summary="Gravar a leitura conferida: dá baixa e abre o que o documento acionou")
 def registrar(dados: Registro, request: Request, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    _pode(conn, e, dados.leitura.ativo)
+    _pode(conn, e, dados.leitura.empresa_id, dados.leitura.ativo)
     le = evidencias.Leitura(**dados.leitura.model_dump())
     try:
         eid = evidencias.registrar(conn, le, dados.arquivo, dados.guardado_em)

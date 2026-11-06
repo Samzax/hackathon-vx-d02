@@ -62,6 +62,11 @@ def conectar(caminho: str | Path = DB_PADRAO):
     for col in ("monitorado_desde", "origem"):
         if col not in colunas:
             conn.execute(f"ALTER TABLE empresa ADD COLUMN {col} TEXT")
+    # multiempresa: bancos criados antes de conta e obrigação terem empresa
+    for tabela, col, tipo in (("obrigacao", "empresa", "TEXT"), ("usuario", "empresa", "TEXT"),
+                              ("usuario", "plataforma", "INTEGER NOT NULL DEFAULT 0"), ("auditoria", "empresa", "TEXT")):
+        if col not in {r["name"] for r in conn.execute(f"PRAGMA table_info({tabela})")}:
+            conn.execute(f"ALTER TABLE {tabela} ADD COLUMN {col} {tipo}")
     return conn
 
 
@@ -184,12 +189,13 @@ def registrar_ato(conn, fonte: str, identificador: str, titulo: str, *,
 
 
 def carregar_obrigacoes_csv(conn, caminho: str | Path, tipo_ativo: str = "barragem",
-                            norma: str | None = None) -> int:
+                            norma: str | None = None, empresa: str | None = None) -> int:
     """Carrega um cadastro: cada linha vira a versão 1, já vigente.
 
     Colunas obrigatórias: id, artigo, obrigacao, aplica_se_a, regra, periodicidade,
     prazo, vigencia_desde, responsavel_ficticio, evidencia, fonte.
-    Opcionais: agenda (padrão "evento"), vigencia_ate, area, norma, tipo_ativo, trecho.
+    Opcionais: agenda (padrão "evento"), vigencia_ate, area, norma, tipo_ativo, trecho e empresa
+    (obrigação própria de uma empresa cliente; vazio: norma pública, vale para todas).
     """
     n = 0
     with open(caminho, encoding="utf-8", newline="") as f:
@@ -199,9 +205,10 @@ def carregar_obrigacoes_csv(conn, caminho: str | Path, tipo_ativo: str = "barrag
             agenda_.validar(agenda)
             with conn:
                 ob_id = conn.execute(
-                    "INSERT INTO obrigacao (codigo, tipo_ativo, norma, area) VALUES (?, ?, ?, ?)",
+                    "INSERT INTO obrigacao (codigo, tipo_ativo, norma, area, empresa) VALUES (?, ?, ?, ?, ?)",
                     (linha["id"], linha.get("tipo_ativo") or tipo_ativo,
-                     linha.get("norma") or norma, linha.get("area") or None),
+                     linha.get("norma") or norma, linha.get("area") or None,
+                     (linha.get("empresa") or "").strip() or empresa),
                 ).lastrowid
                 conn.execute(
                     "INSERT INTO obrigacao_versao (obrigacao_id, versao, titulo, artigo, "
@@ -222,6 +229,12 @@ def vale_em(versao: dict, dia: str) -> bool:
     """A versão vale no dia (AAAA-MM-DD)? Janela fechada nas duas pontas."""
     desde, ate = versao.get("vigencia_desde"), versao.get("vigencia_ate")
     return (not desde or desde <= dia) and (not ate or dia <= ate)
+
+
+def ativo_por_codigo(conn, empresa_id: int, codigo: str) -> dict | None:
+    """O código (B1, L1) só é único dentro da empresa: a busca sempre leva a empresa."""
+    r = conn.execute("SELECT * FROM ativo WHERE empresa_id = ? AND codigo = ?", (empresa_id, codigo)).fetchone()
+    return dict(r) if r else None
 
 
 def _obrigacao_id(conn, codigo: str) -> int:
@@ -500,15 +513,18 @@ class ObrigacaoDoAtivo:
 def obrigacoes_do_ativo(conn, ativo_id: int, em: str | None = None) -> list[ObrigacaoDoAtivo]:
     """Obrigações que se aplicam ao ativo. Com `em` (AAAA-MM-DD), só as que valem nesse dia
     pela versão vigente ou pela pendente."""
-    a = conn.execute("SELECT tipo, atributos FROM ativo WHERE id = ?", (ativo_id,)).fetchone()
+    a = conn.execute("SELECT a.tipo, a.atributos, e.nome AS empresa FROM ativo a "
+                     "JOIN empresa e ON e.id = a.empresa_id WHERE a.id = ?", (ativo_id,)).fetchone()
     if a is None:
         raise ErroCadastro(f"ativo {ativo_id} não existe")
     attrs = json.loads(a["atributos"])
-    # uma consulta só: vigente e pendente de todas as obrigações do tipo do ativo
+    # uma consulta só: vigente e pendente de todas as obrigações do tipo do ativo, das normas
+    # públicas e das próprias da empresa dona do ativo (nunca as de outra empresa)
     versoes: dict[str, dict[str, dict]] = {}
     for r in conn.execute(
         "SELECT v.*, o.codigo FROM obrigacao_versao v JOIN obrigacao o ON o.id = v.obrigacao_id "
-        "WHERE o.tipo_ativo = ? AND v.status IN ('vigente', 'pendente')", (a["tipo"],)
+        "WHERE o.tipo_ativo = ? AND v.status IN ('vigente', 'pendente') "
+        "AND (o.empresa IS NULL OR o.empresa = ?)", (a["tipo"], a["empresa"])
     ):
         versoes.setdefault(r["codigo"], {})[r["status"]] = dict(r)
     out = []

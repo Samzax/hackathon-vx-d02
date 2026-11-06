@@ -75,6 +75,7 @@ def _sem_senha_dict(r) -> dict | None:
     d = dict(r)
     d["tem_senha"] = bool(d.pop("senha"))
     d["teste"], d["ativa"] = bool(d["teste"]), bool(d["ativa"])
+    d["plataforma"] = bool(d.get("plataforma"))
     return d
 
 
@@ -88,7 +89,8 @@ def _validar(papel: str, area: str | None, senha: str | None) -> None:
 
 
 def criar(conn, email: str, nome: str, papel: str, *, area: str | None = None, senha: str | None = None,
-          teste: bool = False, por: str | None = None) -> int:
+          teste: bool = False, por: str | None = None, empresa: str | None = None,
+          plataforma: bool = False) -> int:
     """Conta nova. Sem senha, só entra pelo botão da demo (vale para conta de teste)."""
     e, nome = _email(email), (nome or "").strip()
     if not nome:
@@ -100,8 +102,10 @@ def criar(conn, email: str, nome: str, papel: str, *, area: str | None = None, s
         raise ErroConta(f"já existe uma conta com o e-mail {e}")
     with conn:
         cur = conn.execute(
-            "INSERT INTO usuario (email, nome, papel, area, senha, teste, criado_por) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (e, nome, papel, (area or "").strip() or None, hash_senha(senha) if senha else None, int(teste), por))
+            "INSERT INTO usuario (email, nome, papel, area, senha, teste, criado_por, empresa, plataforma) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (e, nome, papel, (area or "").strip() or None, hash_senha(senha) if senha else None, int(teste), por,
+             (empresa or "").strip() or None, int(plataforma)))
     return cur.lastrowid
 
 
@@ -110,16 +114,23 @@ def por_email(conn, email: str) -> dict | None:
                                         ((email or "").strip().lower(),)).fetchone())
 
 
-def listar(conn) -> list[dict]:
-    """Ativas primeiro; dentro delas, TI, Diretoria, Regulatório, gestores; depois por nome."""
+def listar(conn, empresa: str | None = None) -> list[dict]:
+    """Ativas primeiro; dentro delas, TI, Diretoria, Regulatório, gestores; depois por nome.
+    Com `empresa`, só as contas daquela empresa (a TI de uma cliente não vê as contas de outra)."""
     ordem = {p: i for i, p in enumerate(PAPEIS)}
-    contas = [_sem_senha_dict(r) for r in conn.execute("SELECT * FROM usuario")]
+    if empresa is None:
+        rows = conn.execute("SELECT * FROM usuario")
+    else:
+        rows = conn.execute("SELECT * FROM usuario WHERE empresa = ?", (empresa,))
+    contas = [_sem_senha_dict(r) for r in rows]
     return sorted(contas, key=lambda u: (not u["ativa"], ordem[u["papel"]], u["nome"].lower()))
 
 
-def _admins_ativos(conn, exceto: int | None = None) -> int:
-    return conn.execute("SELECT COUNT(*) FROM usuario WHERE papel = ? AND ativa = 1 AND teste = 0 AND id IS DISTINCT FROM ?",
-                        (ADMIN, exceto)).fetchone()[0]
+def _admins_ativos(conn, exceto: int | None = None, empresa: str | None = None) -> int:
+    """Contas de TI ativas da mesma empresa (cada cliente precisa da sua)."""
+    return conn.execute("SELECT COUNT(*) FROM usuario WHERE papel = ? AND ativa = 1 AND teste = 0 "
+                        "AND id IS DISTINCT FROM ? AND empresa IS NOT DISTINCT FROM ?",
+                        (ADMIN, exceto, empresa)).fetchone()[0]
 
 
 def editar(conn, usuario_id: int, *, nome: str | None = None, papel: str | None = None, area: str | None = None,
@@ -137,7 +148,7 @@ def editar(conn, usuario_id: int, *, nome: str | None = None, papel: str | None 
     _validar(novo["papel"], novo["area"], None)
     era_admin = r["papel"] == ADMIN and r["ativa"] and not r["teste"]
     continua_admin = novo["papel"] == ADMIN and novo["ativa"] and not novo["teste"]
-    if era_admin and not continua_admin and not _admins_ativos(conn, exceto=usuario_id):
+    if era_admin and not continua_admin and not _admins_ativos(conn, exceto=usuario_id, empresa=r["empresa"]):
         raise ErroConta("esta é a única conta de TI ativa: crie outra antes de mudar ou desativar esta")
     if not novo["senha"] and not novo["teste"]:
         raise ErroConta("conta sem senha só pode ser de teste: defina uma senha antes")
@@ -183,12 +194,21 @@ def conta_demo(conn) -> dict | None:
     return _sem_senha_dict(r)
 
 
-def areas(conn) -> list[str]:
-    """Áreas conhecidas: as dos gestores ativos e as que já respondem por algum ativo ou obrigação."""
-    nomes = {r[0] for r in conn.execute(
-        "SELECT area FROM usuario WHERE ativa = 1 AND area IS NOT NULL "
-        "UNION SELECT responsavel FROM ativo WHERE responsavel IS NOT NULL "
-        "UNION SELECT responsavel FROM responsavel_obrigacao")}
+def areas(conn, empresa: str | None = None) -> list[str]:
+    """Áreas conhecidas: as dos gestores ativos e as que já respondem por algum ativo ou obrigação.
+    Com `empresa`, só as daquela empresa: "Gerência de Geotecnia" de uma cliente não é a de outra."""
+    if empresa is None:
+        nomes = {r[0] for r in conn.execute(
+            "SELECT area FROM usuario WHERE ativa = 1 AND area IS NOT NULL "
+            "UNION SELECT responsavel FROM ativo WHERE responsavel IS NOT NULL "
+            "UNION SELECT responsavel FROM responsavel_obrigacao")}
+    else:
+        nomes = {r[0] for r in conn.execute(
+            "SELECT area FROM usuario WHERE ativa = 1 AND area IS NOT NULL AND empresa = ? "
+            "UNION SELECT a.responsavel FROM ativo a JOIN empresa e ON e.id = a.empresa_id "
+            "WHERE a.responsavel IS NOT NULL AND e.nome = ? "
+            "UNION SELECT ro.responsavel FROM responsavel_obrigacao ro JOIN ativo a ON a.id = ro.ativo_id "
+            "JOIN empresa e ON e.id = a.empresa_id WHERE e.nome = ?", (empresa, empresa, empresa))}
     return sorted(n for n in nomes if n and n.strip())
 
 
@@ -208,9 +228,14 @@ def semear(conn, origem: Path = SEED) -> int:
     senha = os.environ.get("REGULAIA_SENHA_DEMO") or dados.get("senha")
     n = 0
     for c in dados["contas"]:
-        if por_email(conn, c["email"]):
+        empresa = None if c.get("plataforma") else c.get("empresa", dados.get("empresa"))
+        if existente := por_email(conn, c["email"]):
+            if existente.get("empresa") is None and empresa and not existente.get("plataforma"):
+                with conn:      # banco de antes do multiempresa: a conta da demo ganha a empresa dela
+                    conn.execute("UPDATE usuario SET empresa = ? WHERE id = ?", (empresa, existente["id"]))
             continue
         criar(conn, c["email"], c["nome"], c["papel"], area=c.get("area"), teste=c.get("teste", False),
-              senha=None if c.get("sem_senha") else senha, por="demo")
+              senha=None if c.get("sem_senha") else senha, por="demo", empresa=empresa,
+              plataforma=bool(c.get("plataforma")))
         n += 1
     return n

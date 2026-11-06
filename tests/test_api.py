@@ -13,10 +13,14 @@ from fastapi.testclient import TestClient
 
 from api.config import Config
 from api.main import PREFIXO, criar_app
-from regulaia import agenda, db, demo, evidencias, torre
+from regulaia import agenda, db, demo, evidencias, torre, usuarios
 from tests.conftest import URL_PG
 
-SENHA = json.loads((db.ROOT / "data" / "usuarios_demo.json").read_text(encoding="utf-8"))["senha"]
+_CONTAS = json.loads((db.ROOT / "data" / "usuarios_demo.json").read_text(encoding="utf-8"))
+SENHA = _CONTAS["senha"]
+SERRA_AZUL = _CONTAS["empresa"]
+CURADORIA = "curadoria@regulaia.demo"       # equipe da RegulaIA: aprova mudança de norma pública
+OUTRA = "Mineradora Morro Alto (fictícia)"  # segunda cliente dos testes de isolamento
 _MODELO: dict[str, Path] = {}
 
 
@@ -56,6 +60,13 @@ def entrar(c: TestClient, email: str | None = None) -> dict:
     assert r.status_code == 200, r.text
     c.headers["X-CSRF-Token"] = c.cookies["regulaia_csrf"]
     return r.json()
+
+
+def como(c: TestClient, email: str | None = None) -> dict:
+    """Sai da sessão atual e entra com outra conta (sem e-mail: a conta de teste da demo)."""
+    c.cookies.clear()
+    c.headers.pop("X-CSRF-Token", None)
+    return entrar(c, email)
 
 
 def _empresa(c) -> int:
@@ -206,27 +217,29 @@ def test_entrega_tira_a_obrigacao_do_atraso_e_fica_no_historico_e_na_auditoria(c
     assert any(t["acao"] == "entrega" for t in cliente.get(_url("/auditoria")).json())
 
 
-def test_so_regulatorio_ou_diretoria_decidem_e_a_decisao_vale(cliente):
+def test_norma_publica_so_a_curadoria_decide_e_a_decisao_vale(cliente):
     entrar(cliente, "geotecnia@serraazul.demo")
     emp = _empresa(cliente)
-    cliente.cookies.clear()
-    entrar(cliente, "regulatorio@serraazul.demo")
+    como(cliente, "regulatorio@serraazul.demo")
     pendentes = cliente.get(_url(f"/empresas/{emp}/mudancas")).json()
     ob01 = next(m for m in pendentes if m["codigo"] == "OB-01")
     assert ob01["diferencas"]["prazo"][1] == "2029-12-26" and ob01["trecho"]
-    cliente.cookies.clear()
-    entrar(cliente, "geotecnia@serraazul.demo")
-    assert cliente.post(_url(f"/mudancas/{ob01['versao_id']}/decisao"), json={"aprovar": True}).status_code == 403
-    cliente.cookies.clear()
-    entrar(cliente, "regulatorio@serraazul.demo")
-    assert cliente.post(_url(f"/mudancas/{ob01['versao_id']}/decisao"), json={"aprovar": True}).status_code == 200
+    assert ob01["escopo"] == "norma pública" and not ob01["decide"] and ob01["quem_decide"] == "curadoria RegulaIA"
+    decisao = _url(f"/mudancas/{ob01['versao_id']}/decisao")
+    como(cliente, "geotecnia@serraazul.demo")
+    assert cliente.post(decisao, json={"aprovar": True}).status_code == 403
+    como(cliente, "regulatorio@serraazul.demo")         # a cliente não decide norma pública por todas
+    r = cliente.post(decisao, json={"aprovar": True})
+    assert r.status_code == 403 and "curadoria" in r.json()["detail"]
+    como(cliente, CURADORIA)
+    assert cliente.post(decisao, json={"aprovar": True}).status_code == 200
     assert not [m for m in cliente.get(_url(f"/empresas/{emp}/mudancas")).json() if m["codigo"] == "OB-01"]
     h = cliente.get(_url("/obrigacoes/OB-01/historico")).json()
-    assert [v["status"] for v in h] == ["substituida", "vigente"] and h[-1]["decidida_por"] == "Paulo Ribeiro"
+    assert [v["status"] for v in h] == ["substituida", "vigente"] and h[-1]["decidida_por"] == "Curadoria RegulaIA"
 
 
 def test_correcao_invalida_e_recusada_e_auditada(cliente):
-    entrar(cliente, "regulatorio@serraazul.demo")
+    entrar(cliente, CURADORIA)
     emp = _empresa(cliente)
     m = cliente.get(_url(f"/empresas/{emp}/mudancas")).json()[0]
     r = cliente.post(_url(f"/mudancas/{m['versao_id']}/decisao"),
@@ -274,6 +287,193 @@ def test_transicao_e_linha_do_tempo(cliente):
     t = cliente.get(_url(f"/empresas/{emp}/transicao")).json()
     assert t and all(x["temas"] for x in t)
     assert any(f["dia"] == "2027-08-02" for f in cliente.get(_url(f"/empresas/{emp}/linha-do-tempo")).json())
+
+
+# ----------------------------------------------------------------- multiempresa
+# A RegulaIA é a plataforma; cada mineradora é uma cliente. A segunda cliente tem ativos com os
+# mesmos códigos da Serra Azul (B1, B3, L1) e a mesma área ("Gerência de Geotecnia").
+
+
+@pytest.fixture
+def outra(cliente, cfg) -> dict:
+    """Depois que a API subiu (no Postgres é ela que monta a demo), a segunda cliente e as contas dela."""
+    conn = db.conectar(cfg.banco)
+    base = {a["codigo"]: a for a in json.loads(demo.SERRA_AZUL.read_text(encoding="utf-8"))["ativos"]}
+    serra = conn.execute("SELECT id FROM empresa WHERE nome = ?", (SERRA_AZUL,)).fetchone()["id"]
+    with conn:
+        eid = db.criar_empresa(conn, OUTRA, ficticia=True)
+        ids = {c: db.criar_ativo(conn, eid, base[c].get("tipo", "barragem"), c, f"{base[c]['nome']} (Morro Alto)",
+                                 base[c]["atributos"], base[c]["responsavel"]) for c in ("B1", "B3", "L1")}
+    for email, nome, papel, area in (("diretoria@morroalto.demo", "Diretoria Morro Alto", "diretoria", None),
+                                     ("geotecnia@morroalto.demo", "Geotecnia Morro Alto", "gestor", "Gerência de Geotecnia"),
+                                     ("ti@morroalto.demo", "TI Morro Alto", "admin", None)):
+        usuarios.criar(conn, email, nome, papel, area=area, senha=SENHA, empresa=OUTRA)
+    dados = {"id": eid, "ativos": ids, "serra": serra,
+             "serra_ativos": {c: db.ativo_por_codigo(conn, serra, c)["id"] for c in ("B1", "B3", "L1")}}
+    conn.close()
+    return dados
+
+
+def _ids(c) -> list[int]:
+    return [e["id"] for e in c.get(_url("/empresas")).json()]
+
+
+def test_cliente_nao_ve_nem_mexe_em_nada_da_outra(cliente, outra):
+    como(cliente, "diretoria@serraazul.demo")
+    assert _ids(cliente) == [outra["serra"]]
+    eid, b3 = outra["id"], outra["ativos"]["B3"]
+    for caminho in ("painel", "ativos", "mudancas", "transicao", "linha-do-tempo", "boletim", "calendario.ics",
+                    "planilha"):
+        assert cliente.get(_url(f"/empresas/{eid}/{caminho}")).status_code == 404, caminho
+    assert cliente.get(_url(f"/empresas/{eid}/calendario"), params={"ano": 2026, "mes": 11}).status_code == 404
+    assert cliente.get(_url(f"/ativos/{b3}")).status_code == 404       # 404, não 403: nem revela que existe
+    escritas = [
+        cliente.post(_url("/entregas"), json={"ativo_id": b3, "codigo": "R95-01"}),
+        cliente.request("DELETE", _url("/entregas"), params={"ativo_id": b3, "codigo": "R95-01", "periodo": "2026-10-1Q"}),
+        cliente.post(_url("/atribuicoes"), json={"ativo_id": b3, "codigo": "R95-01", "responsavel": "Outra área"}),
+        cliente.post(_url("/comentarios"), json={"ativo_id": b3, "texto": "não é meu"}),
+        cliente.patch(_url(f"/ativos/{b3}/atributos"), json={"atributos": {"dpa2": 9}}),
+        cliente.put(_url(f"/ativos/{b3}/responsavel"), json={"area": "Gerência de Geotecnia"}),
+    ]
+    assert [r.status_code for r in escritas] == [404] * len(escritas)
+    pdf = evidencias.exemplo("FIR_B3_2026-10-1Q.pdf")
+    r = cliente.post(_url("/evidencias/leitura"), params={"empresa_id": eid},
+                     files={"arquivo": (pdf.name, pdf.read_bytes(), "application/pdf")})
+    assert r.status_code == 404
+    como(cliente, "diretoria@morroalto.demo")       # e do outro lado também
+    assert _ids(cliente) == [eid]
+    assert cliente.get(_url(f"/empresas/{outra['serra']}/painel")).status_code == 404
+    assert cliente.get(_url(f"/ativos/{outra['serra_ativos']['B3']}")).status_code == 404
+
+
+def test_mesma_area_em_duas_empresas_nao_se_mistura(cliente, outra):
+    eu = como(cliente, "geotecnia@morroalto.demo")
+    assert eu["empresa"] == OUTRA and not eu["plataforma"] and eu["visoes"] == ["Gerência de Geotecnia"]
+    ativos = cliente.get(_url(f"/empresas/{outra['id']}/ativos")).json()
+    assert {a["id"] for a in ativos} == {outra["ativos"]["B1"], outra["ativos"]["B3"]}
+    linhas = cliente.get(_url(f"/empresas/{outra['id']}/painel")).json()["linhas"]
+    assert linhas and {l["ativo_id"] for l in linhas} <= set(outra["ativos"].values())
+    assert cliente.get(_url(f"/empresas/{outra['serra']}/ativos")).status_code == 404
+    assert cliente.get(_url(f"/ativos/{outra['serra_ativos']['B1']}")).status_code == 404
+
+
+def test_condicionante_da_licenca_de_uma_nao_vale_para_a_licenca_da_outra(cliente, outra):
+    como(cliente, "diretoria@serraazul.demo")
+    linhas = cliente.get(_url(f"/empresas/{outra['serra']}/painel")).json()["linhas"]
+    assert {l["codigo"] for l in linhas if l["ativo"] == "L1"} >= {"LO-01", "LO-02"}
+    assert cliente.get(_url("/obrigacoes/LO-01/historico")).status_code == 200
+    como(cliente, "diretoria@morroalto.demo")
+    linhas = cliente.get(_url(f"/empresas/{outra['id']}/painel")).json()["linhas"]
+    assert linhas and not [l for l in linhas if l["codigo"].startswith("LO-")]
+    assert cliente.get(_url("/obrigacoes/LO-01/historico")).status_code == 404    # obrigação própria da Serra Azul
+    assert cliente.get(_url("/obrigacoes/OB-01/historico")).status_code == 200    # norma pública: todas veem
+
+
+def test_fir_da_b3_lida_pela_serra_azul_cai_na_b3_da_serra_azul(cliente, outra, cfg):
+    como(cliente, "diretoria@serraazul.demo")
+    pdf = evidencias.exemplo("FIR_B3_2026-10-1Q.pdf")
+    lido = cliente.post(_url("/evidencias/leitura"), params={"empresa_id": outra["serra"]},
+                        files={"arquivo": (pdf.name, pdf.read_bytes(), "application/pdf")}).json()
+    assert lido["leitura"]["ativo"] == "B3" and lido["leitura"]["empresa_id"] == outra["serra"]
+    corpo = {k: lido[k] for k in ("leitura", "arquivo", "guardado_em")}
+    trocada = {**corpo, "leitura": {**lido["leitura"], "empresa_id": outra["id"]}}     # leitura adulterada
+    assert cliente.post(_url("/evidencias/registro"), json=trocada).status_code == 404
+    sem = {**corpo, "leitura": {**lido["leitura"], "empresa_id": None}}
+    assert cliente.post(_url("/evidencias/registro"), json=sem).status_code == 422
+    r = cliente.post(_url("/evidencias/registro"), json=corpo)
+    assert r.status_code == 201, r.text
+    conn = db.conectar(cfg.banco)
+    dono = conn.execute("SELECT ativo_id FROM evidencia WHERE id = ?", (r.json()["evidencia_id"],)).fetchone()[0]
+    assert dono == outra["serra_ativos"]["B3"]
+    assert db.evidencias_do_ativo(conn, outra["ativos"]["B3"]) == []
+
+
+def test_norma_publica_decide_a_curadoria_e_obrigacao_propria_decide_a_dona(cliente, outra, cfg):
+    conn = db.conectar(cfg.banco)
+    lo02 = db.propor_versao(conn, "LO-02", {"prazo": "Até 20 dias após o fim do mês"}, ato_id=None,
+                            trecho="(aditivo fictício da licença)", fonte="Aditivo à LO 000/2023 (fictício)")
+    conn.close()
+    como(cliente, "regulatorio@serraazul.demo")
+    ms = {m["codigo"]: m for m in cliente.get(_url(f"/empresas/{outra['serra']}/mudancas")).json()}
+    assert ms["OB-01"]["escopo"] == "norma pública" and not ms["OB-01"]["decide"]
+    assert ms["LO-02"]["escopo"] == "empresa" and ms["LO-02"]["decide"] and ms["LO-02"]["empresa"] == SERRA_AZUL
+    assert cliente.post(_url(f"/mudancas/{ms['OB-01']['versao_id']}/decisao"), json={"aprovar": True}).status_code == 403
+    como(cliente, "diretoria@morroalto.demo")       # a outra vê a norma pública, não a condicionante da Serra Azul
+    deles = {m["codigo"]: m for m in cliente.get(_url(f"/empresas/{outra['id']}/mudancas")).json()}
+    assert "OB-01" in deles and "LO-02" not in deles
+    assert cliente.post(_url(f"/mudancas/{lo02}/decisao"), json={"aprovar": True}).status_code == 404
+    como(cliente, CURADORIA)
+    assert cliente.post(_url(f"/mudancas/{lo02}/decisao"), json={"aprovar": True}).status_code == 403
+    assert cliente.post(_url(f"/mudancas/{ms['OB-01']['versao_id']}/decisao"), json={"aprovar": True}).status_code == 200
+    for emp in (outra["serra"], outra["id"]):       # aprovada uma vez, vale para todas as clientes
+        assert "OB-01" not in {m["codigo"] for m in cliente.get(_url(f"/empresas/{emp}/mudancas")).json()}
+    como(cliente, "regulatorio@serraazul.demo")
+    assert cliente.post(_url(f"/mudancas/{lo02}/decisao"), json={"aprovar": True}).status_code == 200
+    h = cliente.get(_url("/obrigacoes/LO-02/historico")).json()
+    assert h[-1]["status"] == "vigente" and h[-1]["decidida_por"] == "Paulo Ribeiro"
+
+
+def test_so_a_curadoria_mexe_no_que_vale_para_todas(cliente):
+    como(cliente, "regulatorio@serraazul.demo")
+    ato = {"identificacao": "RESOLUÇÃO FICTÍCIA Nº 1", "texto": "Texto de um ato qualquer, com mais de vinte letras."}
+    assert cliente.post(_url("/radar/propor"), json=ato).status_code == 403
+    r = cliente.post(_url("/sigbm/importar"), json={"cnpj": "00.000.000/0001-00", "monitorado_desde": "2026-05-01"})
+    assert r.status_code == 403
+
+
+def test_ti_cuida_so_das_contas_da_propria_empresa(cliente, outra, cfg):
+    como(cliente, "ti@serraazul.demo")
+    assert CURADORIA not in {c["email"] for c in cliente.get(_url("/usuarios")).json()["contas"]}
+    como(cliente, "ti@morroalto.demo")
+    d = cliente.get(_url("/usuarios")).json()
+    assert {c["email"] for c in d["contas"]} == {"diretoria@morroalto.demo", "geotecnia@morroalto.demo",
+                                                 "ti@morroalto.demo"}
+    assert "Manutenção da Usina" not in d["areas"]      # área de gestor da Serra Azul
+    nova = {"email": "meio.ambiente@morroalto.demo", "nome": "Meio Ambiente", "papel": "gestor",
+            "area": "Gerência de Meio Ambiente", "senha": "senha-nova-123"}
+    assert cliente.post(_url("/usuarios"), json=nova).status_code == 201
+    outra_empresa = {**nova, "email": "intrusa@morroalto.demo", "empresa": SERRA_AZUL}
+    assert cliente.post(_url("/usuarios"), json=outra_empresa).status_code == 403
+    conn = db.conectar(cfg.banco)
+    assert usuarios.por_email(conn, "meio.ambiente@morroalto.demo")["empresa"] == OUTRA
+    for email in ("geotecnia@serraazul.demo", CURADORIA):
+        alheia = usuarios.por_email(conn, email)["id"]
+        assert cliente.patch(_url(f"/usuarios/{alheia}"), json={"ativa": False}).status_code == 404
+        assert cliente.put(_url(f"/usuarios/{alheia}/senha"), json={"senha": "tomada-1234"}).status_code == 404
+    assert usuarios.por_email(conn, "geotecnia@serraazul.demo")["ativa"]
+
+
+def test_cada_cliente_ve_so_a_propria_trilha_e_a_plataforma_ve_todas(cliente, outra):
+    como(cliente, "diretoria@serraazul.demo")
+    cliente.post(_url("/comentarios"), json={"ativo_id": outra["serra_ativos"]["B3"], "texto": "da Serra Azul"})
+    como(cliente, "diretoria@morroalto.demo")
+    cliente.post(_url("/comentarios"), json={"ativo_id": outra["ativos"]["B3"], "texto": "da Morro Alto"})
+    trilha = cliente.get(_url("/auditoria")).json()
+    assert trilha and {t["empresa"] for t in trilha} == {OUTRA}
+    assert not [t for t in trilha if t["usuario"].endswith("@serraazul.demo")]
+    como(cliente, CURADORIA)
+    empresas = {t["empresa"] for t in cliente.get(_url("/auditoria")).json()}
+    assert {SERRA_AZUL, OUTRA} <= empresas
+
+
+def test_conta_de_teste_olha_como_a_curadoria_e_o_token_de_servico_ve_todas(cliente, outra):
+    eu = como(cliente)
+    assert eu["empresa"] == SERRA_AZUL and eu["visoes"][-1] == "Curadoria RegulaIA (plataforma)"
+    assert _ids(cliente) == [outra["serra"]]
+    r = cliente.put(_url("/auth/visao"), json={"visao": "Curadoria RegulaIA (plataforma)"})
+    assert r.status_code == 200 and r.json()["plataforma"] and r.json()["empresa"] is None
+    assert set(_ids(cliente)) == {outra["serra"], outra["id"]}
+    h = {"Authorization": "Bearer token-de-teste-do-agente"}
+    assert {e["id"] for e in cliente.get(_url("/empresas"), headers=h).json()} == {outra["serra"], outra["id"]}
+
+
+def test_conta_sem_empresa_nao_entra(cliente, cfg):
+    conn = db.conectar(cfg.banco)
+    usuarios.criar(conn, "solta@exemplo.demo", "Conta Solta", "diretoria", senha=SENHA)
+    conn.close()
+    cliente.cookies.clear()
+    r = cliente.post(_url("/auth/login"), json={"email": "solta@exemplo.demo", "senha": SENHA})
+    assert r.status_code == 403 and "regulaia_sessao" not in cliente.cookies
 
 
 # ----------------------------------------------------------------- contrato

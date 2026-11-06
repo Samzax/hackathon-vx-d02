@@ -1,4 +1,6 @@
-"""Contas (TI), auditoria, SIGBM, mercado e a demo."""
+"""Contas (TI), auditoria, SIGBM, mercado e a demo.
+
+A TI de uma cliente cuida só das contas da própria empresa; a TI da plataforma, de todas."""
 
 from __future__ import annotations
 
@@ -12,7 +14,7 @@ from regulaia import db, demo, sigbm, usuarios
 
 from .. import auditoria
 from ..banco import conexao
-from ..seguranca import Escopo, decide_normas, escopo, regulatorio, ti
+from ..seguranca import Escopo, curadoria, escopo, regulatorio, ti
 
 rota = APIRouter(tags=["administração"])
 
@@ -23,6 +25,9 @@ class Conta(BaseModel):
     papel: str = Field(pattern="^(admin|diretoria|regulatorio|gestor)$")
     area: str | None = None
     senha: str | None = Field(None, min_length=usuarios.SENHA_MINIMA)
+    empresa: str | None = Field(None, description=(
+        "só a TI da plataforma escolhe: o nome da empresa cliente da conta; vazio cria conta da plataforma. "
+        "A TI de uma cliente cria sempre na própria empresa."))
 
 
 class Edicao(BaseModel):
@@ -41,24 +46,45 @@ class Importacao(BaseModel):
     monitorado_desde: date
 
 
-@rota.get("/usuarios", summary="Contas (TI)")
+def _da_empresa(conn, e: Escopo, usuario_id: int) -> None:
+    """A TI de uma cliente só mexe nas contas da própria empresa: a de outra é 404, como se não existisse."""
+    r = conn.execute("SELECT empresa, plataforma FROM usuario WHERE id = ?", (usuario_id,)).fetchone()
+    if r is None or not (e.plataforma or (not r["plataforma"] and r["empresa"] == e.empresa)):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"conta {usuario_id} não existe")
+
+
+@rota.get("/usuarios", summary="Contas (TI): as da própria empresa; na plataforma, todas")
 def contas(e: Escopo = Depends(ti), conn=Depends(conexao)):
-    return {"contas": usuarios.listar(conn), "areas": usuarios.areas(conn), "papeis": usuarios.PAPEIS}
+    empresa = None if e.plataforma else e.empresa
+    return {"contas": usuarios.listar(conn, empresa=empresa), "areas": usuarios.areas(conn, empresa=empresa),
+            "papeis": usuarios.PAPEIS}
 
 
-@rota.post("/usuarios", status_code=201, summary="Criar conta (TI)")
+@rota.post("/usuarios", status_code=201, summary="Criar conta (TI): na própria empresa")
 def criar(dados: Conta, request: Request, e: Escopo = Depends(ti), conn=Depends(conexao)):
+    if not e.plataforma:
+        if dados.empresa not in (None, e.empresa):
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "a TI cria contas só da própria empresa")
+        empresa, plataforma = e.empresa, False
+    elif dados.empresa:
+        if conn.execute("SELECT 1 FROM empresa WHERE nome = ?", (dados.empresa,)).fetchone() is None:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"empresa {dados.empresa} não está na torre")
+        empresa, plataforma = dados.empresa, False
+    else:
+        empresa, plataforma = None, True
     try:
         uid = usuarios.criar(conn, dados.email, dados.nome, dados.papel, area=dados.area, senha=dados.senha,
-                             por=e.assinante)
+                             por=e.assinante, empresa=empresa, plataforma=plataforma)
     except usuarios.ErroConta as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from None
-    auditoria.registrar(conn, request, "conta_criada", dados.email, {"papel": dados.papel, "area": dados.area})
+    auditoria.registrar(conn, request, "conta_criada", dados.email,
+                        {"papel": dados.papel, "area": dados.area, "empresa": empresa, "plataforma": plataforma})
     return {"id": uid}
 
 
 @rota.patch("/usuarios/{usuario_id}", summary="Mudar papel, área ou desativar (TI)")
 def editar(usuario_id: int, dados: Edicao, request: Request, e: Escopo = Depends(ti), conn=Depends(conexao)):
+    _da_empresa(conn, e, usuario_id)
     try:
         u = usuarios.editar(conn, usuario_id, **dados.model_dump(exclude_none=True))
     except usuarios.ErroConta as erro:
@@ -69,6 +95,7 @@ def editar(usuario_id: int, dados: Edicao, request: Request, e: Escopo = Depends
 
 @rota.put("/usuarios/{usuario_id}/senha", summary="Trocar a senha de uma conta (TI)")
 def senha(usuario_id: int, dados: Senha, request: Request, e: Escopo = Depends(ti), conn=Depends(conexao)):
+    _da_empresa(conn, e, usuario_id)
     try:
         usuarios.definir_senha(conn, usuario_id, dados.senha)
     except usuarios.ErroConta as erro:
@@ -79,11 +106,11 @@ def senha(usuario_id: int, dados: Senha, request: Request, e: Escopo = Depends(t
     return {"ok": True}
 
 
-@rota.get("/auditoria", summary="Trilha de auditoria (Diretoria, Regulatório e TI)")
+@rota.get("/auditoria", summary="Trilha de auditoria da própria empresa (Diretoria, Regulatório e TI)")
 def trilha(limite: int = 200, e: Escopo = Depends(escopo), conn=Depends(conexao)):
     if not (e.ve_tudo or e.admin):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "a auditoria é da Diretoria, do Regulatório e da TI")
-    return auditoria.listar(conn, min(limite, 1000))
+    return auditoria.listar(conn, min(limite, 1000), empresa=e.empresa, todas=e.plataforma)
 
 
 @rota.get("/sigbm/busca", summary="Buscar mineradora no SIGBM público (CNPJ ou nome)")
@@ -92,8 +119,9 @@ def buscar(termo: str, e: Escopo = Depends(regulatorio)):
             for x in sigbm.buscar(termo)]
 
 
-@rota.post("/sigbm/importar", status_code=201, summary="Montar a torre de uma mineradora real a partir do SIGBM")
-def importar(dados: Importacao, request: Request, e: Escopo = Depends(decide_normas), conn=Depends(conexao)):
+@rota.post("/sigbm/importar", status_code=201,
+           summary="Montar a torre de uma mineradora real a partir do SIGBM (curadoria da plataforma)")
+def importar(dados: Importacao, request: Request, e: Escopo = Depends(curadoria), conn=Depends(conexao)):
     achadas = [x for x in sigbm.buscar(dados.cnpj, limite=1)]
     if not achadas:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "CNPJ não encontrado no SIGBM público")

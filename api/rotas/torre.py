@@ -14,7 +14,7 @@ from regulaia import agenda, db, operacao, pdf, torre
 from .. import auditoria
 from ..banco import conexao
 from ..config import desde_padrao, hoje_padrao
-from ..seguranca import Escopo, diretoria, regulatorio
+from ..seguranca import Escopo, diretoria, empresa_visivel, regulatorio
 
 rota = APIRouter(tags=["torre"])
 
@@ -117,16 +117,9 @@ class Responsavel(BaseModel):
 # ------------------------------------------------------------------ apoio
 
 
-def _empresa(conn, empresa_id: int) -> dict:
-    r = conn.execute("SELECT * FROM empresa WHERE id = ?", (empresa_id,)).fetchone()
-    if r is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, f"empresa {empresa_id} não existe")
-    return dict(r)
-
-
 def _ativo(conn, ativo_id: int, e: Escopo) -> dict:
     r = conn.execute("SELECT * FROM ativo WHERE id = ?", (ativo_id,)).fetchone()
-    if r is None:
+    if r is None or not e.ve_empresa(r["empresa_id"]):       # o de outra cliente também é 404
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"ativo {ativo_id} não existe")
     a = db.ativos(conn, r["empresa_id"])
     ativo = next(x for x in a if x["id"] == ativo_id)
@@ -157,9 +150,10 @@ def _contagem(linhas) -> dict[str, int]:
 # ------------------------------------------------------------------ leitura
 
 
-@rota.get("/empresas", response_model=list[Empresa], summary="Empresas na torre (a demo primeiro)")
+@rota.get("/empresas", response_model=list[Empresa],
+          summary="Empresas que a sessão vê: a própria (cliente) ou todas (plataforma), a demo primeiro")
 def empresas(e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    return [Empresa(**{**x, "ficticia": bool(x["ficticia"])}) for x in db.empresas(conn)]
+    return [Empresa(**{**x, "ficticia": bool(x["ficticia"])}) for x in db.empresas(conn) if e.ve_empresa(x["id"])]
 
 
 @rota.get("/empresas/{empresa_id}/painel", response_model=Painel,
@@ -167,7 +161,7 @@ def empresas(e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
 def painel(empresa_id: int, hoje: date | None = None, ativo: str | None = None,
            status_: list[str] | None = Query(None, alias="status"),
            e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    emp = _empresa(conn, empresa_id)
+    emp = empresa_visivel(conn, e, empresa_id)
     hoje = hoje or hoje_padrao()
     desde = desde_padrao(emp)
     linhas = _visiveis(conn, e, empresa_id, hoje, desde, ativo)
@@ -180,7 +174,7 @@ def painel(empresa_id: int, hoje: date | None = None, ativo: str | None = None,
 
 @rota.get("/empresas/{empresa_id}/ativos", response_model=list[Ativo], summary="Ativos com a contagem por status")
 def ativos(empresa_id: int, hoje: date | None = None, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    emp = _empresa(conn, empresa_id)
+    emp = empresa_visivel(conn, e, empresa_id)
     linhas = _visiveis(conn, e, empresa_id, hoje or hoje_padrao(), desde_padrao(emp))
     com_linha = {l.ativo for l in linhas}
     out = []
@@ -195,7 +189,7 @@ def ativos(empresa_id: int, hoje: date | None = None, e: Escopo = Depends(regula
 @rota.get("/ativos/{ativo_id}", response_model=Ficha, summary="Ficha do ativo: pendências, evidências e histórico")
 def ficha(ativo_id: int, hoje: date | None = None, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     a = _ativo(conn, ativo_id, e)
-    emp = _empresa(conn, a["empresa_id"])
+    emp = empresa_visivel(conn, e, a["empresa_id"])
     linhas = _visiveis(conn, e, emp["id"], hoje or hoje_padrao(), desde_padrao(emp), ativo=a["codigo"])
     return Ficha(ativo=Ativo(id=a["id"], codigo=a["codigo"], nome=a["nome"], tipo=a["tipo"],
                              responsavel=a["responsavel"], atributos=a["atributos"], contagem=_contagem(linhas)),
@@ -205,8 +199,9 @@ def ficha(ativo_id: int, hoje: date | None = None, e: Escopo = Depends(regulator
 
 @rota.get("/obrigacoes/{codigo}/historico", summary="Todas as versões de uma obrigação, com a origem e quem decidiu")
 def historico(codigo: str, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    h = db.historico(conn, codigo)
-    if not h:
+    ob = conn.execute("SELECT empresa FROM obrigacao WHERE codigo = ?", (codigo,)).fetchone()
+    h = db.historico(conn, codigo) if ob is not None and e.ve_obrigacao(ob["empresa"]) else []
+    if not h:       # obrigação própria de outra cliente: 404, como se não existisse
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"obrigação {codigo} não existe")
     return h
 
@@ -214,7 +209,7 @@ def historico(codigo: str, e: Escopo = Depends(regulatorio), conn=Depends(conexa
 @rota.get("/empresas/{empresa_id}/calendario", summary="Vencimentos do mês, período a período")
 def calendario_mes(empresa_id: int, ano: int, mes: int = Query(ge=1, le=12), hoje: date | None = None,
                    e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    emp = _empresa(conn, empresa_id)
+    emp = empresa_visivel(conn, e, empresa_id)
     linhas = _visiveis(conn, e, empresa_id, hoje or hoje_padrao(), desde_padrao(emp))
     return [{"dia": v.dia, "periodo": v.periodo, "entregue": v.entregue, "ativo": v.linha.ativo,
              "ativo_id": v.linha.ativo_id, "codigo": v.linha.codigo, "titulo": v.linha.titulo,
@@ -224,7 +219,7 @@ def calendario_mes(empresa_id: int, ano: int, mes: int = Query(ge=1, le=12), hoj
 @rota.get("/empresas/{empresa_id}/transicao", summary="O que sai, o que entra e o que continua na troca de norma")
 def transicao(empresa_id: int, dia: date = date(2027, 8, 2), e: Escopo = Depends(regulatorio),
               conn=Depends(conexao)):
-    _empresa(conn, empresa_id)
+    empresa_visivel(conn, e, empresa_id)
     visiveis = {a["codigo"] for a in db.ativos(conn, empresa_id) if e.ve_ativo(a)}
     out = []
     for t in torre.transicao(conn, empresa_id, dia):
@@ -243,7 +238,7 @@ def _resumo_ob(o: dict) -> dict:
 @rota.get("/empresas/{empresa_id}/linha-do-tempo", summary="Obrigações que passam a valer depois do dia")
 def linha_do_tempo(empresa_id: int, hoje: date | None = None, e: Escopo = Depends(regulatorio),
                    conn=Depends(conexao)):
-    _empresa(conn, empresa_id)
+    empresa_visivel(conn, e, empresa_id)
     visiveis = {a["codigo"] for a in db.ativos(conn, empresa_id) if e.ve_ativo(a)}
     return [asdict(f) for f in torre.futuras(conn, empresa_id, hoje or hoje_padrao()) if f.ativo in visiveis]
 
@@ -251,7 +246,7 @@ def linha_do_tempo(empresa_id: int, hoje: date | None = None, e: Escopo = Depend
 @rota.get("/empresas/{empresa_id}/boletim", summary="Boletim da semana (Markdown ou PDF), nunca enviado")
 def boletim(empresa_id: int, formato: str = Query("md", pattern="^(md|pdf)$"), responsavel: str | None = None,
             hoje: date | None = None, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    emp = _empresa(conn, empresa_id)
+    emp = empresa_visivel(conn, e, empresa_id)
     if not e.ve_tudo:
         responsavel = e.area
     md = torre.boletim(conn, empresa_id, hoje or hoje_padrao(), desde_padrao(emp), responsavel=responsavel)
@@ -264,7 +259,7 @@ def boletim(empresa_id: int, formato: str = Query("md", pattern="^(md|pdf)$"), r
 @rota.get("/empresas/{empresa_id}/calendario.ics", summary="Vencimentos em .ics para a agenda (só download)")
 def calendario_ics(empresa_id: int, responsavel: str | None = None, hoje: date | None = None,
                    e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    emp = _empresa(conn, empresa_id)
+    emp = empresa_visivel(conn, e, empresa_id)
     if not e.ve_tudo:
         responsavel = e.area
     ics = torre.calendario(conn, empresa_id, hoje or hoje_padrao(), desde_padrao(emp), responsavel=responsavel)
@@ -274,7 +269,7 @@ def calendario_ics(empresa_id: int, responsavel: str | None = None, hoje: date |
 
 @rota.get("/empresas/{empresa_id}/planilha", summary="As pendências em Excel")
 def planilha(empresa_id: int, hoje: date | None = None, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    emp = _empresa(conn, empresa_id)
+    emp = empresa_visivel(conn, e, empresa_id)
     linhas = _visiveis(conn, e, empresa_id, hoje or hoje_padrao(), desde_padrao(emp))
     return Response(operacao.planilha(linhas, emp["nome"]),
                     media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -287,7 +282,7 @@ def planilha(empresa_id: int, hoje: date | None = None, e: Escopo = Depends(regu
 @rota.post("/entregas", status_code=201, summary="Registrar a entrega de um período (com ou sem comprovante)")
 def entregar(dados: Entrega, request: Request, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     a = _ativo(conn, dados.ativo_id, e)
-    emp = _empresa(conn, a["empresa_id"])
+    emp = empresa_visivel(conn, e, a["empresa_id"])
     dia = dados.dia or hoje_padrao()
     linhas = [l for l in _visiveis(conn, e, emp["id"], dia, desde_padrao(emp), ativo=a["codigo"])
               if l.codigo == dados.codigo]

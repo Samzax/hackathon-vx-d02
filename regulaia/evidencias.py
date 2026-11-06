@@ -59,6 +59,7 @@ Use só o que está escrito no documento; se não estiver, use null."""
 @dataclass
 class Leitura:
     ativo: str | None = None
+    empresa_id: int | None = None         # o código do ativo só é único dentro da empresa
     documento: str | None = None
     obrigacao: str | None = None
     data: str | None = None
@@ -228,7 +229,7 @@ def _obrigacao(conn, ativo_id: int, chave: str, hoje: str) -> dict | None:
 def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura:
     ativos = db.ativos(conn, empresa_id)
     tn = normalizar(texto)
-    le = Leitura()
+    le = Leitura(empresa_id=empresa_id)
     if len(tn.split()) < 5:
         le.problemas.append("o PDF não tem texto (parece escaneado): ainda não fazemos OCR")
         return le
@@ -307,7 +308,12 @@ def registrar(conn, leitura: Leitura, arquivo: str, guardado_em: str | None = No
     `arquivo` é o nome que as pessoas veem; `guardado_em`, onde o original ficou (pasta ou S3)."""
     if not leitura.completa:
         raise ValueError("leitura incompleta: " + "; ".join(leitura.problemas))
-    aid = conn.execute("SELECT id FROM ativo WHERE codigo = ?", (leitura.ativo,)).fetchone()["id"]
+    if leitura.empresa_id is None:
+        raise ValueError("leitura sem empresa: não dá para saber de qual empresa é o ativo")
+    ativo = db.ativo_por_codigo(conn, leitura.empresa_id, leitura.ativo)
+    if ativo is None:
+        raise ValueError(f"{leitura.ativo} não é ativo da empresa {leitura.empresa_id}")
+    aid = ativo["id"]
     if leitura.data:
         db.encerrar_acionamentos(conn, aid, leitura.obrigacao, leitura.data)
         dia = date.fromisoformat(leitura.data)

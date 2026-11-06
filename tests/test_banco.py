@@ -12,7 +12,11 @@ RAIZ = db.ROOT
 
 
 def _colunas_pg() -> dict[str, set[str]]:
-    sql = (RAIZ / "regulaia" / "schema_pg.sql").read_text(encoding="utf-8")
+    return _colunas((RAIZ / "regulaia" / "schema_pg.sql").read_text(encoding="utf-8"))
+
+
+def _colunas(sql: str) -> dict[str, set[str]]:
+    """{tabela: colunas} dos CREATE TABLE de um script."""
     sql = re.sub(r"--[^\n]*", "", sql)
     out = {}
     for nome, corpo in re.findall(r"CREATE TABLE IF NOT EXISTS (\w+) \((.*?)\n\);", sql, re.S):
@@ -33,12 +37,22 @@ def test_sqlite_e_postgres_tem_as_mesmas_tabelas_e_colunas():
     assert sqlite == _colunas_pg()
 
 
-def test_migracao_inicial_e_o_esquema_do_postgres():
-    """Enquanto só houver a 0001, ela é o schema_pg.sql. Mudou o esquema? Nova migração (0002)
-    e o schema_pg.sql acompanha; este teste então passa a comparar com a soma das migrações."""
-    versoes = sorted((RAIZ / "migrations" / "versions").glob("0*.sql"))
-    assert [v.name for v in versoes] == ["0001_esquema_inicial.sql"]
-    assert versoes[0].read_text(encoding="utf-8") == (RAIZ / "regulaia" / "schema_pg.sql").read_text(encoding="utf-8")
+def test_as_migracoes_somadas_dao_o_esquema_do_postgres():
+    """A 0001 é o schema_pg.sql congelado no primeiro deploy; as seguintes acrescentam colunas
+    (ALTER TABLE ... ADD COLUMN IF NOT EXISTS) ou tabelas. Somadas, têm de dar as tabelas e colunas
+    do schema_pg.sql de hoje. Mudou o esquema? Nova migração, e o schema_pg.sql acompanha."""
+    pasta = RAIZ / "migrations" / "versions"
+    versoes = sorted(pasta.glob("0*.sql"))
+    assert [v.name[:4] for v in versoes] == [f"{i:04d}" for i in range(1, len(versoes) + 1)]
+    assert {p.stem for p in pasta.glob("0*.py")} == {v.stem for v in versoes}    # cada .sql tem a sua revisão
+    soma: dict[str, set[str]] = {}
+    for v in versoes:
+        sql = re.sub(r"--[^\n]*", "", v.read_text(encoding="utf-8"))
+        for tabela, cols in _colunas(sql).items():
+            soma.setdefault(tabela, set()).update(cols)
+        for tabela, coluna in re.findall(r"ALTER TABLE (\w+) ADD COLUMN IF NOT EXISTS (\w+)", sql):
+            soma[tabela].add(coluna)
+    assert soma == _colunas_pg()
 
 
 def test_traduz_interrogacao_e_porcento_fora_das_aspas():

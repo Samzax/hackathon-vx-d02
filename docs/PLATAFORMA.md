@@ -15,6 +15,11 @@ conta) começa por aqui.
   escrita, logs JSON com request_id, contrato OpenAPI versionado em `api/openapi.json`.
 - **Front:** Next.js + Tailwind (fase 2A). **Infra:** AWS CDK em Python (fase 2B). **Agente:** servidor
   MCP + chat "Pergunte à torre" com Bedrock (fase 2C). **CI:** GitHub Actions (fase 3).
+- **Multiempresa:** a RegulaIA é a plataforma; cada mineradora (a Serra Azul inclusive) é uma cliente
+  que só vê o que é dela. Decisão do usuário (06/11): mudança de **norma pública** (Res. ANM, NR...) é
+  aprovada pela **curadoria da plataforma**, uma vez para todas as clientes (a cliente vê "aguardando
+  curadoria RegulaIA"); **obrigação própria** da empresa (condicionante de licença, TAC, procedimento
+  interno) é aprovada pelo Regulatório ou pela Diretoria **da própria empresa**.
 
 ## Como rodar
 
@@ -39,7 +44,7 @@ REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
       desfazer, atribuições, comentários, atributos, responsável), mudanças (listar, decidir com
       correção), radar (funil, análise de ato, propor), evidências (leitura de PDF, registro),
       contas (TI), auditoria, SIGBM (busca, importação), mercado, recriar demo, /health
-- [x] `tests/test_api.py`: 21 testes (sessão, CSRF, papéis, escopo, fluxos, contrato)
+- [x] `tests/test_api.py`: 31 testes (sessão, CSRF, papéis, escopo, fluxos, isolamento entre empresas, contrato)
 - [ ] Rodar a suíte no Postgres de verdade (Docker Desktop não subiu na primeira tentativa)
 - [x] Alembic (`migrations/`, 0001 = `schema_pg.sql` congelado, lock para tasks em paralelo);
       `tests/test_banco.py` confere que SQLite e Postgres têm as mesmas tabelas e colunas
@@ -56,29 +61,34 @@ REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
 ### Fase 3
 - [ ] GitHub Actions: ruff, pytest (SQLite e Postgres), front, docker build, cdk synth
 
-## Próximo: multiempresa (pedido do usuário em 06/11, ainda não feito)
-
-A RegulaIA é o sistema; a Serra Azul é uma cliente (tenant) que usa o sistema. Hoje o código
-mistura os dois. Rastros achados:
-
-1. `usuario` sem `empresa_id`: conta de uma mineradora vê as outras pela API. Conta ganha
-   `empresa_id` (nulo só para a equipe da plataforma); a API filtra tudo pela empresa da sessão.
-2. Obrigação própria no catálogo global: as condicionantes da licença (`cadastro/lo_serra_azul.csv`,
-   regra `*`) valem para licença de qualquer empresa. `obrigacao` ganha escopo opcional
-   (`empresa_id`/`ativo_id`, vazio = norma pública); `db.obrigacoes_do_ativo` filtra por ele.
-3. Código de ativo não é único entre empresas (B1 existe em várias), mas há busca só por código:
-   `regulaia/evidencias.py:310` (registrar), `regulaia/torre.py:523` (pares), `api/rotas/evidencias.py:58`.
-4. Áreas globais: `usuarios.areas()` e o escopo do gestor comparam só o nome da área
-   ("Gerência de Geotecnia" de uma empresa casa com a de outra).
-5. `auditoria` sem empresa: cada cliente deve ver só a própria trilha.
-6. **Decisão em aberto (perguntar ao usuário):** aprovar uma mudança de norma hoje muda a versão
-   global, ou seja, a Regulatório da Serra Azul decide por todas as clientes; e o "teste com um ato
-   seu" (`/radar/propor`) de uma cliente altera o catálogo de todas. Opções: (a) adoção por empresa
-   (tabela `adocao(empresa_id, versao_id, status, decidida_por, correcao)`; cada cliente aprova a
-   leitura da norma para si); (b) curadoria da plataforma aprova a versão global e as clientes só veem.
-   Recomendação: (a), porque quem responde perante a ANM é a empresa.
-7. Testes de isolamento: duas empresas com ativos de mesmo código e mesma área; nenhuma rota
-   devolve dado da outra.
+### Multiempresa
+- [x] Esquema: `obrigacao.empresa` (vazio = norma pública), `usuario.empresa` e `usuario.plataforma`
+      (equipe da RegulaIA), `auditoria.empresa`; migração Alembic `0002_multiempresa`. A ligação é pelo
+      **nome** da empresa (UNIQUE), não pelo id: o "Recriar demo" recria as empresas e as contas ficam.
+      `tests/test_banco.py` confere que 0001 + 0002 dão o `schema_pg.sql`.
+- [x] Domínio: `db.obrigacoes_do_ativo` só traz norma pública ou obrigação da dona do ativo (a L1 de
+      outra empresa não recebe as condicionantes LO-xx da Serra Azul); busca de ativo sempre com a
+      empresa (`db.ativo_por_codigo`: evidências, transição); `torre.mudancas` e `_comecam_em` só com o
+      que é público ou da empresa; `impacto.analisar(..., empresa=)` analisa o ato de uma cliente só
+      contra o catálogo dela; contas e áreas por empresa (`usuarios.listar/areas(conn, empresa=)`).
+- [x] API (`api/seguranca.py`): o `Escopo` leva `empresa_id`, `empresa` e `plataforma`. Conta de cliente
+      vê só a empresa dela; conta da plataforma e o token de serviço veem todas; conta sem empresa: 403.
+      O que é de outra cliente devolve **404** (não revela que existe): empresa, ativo, histórico de
+      obrigação própria, mudança, leitura de evidência, conta. `/mudancas` diz `escopo` ("norma pública"
+      ou "empresa"), `decide` e `quem_decide`; a decisão segue a regra do usuário acima.
+      `/radar/propor` e `/sigbm/importar`: só a curadoria. TI cria e edita só contas da própria empresa
+      (a TI da plataforma escolhe a empresa no campo `empresa`; vazio cria conta da plataforma).
+      Auditoria grava a empresa de quem agiu e cada cliente vê só a própria trilha.
+- [x] Conta da curadoria na demo: `curadoria@regulaia.demo` (Regulatório da plataforma). A conta de teste
+      ganhou a visão "Curadoria RegulaIA (plataforma)".
+- [x] Testes de isolamento em `tests/test_api.py` (segunda cliente com B1, B3 e L1 e a mesma área).
+- [ ] Em aberto: a plataforma (curadoria, token de serviço) ainda pode registrar entrega, comentar e
+      mexer no cadastro de qualquer cliente, como suporte. Se isso deve ser só leitura, fechar nas rotas
+      de escrita da torre.
+- [ ] O Streamlit (`app.py`) continua de uma empresa só e com as regras antigas de decisão (é a demo).
+- [ ] Obrigação própria ainda tem código global (`obrigacao.codigo` UNIQUE): duas clientes não podem
+      ter cada uma a sua "LO-01". Quando entrar a segunda cliente com licença própria, prefixar o código
+      ou trocar o UNIQUE por (empresa, codigo).
 
 ## CI (run 42281176074, commit ae998d9)
 
@@ -87,3 +97,12 @@ mistura os dois. Rastros achados:
   `tests/test_ocr.py::test_exemplo_escaneado_esta_nos_exemplos_e_e_igual_ao_gerado` (PDF gerado
   difere no Linux, provavelmente fonte) e `tests/test_app.py::test_ato_ficticio_vira_mudanca_pendente`
   (a análise do ato fictício não aparece; conferir se depende do `data/cache_ia.db` local, fora do Git).
+
+## Próximo
+
+1. **Mais normas de verdade no catálogo**, pelo mesmo caminho das atuais: `regulaia/fontes.py` baixa o
+   texto oficial, `regulaia/extrator.py` propõe, `curadoria/*.csv` escolhe, `regulaia/curadoria.py`
+   gera, `tests/test_trechos.py` confere o trecho literal. Pedidos do usuário: Lei 12.334/2010 (PNSB),
+   lei estadual de MG de barragens, outras resoluções da ANM, outras NRs aplicáveis à mineração;
+   sempre com o trecho literal conferido contra o texto oficial.
+2. Os dois testes do CI que dependem do ambiente (abaixo) e o resultado do `testes-postgres`.

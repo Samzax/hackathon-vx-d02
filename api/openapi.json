@@ -88,7 +88,7 @@
     "tags": [
      "auth"
     ],
-    "summary": "Quem está na sessão e com qual visão",
+    "summary": "Quem está na sessão, de qual empresa e com qual visão",
     "operationId": "eu_api_v1_auth_me_get",
     "responses": {
      "200": {
@@ -150,7 +150,7 @@
     "tags": [
      "torre"
     ],
-    "summary": "Empresas na torre (a demo primeiro)",
+    "summary": "Empresas que a sessão vê: a própria (cliente) ou todas (plataforma), a demo primeiro",
     "operationId": "empresas_api_v1_empresas_get",
     "responses": {
      "200": {
@@ -1103,7 +1103,7 @@
     "tags": [
      "regulatório"
     ],
-    "summary": "Mudanças propostas por atos novos, aguardando decisão",
+    "summary": "Mudanças propostas por atos novos, aguardando decisão (da curadoria ou da empresa)",
     "operationId": "mudancas_api_v1_empresas__empresa_id__mudancas_get",
     "parameters": [
      {
@@ -1257,7 +1257,7 @@
     "tags": [
      "regulatório"
     ],
-    "summary": "Mandar as mudanças aprovadas pelo Python para a fila de decisão",
+    "summary": "Mandar as mudanças aprovadas pelo Python para a fila de decisão (curadoria)",
     "operationId": "propor_api_v1_radar_propor_post",
     "requestBody": {
      "content": {
@@ -1404,7 +1404,7 @@
     "tags": [
      "administração"
     ],
-    "summary": "Contas (TI)",
+    "summary": "Contas (TI): as da própria empresa; na plataforma, todas",
     "operationId": "contas_api_v1_usuarios_get",
     "responses": {
      "200": {
@@ -1421,7 +1421,7 @@
     "tags": [
      "administração"
     ],
-    "summary": "Criar conta (TI)",
+    "summary": "Criar conta (TI): na própria empresa",
     "operationId": "criar_api_v1_usuarios_post",
     "requestBody": {
      "content": {
@@ -1560,7 +1560,7 @@
     "tags": [
      "administração"
     ],
-    "summary": "Trilha de auditoria (Diretoria, Regulatório e TI)",
+    "summary": "Trilha de auditoria da própria empresa (Diretoria, Regulatório e TI)",
     "operationId": "trilha_api_v1_auditoria_get",
     "parameters": [
      {
@@ -1641,7 +1641,7 @@
     "tags": [
      "administração"
     ],
-    "summary": "Montar a torre de uma mineradora real a partir do SIGBM",
+    "summary": "Montar a torre de uma mineradora real a partir do SIGBM (curadoria da plataforma)",
     "operationId": "importar_api_v1_sigbm_importar_post",
     "requestBody": {
      "content": {
@@ -1932,6 +1932,18 @@
        }
       ],
       "title": "Senha"
+     },
+     "empresa": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Empresa",
+      "description": "só a TI da plataforma escolhe: o nome da empresa cliente da conta; vazio cria conta da plataforma. A TI de uma cliente cria sempre na própria empresa."
      }
     },
     "type": "object",
@@ -2180,6 +2192,23 @@
       "type": "boolean",
       "title": "Teste"
      },
+     "empresa": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Empresa",
+      "description": "a empresa cliente que a sessão vê; vazio na plataforma (vê todas)"
+     },
+     "plataforma": {
+      "type": "boolean",
+      "title": "Plataforma",
+      "description": "age como a equipe da RegulaIA (curadoria das normas públicas)"
+     },
      "visao": {
       "type": "string",
       "title": "Visao"
@@ -2213,6 +2242,8 @@
      "papel_efetivo",
      "area",
      "teste",
+     "empresa",
+     "plataforma",
      "visao",
      "visoes"
     ],
@@ -2301,6 +2332,17 @@
        }
       ],
       "title": "Ativo"
+     },
+     "empresa_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Empresa Id"
      },
      "documento": {
       "anyOf": [
@@ -2693,6 +2735,36 @@
       },
       "type": "array",
       "title": "Ativos"
+     },
+     "empresa": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Empresa",
+      "description": "dona da obrigação própria; vazio: norma pública"
+     },
+     "escopo": {
+      "type": "string",
+      "title": "Escopo",
+      "description": "'norma pública' (vale para todas as clientes) ou 'empresa' (só desta)"
+     },
+     "decide": {
+      "type": "boolean",
+      "title": "Decide",
+      "description": "se quem pede pode aprovar ou rejeitar esta mudança"
+     },
+     "quem_decide": {
+      "type": "string",
+      "title": "Quem Decide",
+      "examples": [
+       "curadoria RegulaIA",
+       "Regulatório ou Diretoria da Mineradora Serra Azul"
+      ]
      }
     },
     "type": "object",
@@ -2705,7 +2777,11 @@
      "publicado_em",
      "trecho",
      "fonte",
-     "ativos"
+     "ativos",
+     "empresa",
+     "escopo",
+     "decide",
+     "quem_decide"
     ],
     "title": "Mudanca"
    },
@@ -2896,7 +2972,8 @@
       "examples": [
        "Diretoria (todos os ativos)",
        "Gerência de Geotecnia",
-       "TI (usuários e acessos)"
+       "TI (usuários e acessos)",
+       "Curadoria RegulaIA (plataforma)"
       ]
      }
     },
