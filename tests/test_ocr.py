@@ -42,8 +42,15 @@ def _imagem(pdf: bytes) -> tuple:
 
 
 def test_exemplo_escaneado_esta_nos_exemplos_e_e_igual_ao_gerado(escaneada):
+    """O PDF guardado é o que o gerador faz hoje. Pixel a pixel não dá: a mesma fonte (Vera.ttf) sai com
+    antisserrilhado um pouco diferente conforme o FreeType do Pillow de cada sistema. Mesma página = mesmo
+    tamanho e quase todo pixel igual; um texto diferente mudaria muito mais que a borda das letras."""
     caminho = ev.exemplo("FIR_B3_2026-10-1Q_escaneada.pdf")
-    assert caminho.exists() and _imagem(caminho.read_bytes()) == _imagem(escaneada)   # mesma imagem, pixel a pixel
+    assert caminho.exists()
+    (w1, h1, a), (w2, h2, b) = _imagem(caminho.read_bytes()), _imagem(escaneada)
+    assert (w1, h1) == (w2, h2) and len(a) == len(b)
+    diferentes = sum(1 for x, y in zip(a, b, strict=True) if abs(x - y) > 64)
+    assert diferentes / len(a) < 0.005, f"{diferentes} de {len(a)} bytes mudaram"
 
 
 def test_escaneado_sem_ocr_avisa_e_nao_inventa(escaneada):

@@ -74,11 +74,14 @@ jobs:
           docker build -t regulaia-demo .
       - name: Compose sobe e a API responde
         run: |
-          docker compose up -d --build --wait api
+          docker compose up -d --build --wait api || { docker compose logs api postgres; exit 1; }
           curl -fsS http://localhost:8000/health
           curl -fsS -X POST -c c.txt http://localhost:8000/api/v1/auth/demo > /dev/null
           curl -fsS -b c.txt http://localhost:8000/api/v1/empresas
           docker compose down -v
+      - name: Logs da API (se falhou)
+        if: failure()
+        run: docker compose logs api
 
   infra:
     # a pilha da AWS: testes de asserção no CloudFormation e o synth de verdade, sem conta AWS
