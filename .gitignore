@@ -35,3 +35,6 @@ data/radar_demo.json
 
 # slides e docs gerados para o Google (docs/slides/gerar.js)
 docs/slides/saida/
+
+# Documentos enviados pela API (local; na AWS ficam no S3)
+data/uploads/

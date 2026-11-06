@@ -18,7 +18,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from . import agenda, db, usuarios
+from . import banco, agenda, db, usuarios
 
 ROOT = Path(__file__).resolve().parent.parent
 SEED = ROOT / "seed_obligations.csv"
@@ -104,8 +104,8 @@ def semear_cache(cache, origem: Path = CACHE_DEMO) -> int:
     with cache:
         # data fixa no passado: a resposta da demo não conta no teto de gasto do dia (REGULAIA_TETO_DIA_USD)
         cache.executemany(
-            f"INSERT OR IGNORE INTO analise_ia ({', '.join(_COLUNAS_CACHE)}, criada_em) "
-            f"VALUES ({', '.join('?' * len(_COLUNAS_CACHE))}, '2026-11-01 00:00:00')",
+            f"INSERT INTO analise_ia ({', '.join(_COLUNAS_CACHE)}, criada_em) "
+            f"VALUES ({', '.join('?' * len(_COLUNAS_CACHE))}, '2026-11-01 00:00:00') ON CONFLICT DO NOTHING",
             [tuple(l[c] for c in _COLUNAS_CACHE) for l in linhas])
     return len(linhas)
 
@@ -117,8 +117,8 @@ def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU, cache: Path |
     from . import impacto
     from .ia import Roteador
 
-    conn = db.conectar(Path(caminho or db.DB_PADRAO))
-    conn_cache = db.conectar(Path(cache or impacto.CACHE_IA))
+    conn = db.conectar(caminho if caminho is not None else db.DB_PADRAO)
+    conn_cache = db.conectar(cache if cache is not None else (caminho if banco.eh_url_postgres(caminho) else impacto.CACHE_IA))
     semear_cache(conn_cache)
     roteador = Roteador(conn_cache)
     analises = []

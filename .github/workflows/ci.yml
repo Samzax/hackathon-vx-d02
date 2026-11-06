@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main, plataforma]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uvx ruff check .
+
+  testes-sqlite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run pytest -q
+
+  testes-postgres:
+    # a mesma suíte, com cada conexão num schema isolado do Postgres (tests/conftest.py)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: regulaia
+          POSTGRES_USER: regulaia
+          POSTGRES_PASSWORD: ci-apenas
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U regulaia" --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      REGULAIA_TESTE_PG: postgresql://regulaia:ci-apenas@localhost:5432/regulaia
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Migração do zero, duas vezes (idempotente)
+        env:
+          REGULAIA_DATABASE_URL: postgresql://regulaia:ci-apenas@localhost:5432/regulaia
+        run: |
+          uv run alembic upgrade head
+          uv run alembic upgrade head
+      - run: uv run pytest -q
+
+  imagem:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build da API e da demo
+        run: |
+          docker build -f api/Dockerfile -t regulaia-api .
+          docker build -t regulaia-demo .
+      - name: Compose sobe e a API responde
+        run: |
+          docker compose up -d --build --wait api
+          curl -fsS http://localhost:8000/health
+          curl -fsS -X POST -c c.txt http://localhost:8000/api/v1/auth/demo > /dev/null
+          curl -fsS -b c.txt http://localhost:8000/api/v1/empresas
+          docker compose down -v

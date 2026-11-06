@@ -149,3 +149,25 @@ CREATE TABLE IF NOT EXISTS usuario (
     criado_em      TEXT NOT NULL DEFAULT (datetime('now')),
     ultimo_acesso  TEXT
 );
+
+-- Trilha de auditoria da API: toda escrita, com quem, quando, de onde e o resultado.
+CREATE TABLE IF NOT EXISTS auditoria (
+    id          INTEGER PRIMARY KEY,
+    em          TEXT NOT NULL DEFAULT (datetime('now')),
+    usuario     TEXT,
+    acao        TEXT NOT NULL,
+    alvo        TEXT,
+    detalhe     TEXT,
+    request_id  TEXT,
+    resultado   TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS auditoria_em ON auditoria(em);
+
+-- Sessões da API (cookie HttpOnly): só o hash do token fica no banco.
+CREATE TABLE IF NOT EXISTS sessao (
+    token_hash  TEXT PRIMARY KEY,
+    usuario_id  INTEGER NOT NULL REFERENCES usuario(id),
+    criada_em   TEXT NOT NULL DEFAULT (datetime('now')),
+    expira_em   TEXT NOT NULL,
+    visao       TEXT
+);

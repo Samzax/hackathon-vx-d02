@@ -22,6 +22,7 @@ import hmac
 import json
 import os
 import secrets
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -117,7 +118,7 @@ def listar(conn) -> list[dict]:
 
 
 def _admins_ativos(conn, exceto: int | None = None) -> int:
-    return conn.execute("SELECT COUNT(*) FROM usuario WHERE papel = ? AND ativa = 1 AND teste = 0 AND id IS NOT ?",
+    return conn.execute("SELECT COUNT(*) FROM usuario WHERE papel = ? AND ativa = 1 AND teste = 0 AND id IS DISTINCT FROM ?",
                         (ADMIN, exceto)).fetchone()[0]
 
 
@@ -173,7 +174,7 @@ def autenticar(conn, email: str, senha: str) -> dict | None:
 
 def registrar_acesso(conn, usuario_id: int) -> None:
     with conn:
-        conn.execute("UPDATE usuario SET ultimo_acesso = datetime('now') WHERE id = ?", (usuario_id,))
+        conn.execute("UPDATE usuario SET ultimo_acesso = ? WHERE id = ?", (datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"), usuario_id))
 
 
 def conta_demo(conn) -> dict | None:

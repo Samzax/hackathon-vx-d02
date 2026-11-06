@@ -5,22 +5,29 @@ description = "Torre de controle regulatória: Hackathon VX, Desafio 02"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.20.1",
     "altair>=6",
     "beautifulsoup4>=4.12",
     "boto3>=1.40",
+    "fastapi>=0.162.0",
     "httpx>=0.28.1",
     "openpyxl>=3.1.5",
     "pandas>=2",
     "pillow>=11",
+    "psycopg[binary]>=3.2",
     "pydeck>=0.9",
     "pypdf>=6.21.4",
     "python-dotenv>=1.2.4",
+    "python-multipart>=0.0.33",
     "reportlab>=5.1.0",
+    "sqlalchemy>=2",
     "streamlit>=1.66.1",
+    "uvicorn[standard]>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=8",
 ]
 
@@ -30,3 +37,13 @@ pythonpath = ["."]
 
 [tool.uv]
 package = false
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["F", "E9", "B"]
+
+[tool.ruff.lint.flake8-bugbear]
+# Depends/Query/File são o jeito do FastAPI declarar dependências, não default mutável
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.File"]

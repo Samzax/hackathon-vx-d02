@@ -1,0 +1,62 @@
+# Tudo local, igual à AWS: Postgres (RDS), API (ECS Fargate) e o job do radar (EventBridge + Fargate).
+#
+#   docker compose up --build        # API em http://localhost:8000/docs, Postgres em localhost:5432
+#   docker compose run --rm radar    # roda o radar do DOU uma vez
+#
+# O Streamlit da demo continua rodando à parte: uv run streamlit run app.py
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: regulaia
+      POSTGRES_USER: regulaia
+      POSTGRES_PASSWORD: regulaia-local
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U regulaia -d regulaia"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      REGULAIA_DATABASE_URL: postgresql://regulaia:regulaia-local@postgres:5432/regulaia
+      REGULAIA_COOKIE_SEGURO: "0"
+      REGULAIA_ORIGENS: http://localhost:3000
+      REGULAIA_TOKEN_SERVICO: ${REGULAIA_TOKEN_SERVICO:-token-local-do-agente}
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads:/app/data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  radar:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    command: ["python", "-m", "api.jobs", "radar"]
+    environment:
+      REGULAIA_DATABASE_URL: postgresql://regulaia:regulaia-local@postgres:5432/regulaia
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ["jobs"]
+
+volumes:
+  pgdata:
+  uploads:

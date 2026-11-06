@@ -1,7 +1,7 @@
-"""Camada de dados da RegulaIA (SQLite).
+"""Camada de dados da RegulaIA: SQLite (testes, demo offline) ou Postgres (API, AWS RDS).
 
-Toda leitura e escrita passa por aqui, para que trocar SQLite por Postgres
-no futuro mexa só neste arquivo.
+Toda leitura e escrita passa por aqui, com SQL portátil. As diferenças entre os dois
+bancos ficam em banco.py.
 """
 
 from __future__ import annotations
@@ -9,13 +9,14 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import os
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
-from . import agenda as agenda_, regras
+from . import agenda as agenda_, banco, regras
 
 SCHEMA = Path(__file__).with_name("schema.sql")
 ROOT = Path(__file__).resolve().parent.parent
@@ -32,8 +33,20 @@ class ErroCadastro(ValueError):
     pass
 
 
-def conectar(caminho: str | Path = DB_PADRAO) -> sqlite3.Connection:
-    """Abre (ou cria) o banco e aplica o esquema. Use ':memory:' nos testes."""
+def agora() -> str:
+    """AAAA-MM-DD HH:MM:SS em UTC, o mesmo formato do datetime('now') do SQLite."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def conectar(caminho: str | Path = DB_PADRAO):
+    """Abre (ou cria) o banco e aplica o esquema. Use ':memory:' nos testes.
+
+    `caminho` pode ser um arquivo SQLite ou uma URL `postgresql://...` (API e AWS RDS);
+    sem argumento, vale REGULAIA_DATABASE_URL se estiver definida."""
+    if caminho is DB_PADRAO and os.environ.get("REGULAIA_DATABASE_URL"):
+        caminho = os.environ["REGULAIA_DATABASE_URL"]
+    if banco.eh_url_postgres(caminho):
+        return banco.ConexaoPostgres(caminho)
     if caminho != ":memory:":
         Path(caminho).parent.mkdir(parents=True, exist_ok=True)
     # check_same_thread=False: a interface (Streamlit) usa a conexão em outra thread
@@ -56,6 +69,9 @@ def conectar(caminho: str | Path = DB_PADRAO) -> sqlite3.Connection:
 def sem_sincronizar(conn):
     """Para montar um banco que se recria do zero: sem esperar o disco a cada commit
     (2,7 s -> ~1,3 s na demo). Se a máquina cair no meio, é só montar de novo."""
+    if getattr(conn, "dialeto", "sqlite") != "sqlite":
+        yield conn
+        return
     antes = conn.execute("PRAGMA synchronous").fetchone()[0]
     conn.execute("PRAGMA synchronous = OFF")
     try:
@@ -191,12 +207,12 @@ def carregar_obrigacoes_csv(conn, caminho: str | Path, tipo_ativo: str = "barrag
                     "INSERT INTO obrigacao_versao (obrigacao_id, versao, titulo, artigo, "
                     "aplica_se_a, regra, periodicidade, agenda, prazo, vigencia_desde, vigencia_ate, "
                     "responsavel, evidencia, fonte, trecho, status, decidida_por, decidida_em) "
-                    "VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'vigente', 'carga inicial', datetime('now'))",
+                    "VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'vigente', 'carga inicial', ?)",
                     (ob_id, linha["obrigacao"], linha["artigo"], linha["aplica_se_a"],
                      linha["regra"], linha["periodicidade"], agenda, linha["prazo"],
                      linha["vigencia_desde"] or None, linha.get("vigencia_ate") or None,
                      linha["responsavel_ficticio"], linha["evidencia"], linha["fonte"],
-                     linha.get("trecho") or None),
+                     linha.get("trecho") or None, agora()),
                 )
             n += 1
     return n
@@ -329,9 +345,9 @@ def decidir(conn, versao_id: int, aprovar: bool, por: str, correcoes: dict | Non
                 (row["obrigacao_id"],),
             )
         conn.execute(
-            "UPDATE obrigacao_versao SET status = ?, decidida_por = ?, decidida_em = datetime('now') "
+            "UPDATE obrigacao_versao SET status = ?, decidida_por = ?, decidida_em = ? "
             "WHERE id = ?",
-            ("vigente" if aprovar else "rejeitada", por, versao_id),
+            ("vigente" if aprovar else "rejeitada", por, agora(), versao_id),
         )
 
 
@@ -351,9 +367,9 @@ def registrar_evidencia(conn, ativo_id: int, codigo: str, periodo: str, *,
     with conn:
         conn.execute(
             "INSERT INTO evidencia (ativo_id, obrigacao_id, periodo, arquivo, recebida_em, extraido) "
-            "VALUES (?, ?, ?, ?, COALESCE(?, datetime('now')), ?) "
+            "VALUES (?, ?, ?, ?, ?, ?) "
             "ON CONFLICT(ativo_id, obrigacao_id, periodo) DO UPDATE SET arquivo = excluded.arquivo",
-            (ativo_id, ob, periodo, arquivo, recebida_em,
+            (ativo_id, ob, periodo, arquivo, recebida_em or agora(),
              json.dumps(extraido, ensure_ascii=False) if extraido else None),
         )
     return conn.execute(
@@ -399,7 +415,7 @@ def registrar_evento(conn, ativo_id: int, codigo: str | None, tipo: str, texto: 
     ob = _obrigacao_id(conn, codigo) if codigo else None
     with conn:
         conn.execute("INSERT INTO evento (ativo_id, obrigacao_id, tipo, texto, por, em) "
-                     "VALUES (?, ?, ?, ?, ?, COALESCE(?, datetime('now')))", (ativo_id, ob, tipo, texto, por, em))
+                     "VALUES (?, ?, ?, ?, ?, ?)", (ativo_id, ob, tipo, texto, por, em or agora()))
 
 
 def atribuir(conn, ativo_id: int, codigo: str, responsavel: str, por: str | None = None) -> None:
@@ -439,8 +455,9 @@ def acionar(conn, ativo_id: int, codigo: str, dia: str, prazo: str, motivo: str,
     """Abre uma obrigação por evento (idempotente por ativo + obrigação + dia)."""
     with conn:
         conn.execute(
-            "INSERT OR IGNORE INTO acionamento (ativo_id, obrigacao_id, dia, prazo, motivo, origem) "
-            "VALUES (?, ?, ?, ?, ?, ?)", (ativo_id, _obrigacao_id(conn, codigo), dia, prazo, motivo, origem))
+            "INSERT INTO acionamento (ativo_id, obrigacao_id, dia, prazo, motivo, origem) "
+            "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING",
+            (ativo_id, _obrigacao_id(conn, codigo), dia, prazo, motivo, origem))
 
 
 def encerrar_acionamentos(conn, ativo_id: int, codigo: str, dia: str) -> int:

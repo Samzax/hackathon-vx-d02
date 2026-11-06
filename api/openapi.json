@@ -1,0 +1,2911 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "RegulaIA API",
+  "summary": "Torre de controle regulatória: cada obrigação de cada ativo, com a norma, o trecho e o prazo.",
+  "description": "Autenticação por cookie de sessão HttpOnly (POST /auth/login ou /auth/demo). Toda escrita precisa do cabeçalho X-CSRF-Token com o valor do cookie regulaia_csrf. O agente e os jobs usam Authorization: Bearer <REGULAIA_TOKEN_SERVICO>.",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/api/v1/auth/login": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Entrar com e-mail e senha",
+    "operationId": "login_api_v1_auth_login_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Login"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Eu"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/demo": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Entrar na demo com a conta de teste (sem senha)",
+    "operationId": "entrar_demo_api_v1_auth_demo_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Eu"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/logout": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Sair",
+    "operationId": "logout_api_v1_auth_logout_post",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    }
+   }
+  },
+  "/api/v1/auth/me": {
+   "get": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Quem está na sessão e com qual visão",
+    "operationId": "eu_api_v1_auth_me_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Eu"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/visao": {
+   "put": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Trocar de visão (só a conta de teste)",
+    "operationId": "trocar_visao_api_v1_auth_visao_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Visao"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Eu"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Empresas na torre (a demo primeiro)",
+    "operationId": "empresas_api_v1_empresas_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Empresa"
+         },
+         "type": "array",
+         "title": "Response Empresas Api V1 Empresas Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/painel": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Status de cada obrigação que vale no dia, por ativo, no escopo de quem pede",
+    "operationId": "painel_api_v1_empresas__empresa_id__painel_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     },
+     {
+      "name": "ativo",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Ativo"
+      }
+     },
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "array",
+         "items": {
+          "type": "string"
+         }
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Status"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Painel"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/ativos": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Ativos com a contagem por status",
+    "operationId": "ativos_api_v1_empresas__empresa_id__ativos_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Ativo"
+         },
+         "title": "Response Ativos Api V1 Empresas  Empresa Id  Ativos Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/ativos/{ativo_id}": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Ficha do ativo: pendências, evidências e histórico",
+    "operationId": "ficha_api_v1_ativos__ativo_id__get",
+    "parameters": [
+     {
+      "name": "ativo_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Ativo Id"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Ficha"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/obrigacoes/{codigo}/historico": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Todas as versões de uma obrigação, com a origem e quem decidiu",
+    "operationId": "historico_api_v1_obrigacoes__codigo__historico_get",
+    "parameters": [
+     {
+      "name": "codigo",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Codigo"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/calendario": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Vencimentos do mês, período a período",
+    "operationId": "calendario_mes_api_v1_empresas__empresa_id__calendario_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "ano",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Ano"
+      }
+     },
+     {
+      "name": "mes",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "maximum": 12,
+       "minimum": 1,
+       "title": "Mes"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/transicao": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "O que sai, o que entra e o que continua na troca de norma",
+    "operationId": "transicao_api_v1_empresas__empresa_id__transicao_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "dia",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "format": "date",
+       "default": "2027-08-02",
+       "title": "Dia"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/linha-do-tempo": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Obrigações que passam a valer depois do dia",
+    "operationId": "linha_do_tempo_api_v1_empresas__empresa_id__linha_do_tempo_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/boletim": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Boletim da semana (Markdown ou PDF), nunca enviado",
+    "operationId": "boletim_api_v1_empresas__empresa_id__boletim_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "formato",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(md|pdf)$",
+       "default": "md",
+       "title": "Formato"
+      }
+     },
+     {
+      "name": "responsavel",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Responsavel"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/calendario.ics": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Vencimentos em .ics para a agenda (só download)",
+    "operationId": "calendario_ics_api_v1_empresas__empresa_id__calendario_ics_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "responsavel",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Responsavel"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/planilha": {
+   "get": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "As pendências em Excel",
+    "operationId": "planilha_api_v1_empresas__empresa_id__planilha_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/entregas": {
+   "post": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Registrar a entrega de um período (com ou sem comprovante)",
+    "operationId": "entregar_api_v1_entregas_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Entrega"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Desfazer uma entrega registrada por engano",
+    "operationId": "desfazer_api_v1_entregas_delete",
+    "parameters": [
+     {
+      "name": "ativo_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Ativo Id"
+      }
+     },
+     {
+      "name": "codigo",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Codigo"
+      }
+     },
+     {
+      "name": "periodo",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Periodo"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/atribuicoes": {
+   "post": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Passar uma obrigação para outra área",
+    "operationId": "atribuir_api_v1_atribuicoes_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Atribuicao"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/comentarios": {
+   "post": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Comentar uma obrigação ou o ativo",
+    "operationId": "comentar_api_v1_comentarios_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Comentario"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/ativos/{ativo_id}/atributos": {
+   "patch": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Completar ou corrigir o cadastro do ativo",
+    "operationId": "atributos_api_v1_ativos__ativo_id__atributos_patch",
+    "parameters": [
+     {
+      "name": "ativo_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Ativo Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Atributos"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/ativos/{ativo_id}/responsavel": {
+   "put": {
+    "tags": [
+     "torre"
+    ],
+    "summary": "Qual área responde pelo ativo (Diretoria)",
+    "operationId": "responsavel_api_v1_ativos__ativo_id__responsavel_put",
+    "parameters": [
+     {
+      "name": "ativo_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Ativo Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Responsavel"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/mudancas": {
+   "get": {
+    "tags": [
+     "regulatório"
+    ],
+    "summary": "Mudanças propostas por atos novos, aguardando decisão",
+    "operationId": "mudancas_api_v1_empresas__empresa_id__mudancas_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Mudanca"
+         },
+         "title": "Response Mudancas Api V1 Empresas  Empresa Id  Mudancas Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/mudancas/{versao_id}/decisao": {
+   "post": {
+    "tags": [
+     "regulatório"
+    ],
+    "summary": "Aprovar (com correção opcional) ou rejeitar uma mudança",
+    "operationId": "decidir_api_v1_mudancas__versao_id__decisao_post",
+    "parameters": [
+     {
+      "name": "versao_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Versao Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Decisao"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/radar": {
+   "get": {
+    "tags": [
+     "regulatório"
+    ],
+    "summary": "O radar do DOU: funil do mês, análises e custo real da IA",
+    "operationId": "radar_api_v1_radar_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/radar/analise": {
+   "post": {
+    "tags": [
+     "regulatório"
+    ],
+    "summary": "Teste com um ato: triagem por regra, IA só nas candidatas, conferência do Python",
+    "operationId": "analisar_api_v1_radar_analise_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Ato"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/radar/propor": {
+   "post": {
+    "tags": [
+     "regulatório"
+    ],
+    "summary": "Mandar as mudanças aprovadas pelo Python para a fila de decisão",
+    "operationId": "propor_api_v1_radar_propor_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Ato"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/evidencias/leitura": {
+   "post": {
+    "tags": [
+     "evidências"
+    ],
+    "summary": "Ler um documento (PDF) sem gravar nada",
+    "operationId": "ler_api_v1_evidencias_leitura_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "hoje",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Hoje"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_ler_api_v1_evidencias_leitura_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ResultadoLeitura"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/evidencias/registro": {
+   "post": {
+    "tags": [
+     "evidências"
+    ],
+    "summary": "Gravar a leitura conferida: dá baixa e abre o que o documento acionou",
+    "operationId": "registrar_api_v1_evidencias_registro_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Registro"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/usuarios": {
+   "get": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Contas (TI)",
+    "operationId": "contas_api_v1_usuarios_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Criar conta (TI)",
+    "operationId": "criar_api_v1_usuarios_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Conta"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/usuarios/{usuario_id}": {
+   "patch": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Mudar papel, área ou desativar (TI)",
+    "operationId": "editar_api_v1_usuarios__usuario_id__patch",
+    "parameters": [
+     {
+      "name": "usuario_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Usuario Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Edicao"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/usuarios/{usuario_id}/senha": {
+   "put": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Trocar a senha de uma conta (TI)",
+    "operationId": "senha_api_v1_usuarios__usuario_id__senha_put",
+    "parameters": [
+     {
+      "name": "usuario_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Usuario Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Senha"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auditoria": {
+   "get": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Trilha de auditoria (Diretoria, Regulatório e TI)",
+    "operationId": "trilha_api_v1_auditoria_get",
+    "parameters": [
+     {
+      "name": "limite",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 200,
+       "title": "Limite"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sigbm/busca": {
+   "get": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Buscar mineradora no SIGBM público (CNPJ ou nome)",
+    "operationId": "buscar_api_v1_sigbm_busca_get",
+    "parameters": [
+     {
+      "name": "termo",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Termo"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sigbm/importar": {
+   "post": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Montar a torre de uma mineradora real a partir do SIGBM",
+    "operationId": "importar_api_v1_sigbm_importar_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Importacao"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/mercado": {
+   "get": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Números de mercado do SIGBM (agregados, com fonte)",
+    "operationId": "mercado_api_v1_mercado_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/demo/recriar": {
+   "post": {
+    "tags": [
+     "administração"
+    ],
+    "summary": "Voltar a demo ao estado inicial (só a conta de teste)",
+    "operationId": "recriar_api_v1_demo_recriar_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/health": {
+   "get": {
+    "tags": [
+     "operação"
+    ],
+    "summary": "Vivo e com banco",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "Ativo": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "tipo": {
+      "type": "string",
+      "title": "Tipo"
+     },
+     "responsavel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responsavel"
+     },
+     "atributos": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Atributos"
+     },
+     "contagem": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Contagem"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "codigo",
+     "nome",
+     "tipo",
+     "responsavel",
+     "atributos",
+     "contagem"
+    ],
+    "title": "Ativo"
+   },
+   "Ato": {
+    "properties": {
+     "identificacao": {
+      "type": "string",
+      "title": "Identificacao",
+      "examples": [
+       "RESOLUÇÃO ANM Nº 245, DE 31 DE JULHO DE 2026"
+      ]
+     },
+     "texto": {
+      "type": "string",
+      "maxLength": 200000,
+      "minLength": 20,
+      "title": "Texto"
+     }
+    },
+    "type": "object",
+    "required": [
+     "identificacao",
+     "texto"
+    ],
+    "title": "Ato"
+   },
+   "Atribuicao": {
+    "properties": {
+     "ativo_id": {
+      "type": "integer",
+      "title": "Ativo Id"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "responsavel": {
+      "type": "string",
+      "title": "Responsavel",
+      "description": "área; vazio devolve a obrigação ao responsável do ativo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo_id",
+     "codigo",
+     "responsavel"
+    ],
+    "title": "Atribuicao"
+   },
+   "Atributos": {
+    "properties": {
+     "atributos": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Atributos"
+     }
+    },
+    "type": "object",
+    "required": [
+     "atributos"
+    ],
+    "title": "Atributos"
+   },
+   "Body_ler_api_v1_evidencias_leitura_post": {
+    "properties": {
+     "arquivo": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "Arquivo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "arquivo"
+    ],
+    "title": "Body_ler_api_v1_evidencias_leitura_post"
+   },
+   "Comentario": {
+    "properties": {
+     "ativo_id": {
+      "type": "integer",
+      "title": "Ativo Id"
+     },
+     "codigo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Codigo"
+     },
+     "texto": {
+      "type": "string",
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Texto"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo_id",
+     "texto"
+    ],
+    "title": "Comentario"
+   },
+   "Conta": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "papel": {
+      "type": "string",
+      "pattern": "^(admin|diretoria|regulatorio|gestor)$",
+      "title": "Papel"
+     },
+     "area": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Area"
+     },
+     "senha": {
+      "anyOf": [
+       {
+        "type": "string",
+        "minLength": 8
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Senha"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "nome",
+     "papel"
+    ],
+    "title": "Conta"
+   },
+   "Decisao": {
+    "properties": {
+     "aprovar": {
+      "type": "boolean",
+      "title": "Aprovar"
+     },
+     "correcoes": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ]
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Correcoes",
+      "description": "campos corrigidos por quem aprova antes de aprovar ({campo: valor})"
+     }
+    },
+    "type": "object",
+    "required": [
+     "aprovar"
+    ],
+    "title": "Decisao"
+   },
+   "Edicao": {
+    "properties": {
+     "nome": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nome"
+     },
+     "papel": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^(admin|diretoria|regulatorio|gestor)$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Papel"
+     },
+     "area": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Area"
+     },
+     "ativa": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ativa"
+     }
+    },
+    "type": "object",
+    "title": "Edicao"
+   },
+   "Empresa": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "ficticia": {
+      "type": "boolean",
+      "title": "Ficticia"
+     },
+     "monitorado_desde": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Monitorado Desde"
+     },
+     "origem": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Origem"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "nome",
+     "ficticia"
+    ],
+    "title": "Empresa"
+   },
+   "Entrega": {
+    "properties": {
+     "ativo_id": {
+      "type": "integer",
+      "title": "Ativo Id"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo",
+      "examples": [
+       "R95-01"
+      ]
+     },
+     "dia": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dia",
+      "description": "dia da entrega; padrão: o hoje da torre"
+     },
+     "periodo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodo",
+      "description": "período comprovado; padrão: o primeiro que falta"
+     },
+     "obs": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Obs"
+     },
+     "arquivo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Arquivo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo_id",
+     "codigo"
+    ],
+    "title": "Entrega"
+   },
+   "Eu": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "papel": {
+      "type": "string",
+      "title": "Papel",
+      "description": "papel da conta: admin, diretoria, regulatorio ou gestor"
+     },
+     "papel_efetivo": {
+      "type": "string",
+      "title": "Papel Efetivo",
+      "description": "o papel com que a pessoa age agora (na conta de teste, o da visão)"
+     },
+     "area": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Area"
+     },
+     "teste": {
+      "type": "boolean",
+      "title": "Teste"
+     },
+     "visao": {
+      "type": "string",
+      "title": "Visao"
+     },
+     "visoes": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Visoes",
+      "description": "visões que a conta pode escolher (só a conta de teste tem mais de uma)"
+     },
+     "csrf": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Csrf"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "email",
+     "nome",
+     "papel",
+     "papel_efetivo",
+     "area",
+     "teste",
+     "visao",
+     "visoes"
+    ],
+    "title": "Eu"
+   },
+   "Ficha": {
+    "properties": {
+     "ativo": {
+      "$ref": "#/components/schemas/Ativo"
+     },
+     "linhas": {
+      "items": {
+       "$ref": "#/components/schemas/LinhaPainel"
+      },
+      "type": "array",
+      "title": "Linhas"
+     },
+     "evidencias": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Evidencias"
+     },
+     "eventos": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Eventos"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo",
+     "linhas",
+     "evidencias",
+     "eventos"
+    ],
+    "title": "Ficha"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "Importacao": {
+    "properties": {
+     "cnpj": {
+      "type": "string",
+      "title": "Cnpj",
+      "description": "CNPJ (só dígitos ou formatado) de uma empresa no SIGBM público"
+     },
+     "monitorado_desde": {
+      "type": "string",
+      "format": "date",
+      "title": "Monitorado Desde"
+     }
+    },
+    "type": "object",
+    "required": [
+     "cnpj",
+     "monitorado_desde"
+    ],
+    "title": "Importacao"
+   },
+   "Leitura": {
+    "properties": {
+     "ativo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ativo"
+     },
+     "documento": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Documento"
+     },
+     "obrigacao": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Obrigacao"
+     },
+     "data": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Data"
+     },
+     "periodo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodo"
+     },
+     "pontuacao_maxima": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pontuacao Maxima"
+     },
+     "estado_conservacao": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Estado Conservacao",
+      "default": {}
+     },
+     "metodo": {
+      "type": "string",
+      "title": "Metodo",
+      "default": "regra"
+     },
+     "problemas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Problemas",
+      "default": []
+     },
+     "avisos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Avisos",
+      "default": []
+     },
+     "gatilhos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Gatilhos",
+      "default": []
+     },
+     "acionar": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Acionar",
+      "default": []
+     }
+    },
+    "type": "object",
+    "title": "Leitura"
+   },
+   "LinhaPainel": {
+    "properties": {
+     "ativo": {
+      "type": "string",
+      "title": "Ativo"
+     },
+     "ativo_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ativo Id"
+     },
+     "ativo_nome": {
+      "type": "string",
+      "title": "Ativo Nome"
+     },
+     "tipo_ativo": {
+      "type": "string",
+      "title": "Tipo Ativo"
+     },
+     "responsavel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responsavel"
+     },
+     "responsavel_proprio": {
+      "type": "boolean",
+      "title": "Responsavel Proprio"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "norma": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Norma"
+     },
+     "area": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Area"
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "artigo": {
+      "type": "string",
+      "title": "Artigo"
+     },
+     "dispositivo": {
+      "type": "string",
+      "title": "Dispositivo",
+      "description": "norma e artigo prontos para mostrar"
+     },
+     "periodicidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodicidade"
+     },
+     "agenda": {
+      "type": "string",
+      "title": "Agenda"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status",
+      "description": "atrasada, dado_faltando, vence_logo, em_dia, cumprida, gatilho"
+     },
+     "status_rotulo": {
+      "type": "string",
+      "title": "Status Rotulo"
+     },
+     "vence": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vence"
+     },
+     "faltando": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Faltando"
+     },
+     "pendente": {
+      "type": "string",
+      "title": "Pendente",
+      "description": "o que falta, em português"
+     },
+     "ultima": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ultima"
+     },
+     "dados_faltando": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Dados Faltando"
+     },
+     "mudanca_pendente": {
+      "type": "boolean",
+      "title": "Mudanca Pendente"
+     },
+     "evidencia": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidencia"
+     },
+     "nota": {
+      "type": "string",
+      "title": "Nota"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo",
+     "ativo_id",
+     "ativo_nome",
+     "tipo_ativo",
+     "responsavel",
+     "responsavel_proprio",
+     "codigo",
+     "norma",
+     "area",
+     "titulo",
+     "artigo",
+     "dispositivo",
+     "periodicidade",
+     "agenda",
+     "status",
+     "status_rotulo",
+     "vence",
+     "faltando",
+     "pendente",
+     "ultima",
+     "dados_faltando",
+     "mudanca_pendente",
+     "evidencia",
+     "nota"
+    ],
+    "title": "LinhaPainel"
+   },
+   "Login": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "title": "Email",
+      "examples": [
+       "diretoria@serraazul.example"
+      ]
+     },
+     "senha": {
+      "type": "string",
+      "title": "Senha"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "senha"
+    ],
+    "title": "Login"
+   },
+   "Mudanca": {
+    "properties": {
+     "versao_id": {
+      "type": "integer",
+      "title": "Versao Id"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "diferencas": {
+      "additionalProperties": {
+       "items": {},
+       "type": "array"
+      },
+      "type": "object",
+      "title": "Diferencas",
+      "description": "{campo: [vigente, proposto]}"
+     },
+     "ato": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ato"
+     },
+     "publicado_em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Publicado Em"
+     },
+     "trecho": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Trecho"
+     },
+     "fonte": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fonte"
+     },
+     "ativos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Ativos"
+     }
+    },
+    "type": "object",
+    "required": [
+     "versao_id",
+     "codigo",
+     "titulo",
+     "diferencas",
+     "ato",
+     "publicado_em",
+     "trecho",
+     "fonte",
+     "ativos"
+    ],
+    "title": "Mudanca"
+   },
+   "Painel": {
+    "properties": {
+     "hoje": {
+      "type": "string",
+      "title": "Hoje"
+     },
+     "desde": {
+      "type": "string",
+      "title": "Desde"
+     },
+     "contagem": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Contagem"
+     },
+     "por_ativo": {
+      "additionalProperties": {
+       "additionalProperties": {
+        "type": "integer"
+       },
+       "type": "object"
+      },
+      "type": "object",
+      "title": "Por Ativo"
+     },
+     "linhas": {
+      "items": {
+       "$ref": "#/components/schemas/LinhaPainel"
+      },
+      "type": "array",
+      "title": "Linhas"
+     }
+    },
+    "type": "object",
+    "required": [
+     "hoje",
+     "desde",
+     "contagem",
+     "por_ativo",
+     "linhas"
+    ],
+    "title": "Painel"
+   },
+   "Registro": {
+    "properties": {
+     "leitura": {
+      "$ref": "#/components/schemas/Leitura"
+     },
+     "arquivo": {
+      "type": "string",
+      "title": "Arquivo"
+     },
+     "guardado_em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Guardado Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "leitura",
+     "arquivo"
+    ],
+    "title": "Registro"
+   },
+   "Responsavel": {
+    "properties": {
+     "area": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Area"
+     }
+    },
+    "type": "object",
+    "required": [
+     "area"
+    ],
+    "title": "Responsavel"
+   },
+   "ResultadoLeitura": {
+    "properties": {
+     "leitura": {
+      "$ref": "#/components/schemas/Leitura"
+     },
+     "completa": {
+      "type": "boolean",
+      "title": "Completa"
+     },
+     "arquivo": {
+      "type": "string",
+      "title": "Arquivo"
+     },
+     "guardado_em": {
+      "type": "string",
+      "title": "Guardado Em"
+     },
+     "sha256": {
+      "type": "string",
+      "title": "Sha256"
+     }
+    },
+    "type": "object",
+    "required": [
+     "leitura",
+     "completa",
+     "arquivo",
+     "guardado_em",
+     "sha256"
+    ],
+    "title": "ResultadoLeitura"
+   },
+   "Senha": {
+    "properties": {
+     "senha": {
+      "type": "string",
+      "minLength": 8,
+      "title": "Senha"
+     }
+    },
+    "type": "object",
+    "required": [
+     "senha"
+    ],
+    "title": "Senha"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "Visao": {
+    "properties": {
+     "visao": {
+      "type": "string",
+      "title": "Visao",
+      "examples": [
+       "Diretoria (todos os ativos)",
+       "Gerência de Geotecnia",
+       "TI (usuários e acessos)"
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "visao"
+    ],
+    "title": "Visao"
+   }
+  }
+ }
+}
