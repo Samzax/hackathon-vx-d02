@@ -40,6 +40,7 @@ def _postgres_no_lugar_do_sqlite(monkeypatch):
 
     rodada = uuid.uuid4().hex[:8]
     criados: list[str] = []
+    abertas: list = []
     original = db.conectar
 
     def conectar(caminho=db.DB_PADRAO):
@@ -51,12 +52,23 @@ def _postgres_no_lugar_do_sqlite(monkeypatch):
             esquema = f"t_{rodada}_{hashlib.sha1(str(caminho).encode()).hexdigest()[:10]}"
         if esquema not in criados:
             criados.append(esquema)
-        return banco.ConexaoPostgres(URL_PG, esquema=esquema)
+        conn = banco.ConexaoPostgres(URL_PG, esquema=esquema)
+        abertas.append(conn)
+        return conn
 
     monkeypatch.setattr(db, "conectar", conectar)
     yield
+    # Conexão que ficou aberta (a do st.cache_resource do Streamlit, a de um teste que falhou e
+    # ficou presa no traceback) segura a transação e o lock das tabelas: o DROP SCHEMA esperaria
+    # para sempre. Fecha todas antes; e o lock_timeout faz falhar com erro em vez de travar o CI.
+    for conn in abertas:
+        try:
+            conn.close()
+        except Exception:
+            pass
     import psycopg
 
     with psycopg.connect(URL_PG, autocommit=True) as c:
+        c.execute("SET lock_timeout = '30s'")
         for e in criados:
             c.execute(f'DROP SCHEMA IF EXISTS "{e}" CASCADE')

@@ -31,9 +31,19 @@ class OCRFalso:
         return self.texto_fixo
 
 
+def _imagem(pdf: bytes) -> tuple:
+    """A imagem da página, descomprimida. Os bytes do PDF mudam com o zlib do Python (zlib-ng no
+    Python 3.14 e em builds do Linux, zlib 1.3 no Windows) mesmo com os mesmos pixels."""
+    from pypdf import PdfReader
+
+    xobjetos = PdfReader(BytesIO(pdf)).pages[0]["/Resources"]["/XObject"]
+    (img,) = [xobjetos[nome].get_object() for nome in xobjetos]
+    return img["/Width"], img["/Height"], img.get_data()
+
+
 def test_exemplo_escaneado_esta_nos_exemplos_e_e_igual_ao_gerado(escaneada):
     caminho = ev.exemplo("FIR_B3_2026-10-1Q_escaneada.pdf")
-    assert caminho.exists() and caminho.read_bytes() == escaneada      # geração determinística
+    assert caminho.exists() and _imagem(caminho.read_bytes()) == _imagem(escaneada)   # mesma imagem, pixel a pixel
 
 
 def test_escaneado_sem_ocr_avisa_e_nao_inventa(escaneada):

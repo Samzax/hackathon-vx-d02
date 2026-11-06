@@ -24,6 +24,7 @@ jobs:
 
   testes-sqlite:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -35,6 +36,8 @@ jobs:
   testes-postgres:
     # a mesma suíte, com cada conexão num schema isolado do Postgres (tests/conftest.py)
     runs-on: ubuntu-latest
+    # travar (lock esperando conexão esquecida) vira falha em minutos, não em 6 horas
+    timeout-minutes: 45
     services:
       postgres:
         image: postgres:16-alpine
@@ -59,7 +62,7 @@ jobs:
         run: |
           uv run alembic upgrade head
           uv run alembic upgrade head
-      - run: uv run pytest -q
+      - run: uv run pytest -q --durations=15
 
   imagem:
     runs-on: ubuntu-latest

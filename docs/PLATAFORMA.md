@@ -92,17 +92,31 @@ REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
 
 ## CI (run 42281176074, commit ae998d9)
 
-- lint, imagem: ok. testes-postgres: rodando quando esta nota foi escrita.
-- testes-sqlite falhou em 2 testes que passam no Windows e dependem do ambiente:
-  `tests/test_ocr.py::test_exemplo_escaneado_esta_nos_exemplos_e_e_igual_ao_gerado` (PDF gerado
-  difere no Linux, provavelmente fonte) e `tests/test_app.py::test_ato_ficticio_vira_mudanca_pendente`
-  (a análise do ato fictício não aparece; conferir se depende do `data/cache_ia.db` local, fora do Git).
+- lint, imagem: ok.
+- testes-sqlite: 2 falhas que não apareciam no Windows, corrigidas depois:
+  - `test_ocr.py::test_exemplo_escaneado_esta_nos_exemplos_e_e_igual_ao_gerado`: os pixels são os mesmos,
+    o que muda é o zlib do Python (zlib-ng no 3.14 e em builds do Linux, zlib 1.3 no Windows) e com ele
+    os bytes do PDF. O teste agora compara a imagem descomprimida, pixel a pixel.
+  - `test_app.py::test_ato_ficticio_vira_mudanca_pendente`: a resposta da IA para o ato fictício só estava
+    no `data/cache_ia.db` local. Entrou no `data/cache_ia_demo.json`, e os testes do Streamlit passam a usar
+    um cache novo, semeado só com o que está no Git (como num clone novo).
+- testes-postgres: passou dos 40 minutos rodando a suíte (no SQLite ela leva 1 minuto no CI) e o log só sai
+  quando o job termina. Causa provável: o `DROP SCHEMA ... CASCADE` da limpeza de cada teste espera para
+  sempre por uma conexão que ficou aberta com transação (a do `st.cache_resource` do Streamlit, ou a de
+  um teste que falhou, presa no traceback). O `conftest.py` agora fecha as conexões do teste antes e usa
+  `lock_timeout`; o `test_app.py` limpa o `st.cache_resource` a cada teste; o job tem `timeout-minutes: 45`
+  e mostra as 15 durações mais longas. Ainda não conferido no Postgres (o Docker daqui não respondeu):
+  ver no próximo CI.
 
 ## Próximo
 
 1. **Mais normas de verdade no catálogo**, pelo mesmo caminho das atuais: `regulaia/fontes.py` baixa o
-   texto oficial, `regulaia/extrator.py` propõe, `curadoria/*.csv` escolhe, `regulaia/curadoria.py`
-   gera, `tests/test_trechos.py` confere o trecho literal. Pedidos do usuário: Lei 12.334/2010 (PNSB),
-   lei estadual de MG de barragens, outras resoluções da ANM, outras NRs aplicáveis à mineração;
-   sempre com o trecho literal conferido contra o texto oficial.
-2. Os dois testes do CI que dependem do ambiente (abaixo) e o resultado do `testes-postgres`.
+   texto oficial, `regulaia/extrator.py` propõe (com IA), `curadoria/*.csv` escolhe, `regulaia/curadoria.py`
+   gera, `tests/test_trechos.py` confere o trecho literal; norma curta pode ser curada à mão, como
+   `cadastro/nr22_zas.csv`. Pedidos do usuário: Lei 12.334/2010 (PNSB), lei estadual de MG de barragens,
+   outras resoluções da ANM, outras NRs aplicáveis à mineração; sempre com o trecho literal conferido
+   contra o texto oficial. Em 06/11 o Planalto derrubou a conexão do `regulaia.fontes` (connection reset)
+   e o normas.leg.br só serve a página com JavaScript: falta uma fonte oficial que baixe sem navegador.
+   Antes de pôr norma nova, conferir que as candidatas da triagem dos atos em cache (Res. 245, 246 e o ato
+   fictício) não mudam: o prompt da IA leva as candidatas, e se mudar o cache da demo deixa de valer.
+2. Conferir o `testes-postgres` no próximo CI (acima).
