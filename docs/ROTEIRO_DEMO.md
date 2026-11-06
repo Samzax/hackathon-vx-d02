@@ -4,7 +4,7 @@ Antes de começar: `uv run streamlit run app.py`, clicar em **Entrar na demo** (
 
 ## 1. Caixa de entrada (60 s)
 
-- **Fala:** "A Serra Azul tem 8 ativos e 113 obrigações vindas de 7 normas: a lei federal de segurança de barragens, a lei de Minas, as Res. 95 e 220 da ANM, a NR-13, a NR-22 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que precisa de ação, por ativo."
+- **Fala:** "A Serra Azul tem 8 ativos e 129 obrigações vindas de 9 normas: a lei federal de segurança de barragens, a lei de Minas e seus dois decretos, as Res. 95 e 220 da ANM, a NR-13, a NR-22 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que precisa de ação, por ativo."
 - Apontar os números do topo: 4 atrasadas, 1 dado faltando, 3 vencendo. Embaixo, a lista do que precisa de decisão ou ação: a mudança da Res. 245 aguardando aprovação, as atrasadas, o dado faltando e o que vence, cada linha com o botão que resolve (**Registrar entrega**, **Completar cadastro**, **Decidir →**).
 - Em **Chegou um documento da operação?**, escolher `FIR_B3_2026-10-1Q.pdf` e clicar em **Ler documento**.
   - **Fala:** "A regra leu ativo, documento e data. A IA não foi chamada."

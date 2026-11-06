@@ -49,12 +49,12 @@ def test_ferramentas_sao_so_de_leitura(http):
     assert not nomes & {"registrar_entrega", "decidir", "aprovar"}       # decisão é de gente, na torre
 
 
-def test_pendencias_da_demo_com_norma_e_trecho(ferramentas):
+def test_pendencias_da_demo_com_norma_e_dispositivo(ferramentas):
     p = ferramentas("pendencias", hoje=HOJE)
     assert p["contagem"]["atrasada"] == 4
     assert p["pendencias"] and all(l["status"] in PENDENTES for l in p["pendencias"])
     fir = next(l for l in p["pendencias"] if l["ativo"] == "B3" and l["obrigacao"] == "R95-01")
-    assert fir["status"] == "atrasada" and fir["norma"] == "Res. ANM 95/2022" and fir["trecho"]
+    assert fir["status"] == "atrasada" and fir["norma"] == "Res. ANM 95/2022" and fir["dispositivo"]
     assert fir["periodos_faltando"]
 
 
@@ -62,7 +62,8 @@ def test_ficha_mostra_a_lei_federal_da_zas_na_b2(ferramentas):
     f = ferramentas("ficha_do_ativo", ativo="b2", hoje=HOJE)
     assert f["ativo"]["codigo"] == "B2" and f["ativo"]["atributos"]["trabalhadores_zas"] is True
     zas = next(o for o in f["obrigacoes"] if o["obrigacao"] == "L12-22")
-    assert zas["norma"] == "Lei 12.334/2010 (PNSB)" and zas["trecho"].startswith("Somente se admite na ZAS")
+    assert zas["norma"] == "Lei 12.334/2010 (PNSB)" and "18-A" in zas["dispositivo"]
+    assert "trecho" not in zas or zas["trecho"].startswith("Somente se admite na ZAS")
 
 
 def test_mudanca_da_res_245_aguarda_decisao(ferramentas):

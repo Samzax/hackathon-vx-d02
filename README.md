@@ -20,7 +20,7 @@ Cada gestor vê só os seus ativos e ninguém precisa ler norma nenhuma.
 
 ## A demo
 
-A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. A empresa tem 8 ativos e 113 obrigações cadastradas, em 7 de novembro de 2026:
+A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. A empresa tem 8 ativos e 129 obrigações cadastradas, em 7 de novembro de 2026:
 
 As abas seguem quem usa: a operação (caixa de entrada, ativos, entregas), o regulatório (mudanças, radar, transição) e o "sobre" do pitch. Um número, um item da caixa ou uma linha do mapa levam direto à tela certa, já filtrada.
 
@@ -58,6 +58,7 @@ A **conta de teste** troca de visão pela barra lateral ("Quem está olhando": D
 |---|---|---|
 | [cadastro/lei12334.csv](cadastro/lei12334.csv) | Lei 12.334/2010, a Política Nacional de Segurança de Barragens (com a Lei 14.066/2020) | 23 |
 | [cadastro/lei_mg_23291.csv](cadastro/lei_mg_23291.csv) | Lei MG 23.291/2019, a política estadual de segurança de barragens (só para barragens em MG) | 18 |
+| [cadastro/dec_mg_48078.csv](cadastro/dec_mg_48078.csv), [dec_mg_48140.csv](cadastro/dec_mg_48140.csv) | Decretos MG 48.078/2020 (PAE) e 48.140/2021 (classificação, auditoria, descaracterização), que regulamentam a lei | 16 |
 | [cadastro/res95_2022.csv](cadastro/res95_2022.csv) | Res. ANM 95/2022 (vale até 1/8/2027) | 21 |
 | [seed_obligations.csv](seed_obligations.csv) | Res. ANM 220/2025 (vale a partir de 2/8/2027) | 24 |
 | [cadastro/nr13.csv](cadastro/nr13.csv) | NR-13, vasos de pressão (Tabela 2, por categoria) | 10 |
@@ -70,7 +71,7 @@ Cada obrigação tem três campos que a máquina lê:
 - **agenda:** quando vence (ex.: `quinzenal+15d`, `anos:3`, `unica`);
 - **trecho:** o texto literal da norma.
 
-Os 107 trechos das normas oficiais são conferidos por teste (`tests/test_trechos.py`) contra os textos baixados das fontes oficiais (ANMlegis, gov.br/trabalho-e-emprego, Planalto e Assembleia de Minas). A lista das fontes está em `regulaia/fontes.py`. A licença é fictícia e não tem texto para conferir.
+Os 123 trechos das normas oficiais são conferidos por teste (`tests/test_trechos.py`) contra os textos baixados das fontes oficiais (ANMlegis, gov.br/trabalho-e-emprego, Planalto e Assembleia de Minas). A lista das fontes está em `regulaia/fontes.py`. A licença é fictícia e não tem texto para conferir.
 
 O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto (`regulaia/extrator.py`), uma pessoa escolhe e ajusta (`curadoria/*.csv`) e o script gera o CSV final (`regulaia/curadoria.py`). Repetir o processo dá o mesmo resultado.
 
@@ -81,7 +82,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | A Res. 245 muda só a OB-01, e só na B2; a Res. 246 não muda nada | `tests/test_impacto.py` (e `tests/test_ia_real.py` com o modelo de verdade) |
 | A IA não inventa: trecho que não está no ato ou data que não está no trecho é reprovado | `test_trecho_inventado_e_reprovado…`, `test_data_que_nao_esta_no_trecho…`, `test_ia_nao_pode_inventar_data` |
 | Ato sem relação com o cadastro não chama a IA; resposta repetida vem do cache, mesmo sem chave | `test_ato_sem_relacao_nao_chama_a_ia`, `test_cache_vale_mesmo_sem_chave` |
-| Cada trecho citado no cadastro existe no texto oficial (107 trechos) | `tests/test_trechos.py` |
+| Cada trecho citado no cadastro existe no texto oficial (123 trechos) | `tests/test_trechos.py` |
 | Anomalia abre a ISE e ela só fecha com o relatório; na Res. 220 a regra é a do art. 42 | `tests/test_evidencias.py` |
 | ANM e MTE vencem juntas na ZAS depois de aprovada a Res. 245; sem aprovação, nada muda | `test_zas_aprovada_vence_junto_com_a_nr22_no_painel` |
 | Os números da documentação, do roteiro e da análise de mercado batem com o cadastro, a demo, o DOU e o SIGBM | `tests/test_documentacao.py`, `test_numeros_do_funil_na_tela_e_nos_documentos`, `test_numeros_da_analise_de_mercado_saem_dos_dados` |

@@ -125,7 +125,9 @@ REGULAIA_TESTE_PG=postgresql://... uv run pytest # a suíte inteira no Postgres
    - `cadastro/lei_mg_23291.csv`: Lei MG 23.291/2019 (texto atualizado da ALMG, baixa sem navegador),
      18 obrigações, só para `uf = MG`. A auditoria técnica de segurança depende do novo atributo
      `potencial_dano_ambiental` (classificação estadual), que o SIGBM não traz: em empresa importada, dado faltando.
-   Total: 113 obrigações, 107 trechos conferidos. Os números da demo (4 atrasadas, 1 dado faltando,
-   3 vencendo) e o cache de IA dos atos da demo não mudaram. Próximas candidatas: outras resoluções da ANM
-   (Res. 130/2023, 175/2024), Decreto MG 48.140/2021 (descaracterização), NR-01 (GRO) para a unidade.
+   - `cadastro/dec_mg_48078.csv` (PAE, 9) e `cadastro/dec_mg_48140.csv` (classificação, auditoria, descaracterização,
+     obras emergenciais, 7): os decretos que regulamentam a lei mineira, texto atualizado da ALMG.
+   Total: 129 obrigações, 123 trechos conferidos. Os números da demo (4 atrasadas, 1 dado faltando,
+   3 vencendo) e o cache de IA dos atos da demo não mudaram. Próximas candidatas: Deliberações Normativas do Copam sobre
+   barragens, NR-01 (GRO) para a unidade, leis estaduais de barragens de outros estados (PA, BA, GO).
 2. Conferir o `testes-postgres` no próximo CI (acima).

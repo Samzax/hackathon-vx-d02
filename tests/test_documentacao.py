@@ -428,7 +428,7 @@ def test_numeros_da_analise_de_mercado_saem_dos_dados():
             continue
         obs = [o for o in db.obrigacoes_do_ativo(conn, a["id"], em="2026-06-01") if o.vigente]
         for lista, so_federal in ((federal, True), (com_mg, False)):
-            vs = [o.vigente for o in obs if not (so_federal and o.codigo.startswith("MG-"))]
+            vs = [o.vigente for o in obs if not (so_federal and o.codigo.startswith(("MG-", "D78-", "D140-")))]
             n = 0
             for v in vs:
                 try:

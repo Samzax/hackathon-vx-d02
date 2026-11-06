@@ -113,11 +113,45 @@ def semear_cache(cache, origem: Path = CACHE_DEMO) -> int:
 def preparar(caminho: Path | None = None, dou: Path = AMOSTRA_DOU, cache: Path | None = None) -> tuple:
     """Banco pronto para a interface: cadastro, empresa, histórico e o radar do DOU
     já rodado (Res. 245 e 246). Usa o cache de IA; sem chave, só o que está em cache."""
+    conn = db.conectar(caminho if caminho is not None else db.DB_PADRAO)
+    pg = banco.eh_url_postgres(caminho)
+    if pg:
+        # Vários processos podem preparar ao mesmo tempo (os workers do uvicorn, as tasks do ECS): um
+        # apagaria o que o outro está gravando. Um de cada vez; quem esperou um banco vazio e o encontra
+        # pronto não refaz. Quem pediu para recriar uma demo que já existia recria.
+        vazio_antes = _empresas(conn) == 0
+        conn.execute("SELECT pg_advisory_lock(?)", (_LOCK_DEMO,))
+        conn.commit()
+        if vazio_antes and _empresas(conn) > 0:
+            conn.execute("SELECT pg_advisory_unlock(?)", (_LOCK_DEMO,))
+            conn.commit()
+            return conn, {}, []
+    try:
+        return _preparar(conn, caminho, dou, cache)
+    except Exception:
+        if pg:
+            conn.rollback()         # transação abortada: sem isso, o unlock abaixo também falharia
+        raise
+    finally:
+        if pg:
+            conn.execute("SELECT pg_advisory_unlock(?)", (_LOCK_DEMO,))
+            conn.commit()
+
+
+_LOCK_DEMO = 724100246       # o Alembic usa 724100245
+
+
+def _empresas(conn) -> int:
+    n = conn.execute("SELECT COUNT(*) FROM empresa").fetchone()[0]
+    conn.commit()
+    return n
+
+
+def _preparar(conn, caminho, dou: Path, cache: Path | None) -> tuple:
     from collector.xml_dou import load_month
     from . import impacto
     from .ia import Roteador
 
-    conn = db.conectar(caminho if caminho is not None else db.DB_PADRAO)
     conn_cache = db.conectar(cache if cache is not None else (caminho if banco.eh_url_postgres(caminho) else impacto.CACHE_IA))
     semear_cache(conn_cache)
     roteador = Roteador(conn_cache)

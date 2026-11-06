@@ -32,6 +32,10 @@ FONTES: dict[str, tuple[str, str]] = {
                             "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12334.htm"),
     "lei_mg_23291_2019.html": ("Lei MG 23.291/2019 (política estadual de segurança de barragens, texto atualizado)",
                                "https://www.almg.gov.br/legislacao-mineira/texto/LEI/23291/2019/"),
+    "dec_mg_48078_2020.html": ("Decreto MG 48.078/2020 (PAE, texto atualizado)",
+                               "https://www.almg.gov.br/legislacao-mineira/texto/DEC/48078/2020/"),
+    "dec_mg_48140_2021.html": ("Decreto MG 48.140/2021 (regulamenta a Lei 23.291, texto atualizado)",
+                               "https://www.almg.gov.br/legislacao-mineira/texto/DEC/48140/2021/"),
     "nr-13-atualizada-2023-b.pdf": ("NR-13", _NRS + "nr-13-atualizada-2023-b.pdf"),
     "nr-22-atualizada-2026.pdf": ("NR-22", _NRS + "nr-22-atualizada-2026.pdf"),
     "portaria-mte-no-105-altera-a-nr-22-anexo-iii-nr-09-e-aprova-o-anexo-v-poeiras-minerais-ii.pdf": (
