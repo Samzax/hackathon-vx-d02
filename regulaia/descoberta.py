@@ -318,6 +318,7 @@ class Baixador:
         self.pasta, self.pausa_s, self.hoje = pasta, pausa_s, hoje or date.today()
         self.http = http or httpx.Client(follow_redirects=True, timeout=90, headers={"User-Agent": USER_AGENT})
         self.pasta.mkdir(parents=True, exist_ok=True)
+        self.vigencia = None     # vigencia.Baixador, criado no primeiro texto federal
 
     def _cache(self, nome: str, ano: int, baixar) -> bytes:
         arq = self.pasta / nome
@@ -366,8 +367,11 @@ class Baixador:
 
     def texto(self, linha: dict, limite: int = 9000) -> str | None:
         """O começo do texto oficial, do artigo 1º em diante, para a segunda leitura da triagem. A ALMG e o
-        ANMlegis servem a página sem verificação; o Planalto, de onde viria a lei federal, derruba robô:
-        aí None, e fica a decisão pela ementa."""
+        ANMlegis servem a página sem verificação. A lei federal vem do texto atualizado da Câmara
+        (regulaia/vigencia.py; o Planalto derruba robô); sem ficha na Câmara, None, e fica a decisão pela
+        ementa."""
+        if linha["fonte"] == "senado":
+            return self._texto_federal(linha, limite)
         if linha["fonte"] not in ("almg", "anm") or not linha.get("url"):
             return None
         arq = self.pasta / ("texto_" + re.sub(r"[^A-Za-z0-9]+", "_", linha["chave"]) + ".txt")
@@ -379,6 +383,30 @@ class Baixador:
         corpo = texto_da_pagina(bruto)
         arq.write_text(corpo, encoding="utf-8")
         time.sleep(self.pausa_s)
+        return corpo[:limite] or None
+
+    def _texto_federal(self, linha: dict, limite: int) -> str | None:
+        """Lei, decreto, decreto-lei e LC federais: o texto atualizado da Câmara, pela ficha que o LexML
+        aponta. Ficha sem texto (a do Senado, para decreto recente) ou falha: None."""
+        from . import vigencia
+
+        if not vigencia.suportada(linha["chave"]):
+            return None
+        arq = self.pasta / ("texto_" + re.sub(r"[^A-Za-z0-9]+", "_", linha["chave"]) + ".txt")
+        if arq.exists():
+            return arq.read_text(encoding="utf-8")[:limite] or None
+        if self.vigencia is None:
+            self.vigencia = vigencia.Baixador()
+        try:
+            pagina = self.vigencia.texto(self.vigencia.ficha(linha["chave"]))
+        except vigencia.ErroVigencia:
+            return None
+        if not pagina:
+            return None
+        corpo = " ".join(vigencia.paragrafos_do_texto(pagina))
+        m = re.search(r"\bArt\.? ?1\s?[ºo°]", corpo)
+        corpo = corpo[m.start():] if m else corpo
+        arq.write_text(corpo, encoding="utf-8")
         return corpo[:limite] or None
 
 

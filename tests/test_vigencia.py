@@ -253,3 +253,42 @@ def test_sem_ficha_na_camara_o_lexml_leva_ao_senado(serra):
     r = serra.execute("SELECT nota FROM norma_candidata WHERE chave = 'BR:DEC:10966/2022'").fetchone()
     assert "Decreto nº 11.369 de 01/01/2023" in r["nota"] and "legis.senado.leg.br/norma/35488354" in r["nota"]
     assert v.lida(serra, "BR:DEC:10966/2022").fonte == v.FONTE_SENADO
+
+
+# ------------------------------------------------------------------- a segunda leitura da triagem
+
+
+def test_segunda_leitura_da_lei_federal_vem_do_texto_da_camara(tmp_path):
+    b = d.Baixador(pasta=tmp_path, http=object())
+    b.vigencia = BaixadorFixo()
+    linha = {"fonte": "senado", "chave": "BR:LEI:12334/2010", "url": "https://legis.senado.leg.br/norma/585331"}
+    t = b.texto(linha)
+    assert t.startswith("Art. 1º Esta Lei estabelece a Política Nacional de Segurança de Barragens")
+    assert "Redação dada" not in t and len(t) <= 9000
+    b.vigencia = BaixadorFixo({})                        # segunda vez vem do cache em disco
+    assert b.texto(linha) == t
+
+
+def test_sem_texto_na_camara_fica_a_ementa(tmp_path):
+    b = d.Baixador(pasta=tmp_path, http=object())
+    b.vigencia = BaixadorFixo({v.LEXML + "urn:lex:br:federal:decreto:2022;10966": "lexml_dec_10966.html",
+                               SENADO_10966: "senado_dec_10966.xml"})
+    assert b.texto({"fonte": "senado", "chave": "BR:DEC:10966/2022", "url": ""}) is None   # ficha do Senado: sem texto
+    assert b.texto({"fonte": "senado", "chave": "BR:RES-ANM:95/2022", "url": ""}) is None
+    b.vigencia = BaixadorFixo({})
+    assert b.texto({"fonte": "senado", "chave": "BR:LEI:1/2020", "url": ""}) is None      # rede falhou
+
+
+def test_norma_nunca_alterada_usa_a_publicacao_original():
+    orig = "https://www2.camara.leg.br/legin/fed/lei/2016/x-publicacaooriginal-1-pl.html"
+    b = BaixadorFixo({orig: "<html><body><p>Art. 1º Esta Lei dispõe sobre energia.</p></body></html>"})
+    nunca = v.Ficha("BR:LEI:13360/2016", "LEI", "", "Não consta revogação expressa", False, [], original_url=orig)
+    assert "Art. 1º Esta Lei" in b.texto(nunca)
+    alterada = v.Ficha("BR:LEI:1/2000", "LEI", "", "", False, [v.Relacao("Lei nº 2", "BR:LEI:2/2001", "2001-01-01",
+                                                                           "Alteração", "Art. 3º", ["3"], None)],
+                       original_url=orig)
+    assert b.texto(alterada) is None                  # a original já não é o texto de hoje
+    so_regulamentada = v.Ficha("BR:LEI:3/2000", "LEI", "", "", False, [v.Relacao("Decreto nº 9", None, None,
+                                                                                  "Regulamentação", "", [], None)],
+                               original_url=orig)
+    assert b.texto(so_regulamentada) is not None      # regulamentar não muda o texto

@@ -340,7 +340,13 @@ class Baixador:
         raise ErroVigencia(f"{chave_norma}: o LexML não liga esta norma nem à Câmara nem ao Senado")
 
     def texto(self, ficha: Ficha) -> str | None:
-        return self.get(ficha.texto_url) if ficha.texto_url else None
+        """O texto atualizado. Norma que nunca teve o texto mudado não tem página de texto atualizado na
+        Câmara: aí a publicação original é o texto de hoje. Alterada e sem texto atualizado: None."""
+        if ficha.texto_url:
+            return self.get(ficha.texto_url)
+        if ficha.original_url and not any(r.muda_texto for r in ficha.relacoes):
+            return self.get(ficha.original_url)
+        return None
 
 
 # --------------------------------------------------------------------------- guardar
