@@ -45,4 +45,4 @@ jobs:
 
       - name: cdk deploy
         working-directory: infra
-        run: npx aws-cdk@2 deploy RegulaIA -c imagem_tag=${{ github.sha }} --require-approval never
+        run: npx aws-cdk@2 deploy RegulaIA -c imagem_tag=${{ github.sha }} -c ia=1 --require-approval never

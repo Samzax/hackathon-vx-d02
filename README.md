@@ -265,7 +265,7 @@ No Claude Desktop (`claude_desktop_config.json`):
 
 A tela **Pergunte à torre** (`/pergunte`) faz o mesmo sem instalar nada: a pergunta vai para `POST /api/v1/pergunta`, que roda o Claude com as ferramentas de leitura do agente (menos a análise de ato, que chama IA). As ferramentas consultam a API por dentro com a sessão de quem pergunta, então o gestor da usina não recebe pelo chat a barragem da Geotecnia, e a TI não usa o chat. Antes de mostrar, o Python confere cada trecho entre aspas, data e código de obrigação ou ativo contra o que as ferramentas devolveram: o que não bate volta para o modelo corrigir uma vez e, se ficar, aparece marcado na resposta. Cada resposta mostra o que foi consultado, o modelo, o tempo e o custo; o custo entra no teto diário de IA.
 
-Na AWS, o modelo é o Claude Sonnet 5 pelo Bedrock (Haiku 4.5 de reserva), com cache de prompt: uma pergunta custa em torno de US$ 0,01 a 0,05. Fora da AWS, vale o primeiro provedor ligado na lista `[pergunta]` de `mitra/modelos.toml`; sem nenhum, a tela avisa que está desligada.
+Na AWS, o modelo é o Claude Sonnet 5 pelo Bedrock (Opus 5 de reserva), com cache de prompt: uma pergunta custa em torno de US$ 0,01 a 0,05. Fora da AWS, vale o primeiro provedor ligado na lista `[pergunta]` de `mitra/modelos.toml`; sem nenhum, a tela avisa que está desligada.
 
 ```bash
 # avaliação contra o modelo de verdade (10 casos com critério objetivo); --gravar atualiza as respostas que o CI repete

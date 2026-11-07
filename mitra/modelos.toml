@@ -62,7 +62,7 @@ modelos = [
 [pergunta]
 modelos = [
   { provedor = "bedrock",   modelo = "us.anthropic.claude-sonnet-5" },
-  { provedor = "bedrock",   modelo = "us.anthropic.claude-haiku-4-5-20251001-v1:0" },
+  { provedor = "bedrock",   modelo = "us.anthropic.claude-opus-5" },      # reserva: Opus 5, não um modelo menor
   { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
   { provedor = "opencode",  modelo = "deepseek-v4.1-flash" },
   { provedor = "deepseek",  modelo = "deepseek-chat" },
@@ -106,4 +106,5 @@ cabecalho_sessao = "x-opencode-session"
 "claude-haiku-5-5"    = [0.10, 0.50]
 "claude-sonnet-5-5"   = [2.00, 10.00]
 "us.anthropic.claude-sonnet-5"                 = [2.00, 10.00]
+"us.anthropic.claude-opus-5"                   = [5.00, 25.00]
 "us.anthropic.claude-haiku-4-5-20251001-v1:0"  = [1.00, 5.00]
