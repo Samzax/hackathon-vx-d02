@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    # plataforma-*: os branches das sessões em paralelo (worktrees), antes de entrar na plataforma
+    branches: [main, plataforma, "plataforma-*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uvx ruff check .
+
+  testes-sqlite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run pytest -q
+
+  testes-postgres:
+    # a mesma suíte, com cada conexão num schema isolado do Postgres (tests/conftest.py)
+    runs-on: ubuntu-latest
+    # travar (lock esperando conexão esquecida) vira falha em minutos, não em 6 horas
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: regulaia
+          POSTGRES_USER: regulaia
+          POSTGRES_PASSWORD: ci-apenas
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U regulaia" --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      REGULAIA_TESTE_PG: postgresql://regulaia:ci-apenas@localhost:5432/regulaia
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Migração do zero, duas vezes (idempotente)
+        env:
+          REGULAIA_DATABASE_URL: postgresql://regulaia:ci-apenas@localhost:5432/regulaia
+        run: |
+          uv run alembic upgrade head
+          uv run alembic upgrade head
+      - run: uv run pytest -q --durations=15
+
+  front:
+    # o front da torre: tipos conferidos contra o contrato da API, lint, tipos, vitest e o build estático
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: front
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+      - run: npm ci
+      - name: Tipos gerados conferem com api/openapi.json
+        run: npm run tipos:conferir
+      - run: npm run lint -- --max-warnings 0
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  front-e2e:
+    # de ponta a ponta no Chromium: a API de verdade (SQLite novo) servindo o front exportado
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+      - name: Build do front
+        working-directory: front
+        run: |
+          npm ci
+          npm run build
+      - name: Chromium do Playwright
+        working-directory: front
+        run: npx playwright install --with-deps chromium
+      - name: Playwright (sobe a API sozinho, front/e2e/servidor.mjs)
+        working-directory: front
+        run: npm run e2e
+      - name: Relatório do Playwright (se falhou)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright
+          path: |
+            front/playwright-report/
+            front/test-results/
+          retention-days: 7
+
+  imagem:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build da API e da demo
+        run: |
+          docker build -f api/Dockerfile -t regulaia-api .
+          docker build -t regulaia-demo .
+      - name: Compose sobe e a API responde
+        run: |
+          docker compose up -d --build --wait api || { docker compose logs api postgres; exit 1; }
+          curl -fsS http://localhost:8000/health
+          curl -fsS -X POST -c c.txt http://localhost:8000/api/v1/auth/demo > /dev/null
+          curl -fsS -b c.txt http://localhost:8000/api/v1/empresas
+          curl -fsS http://localhost:8000/entrar/ | grep -q "Entrar na demo"
+          docker compose down -v
+      - name: Logs da API (se falhou)
+        if: failure()
+        run: docker compose logs api
+
+  infra:
+    # a pilha da AWS: testes de asserção no CloudFormation e o synth de verdade, sem conta AWS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: uv sync --locked --group infra
+      - run: uv run --group infra pytest -q tests/test_infra.py
+      - name: cdk synth
+        working-directory: infra
+        run: npx -y aws-cdk@2 synth --quiet

@@ -22,3 +22,12 @@ __pycache__/
 
 # capturas de tela do README: não fazem falta para rodar
 docs/img/
+
+# front: a imagem compila o front num estágio próprio (api/Dockerfile); nada do build local entra
+front/node_modules/
+front/.next/
+front/out/
+front/test-results/
+front/playwright-report/
+front/e2e/.dados/
+front/*.tsbuildinfo

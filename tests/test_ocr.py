@@ -31,9 +31,37 @@ class OCRFalso:
         return self.texto_fixo
 
 
+def _imagem(pdf: bytes) -> tuple:
+    """A imagem da página, descomprimida. Os bytes do PDF mudam com o zlib do Python (zlib-ng no
+    Python 3.14 e em builds do Linux, zlib 1.3 no Windows) mesmo com os mesmos pixels."""
+    from pypdf import PdfReader
+
+    xobjetos = PdfReader(BytesIO(pdf)).pages[0]["/Resources"]["/XObject"]
+    (img,) = [xobjetos[nome].get_object() for nome in xobjetos]
+    return img["/Width"], img["/Height"], img.get_data()
+
+
 def test_exemplo_escaneado_esta_nos_exemplos_e_e_igual_ao_gerado(escaneada):
+    """O PDF guardado é o que o gerador faz hoje. No Windows, onde o exemplo é gerado, pixel a pixel. Em
+    outro sistema o FreeType do Pillow desenha a mesma fonte (Vera.ttf) com hinting diferente e as letras
+    andam alguns pixels: lá, mesma página, as mesmas linhas de texto e a mesma tinta em cada linha (±5%)."""
+    import sys
+
     caminho = ev.exemplo("FIR_B3_2026-10-1Q_escaneada.pdf")
-    assert caminho.exists() and caminho.read_bytes() == escaneada      # geração determinística
+    assert caminho.exists()
+    (w, h, a), (w2, h2, b) = _imagem(caminho.read_bytes()), _imagem(escaneada)
+    assert (w, h) == (w2, h2) and len(a) == len(b) == w * h
+    if sys.platform == "win32":
+        assert a == b
+        return
+
+    def tinta_por_linha(px: bytes) -> list[int]:
+        # o gerador escreve uma linha a cada 36 px a partir de y = 120
+        return [sum(1 for v in px[y * w:(y + 36) * w] if v < 128) for y in range(120, h - 36, 36)]
+
+    ta, tb = tinta_por_linha(a), tinta_por_linha(b)
+    assert [t > 0 for t in ta] == [t > 0 for t in tb], "linhas de texto diferentes"
+    assert all(abs(x - y) <= 0.05 * max(x, y) for x, y in zip(ta, tb, strict=True)), list(zip(ta, tb, strict=True))
 
 
 def test_escaneado_sem_ocr_avisa_e_nao_inventa(escaneada):

@@ -407,6 +407,7 @@ class Troca:
     ativo: str
     saem: list[dict]      # obrigações que deixam de valer no dia da troca
     entram: list[dict]    # obrigações que passam a valer no dia da troca
+    empresa_id: int | None = None   # o código do ativo só é único dentro da empresa
 
 
 def transicao(conn, empresa_id: int, dia: date) -> list[Troca]:
@@ -422,7 +423,7 @@ def transicao(conn, empresa_id: int, dia: date) -> list[Troca]:
         saem = [antes[c] | metas.get(c, _SEM_META) for c in sorted(set(antes) - set(depois))]
         entram = [depois[c] | metas.get(c, _SEM_META) for c in sorted(set(depois) - set(antes))]
         if saem or entram:
-            out.append(Troca(a["codigo"], saem, entram))
+            out.append(Troca(a["codigo"], saem, entram, empresa_id))
     return out
 
 
@@ -502,13 +503,20 @@ class Par:
         return "➖ sem equivalente no cadastro da nova norma: conferir antes de abandonar"
 
 
-def _comecam_em(conn, dia: date) -> list[dict]:
-    """Obrigações que passam a valer em `dia` (a norma nova), para qualquer ativo."""
+def _comecam_em(conn, dia: date, empresa_id: int | None = None) -> list[dict]:
+    """Obrigações que passam a valer em `dia` (a norma nova), para qualquer ativo. Com `empresa_id`,
+    só as normas públicas e as próprias daquela empresa (nunca a condicionante de outra)."""
     rows = conn.execute(
-        "SELECT v.*, o.codigo, o.norma, o.area, o.tipo_ativo FROM obrigacao_versao v "
+        "SELECT v.*, o.codigo, o.norma, o.area, o.tipo_ativo, o.empresa FROM obrigacao_versao v "
         "JOIN obrigacao o ON o.id = v.obrigacao_id "
         "WHERE v.status = 'vigente' AND v.vigencia_desde = ? ORDER BY o.codigo", (dia.isoformat(),))
-    return [dict(r) for r in rows]
+    dona = _nome_da_empresa(conn, empresa_id) if empresa_id is not None else None
+    return [dict(r) for r in rows if empresa_id is None or r["empresa"] in (None, dona)]
+
+
+def _nome_da_empresa(conn, empresa_id: int) -> str | None:
+    r = conn.execute("SELECT nome FROM empresa WHERE id = ?", (empresa_id,)).fetchone()
+    return r["nome"] if r else None
 
 
 def pares(troca: Troca, conn=None, dia: date | None = None, novas_do_dia: list[dict] | None = None) -> list[Par]:
@@ -520,8 +528,11 @@ def pares(troca: Troca, conn=None, dia: date | None = None, novas_do_dia: list[d
     for o in troca.entram:
         grupos.setdefault(tema(o["titulo"]), Par(tema(o["titulo"]), [], [])).entram.append(o)
     if conn is not None and dia is not None:
-        tipo = conn.execute("SELECT tipo FROM ativo WHERE codigo = ?", (troca.ativo,)).fetchone()["tipo"]
-        novas = novas_do_dia if novas_do_dia is not None else _comecam_em(conn, dia)
+        if troca.empresa_id is not None:
+            tipo = db.ativo_por_codigo(conn, troca.empresa_id, troca.ativo)["tipo"]
+        else:
+            tipo = conn.execute("SELECT tipo FROM ativo WHERE codigo = ?", (troca.ativo,)).fetchone()["tipo"]
+        novas = novas_do_dia if novas_do_dia is not None else _comecam_em(conn, dia, troca.empresa_id)
         for p in grupos.values():
             if not p.entram and p.tema != "Outras":
                 p.so_para_outros = [o for o in novas if o["tipo_ativo"] == tipo and tema(o["titulo"]) == p.tema]
@@ -541,7 +552,7 @@ def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: s
     if not trocas:
         out.append("Nenhum dos ativos muda de obrigação nessa data.")
     novas_total = 0
-    novas_do_dia = _comecam_em(conn, dia)
+    novas_do_dia = _comecam_em(conn, dia, empresa_id)
     for t in trocas:
         a = ativos[t.ativo]
         out += [f"## {t.ativo} · {a['nome']} ({a['responsavel']})", ""]
@@ -576,13 +587,17 @@ class Mudanca:
     trecho: str | None
     fonte: str | None
     ativos: list[str]
+    empresa: str | None = None    # obrigação própria desta empresa; None: norma pública
 
 
 def mudancas(conn, empresa_id: int) -> list[Mudanca]:
+    """Versões pendentes que interessam à empresa: as de norma pública e as das obrigações próprias
+    dela (a condicionante de licença de outra empresa nunca aparece aqui)."""
     rows = conn.execute(
-        "SELECT v.id, o.codigo, a.titulo AS ato, a.publicado_em FROM obrigacao_versao v "
+        "SELECT v.id, o.codigo, o.empresa, a.titulo AS ato, a.publicado_em FROM obrigacao_versao v "
         "JOIN obrigacao o ON o.id = v.obrigacao_id LEFT JOIN ato a ON a.id = v.ato_id "
-        "WHERE v.status = 'pendente' ORDER BY o.codigo"
+        "WHERE v.status = 'pendente' AND (o.empresa IS NULL OR o.empresa = ?) ORDER BY o.codigo",
+        (_nome_da_empresa(conn, empresa_id),)
     ).fetchall()
     ativos = _empresa_ativos(conn, empresa_id)
     out = []
@@ -592,7 +607,8 @@ def mudancas(conn, empresa_id: int) -> list[Mudanca]:
         afetados = [a["codigo"] for a in ativos
                     if any(o.codigo == r["codigo"] and o.pendente for o in db.obrigacoes_do_ativo(conn, a["id"]))]
         out.append(Mudanca(r["id"], r["codigo"], vig["titulo"], db.diferencas(vig, pen),
-                           nome_ato(r["ato"]), r["publicado_em"], pen["trecho"], pen["fonte"], afetados))
+                           nome_ato(r["ato"]), r["publicado_em"], pen["trecho"], pen["fonte"], afetados,
+                           r["empresa"]))
     return out
 
 

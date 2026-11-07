@@ -59,8 +59,12 @@ def test_nao_fica_sem_ti(conn):
     for mudanca in ({"ativa": False}, {"papel": usuarios.DIRETORIA}, {"teste": True}):
         with pytest.raises(ErroConta, match="única conta de TI"):
             usuarios.editar(conn, ti["id"], **mudanca)
-    usuarios.criar(conn, "ti2@mina.com", "TI 2", usuarios.ADMIN, senha="12345678")
-    assert not usuarios.editar(conn, ti["id"], ativa=False)["ativa"]      # com outra TI, pode
+    usuarios.criar(conn, "ti@outra.com", "TI de outra empresa", usuarios.ADMIN, senha="12345678",
+                   empresa="Outra Mineradora")
+    with pytest.raises(ErroConta, match="única conta de TI"):     # cada cliente precisa da sua TI
+        usuarios.editar(conn, ti["id"], ativa=False)
+    usuarios.criar(conn, "ti2@mina.com", "TI 2", usuarios.ADMIN, senha="12345678", empresa=ti["empresa"])
+    assert not usuarios.editar(conn, ti["id"], ativa=False)["ativa"]      # com outra TI da empresa, pode
 
 
 def test_conta_sem_senha_so_de_teste(conn):

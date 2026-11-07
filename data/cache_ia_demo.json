@@ -40,6 +40,16 @@
   "custo_usd": 0.0052194
  },
  {
+  "chave": "2bbfa74e6d542186918b8a7e4b7716380ad3f065252e871123ec40bbeb5417f5",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [{\"obrigacao\": \"R95-01\", \"campo\": \"periodicidade\", \"valor_atual\": \"Quinzenal\", \"valor_novo\": \"Semanal\", \"trecho\": \"I - preencher, semanalmente, as Fichas de Inspeção Regular (FIR);\", \"justificativa\": \"O ato dá nova redação ao art. 19 I e passa a exigir o preenchimento semanal das FIR, alterando a periodicidade cadastrada de quinzenal para semanal.\"}], \"motivo\": \"O ato altera apenas a redação do inciso I do art. 19, fixando periodicidade semanal para o preenchimento das FIR, o que afeta exclusivamente a obrigação R95-01 (art. 19 I); as demais obrigações (art. 19 III, art. 21, art. 7º, art. 8º e art. 27) não são alcançadas pelo texto. Não há mudança de vigência porque a entrada em vigor (2027-04-01) não coincide com o prazo de nenhuma obrigação, e o ato não define novo prazo literal para o cumprimento.\", \"confianca\": 0.85}",
+  "tokens_in": 1624,
+  "tokens_out": 854,
+  "custo_usd": 0.000756
+ },
+ {
   "chave": "306167e08334cca7e09198d98aa127ada12def47a63e2e4c30f4849aab1a4cfe",
   "tarefa": "extrator",
   "provedor": "opencode",
@@ -228,6 +238,16 @@
   "tokens_in": 2162,
   "tokens_out": 666,
   "custo_usd": 0.0007239
+ },
+ {
+  "chave": "9e9893d3559199057605b283d6229cf6fa5f272fc5574e5312852836d3c21af7",
+  "tarefa": "impacto",
+  "provedor": "opencode",
+  "modelo": "opencode:deepseek-v4.1-flash@high",
+  "resposta": "{\"mudancas\": [], \"motivo\": \"O ato prorroga, de forma excepcional, apenas prazos processuais com termo final entre 02/04/2026 e 13/07/2026 que dependam dos sistemas Protocolo Digital, Dados Cadastrais ou Dados Minerários, e exclui expressamente os prazos do SIGBM, do RAL e da DIPEM (§2º, II) e as obrigações cujo descumprimento possa trazer risco à saúde, à vida, ao meio ambiente e ao patrimônio (§1º). Nenhuma das obrigações do cadastro tem prazo coincidente com essa janela, e as vinculadas ao SIGBM (DCE/RPSB e DCO) estão excluídas, de modo que o cadastro permanece inalterado.\", \"confianca\": 0.9}",
+  "tokens_in": 2264,
+  "tokens_out": 488,
+  "custo_usd": 0.0006324
  },
  {
   "chave": "a42903cf994b5b2e8dc239215dd35e6c290f0875bc9900660cd242406ed5a95e",

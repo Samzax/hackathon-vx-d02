@@ -15,6 +15,7 @@ import os
 import re
 import tomllib
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
@@ -241,8 +242,11 @@ class Roteador:
             return
         with self.conn:
             self.conn.execute(
-                "INSERT OR REPLACE INTO analise_ia (chave, tarefa, provedor, modelo, resposta, "
-                "tokens_in, tokens_out, custo_usd) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO analise_ia (chave, tarefa, provedor, modelo, resposta, "
+                "tokens_in, tokens_out, custo_usd) VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT (chave) DO UPDATE SET tarefa = excluded.tarefa, provedor = excluded.provedor, "
+                "modelo = excluded.modelo, resposta = excluded.resposta, tokens_in = excluded.tokens_in, "
+                "tokens_out = excluded.tokens_out, custo_usd = excluded.custo_usd, criada_em = excluded.criada_em",
                 (chave, tarefa, modelo.provedor, modelo.rotulo,
                  json.dumps(dados, ensure_ascii=False), tin, tout, custo),
             )
@@ -288,7 +292,8 @@ class Roteador:
         if self.conn is None:
             return 0.0
         return self.conn.execute("SELECT COALESCE(SUM(custo_usd), 0) FROM analise_ia "
-                                 "WHERE date(criada_em) = date('now')").fetchone()[0]
+                                 "WHERE substr(criada_em, 1, 10) = ?",
+                                 (datetime.now(timezone.utc).date().isoformat(),)).fetchone()[0]
 
     def chamadas(self) -> int:
         """Respostas guardadas: a diferença antes e depois de uma análise diz se houve chamada paga."""

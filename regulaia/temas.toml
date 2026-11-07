@@ -1,0 +1,56 @@
+# Termos que fazem uma norma virar candidata para um tipo de ativo da carteira (descoberta.py).
+# A busca é sem acento e sem diferença de maiúscula, por palavra inteira: "lavra" não pega "Lavras"
+# (o município). Com * no fim, vale o começo da palavra: "barrage*" pega "barragem" e "barragens".
+# Fica largo de propósito: o que passar a mais a IA descarta na triagem, o que faltar aqui nunca
+# chega a ninguém.
+#
+# descricao: o que é o tipo de ativo, para a IA decidir se a norma cobra algo de quem o opera.
+# Tipo de ativo sem seção aqui (licenca) não entra na descoberta: as obrigações dele são da
+# própria empresa (condicionantes), não de norma pública.
+
+[barragem]
+descricao = "barragem de mineração (rejeitos, sedimentos ou água de processo) operada por mineradora"
+termos = [
+  "barrage*", "rejeito*", "descaracteriza*", "alteamento*", "plano de acao de emergencia",
+  "zona de autossalvamento", "mancha de inundacao", "empilhamento a seco",
+]
+
+[unidade]
+descricao = "unidade de mineração (mina, usina de beneficiamento, pilhas de estéril) operada por mineradora"
+termos = [
+  "mineracao", "minerari*", "lavra", "lavras minerarias", "minerio*", "recursos minerais",
+  "substancias minerais", "pilha de esteril", "pilhas de esteril", "fechamento de mina", "atividade minerari*",
+]
+
+[equipamento]
+descricao = "equipamento industrial sujeito a inspeção de segurança (vaso de pressão, caldeira, tubulação, tanque)"
+termos = ["vaso de pressao", "vasos de pressao", "caldeira*", "tubulacoes", "tanques metalicos"]
+
+# Camada 0 também descarta, pelo começo da ementa, o que nunca cobra nada de quem opera o ativo:
+# crédito orçamentário, utilidade pública de entidade, nome de próprio público, homenagem, data
+# comemorativa, estatuto, curso, nomeação. Sem acento e sem diferença de maiúscula.
+[descartar]
+ementa_comeca_com = [
+  "abre credito", "abre o credito", "abre ao", "abre aos", "abre a secretaria",
+  "declara de utilidade publica", "da denominacao", "denomina ", "dispoe sobre a denominacao",
+  "altera o estatuto", "aprova o estatuto", "aprova a alteracao do artigo", "aprova alteracao", "aprova alteracoes",
+  "delega competencia", "dispoe sobre a dissolucao", "dispoe sobre a elevacao do capital",
+  "dispoe sobre homenagem", "institui o dia", "institui a semana", "inclui no calendario",
+  "aprova o estatuto", "credencia", "autoriza o funcionamento do curso", "nomeia", "concede a medalha",
+  "autoriza o poder executivo a doar", "autoriza a doacao", "declara patrimonio",
+  # ato de efeito concreto para uma empresa ou pessoa (concessão de lavra, caducidade, retificação):
+  # quando o título é da própria cliente, entra como obrigação dela, não como norma pública
+  "concede a ", "concede ao ", "concede as ", "declara a caducidade", "declara sem efeito",
+  "retifica a concessao", "retifica a autorizacao", "retifica o decreto", "autoriza o cidadao",
+  "renova a autorizacao", "outorga a ", "outorga ao ",
+]
+ementa_contem = ["direito de lavrar", "concessao de lavra que menciona", "autorizacao de lavra que menciona"]
+
+# Lacunas que a plataforma conhece e ainda não cobre por fonte automática. Aparecem na cobertura de
+# cada cliente: a tela nunca diz "coberto" sobre o que não foi verificado.
+[lacunas]
+BR = [
+  "Normas Regulamentadoras do MTE (catalogadas à mão; sem lista em dados abertos)",
+  "Resoluções do Conama, do Ibama e da ANA (sem conector)",
+]
+MG = ["Deliberações Normativas do Copam e resoluções da Semad e da Feam (sem dados abertos)"]

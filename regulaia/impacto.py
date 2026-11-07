@@ -146,8 +146,15 @@ def _ler(dados: dict, ato_texto: str, cadastro: dict[str, dict]) -> tuple[list[M
     return mudancas, str(dados.get("motivo", "")), confianca
 
 
-def analisar(conn, roteador: Roteador, identificacao: str, ato_texto: str) -> Analise:
-    codigos = [r["codigo"] for r in conn.execute("SELECT codigo FROM obrigacao ORDER BY codigo")]
+def analisar(conn, roteador: Roteador, identificacao: str, ato_texto: str, empresa: str | None = None) -> Analise:
+    """Sem `empresa`: o catálogo inteiro (radar da plataforma). Com `empresa` (o "teste com um ato"
+    de uma cliente): só as normas públicas e as obrigações próprias dela, nada de outra cliente."""
+    if empresa is None:
+        rows = conn.execute("SELECT codigo FROM obrigacao ORDER BY codigo")
+    else:
+        rows = conn.execute("SELECT codigo FROM obrigacao WHERE empresa IS NULL OR empresa = ? ORDER BY codigo",
+                            (empresa,))
+    codigos = [r["codigo"] for r in rows]
     vigentes = [v for c in codigos if (v := db.versao(conn, c))]
     cands = triagem.candidatas(ato_texto, vigentes)
     analise = Analise(identificacao, cands)

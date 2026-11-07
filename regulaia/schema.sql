@@ -40,7 +40,9 @@ CREATE TABLE IF NOT EXISTS obrigacao (
     codigo      TEXT NOT NULL UNIQUE,           -- OB-01, R95-03...
     tipo_ativo  TEXT NOT NULL,
     norma       TEXT,                           -- Res. ANM 220/2025, NR-13...
-    area        TEXT                            -- barragem, emergencia, ambiental, equipamento...
+    area        TEXT,                           -- barragem, emergencia, ambiental, equipamento...
+    empresa     TEXT                            -- vazio: norma pública (vale para todas); senão, só desta empresa
+                                                -- (condicionante de licença, TAC, procedimento interno)
 );
 
 CREATE TABLE IF NOT EXISTS obrigacao_versao (
@@ -147,5 +149,82 @@ CREATE TABLE IF NOT EXISTS usuario (
     ativa          INTEGER NOT NULL DEFAULT 1 CHECK (ativa IN (0, 1)),
     criado_por     TEXT,
     criado_em      TEXT NOT NULL DEFAULT (datetime('now')),
-    ultimo_acesso  TEXT
+    ultimo_acesso  TEXT,
+    empresa        TEXT,                              -- nome da empresa cliente: só vê o que é dela
+    plataforma     INTEGER NOT NULL DEFAULT 0 CHECK (plataforma IN (0, 1))   -- equipe da RegulaIA (curadoria)
+);
+
+-- Trilha de auditoria da API: toda escrita, com quem, quando, de onde e o resultado.
+CREATE TABLE IF NOT EXISTS auditoria (
+    id          INTEGER PRIMARY KEY,
+    em          TEXT NOT NULL DEFAULT (datetime('now')),
+    usuario     TEXT,
+    acao        TEXT NOT NULL,
+    alvo        TEXT,
+    detalhe     TEXT,
+    request_id  TEXT,
+    resultado   TEXT NOT NULL,
+    empresa     TEXT                -- de qual cliente é a ação (vazio: plataforma)
+);
+CREATE INDEX IF NOT EXISTS auditoria_em ON auditoria(em);
+
+-- Sessões da API (cookie HttpOnly): só o hash do token fica no banco.
+CREATE TABLE IF NOT EXISTS sessao (
+    token_hash  TEXT PRIMARY KEY,
+    usuario_id  INTEGER NOT NULL REFERENCES usuario(id),
+    criada_em   TEXT NOT NULL DEFAULT (datetime('now')),
+    expira_em   TEXT NOT NULL,
+    visao       TEXT
+);
+
+-- Descoberta de normas (descoberta.py): normas já publicadas que podem valer para os ativos da carteira.
+-- É trabalho da plataforma (curadoria RegulaIA), não de uma cliente: fica fora do "Recriar demo".
+CREATE TABLE IF NOT EXISTS norma_candidata (
+    id            INTEGER PRIMARY KEY,
+    chave         TEXT NOT NULL UNIQUE,         -- BR:LEI:12334/2010, MG:DEC:48078/2020, BR:RES-ANM:95/2022
+    jurisdicao    TEXT NOT NULL,                -- BR ou a UF
+    fonte         TEXT NOT NULL,                -- senado, anm, almg
+    tipo          TEXT NOT NULL,
+    numero        TEXT NOT NULL,
+    ano           INTEGER NOT NULL,
+    titulo        TEXT NOT NULL,
+    ementa        TEXT,
+    indexacao     TEXT,
+    data          TEXT,                         -- AAAA-MM-DD
+    url           TEXT,
+    situacao      TEXT,                         -- como a fonte diz (VIGENTE...); vazio: a fonte não diz
+    temas         TEXT NOT NULL DEFAULT '[]',   -- tipos de ativo cujos termos a norma cita (JSON)
+    triagem       TEXT,                         -- o que a IA respondeu (JSON); vazio: ainda não triada
+    status        TEXT NOT NULL DEFAULT 'nova'
+                  CHECK (status IN ('nova', 'relevante', 'irrelevante', 'catalogada', 'aprovada', 'descartada')),
+    decidida_por  TEXT,
+    decidida_em   TEXT,
+    nota          TEXT,
+    vista_em      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Até onde cada fonte foi lida: a cobertura só diz "verificada" do que foi lido de fato.
+CREATE TABLE IF NOT EXISTS descoberta_busca (
+    fonte       TEXT PRIMARY KEY,
+    jurisdicao  TEXT NOT NULL,
+    desde       INTEGER NOT NULL,
+    ate         INTEGER NOT NULL,
+    lidas       INTEGER NOT NULL,
+    candidatas  INTEGER NOT NULL,
+    em          TEXT NOT NULL
+);
+
+-- Vigência e alterações das normas federais, lidas da ficha da Câmara (regulaia/vigencia.py).
+CREATE TABLE IF NOT EXISTS norma_vigencia (
+    chave         TEXT PRIMARY KEY,
+    titulo        TEXT NOT NULL,
+    ementa        TEXT,
+    situacao      TEXT,
+    revogada      INTEGER NOT NULL DEFAULT 0,
+    relacoes      TEXT NOT NULL DEFAULT '[]',
+    ficha_url     TEXT,
+    texto_url     TEXT,
+    original_url  TEXT,
+    fonte         TEXT NOT NULL,
+    lida_em       TEXT NOT NULL
 );

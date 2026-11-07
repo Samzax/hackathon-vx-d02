@@ -366,7 +366,7 @@ def _pagina_usuarios(quem: str):
             if st.form_submit_button("Criar conta", type="primary"):
                 try:
                     usuarios.criar(conn, email, nome, papel, area=area if papel == usuarios.GESTOR else None,
-                                   senha=senha or None, teste=teste, por=quem)
+                                   senha=senha or None, teste=teste, por=quem, empresa=usuario.get("empresa"))
                     st.toast(f"Conta de {nome.strip()} criada")
                     st.rerun()
                 except usuarios.ErroConta as e:
