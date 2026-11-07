@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import asdict
 from datetime import date
 
@@ -324,6 +325,24 @@ def _ativo(conn, ativo_id: int, e: Escopo) -> dict:
     return ativo
 
 
+def _conferir_periodo(linha: torre.Linha, periodo: str, dia: date) -> None:
+    """O período de uma entrega manual tem de ser um que a obrigação conhece: um dos que faltam, o do
+    próprio dia, ou (nas agendas contadas da execução) uma data real não futura. '2026-13-01' gravado
+    derrubava o painel da empresa inteira (rotulo_humano estoura no mês 13)."""
+    validos = set(linha.faltando) | {operacao.periodo_para_entrega(linha, dia)}
+    if periodo in validos:
+        return
+    if re.fullmatch(r"(anos|meses):\d+|data:.*|unica", linha.agenda or ""):
+        try:        # a data da execução (ex.: a RPSB feita em 2025-03-10)
+            if date.fromisoformat(periodo) <= dia:
+                return
+        except ValueError:
+            pass
+    raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT,
+                        f"período {periodo!r} não é um período pendente desta obrigação "
+                        f"(pendentes: {', '.join(sorted(validos))})")
+
+
 def _obrigacao_visivel(conn, e: Escopo, codigo: str) -> None:
     """O código existe e é de norma pública ou da própria empresa; o de outra cliente é 404, como se
     não existisse (e nada se grava apontando para obrigação alheia)."""
@@ -448,8 +467,14 @@ def ativos(empresa_id: int, hoje: date | None = None, e: Escopo = Depends(regula
 def resumo(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     emp = empresa_visivel(conn, e, empresa_id)
     ids = [a["id"] for a in _ativos_visiveis(conn, e, empresa_id)]
-    obs = conn.execute("SELECT COUNT(*), COUNT(DISTINCT norma) FROM obrigacao WHERE empresa IS NULL OR empresa = ?",
-                       (emp["nome"],)).fetchone()
+    if e.ve_tudo:
+        obs = conn.execute("SELECT COUNT(*), COUNT(DISTINCT norma) FROM obrigacao WHERE empresa IS NULL OR empresa = ?",
+                           (emp["nome"],)).fetchone()
+    else:       # gestor: só o catálogo que toca os ativos da área dele, não o da empresa inteira
+        codigos = sorted({o.codigo for aid in ids for o in db.obrigacoes_do_ativo(conn, aid)})
+        obs = conn.execute("SELECT COUNT(*), COUNT(DISTINCT norma) FROM obrigacao "
+                           f"WHERE codigo IN ({','.join('?' * len(codigos))})", codigos).fetchone() \
+            if codigos else (0, 0)
     n_ev = 0
     if ids:
         marcas = ",".join("?" * len(ids))
@@ -480,15 +505,25 @@ def ficha(ativo_id: int, hoje: date | None = None, e: Escopo = Depends(regulator
     emp = empresa_visivel(conn, e, a["empresa_id"])
     linhas = _visiveis(conn, e, emp["id"], hoje or hoje_padrao(), desde_padrao(emp), ativo=a["codigo"])
     trechos = _trechos(conn)
+    evidencias = db.evidencias_do_ativo(conn, ativo_id, 20)
+    eventos = db.eventos(conn, ativo_id, limite=50)
+    if not e.ve_tudo and not e.ve_ativo(a):
+        # gestor que só recebeu uma obrigação delegada neste ativo: só o histórico das obrigações dele,
+        # não as evidências e os comentários das outras áreas
+        minhas = {c for (aid, c), v in db.responsaveis(conn).items() if aid == a["id"] and v == e.area}
+        evidencias = [x for x in evidencias if x["codigo"] in minhas]
+        eventos = [x for x in eventos if x.get("codigo") in minhas]
     return Ficha(ativo=_ativo_modelo(a, linhas, _posicoes(emp)), linhas=[_linha(l, trechos) for l in linhas],
-                 evidencias=[_evidencia(x) for x in db.evidencias_do_ativo(conn, ativo_id, 20)],
-                 eventos=[_evento(x) for x in db.eventos(conn, ativo_id, limite=50)])
+                 evidencias=[_evidencia(x) for x in evidencias],
+                 eventos=[_evento(x) for x in eventos])
 
 
 @rota.get("/ativos/{ativo_id}/obrigacoes/{codigo}/historico", response_model=Historico,
           summary="O que se fez numa obrigação do ativo: entregas, comentários, atribuições e comprovantes")
 def historico_no_ativo(ativo_id: int, codigo: str, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     a = _ativo(conn, ativo_id, e)
+    if not e.ve_tudo and not e.ve_ativo(a) and db.responsaveis(conn).get((a["id"], codigo)) != e.area:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, f"{codigo} em {a['codigo']} é de outra área")
     evs = [x for x in db.evidencias_do_ativo(conn, a["id"], limite=500) if x["codigo"] == codigo]
     return Historico(eventos=[_evento(x) for x in db.eventos(conn, a["id"], codigo, limite=30)],
                      evidencias=[_evidencia(x) for x in evs[:30]])
@@ -548,7 +583,8 @@ def obrigacoes(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(c
 
 @rota.get("/empresas/{empresa_id}/calendario", response_model=list[Vencimento],
           summary="Vencimentos do mês, período a período")
-def calendario_mes(empresa_id: int, ano: int, mes: int = Query(ge=1, le=12), hoje: date | None = None,
+def calendario_mes(empresa_id: int, ano: int = Query(ge=1900, le=9000), mes: int = Query(ge=1, le=12),
+                   hoje: date | None = None,
                    ativo: list[str] | None = Query(None, description="só estes ativos (códigos)"),
                    e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     emp = empresa_visivel(conn, e, empresa_id)
@@ -712,12 +748,15 @@ def entregar(dados: Entrega, request: Request, e: Escopo = Depends(da_empresa), 
     if not linhas:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"{dados.codigo} não vale para {a['codigo']} em {dia}")
     periodo = dados.periodo or operacao.periodo_para_entrega(linhas[0], dia)
+    if dados.periodo:       # período inventado não entra: viraria uma linha que quebra o painel inteiro
+        _conferir_periodo(linhas[0], dados.periodo, dia)
     try:
         eid = db.entregar(conn, a["id"], dados.codigo, periodo, dia=dia.isoformat(), por=e.assinante,
                           arquivo=dados.arquivo, obs=dados.obs)
     except db.ErroCadastro as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from None
-    auditoria.registrar(conn, request, "entrega", f"{a['codigo']}/{dados.codigo}", {"periodo": periodo})
+    auditoria.registrar(conn, request, "entrega", f"{a['codigo']}/{dados.codigo}",
+                        {"periodo": periodo, "dia": dia.isoformat()})     # o dia alegado fica na trilha
     return EntregaFeita(evidencia_id=eid, periodo=periodo, periodo_rotulo=agenda.rotulo_humano(periodo))
 
 

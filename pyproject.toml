@@ -9,6 +9,7 @@ dependencies = [
     "altair>=6",
     "beautifulsoup4>=4.12",
     "boto3>=1.40",
+    "cryptography>=50.0.2",
     "fastapi>=0.162.0",
     "httpx>=0.28.1",
     "openpyxl>=3.1.5",

@@ -39,7 +39,9 @@ def _preparar_banco(cfg: Config) -> None:
         demo.preparar(cfg.banco, cache=cfg.cache)
     conn = db.conectar(cfg.banco)
     try:
-        usuarios.semear(conn)
+        # sem demo (produção), a conta de teste sem senha fica de fora: ela entra por /auth/demo sem
+        # credencial e abre a visão da curadoria (que recria a demo e decide norma pública)
+        usuarios.semear(conn, com_senha_apenas=not cfg.montar_demo)
     finally:
         conn.close()
 

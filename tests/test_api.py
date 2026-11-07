@@ -686,6 +686,74 @@ def test_cadastro_recusa_tipo_errado_e_a_torre_sobrevive(cliente):
     assert cliente.get(_url(f"/empresas/{emp}/painel")).status_code == 200
 
 
+def test_entrega_com_periodo_inventado_e_recusada_e_o_painel_sobrevive(cliente):
+    """'2026-13-01' gravado derrubava o painel inteiro da empresa (rotulo_humano estoura no mês 13)."""
+    como(cliente, "diretoria@serraazul.demo")
+    emp = _empresa(cliente)
+    linhas = cliente.get(_url(f"/empresas/{emp}/painel")).json()["linhas"]
+    fir = next(l for l in linhas if l["codigo"] == "R95-01" and l["ativo"] == "B3")
+    corpo = {"ativo_id": fir["ativo_id"], "codigo": "R95-01", "periodo": "2026-13-01"}
+    r = cliente.post(_url("/entregas"), json=corpo)
+    assert r.status_code == 422 and "2026-13-01" in r.json()["detail"]
+    assert cliente.get(_url(f"/empresas/{emp}/painel")).status_code == 200
+    # um período que de fato falta continua aceito
+    r = cliente.post(_url("/entregas"), json={**corpo, "periodo": fir["faltando"][0]})
+    assert r.status_code == 201, r.text
+
+
+def test_gestor_delegado_nao_ve_o_historico_das_outras_areas_do_ativo(cliente):
+    """Uma obrigação delegada dá ao gestor o ativo na tela, mas não as evidências e os comentários
+    das obrigações das outras áreas."""
+    como(cliente, "diretoria@serraazul.demo")
+    emp = _empresa(cliente)
+    linhas = cliente.get(_url(f"/empresas/{emp}/painel")).json()["linhas"]
+    b1 = next(l for l in linhas if l["ativo"] == "B1")["ativo_id"]
+    cliente.post(_url("/comentarios"), json={"ativo_id": b1, "codigo": "R95-02", "texto": "da geotecnia"})
+    r = cliente.post(_url("/atribuicoes"), json={"ativo_id": b1, "codigo": "R95-01", "responsavel": "Manutenção da Usina"})
+    assert r.status_code == 200
+    como(cliente, "usina@serraazul.demo")
+    ficha = cliente.get(_url(f"/ativos/{b1}")).json()
+    assert {l["codigo"] for l in ficha["linhas"]} == {"R95-01"}
+    assert all(x["codigo"] == "R95-01" for x in ficha["evidencias"])
+    assert all(x["codigo"] == "R95-01" for x in ficha["eventos"])       # o comentário da R95-02 não
+    assert cliente.get(_url(f"/ativos/{b1}/obrigacoes/R95-01/historico")).status_code == 200
+    assert cliente.get(_url(f"/ativos/{b1}/obrigacoes/R95-02/historico")).status_code == 403
+    # e o resumo dele não conta o catálogo da empresa inteira
+    r = cliente.get(_url(f"/empresas/{emp}/resumo")).json()
+    todas = como(cliente, "diretoria@serraazul.demo") and cliente.get(_url(f"/empresas/{emp}/resumo")).json()
+    assert r["obrigacoes"] < todas["obrigacoes"]
+
+
+def test_login_gigante_e_recusado_antes_de_ir_para_a_auditoria(cliente):
+    r = cliente.post(_url("/auth/login"), json={"email": "x" * 2000 + "@x", "senha": "x"})
+    assert r.status_code == 422
+
+
+def test_calendario_com_ano_fora_da_faixa_e_422(cliente):
+    entrar(cliente)
+    emp = _empresa(cliente)
+    assert cliente.get(_url(f"/empresas/{emp}/calendario"), params={"ano": 0, "mes": 1}).status_code == 422
+    assert cliente.get(_url(f"/empresas/{emp}/calendario"), params={"ano": 99999, "mes": 1}).status_code == 422
+
+
+def test_recriar_demo_fica_na_auditoria(cliente):
+    entrar(cliente)
+    assert cliente.post(_url("/demo/recriar")).json() == {"ok": True}
+    como(cliente, CURADORIA)
+    trilha = cliente.get(_url("/auditoria")).json()
+    assert any(t["acao"] == "demo_recriada" for t in trilha)
+
+
+def test_sem_demo_nao_ha_conta_sem_senha(tmp_path):
+    """REGULAIA_MONTAR_DEMO=false (produção): /auth/demo não existe e só entram contas com senha."""
+    cfg = Config(banco=str(tmp_path / "prod.db"), banco_cache=str(tmp_path / "cache.db"),
+                 armazenamento=str(tmp_path / "uploads"), montar_demo=False)
+    with TestClient(criar_app(cfg)) as c:
+        assert c.post(_url("/auth/demo")).status_code == 404
+        r = c.post(_url("/auth/login"), json={"email": "curadoria@regulaia.demo", "senha": SENHA})
+        assert r.status_code == 200 and r.json()["plataforma"]
+
+
 def test_auditoria_recusa_limite_fora_da_faixa(cliente):
     entrar(cliente, "diretoria@serraazul.demo")
     assert cliente.get(_url("/auditoria"), params={"limite": -1}).status_code == 422

@@ -231,9 +231,11 @@ def mercado(e: Escopo = Depends(regulatorio)):
 
 
 @rota.post("/demo/recriar", response_model=Ok, summary="Voltar a demo ao estado inicial (só a conta de teste)")
-def recriar(request: Request, e: Escopo = Depends(escopo)):
+def recriar(request: Request, e: Escopo = Depends(escopo), conn=Depends(conexao)):
     if not e.usuario["teste"]:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "só a conta de teste recria a demo")
+    # apaga os dados de todas as empresas (inclusive importadas): fica na trilha, que o limpar() preserva
+    auditoria.registrar(conn, request, "demo_recriada", e.usuario["email"])
     cfg = request.app.state.cfg
     demo.preparar(cfg.banco, cache=cfg.cache)
     return Ok(ok=True)

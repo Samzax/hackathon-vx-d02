@@ -679,6 +679,8 @@
       "required": true,
       "schema": {
        "type": "integer",
+       "maximum": 9000,
+       "minimum": 1900,
        "title": "Ano"
       }
      },
@@ -5302,6 +5304,7 @@
     "properties": {
      "email": {
       "type": "string",
+      "maxLength": 320,
       "title": "Email",
       "examples": [
        "diretoria@serraazul.example"
@@ -5309,6 +5312,7 @@
      },
      "senha": {
       "type": "string",
+      "maxLength": 200,
       "title": "Senha"
      }
     },
