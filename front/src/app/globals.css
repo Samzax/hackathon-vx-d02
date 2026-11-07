@@ -127,6 +127,12 @@ body {
   font-feature-settings: "cv11", "ss01";
 }
 
+.logo-tematica { position: relative; }
+.logo-tematica img { display: block; }
+.logo-tematica .logo-escuro { display: none; }
+[data-tema="escuro"] .logo-tematica .logo-claro { display: none; }
+[data-tema="escuro"] .logo-tematica .logo-escuro { display: block; }
+
 .num {
   font-variant-numeric: tabular-nums;
 }

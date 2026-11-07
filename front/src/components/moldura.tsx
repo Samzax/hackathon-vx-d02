@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  BookCheck, CalendarRange, ChartColumn, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu, Moon, Plus,
+  BookCheck, CalendarRange, ChartColumn, ChevronDown, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu, Moon, Plus,
   Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
 import Link from "next/link";
@@ -95,11 +95,12 @@ export function useTema() {
 }
 
 export function Logo({ className }: { className?: string }) {
-  const [erro, setErro] = useState(false);
-  if (erro) return <span className={cx("grid size-8 place-items-center rounded-lg bg-[#14b8a6] font-bold text-[#04282b]", className)}>M</span>;
-  // A logo final entra depois em /public/logo.png; o placeholder mantém a moldura estável até lá.
+  // As duas imagens ficam no DOM para a troca ser instantânea e independente do primeiro render.
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/logo.png" alt="Mitra" width={32} height={32} className={cx("size-8 rounded-lg object-cover", className)} onError={() => setErro(true)} />;
+  return <span className={cx("logo-tematica inline-flex", className)} aria-label="RegulaIA">
+    <img src="/logo_claro.svg" alt="RegulaIA" width={150} height={30} className="logo-claro" />
+    <img src="/logo_escuro.svg" alt="" width={150} height={30} className="logo-escuro" aria-hidden="true" />
+  </span>;
 }
 
 // ------------------------------------------------------------------ menu
@@ -165,24 +166,46 @@ function Controles() {
   const trocarVisao = useMutation({ mutationFn: t.trocarVisao, onError: (e) => avisar(mensagem(e), "erro") });
   const ia = radar.data?.ia;
 
+  function MenuVisao() {
+    const [aberto, setAberto] = useState(false);
+    return (
+      <div className="relative">
+        <button type="button" className="flex h-9 w-full items-center justify-between rounded-md border border-[#1d6975] bg-[#134552] px-2.5 text-left text-sm text-white shadow-sm"
+          aria-haspopup="listbox" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
+          <span className="truncate">{t.eu.visao}</span><ChevronDown className={cx("size-4 shrink-0 transition-transform", aberto && "rotate-180")} />
+        </button>
+        {aberto && (
+          <ul role="listbox" aria-label="Quem está olhando" className="absolute left-0 right-0 z-50 mt-1 max-h-56 overflow-auto rounded-md border border-[#1d6975] bg-[#134552] p-1 text-sm text-white shadow-xl">
+            {t.eu.visoes.map((visao) => (
+              <li key={visao} role="option" aria-selected={visao === t.eu.visao}>
+                <button type="button" className={cx("w-full rounded px-2 py-2 text-left hover:bg-[#195866]", visao === t.eu.visao && "bg-[#0e7c86] font-semibold")}
+                  onClick={() => { setAberto(false); trocarVisao.mutate(visao); }}>
+                  {visao}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3 text-sm">
-      <div className="rounded-lg border border-borda bg-fundo px-3 py-2.5">
-        <p className="font-semibold leading-tight">{t.eu.nome}</p>
-        <p className="mt-0.5 text-xs text-texto-2">
+      <div className="rounded-lg border border-[#1d4a51] bg-[#134552] px-3 py-2.5 text-[#cfe3e8]">
+        <p className="font-semibold leading-tight text-white">{t.eu.nome}</p>
+        <p className="mt-0.5 text-xs text-[#cfe3e8]">
           {PAPEL[t.eu.papel] ?? t.eu.papel}
           {t.eu.area ? ` · ${t.eu.area}` : ""}
           {t.eu.teste ? " · conta de teste" : ""}
         </p>
-        {t.eu.empresa && <p className="mt-0.5 text-xs text-texto-3">{t.eu.empresa}</p>}
+        {t.eu.empresa && <p className="mt-0.5 text-xs text-[#9fb3bc]">{t.eu.empresa}</p>}
       </div>
 
       {t.eu.visoes.length > 1 && (
         <label className="block">
           <span className="mb-1 block text-[13px] font-medium text-texto-2">Quem está olhando</span>
-          <Selecao value={t.eu.visao} onChange={(e) => trocarVisao.mutate(e.target.value)} disabled={trocarVisao.isPending} aria-label="Quem está olhando">
-            {t.eu.visoes.map((v) => <option key={v} value={v}>{v}</option>)}
-          </Selecao>
+          <MenuVisao />
         </label>
       )}
 
