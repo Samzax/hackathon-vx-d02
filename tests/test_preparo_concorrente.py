@@ -17,7 +17,7 @@ from api.config import Config
 from mitra import usuarios
 
 URL_PG = os.environ.get("MITRA_TESTE_PG")
-pytestmark = pytest.mark.skipif(not URL_PG, reason="a trava é do Postgres (MITRA_TESTE_PG)")
+so_postgres = pytest.mark.skipif(not URL_PG, reason="a trava é do Postgres (MITRA_TESTE_PG)")
 
 
 @pytest.fixture
@@ -71,6 +71,7 @@ def _corrida(cfg: Config, monkeypatch) -> list[BaseException]:
     return erros
 
 
+@so_postgres
 def test_dois_workers_preparam_o_banco_sem_conflito(url_esquema_novo, monkeypatch):
     cfg = Config(banco=url_esquema_novo, montar_demo=False)
     assert _corrida(cfg, monkeypatch) == []
@@ -84,6 +85,7 @@ def test_dois_workers_preparam_o_banco_sem_conflito(url_esquema_novo, monkeypatc
     assert emails and len(emails) == len(set(emails))       # cada conta da demo uma vez só
 
 
+@so_postgres
 def test_sem_a_trava_a_corrida_acontece(url_esquema_novo, monkeypatch):
     """Prova que o teste de cima mede a trava: tirando-a, a mesma corrida quebra."""
     from contextlib import nullcontext
@@ -92,3 +94,11 @@ def test_sem_a_trava_a_corrida_acontece(url_esquema_novo, monkeypatch):
     cfg = Config(banco=url_esquema_novo, montar_demo=False)
     erros = _corrida(cfg, monkeypatch)
     assert any("usuario_email_key" in str(e) or "UNIQUE" in str(e).upper() for e in erros)
+
+
+def test_trava_do_preparo_nao_colide_com_as_outras():
+    """A demo é montada dentro da trava do preparo, em outra conexão: chave igual = espera eterna
+    (o CI pegou isso no build da imagem, 7/11/2026). Vale também sem Postgres."""
+    from mitra import demo
+
+    assert len({main.TRAVA_PREPARO, demo._LOCK_DEMO, 724100245}) == 3     # 724100245: migrations/env.py
