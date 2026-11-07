@@ -107,7 +107,7 @@ export function Logo({ className }: { className?: string }) {
   // As duas imagens ficam no DOM para a troca ser instantânea e independente do primeiro render.
   // eslint-disable-next-line @next/next/no-img-element
   return <span className={cx("logo-tematica inline-flex", className)} aria-label="Mitra">
-    <img src="/logo_claro.svg" alt="Mitra" width={150} height={30} className="logo-claro" />
+    <img src="/logo_escuro.svg" alt="Mitra" width={150} height={30} className="logo-claro" />
     <img src="/logo_escuro.svg" alt="" width={150} height={30} className="logo-escuro" aria-hidden="true" />
   </span>;
 }
