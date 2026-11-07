@@ -2,7 +2,7 @@
 
 - Postgres (API, AWS RDS): um pool de conexões (psycopg_pool) aberto no início do app (`abrir_pool`,
   no lifespan) e fechado no fim. Cada requisição pega uma conexão emprestada, com a mesma cara do
-  sqlite3 que o domínio espera (`regulaia/banco.py`), e devolve no fim. Transação que ficou aberta
+  sqlite3 que o domínio espera (`mitra/banco.py`), e devolve no fim. Transação que ficou aberta
   (erro no meio, leitura sem commit) volta desfeita antes da devolução: a próxima requisição que
   pegar essa conexão começa limpa, sem ver nada pela metade.
 - SQLite (testes, demo): uma conexão por requisição, aberta e fechada aqui.
@@ -13,10 +13,12 @@ Uma requisição usa uma conexão só: a sessão (`seguranca.escopo`), a rota e 
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+
 from fastapi import Depends, HTTPException, Request, status
 
-from regulaia import banco, db
-from regulaia.ia import Roteador
+from mitra import banco, db
+from mitra.ia import Roteador
 
 from .config import Config
 from .observabilidade import log
@@ -32,7 +34,7 @@ def abrir_pool(cfg: Config):
         banco.url_psycopg(cfg.banco), min_size=cfg.pool_min, max_size=max(cfg.pool_max, cfg.pool_min),
         kwargs={"autocommit": False}, max_idle=cfg.pool_ociosa_s, timeout=cfg.pool_espera_s,
         # confere a conexão ao emprestar: depois de um failover do RDS, a quebrada é trocada, não vira 500
-        check=ConnectionPool.check_connection, name="regulaia-api", open=False)
+        check=ConnectionPool.check_connection, name="mitra-api", open=False)
     pool.open(wait=True, timeout=cfg.pool_espera_s)
     return pool
 
@@ -50,10 +52,14 @@ def _devolver(pool, pg) -> None:
         pool.putconn(pg)
 
 
-def conexao(request: Request):
-    pool = getattr(request.app.state, "pool", None)
+@contextmanager
+def emprestar(app):
+    """Uma conexão por um instante, fora das dependências da rota: para quem não pode segurar uma
+    conexão a requisição inteira (o Pergunte à torre, que faz requisições internas enquanto o modelo
+    pensa, e cada uma delas pega a sua)."""
+    pool = getattr(app.state, "pool", None)
     if pool is None:
-        conn = db.conectar(request.app.state.cfg.banco)
+        conn = db.conectar(app.state.cfg.banco)
         try:
             yield conn
         finally:
@@ -72,11 +78,31 @@ def conexao(request: Request):
         _devolver(pool, pg)
 
 
+def conexao(request: Request):
+    with emprestar(request.app) as conn:
+        yield conn
+
+
 def _roteador(cache) -> Roteador:
     try:
         return Roteador(cache)
     except Exception:
         return Roteador(cache, env={}, provedores={})
+
+
+@contextmanager
+def roteador_avulso(app):
+    """O roteador de IA (custo do dia, teto) com conexão emprestada só pelo bloco `with`."""
+    cfg: Config = app.state.cfg
+    with emprestar(app) as conn:
+        if cfg.cache == cfg.banco:
+            yield _roteador(conn)
+            return
+        cache = db.conectar(cfg.cache)
+        try:
+            yield _roteador(cache)
+        finally:
+            cache.close()
 
 
 def roteador(request: Request, conn=Depends(conexao)):

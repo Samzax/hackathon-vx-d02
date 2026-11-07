@@ -1,9 +1,9 @@
 """Sessão, CSRF, papéis e o escopo do que cada pessoa vê.
 
 - Sessão: cookie HttpOnly com um token aleatório de 256 bits; no banco fica só o SHA-256.
-- CSRF: double submit. O login devolve também um cookie legível `regulaia_csrf`, e toda
+- CSRF: double submit. O login devolve também um cookie legível `mitra_csrf`, e toda
   escrita (POST/PUT/PATCH/DELETE) precisa mandar o mesmo valor no cabeçalho X-CSRF-Token.
-- Empresa: a RegulaIA é a plataforma; cada mineradora é uma cliente. A conta de cliente só vê a
+- Empresa: a Mitra é a plataforma; cada mineradora é uma cliente. A conta de cliente só vê a
   própria empresa (o que é de outra devolve 404, para não revelar que existe). A equipe da
   plataforma (`usuario.plataforma`) e o token de serviço veem todas.
 - Papel: TI só administra contas; Diretoria e Regulatório veem toda a empresa; gestor vê a própria área.
@@ -27,19 +27,19 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, HTTPException, Request, Response, status
 
-from regulaia import db, usuarios
+from mitra import db, usuarios
 
 from .banco import conexao
 from .config import Config
 
-COOKIE_SESSAO = "regulaia_sessao"
-COOKIE_CSRF = "regulaia_csrf"
+COOKIE_SESSAO = "mitra_sessao"
+COOKIE_CSRF = "mitra_csrf"
 CABECALHO_CSRF = "X-CSRF-Token"
 VISAO_DIRETORIA = "Diretoria (todos os ativos)"
 VISAO_TI = "TI (usuários e acessos)"
-VISAO_CURADORIA = "Curadoria RegulaIA (plataforma)"
+VISAO_CURADORIA = "Curadoria Mitra (plataforma)"
 _ESCRITA = {"POST", "PUT", "PATCH", "DELETE"}
-SO_LEITURA = "a equipe RegulaIA só lê os dados da empresa"
+SO_LEITURA = "a equipe Mitra só lê os dados da empresa"
 
 
 @dataclass(frozen=True)
@@ -52,12 +52,24 @@ class Escopo:
     assinante: str           # o nome que fica no histórico ("por")
     empresa_id: int | None = None    # cliente: a única empresa que vê; None na plataforma
     empresa: str | None = None       # o nome dela (é por ele que conta e obrigação própria se ligam)
-    plataforma: bool = False         # equipe da RegulaIA ou token de serviço: vê todas as empresas
+    plataforma: bool = False         # equipe da Mitra ou token de serviço: vê todas as empresas
+    unidades: tuple[str, ...] = ()   # conta restrita a estas operações; vazio: toda a empresa
 
     @property
     def ve_tudo(self) -> bool:
         """Vê todos os ativos da empresa (na plataforma, de todas)."""
         return self.papel in usuarios.VE_TUDO
+
+    @property
+    def restrita(self) -> bool:
+        """Conta presa a uma ou mais unidades (operações): vê só o que é delas. Diretoria e Regulatório
+        da empresa continuam vendo tudo, mesmo que alguém grave unidades na conta."""
+        return bool(self.unidades) and not self.ve_tudo
+
+    @property
+    def escopo_unidades(self) -> set[str] | None:
+        """O conjunto de unidades para filtrar o domínio, ou None (sem restrição)."""
+        return set(self.unidades) if self.restrita else None
 
     @property
     def admin(self) -> bool:
@@ -82,9 +94,15 @@ class Escopo:
         return self.plataforma if dona is None else (not self.plataforma and dona == self.empresa)
 
     def ve_ativo(self, ativo: dict) -> bool:
+        """Conta restrita a unidades: só os ativos daquelas operações (a unidade é o escopo, e substitui
+        o filtro por área). Senão, o de sempre: quem vê tudo vê tudo; gestor vê os da área dele."""
+        if self.restrita:
+            return ativo.get("unidade") in self.unidades
         return self.ve_tudo or (self.area is not None and ativo.get("responsavel") == self.area)
 
     def ve_linha(self, linha, dono_do_ativo: str | None) -> bool:
+        if self.restrita:       # as linhas já vêm filtradas por unidade (torre.painel recebe o escopo)
+            return True
         return self.ve_tudo or (self.area is not None and self.area in (linha.responsavel, dono_do_ativo))
 
 
@@ -134,7 +152,7 @@ def _sessao(conn, token: str) -> dict | None:
 
 
 def _conta_servico(conn) -> dict:
-    return {"id": 0, "email": "servico@regulaia", "nome": "Agente RegulaIA", "papel": usuarios.REGULATORIO,
+    return {"id": 0, "email": "servico@mitra", "nome": "Agente Mitra", "papel": usuarios.REGULATORIO,
             "area": None, "teste": 0, "ativa": 1, "empresa": None, "plataforma": 1}
 
 
@@ -168,7 +186,9 @@ def escopo_da_conta(conn, u: dict, visao: str | None = None) -> Escopo:
             return Escopo(u, usuarios.ADMIN, None, visao, visao, **na_empresa)
         return Escopo(u, usuarios.GESTOR, visao, visao, visao, **na_empresa)
     if u["papel"] == usuarios.GESTOR:
-        return Escopo(u, u["papel"], u["area"], u["area"] or "", u["nome"], **na_empresa)
+        unidades = tuple(usuarios.unidades_da_conta(u))
+        rotulo = (f"{u['area']} · {', '.join(unidades)}" if unidades else (u["area"] or ""))
+        return Escopo(u, u["papel"], u["area"], rotulo, u["nome"], unidades=unidades, **na_empresa)
     rotulo = {usuarios.DIRETORIA: VISAO_DIRETORIA, usuarios.REGULATORIO: "Regulatório (todos os ativos)",
               usuarios.ADMIN: VISAO_TI}[u["papel"]]
     return Escopo(u, u["papel"], None, rotulo, u["nome"], **na_empresa)
@@ -236,9 +256,9 @@ def decide_normas(e: Escopo = Depends(regulatorio)) -> Escopo:
 
 
 def plataforma(e: Escopo = Depends(regulatorio)) -> Escopo:
-    """Trabalho interno da RegulaIA (a fila de normas candidatas): a cliente recebe 403."""
+    """Trabalho interno da Mitra (a fila de normas candidatas): a cliente recebe 403."""
     if not e.plataforma:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "isto é trabalho da curadoria da RegulaIA (plataforma)")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "isto é trabalho da curadoria da Mitra (plataforma)")
     return e
 
 
@@ -246,7 +266,7 @@ def curadoria(e: Escopo = Depends(decide_normas)) -> Escopo:
     """O que muda o catálogo de todas as clientes (propor mudança de norma, importar empresa)."""
     if not e.plataforma:
         raise HTTPException(status.HTTP_403_FORBIDDEN,
-                            "só a curadoria da RegulaIA (plataforma) mexe no que vale para todas as empresas")
+                            "só a curadoria da Mitra (plataforma) mexe no que vale para todas as empresas")
     return e
 
 

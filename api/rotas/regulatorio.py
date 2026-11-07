@@ -1,8 +1,8 @@
 """Mudanças de norma (aprovar, corrigir, rejeitar) e o radar do DOU (triagem -> IA -> Python).
 
 Quem decide depende de quem é a obrigação: mudança de norma pública (Res. ANM, NR...) é aprovada
-pela curadoria da RegulaIA (plataforma), uma vez para todas as clientes; a cliente vê a mudança
-como "aguardando curadoria RegulaIA". Obrigação própria de uma empresa (condicionante da licença,
+pela curadoria da Mitra (plataforma), uma vez para todas as clientes; a cliente vê a mudança
+como "aguardando curadoria Mitra". Obrigação própria de uma empresa (condicionante da licença,
 TAC) é aprovada pelo Regulatório ou pela Diretoria dela."""
 
 from __future__ import annotations
@@ -14,8 +14,8 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
-from regulaia import db, demo, impacto, torre
-from regulaia.ia import Roteador
+from mitra import db, demo, impacto, torre
+from mitra.ia import Roteador
 
 from .. import auditoria
 from ..banco import conexao, roteador
@@ -76,7 +76,7 @@ class Mudanca(BaseModel):
     empresa: str | None = Field(description="dona da obrigação própria; vazio: norma pública")
     escopo: str = Field(description="'norma pública' (vale para todas as clientes) ou 'empresa' (só desta)")
     decide: bool = Field(description="se quem pede pode aprovar ou rejeitar esta mudança")
-    quem_decide: str = Field(examples=["curadoria RegulaIA", "Regulatório ou Diretoria da Mineradora Serra Azul"])
+    quem_decide: str = Field(examples=["curadoria Mitra", "Regulatório ou Diretoria da Mineradora Serra Azul"])
     analise: AnaliseRadar | None = Field(None, description="a análise do radar que propôs a mudança, se houver")
     tamanho: str | None = Field(None, description="o tamanho da mudança dito pelos dados: o que muda e o que fica")
     conferencia: list[str] = Field([], description="o que o Python conferiu antes de propor")
@@ -104,6 +104,10 @@ class Ato(BaseModel):
     identificacao: str | None = Field(None, examples=["RESOLUÇÃO ANM Nº 245, DE 31 DE JULHO DE 2026"],
                                       description="vazio: a primeira linha do texto, até o ano")
     texto: str = Field(min_length=20, max_length=200_000)
+    empresa_id: int | None = Field(None, description=(
+        "analisa no escopo desta empresa (normas públicas e obrigações próprias dela). É o que o agente "
+        "preso a uma empresa manda; sem ele, a plataforma analisa contra o catálogo inteiro e a cliente "
+        "contra o dela. Empresa de outra cliente: 404."))
 
 
 class Funil(BaseModel):
@@ -193,7 +197,7 @@ Art. 2º Esta Resolução entra em vigor em 1º de abril de 2027."""
 
 
 def _quem_decide(dona: str | None) -> str:
-    return "curadoria RegulaIA" if dona is None else f"Regulatório ou Diretoria da {dona}"
+    return "curadoria Mitra" if dona is None else f"Regulatório ou Diretoria da {dona}"
 
 
 def _analises() -> list[dict]:
@@ -236,7 +240,7 @@ def mudancas(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(con
     radar = {torre.nome_ato(r["ato"]): r for r in _analises()}
     normas = {r["codigo"]: r["norma"] for r in conn.execute("SELECT codigo, norma FROM obrigacao")}
     out = []
-    for m in torre.mudancas(conn, empresa_id):
+    for m in torre.mudancas(conn, empresa_id, unidades=e.escopo_unidades):
         if not (e.ve_tudo or set(m.ativos) & visiveis):
             continue
         d = asdict(m)
@@ -278,7 +282,7 @@ def decidir(versao_id: int, dados: Decisao, request: Request, e: Escopo = Depend
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"mudança {versao_id} não existe")
     if not e.decide(r["empresa"]):
         auditoria.registrar(conn, request, "decisao", str(versao_id), dados.model_dump(), resultado="recusado")
-        motivo = ("mudança de norma pública: quem aprova é a curadoria da RegulaIA, uma vez para todas as clientes"
+        motivo = ("mudança de norma pública: quem aprova é a curadoria da Mitra, uma vez para todas as clientes"
                   if r["empresa"] is None else
                   f"obrigação própria da {r['empresa']}: quem aprova ou rejeita é o Regulatório ou a Diretoria dela"
                   + (f" ({SO_LEITURA})" if e.so_leitura else ""))
@@ -320,8 +324,13 @@ def exemplo(e: Escopo = Depends(regulatorio)):
 
 def _analisar(conn, rot: Roteador, dados: Ato, e: Escopo) -> impacto.Analise:
     ident = (dados.identificacao or "").strip() or torre.titulo_do_ato(dados.texto)
-    try:    # a cliente só analisa contra as normas públicas e as obrigações dela
-        return impacto.analisar(conn, rot, ident, dados.texto, empresa=None if e.plataforma else e.empresa)
+    # a cliente só analisa contra as normas públicas e as obrigações dela; com `empresa_id`, a plataforma
+    # (o agente preso a uma cliente) também: condicionante de outra empresa nunca aparece na análise
+    empresa = None if e.plataforma else e.empresa
+    if dados.empresa_id is not None:
+        empresa = empresa_visivel(conn, e, dados.empresa_id)["nome"]
+    try:
+        return impacto.analisar(conn, rot, ident, dados.texto, empresa=empresa)
     except Exception as erro:       # sem chave e sem cache, ou provedor fora do ar
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"análise indisponível: {erro}") from None
 

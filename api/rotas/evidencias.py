@@ -14,8 +14,8 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from regulaia import agenda, db, evidencias, ocr
-from regulaia.ia import Roteador
+from mitra import agenda, db, evidencias, ocr
+from mitra.ia import Roteador
 
 from .. import armazenamento, auditoria
 from ..banco import conexao, roteador
@@ -109,7 +109,7 @@ async def ler(request: Request, empresa_id: int, arquivo: UploadFile = File(...)
     dados = await arquivo.read(LIMITE_BYTES + 1)
     if len(dados) > LIMITE_BYTES:
         raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "documento maior que 20 MB")
-    try:        # páginas escaneadas vão para o OCR, se houver (REGULAIA_OCR=textract)
+    try:        # páginas escaneadas vão para o OCR, se houver (MITRA_OCR=textract)
         lido = ocr.ler(dados)
     except Exception as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, evidencias.por_que_nao_abre(erro)) from None
@@ -127,8 +127,9 @@ async def ler(request: Request, empresa_id: int, arquivo: UploadFile = File(...)
     auditoria.registrar(conn, request, "evidencia_leitura", nome,
                         {"ativo": le.ativo, "obrigacao": le.obrigacao, "periodo": le.periodo, "sha256": sha})
     abre = []
+    dona = conn.execute("SELECT nome FROM empresa WHERE id = ?", (empresa_id,)).fetchone()["nome"]
     for c in (c for c in le.acionar if c != le.obrigacao):
-        v = db.versao(conn, c) or {}
+        v = db.versao(conn, c, empresa=dona) or {}
         abre.append(Acionada(codigo=c, titulo=v.get("titulo") or c, evidencia=v.get("evidencia")))
     return ResultadoLeitura(leitura=Leitura(**asdict(le)), completa=le.completa, arquivo=nome, guardado_em=guardado,
                             sha256=sha, periodo_rotulo=agenda.rotulo_humano(le.periodo) if le.periodo else None,

@@ -1,0 +1,22 @@
+[
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "A torre não traz valores de multas — ela cadastra obrigações, vencimentos e status (atrasada, dado faltando, vence logo, em dia, gatilho) com a norma e o dispositivo de origem, não penalidades em reais. Não tenho essa informação para responder com segurança.\n\nPosso te ajudar, por exemplo, com: \"o PAEBM está pendente em algum ativo?\" ou \"quais obrigações da Lei 12.334/2010 valem para a barragem X?\" — nesses casos eu consulto a torre e trago norma, dispositivo e status.",
+  "chamadas": [],
+  "tokens_in": 2,
+  "tokens_out": 195,
+  "cache_lido": 6260,
+  "cache_escrito": 0,
+  "cortada": false
+ },
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "A torre não traz valores de multas aplicadas pela ANM — ela registra obrigações, vencimentos e status (atrasada, dado faltando, vence logo, em dia, gatilho), com a norma e o dispositivo de origem, não penalidades em reais. Não tenho essa informação para responder.\n\nSe quiser, posso consultar a torre sobre pendências relacionadas a PAEBM em algum ativo específico, ou quais obrigações de uma norma valem para uma barragem específica — me diga o ativo e eu busco.",
+  "chamadas": [],
+  "tokens_in": 2,
+  "tokens_out": 181,
+  "cache_lido": 6260,
+  "cache_escrito": 317,
+  "cortada": false
+ }
+]

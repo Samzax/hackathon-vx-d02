@@ -1,0 +1,32 @@
+[
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "",
+  "chamadas": [
+   {
+    "id": "tooluse_5t7tLfbCAzb9Rl5gSJtMnB",
+    "nome": "pendencias",
+    "args": {
+     "status": [
+      "dado_faltando"
+     ]
+    }
+   }
+  ],
+  "tokens_in": 2,
+  "tokens_out": 56,
+  "cache_lido": 6258,
+  "cache_escrito": 0,
+  "cortada": false
+ },
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "Sim, há **1 caso** de dado faltando no cadastro:\n\n- **B4** — obrigação **R95-08** (Executar e concluir nova RPSB após modificação estrutural), **Res. ANM 95/2022, art. 18 §1**.\n  - Trecho da norma: *\"no prazo de 6 (seis) meses contados da conclusão da modificação, o empreendedor ficará obrigado a executar e concluir nova RPSB\"*\n  - Dado que falta: **se o ativo passou por modificação estrutural**. Sem essa informação, a torre não consegue determinar se a obrigação se aplica (e, se aplicar, a partir de quando contar o prazo de 6 meses).\n  - Área responsável: Gerência de Emergências.\n\nPara resolver, é preciso completar esse atributo no cadastro do ativo B4 — isso se corrige na seção **Ativos** (ficha do ativo/cadastro). Depois de preenchido, a torre recalcula o status automaticamente.",
+  "chamadas": [],
+  "tokens_in": 2,
+  "tokens_out": 341,
+  "cache_lido": 6627,
+  "cache_escrito": 0,
+  "cortada": false
+ }
+]

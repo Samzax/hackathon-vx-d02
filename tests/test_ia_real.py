@@ -10,8 +10,8 @@ from pathlib import Path
 import pytest
 
 from collector.xml_dou import load_month
-from regulaia import db, demo, impacto
-from regulaia.ia import Roteador
+from mitra import db, demo, impacto
+from mitra.ia import Roteador
 
 pytestmark = pytest.mark.skipif(os.environ.get("RUN_IA") != "1", reason="defina RUN_IA=1 para chamar a IA")
 

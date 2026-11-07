@@ -1,4 +1,4 @@
-"""RegulaIA — Torre de Controle Regulatória (interface da demo).
+"""Mitra — Torre de Controle Regulatória (interface da demo).
 
 Uso: uv run streamlit run app.py
 """
@@ -15,11 +15,11 @@ from datetime import date, timedelta
 import pandas as pd
 import streamlit as st
 
-from regulaia import agenda, arquivos, db, demo, impacto, ocr, operacao, pdf, sigbm, torre, usuarios
-from regulaia import evidencias as ev
-from regulaia.ia import Roteador
+from mitra import agenda, arquivos, db, demo, impacto, ocr, operacao, pdf, sigbm, torre, usuarios
+from mitra import evidencias as ev
+from mitra.ia import Roteador
 
-st.set_page_config(page_title="RegulaIA · Torre de Controle", page_icon="assets/marca.svg", layout="wide")
+st.set_page_config(page_title="Mitra · Torre de Controle", page_icon="assets/marca.svg", layout="wide")
 # no celular o Streamlit empilha as colunas: os 5 números do topo ocupariam a tela inteira.
 # Só abaixo de 640 px, linha de métricas fica 3 por linha e com número menor; no desktop nada muda.
 st.html("""<style>
@@ -124,7 +124,8 @@ st.html(f"""<style>
 </style>""")
 
 
-TIPO = {"barragem": "Barragem", "unidade": "Unidade", "equipamento": "Equipamento", "licenca": "Licença"}
+TIPO = {"barragem": "Barragem", "unidade": "Unidade", "equipamento": "Equipamento", "licenca": "Licença",
+        "estabelecimento_saude": "Estabelecimento de saúde", "abrigo_residuos": "Abrigo de resíduos"}
 TROCA_NORMA = date(2027, 8, 2)   # Res. ANM 220/2025 substitui a Res. ANM 95/2022
 CAMPO = {"prazo": "Prazo", "vigencia_desde": "Começa a valer em", "vigencia_ate": "Deixa de valer após",
          "periodicidade": "Periodicidade", "aplica_se_a": "Aplica-se a", "titulo": "Obrigação",
@@ -208,7 +209,7 @@ if "empresa_nova" in st.session_state:                      # acabou de importar
     st.session_state["empresa_id"] = st.session_state.pop("empresa_nova")
 if st.session_state.get("empresa_id") not in empresas:      # primeira visita, ou "Recriar demo"
     st.session_state["empresa_id"] = next(iter(empresas))
-LIMITE_IA_SESSAO = int(os.environ.get("REGULAIA_LIMITE_SESSAO") or 0) or None   # análises pagas por visita
+LIMITE_IA_SESSAO = int(os.environ.get("MITRA_LIMITE_SESSAO") or 0) or None   # análises pagas por visita
 
 
 def _roteador_da_sessao():
@@ -305,7 +306,7 @@ def _tela_entrar():
                     _entrar(conta)
                     st.rerun()
                 st.error("E-mail ou senha não conferem, ou a conta está desativada.")
-        st.caption("Sem conta? Peça à TI da sua empresa: é ela que cria os acessos.")
+        st.caption("Esqueceu sua senha? Entre em contato com o suporte.")
 
 
 usuario = usuarios.por_email(conn, st.session_state.get("usuario", ""))
@@ -409,14 +410,19 @@ if usuario["papel"] == usuarios.ADMIN and not usuario["teste"]:
 with st.sidebar:
     _quem_entrou()
     st.selectbox("Empresa", list(empresas), key="empresa_id",
-                 format_func=lambda i: empresas[i]["nome"] + (" · fictícia" if empresas[i]["ficticia"] else ""))
+                 format_func=lambda i: empresas[i]["nome"] + (" · saúde" if empresas[i].get("setor") == "saude" else "")
+                 + (" · fictícia" if empresas[i]["ficticia"] else ""))
     empresa = empresas[st.session_state["empresa_id"]]
+    setor_saude = empresa.get("setor") == "saude"
     importada = bool(empresa["monitorado_desde"])
-    if st.button("Sua mineradora (SIGBM)", icon=":material/add:", width="stretch",
-                 help="Busque pelo CNPJ ou pelo nome e monte a torre com as barragens reais da empresa")             or st.session_state.get("manter_importar"):   # nos testes, o diálogo fica aberto entre reruns
+    if not setor_saude and (st.button("Sua mineradora (SIGBM)", icon=":material/add:", width="stretch",
+                         help="Busque pelo CNPJ ou pelo nome e monte a torre com as barragens reais da empresa")
+                         or st.session_state.get("manter_importar")):   # nos testes, o diálogo fica aberto entre reruns
         _importar()
     if importada:
         st.caption(f"Barragens e atributos: {empresa['origem']}. Dados públicos, sem pessoa física.")
+    elif setor_saude:
+        st.caption("Protótipo de saúde: dados fictícios, sem pacientes ou profissionais identificáveis.")
     ativos = db.ativos(conn, empresa["id"])
     donos = {k: v for k, v in db.responsaveis(conn).items() if k[0] in {a["id"] for a in ativos}}
     responsaveis = sorted({a["responsavel"] for a in ativos if a["responsavel"]} | set(donos.values()))
@@ -433,14 +439,18 @@ with st.sidebar:
     def _ir_para(d: date):
         st.session_state["hoje"] = d
 
-    st.caption("Viagem no tempo:")
-    v1, v2, v3 = st.columns([1, 1.35, 0.9], gap="small")   # "Res. 220" não pode cortar em 1280 px
-    v1.button("Demo", on_click=_ir_para, args=(hoje_demo,), help=f"{hoje_demo:%d/%m/%Y}", width="stretch")
-    v2.button("Res. 220", on_click=_ir_para, args=(TROCA_NORMA,), help=f"{TROCA_NORMA:%d/%m/%Y}: troca de norma",
-              width="stretch")
-    v3.button("ZAS", on_click=_ir_para, args=(date(2029, 12, 27),),
-              help="27/12/2029: dia seguinte ao prazo da ZAS (ANM e NR-22)", width="stretch")
-    desde = date.fromisoformat(empresa["monitorado_desde"] or spec.get("desde", "2026-05-01"))
+    if setor_saude:
+        st.caption("Data de referência do protótipo:")
+        st.button("Demo", on_click=_ir_para, args=(hoje_demo,), help=f"{hoje_demo:%d/%m/%Y}", width="stretch")
+    else:
+        st.caption("Viagem no tempo:")
+        v1, v2, v3 = st.columns([1, 1.35, 0.9], gap="small")   # "Res. 220" não pode cortar em 1280 px
+        v1.button("Demo", on_click=_ir_para, args=(hoje_demo,), help=f"{hoje_demo:%d/%m/%Y}", width="stretch")
+        v2.button("Res. 220", on_click=_ir_para, args=(TROCA_NORMA,), help=f"{TROCA_NORMA:%d/%m/%Y}: troca de norma",
+                  width="stretch")
+        v3.button("ZAS", on_click=_ir_para, args=(date(2029, 12, 27),),
+                  help="27/12/2029: dia seguinte ao prazo da ZAS (ANM e NR-22)", width="stretch")
+    desde = date.fromisoformat(empresa["monitorado_desde"] or ("2026-01-01" if setor_saude else spec.get("desde", "2026-05-01")))
     st.caption(f"{'Monitorada' if importada else 'Histórico monitorado'} desde {desde:%d/%m/%Y}.")
     rot_ia = _roteador()
     if rot_ia is not None and rot_ia.ligada:
@@ -481,7 +491,7 @@ st.html(f"<div class='rg-head'><div><div class='rg-over'>Torre de controle regul
         f"<div class='rg-emp'>{html.escape(empresa['nome'])}</div></div>"
         f"<div class='rg-meta'><span class='rg-num'>{hoje:%d/%m/%Y}</span><br>{html.escape(visao)} · "
         f"{len(meus)} {'ativo' if len(meus) == 1 else 'ativos'}</div></div>")
-if hoje > hoje_demo and not importada:
+if hoje > hoje_demo and not importada and not setor_saude:
     st.info(f"Viagem no tempo: {hoje:%d/%m/%Y}. As entregas da demo vão até {hoje_demo:%d/%m/%Y}; "
             "o que venceu depois disso aparece atrasado porque ninguém registrou a entrega. "
             "O ponto aqui é ver o que a torre passa a cobrar, e de qual norma.", icon=":material/history:")
@@ -495,7 +505,8 @@ if hoje > hoje_demo and not importada:
 ABA_CAIXA, ABA_ATIVOS, ABA_ENTREGAS, ABA_REG, ABA_SOBRE = (
     ":material/inbox: Caixa de entrada", ":material/foundation: Ativos", ":material/task_alt: Entregas",
     ":material/gavel: Regulatório", ":material/info: Sobre")
-SUB_MUDANCAS, SUB_RADAR, SUB_TRANSICAO = "Mudanças", "Radar do DOU", "Transição e linha do tempo"
+SUB_MUDANCAS, SUB_RADAR = "Mudanças", "Radar do DOU"
+SUB_TRANSICAO = "Vigência e linha do tempo" if setor_saude else "Transição e linha do tempo"
 STATUS_PADRAO = [agenda.ATRASADA, torre.DADO_FALTANDO, agenda.VENCE_LOGO]
 
 
@@ -647,11 +658,13 @@ with aba_caixa:
 
     with st.container(border=True, key="doc"):
         st.markdown("##### :material/upload_file: Chegou um documento da operação?")
-        st.caption("FIR, laudo, recibo do SIGBM ou boletim: a regra lê ativo, documento e data, e a torre dá baixa. "
-                   "A IA só entra se a regra não fechar, e o Python confere.")
+        st.caption(("Plano de Segurança do Paciente, PGRSS ou registro de capacitação: a regra lê ativo, documento e data, "
+                    "e a torre dá baixa." if setor_saude else
+                    "FIR, laudo, recibo do SIGBM ou boletim: a regra lê ativo, documento e data, e a torre dá baixa.")
+                   + " A IA só entra se a regra não fechar, e o Python confere.")
         c1, c2 = st.columns(2)
         enviado = c1.file_uploader("Documento em PDF", type=["pdf"])
-        exemplos_pdf = sorted(p.name for p in ev.exemplo("x").parent.glob("*.pdf"))
+        exemplos_pdf = [] if setor_saude else sorted(p.name for p in ev.exemplo("x").parent.glob("*.pdf"))
         escolhido = c2.selectbox("…ou um documento de exemplo", ["—"] + exemplos_pdf)
         if st.button("Ler documento", disabled=enviado is None and escolhido == "—"):
             nome, conteudo = ((enviado.name, enviado.getvalue()) if enviado is not None
@@ -839,7 +852,7 @@ def _mapa_geo():
     import pydeck as pdk
 
     arq = db.ROOT / "data" / "posicoes_demo.json"
-    if not empresa["ficticia"] or not arq.exists():
+    if setor_saude or not empresa["ficticia"] or not arq.exists():
         return
     pos = json.loads(arq.read_text(encoding="utf-8"))
     pontos = []
@@ -899,6 +912,8 @@ NOME_DADO = {
     "trabalhadores": "Trabalhadores", "classe": "Classe do equipamento", "categoria_vaso": "Categoria do vaso (NR-13)",
     "spie": "SPIE certificado", "em_operacao": "Em operação", "subsolo": "Em subsolo",
     "orgao": "Órgão emissor", "validade": "Validade",
+    "tem_nsp": "Núcleo de Segurança do Paciente constituído", "exposicao_biologica": "Exposição a agentes biológicos",
+    "gera_rss": "Gera resíduos de serviços de saúde", "grupo_rss": "Grupos de resíduos", "unidade_origem": "Unidade de origem",
 }
 VALOR_DADO = {"etapa_unica": "etapa única", "linha_de_centro": "linha de centro", "medio": "médio",
               "em_descaracterizacao": "em descaracterização", "ceu_aberto": "céu aberto",
@@ -917,6 +932,9 @@ def _valor_cadastro(v) -> str:
 
 with aba_ativos:
     st.caption("Clique num ativo para abrir a ficha. Vencendo = vence em até 30 dias (5 para quinzenal e mensal).")
+    if setor_saude:
+        st.info("Nesta visão não há mapa: os ativos são unidades assistenciais e áreas operacionais, não pontos de uma rede geográfica. "
+                "A tabela prioriza a ação, a unidade responsável e a evidência.", icon=":material/format_list_bulleted:")
     _mapa_geo()
     codigos_mapa = [a["codigo"] for a in meus]
     mapa = pd.DataFrame([{
@@ -937,6 +955,7 @@ with aba_ativos:
 
         def _orgao(norma: str) -> str:
             return ("ANM" if "ANM" in norma else "MTE" if norma.startswith("NR-")
+                    else "Anvisa" if "Anvisa" in norma
                     else "Órgão ambiental" if norma.startswith(("LO ", "LC 140")) else "—")
 
         st.dataframe(_pintar(pd.DataFrame([{
@@ -947,7 +966,7 @@ with aba_ativos:
             **{COLUNA[s]: sum(1 for l in linhas if l.norma == n and l.status == s)
                for s in COLUNA},
         } for n in normas])), hide_index=True, width="stretch", column_config=_DICA_STATUS)
-        if hoje < TROCA_NORMA:
+        if hoje < TROCA_NORMA and not setor_saude:
             st.caption(f"A Res. ANM 220/2025 ainda não aparece: entra em {TROCA_NORMA:%d/%m/%Y} no lugar da "
                        "Res. 95/2022. O que muda está em Regulatório → Transição e linha do tempo.")
 
@@ -1112,7 +1131,7 @@ with aba_entregas:
     nome_arq = f"obrigacoes_{(visao if not diretoria else 'diretoria').replace(' ', '_')}_{hoje:%Y-%m-%d}"
     e1, e2, e3 = st.columns([1, 1, 2])
     e1.download_button(f"Excel ({len(filtradas)} linhas)",
-                       partial(operacao.planilha, filtradas, f"RegulaIA · {empresa['nome']}"), icon=":material/download:",
+                       partial(operacao.planilha, filtradas, f"Mitra · {empresa['nome']}"), icon=":material/download:",
                        file_name=f"{nome_arq}.xlsx", disabled=not filtradas,
                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     e2.download_button("Agenda (.ics)",
@@ -1349,8 +1368,8 @@ def _linha_do_tempo(futuras) -> str | None:
         color=alt.Color("Norma:N", sort=normas, scale=alt.Scale(domain=normas, range=paleta[:len(normas)]),
                         legend=alt.Legend(orient="top", title=None, labelLimit=160, columnPadding=14)),
         tooltip=["Ativo", "Norma", "Vale"])
-    marcos = pd.DataFrame([{"dia": hoje.isoformat(), "rótulo": "hoje"},
-                           {"dia": TROCA_NORMA.isoformat(), "rótulo": "Res. 220 entra"}])
+    marcos = pd.DataFrame([{"dia": hoje.isoformat(), "rótulo": "hoje"}]
+                         + ([] if setor_saude else [{"dia": TROCA_NORMA.isoformat(), "rótulo": "Res. 220 entra"}]))
     camada_marcos = alt.Chart(marcos).mark_rule(strokeDash=[4, 3], color=_hex("gray")).encode(x="dia:T")
     camada_textos = alt.Chart(marcos).mark_text(align="left", baseline="bottom", dx=4, fontSize=11,
                                                 color=_hex("gray")).encode(x="dia:T", y=alt.value(-4), text="rótulo")
@@ -1381,11 +1400,11 @@ def _linha_do_tempo(futuras) -> str | None:
 with aba_transicao:
     faltam = (TROCA_NORMA - hoje).days
     c1, c2 = st.columns([1, 3])
-    c1.metric("Dias até a Res. ANM 220/2025", max(faltam, 0))
-    c2.markdown(
-        f"Em **{TROCA_NORMA:%d/%m/%Y}** a Res. ANM 95/2022 deixa de valer e a Res. ANM 220/2025 entra. "
-        "Para cada barragem: o que sai, o que entra e o que já precisa ser preparado.")
-    trocas = [t for t in torre.transicao(conn, empresa["id"], TROCA_NORMA) if t.ativo in codigos_meus]
+    c1.metric("Marcos de vigência" if setor_saude else "Dias até a Res. ANM 220/2025", "—" if setor_saude else max(faltam, 0))
+    c2.markdown("Acompanhe quando obrigações e versões passam a valer por unidade, sem supor uma transição normativa."
+                if setor_saude else f"Em **{TROCA_NORMA:%d/%m/%Y}** a Res. ANM 95/2022 deixa de valer e a Res. ANM 220/2025 entra. "
+                "Para cada barragem: o que sai, o que entra e o que já precisa ser preparado.")
+    trocas = ([] if setor_saude else [t for t in torre.transicao(conn, empresa["id"], TROCA_NORMA) if t.ativo in codigos_meus])
     if not trocas:
         st.info("Nenhum dos seus ativos muda de obrigação na troca de norma.")
     else:
@@ -1546,6 +1565,10 @@ with aba_mudancas:
 # ------------------------------------------------------------------ Radar
 
 with aba_radar:
+    if setor_saude:
+        st.info("Protótipo de saúde: o mesmo coletor de XML do DOU reconhece Ministério da Saúde e Anvisa, e as fontes "
+                "oficiais de RDC e NR-32 já estão configuradas para extração e curadoria. A amostra visual abaixo ainda é "
+                "a trilha de mineração; importe um ZIP mensal para alimentar o funil de saúde.", icon=":material/radar:")
     f1, f2, f3, f4 = st.columns(4)
     f1.metric("Atos no DOU (ago/2026)", "7.884")
     f2.metric("Da ANM", "825")
@@ -1553,7 +1576,7 @@ with aba_radar:
     f4.metric("Mudam o cadastro", "1")
     st.caption("Filtro por órgão e tipo de ato é regra, sem custo. Só os normativos chegam à IA, "
                "e só com as obrigações que a triagem considerou candidatas.")
-    from regulaia import impacto
+    from mitra import impacto
     gastos = db.conectar(impacto.CACHE_IA).execute(
         "SELECT tarefa, COUNT(*) AS n, COALESCE(SUM(custo_usd), 0) AS usd FROM analise_ia GROUP BY tarefa"
     ).fetchall()
@@ -1680,8 +1703,8 @@ with aba_mercado:
 # ------------------------------------------------------------------ Como funciona
 
 with aba_como:
-    n_obrig = conn.execute("SELECT COUNT(*) FROM obrigacao").fetchone()[0]
-    n_evid = conn.execute("SELECT COUNT(*) FROM evidencia").fetchone()[0]
+    n_obrig = len({l.codigo for l in todas})
+    n_evid = sum(len(db.evidencias_do_ativo(conn, a["id"])) for a in ativos)
     n_ativos = len(ativos)
     radar_c = json.loads(demo.RADAR.read_text(encoding="utf-8")) if demo.RADAR.exists() else []
     custo_radar = sum(r.get("custo_original_usd", r["custo_usd"]) for r in radar_c)

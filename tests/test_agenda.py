@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from regulaia import agenda as ag
+from mitra import agenda as ag
 
 HOJE = date(2026, 11, 5)
 DESDE = date(2026, 9, 1)

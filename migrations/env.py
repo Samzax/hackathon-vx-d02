@@ -1,4 +1,4 @@
-"""Alembic: a URL vem de REGULAIA_DATABASE_URL (Secrets Manager na AWS)."""
+"""Alembic: a URL vem de MITRA_DATABASE_URL (Secrets Manager na AWS)."""
 
 from __future__ import annotations
 
@@ -9,9 +9,9 @@ from sqlalchemy import create_engine, pool
 
 
 def _url() -> str:
-    url = os.environ.get("REGULAIA_DATABASE_URL") or context.config.get_main_option("sqlalchemy.url")
+    url = os.environ.get("MITRA_DATABASE_URL") or context.config.get_main_option("sqlalchemy.url")
     if not url:
-        raise SystemExit("defina REGULAIA_DATABASE_URL=postgresql://usuario:senha@host:5432/banco")
+        raise SystemExit("defina MITRA_DATABASE_URL=postgresql://usuario:senha@host:5432/banco")
     return url.replace("postgresql://", "postgresql+psycopg://", 1).replace("postgres://", "postgresql+psycopg://", 1)
 
 

@@ -22,11 +22,11 @@ const api = spawn("uv", ["run", "uvicorn", "api.main:app", "--host", "127.0.0.1"
   stdio: "inherit",
   env: {
     ...process.env,
-    REGULAIA_DATABASE_URL: join(dados, "e2e.db"),
-    REGULAIA_CACHE_URL: join(dados, "cache.db"),
-    REGULAIA_ARMAZENAMENTO: join(dados, "uploads"),
-    REGULAIA_FRONT: join(raiz, "front", "out"),
-    REGULAIA_MONTAR_DEMO: "1",
+    MITRA_DATABASE_URL: join(dados, "e2e.db"),
+    MITRA_CACHE_URL: join(dados, "cache.db"),
+    MITRA_ARMAZENAMENTO: join(dados, "uploads"),
+    MITRA_FRONT: join(raiz, "front", "out"),
+    MITRA_MONTAR_DEMO: "1",
   },
 });
 

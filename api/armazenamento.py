@@ -22,7 +22,7 @@ def guardar(cfg: Config, sha256: str, nome: str, dados: bytes, tipo: str | None 
         if not destino.exists():
             destino.write_bytes(dados)
         return str(destino)
-    from regulaia import aws
+    from mitra import aws
 
     bucket, _, prefixo = cfg.armazenamento.removeprefix("s3://").partition("/")
     chave = f"{prefixo.rstrip('/')}/{chave}" if prefixo else chave

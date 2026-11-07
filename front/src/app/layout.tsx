@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 };
 
 // escolhe o tema antes de pintar (o salvo pela pessoa, ou o do sistema): sem piscar claro no escuro
-const TEMA = `try{var t=localStorage.getItem("mitra_tema")||localStorage.getItem("regulaia_tema");if(t!=="claro"&&t!=="escuro"){t=matchMedia("(prefers-color-scheme: dark)").matches?"escuro":"claro"}document.documentElement.dataset.tema=t}catch(e){document.documentElement.dataset.tema="claro"}`;
+const TEMA = `try{var t=localStorage.getItem("mitra_tema");if(t!=="claro"&&t!=="escuro"){t=matchMedia("(prefers-color-scheme: dark)").matches?"escuro":"claro"}document.documentElement.dataset.tema=t}catch(e){document.documentElement.dataset.tema="claro"}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

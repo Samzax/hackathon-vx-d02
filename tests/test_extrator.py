@@ -1,7 +1,7 @@
 import json
 
-from regulaia import extrator, normas
-from regulaia.ia import Roteador
+from mitra import extrator, normas
+from mitra.ia import Roteador
 
 PARAGRAFOS = [
     "RESOLUÇÃO DE TESTE",

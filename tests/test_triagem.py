@@ -3,7 +3,7 @@ Ler a menos manda a obrigação errada (ou nenhuma); ler a mais gasta IA à toa.
 
 import pytest
 
-from regulaia import triagem
+from mitra import triagem
 
 
 @pytest.mark.parametrize("texto, normas", [

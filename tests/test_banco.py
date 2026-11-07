@@ -6,13 +6,13 @@ import re
 
 import pytest
 
-from regulaia import banco, db
+from mitra import banco, db
 
 RAIZ = db.ROOT
 
 
 def _colunas_pg() -> dict[str, set[str]]:
-    return _colunas((RAIZ / "regulaia" / "schema_pg.sql").read_text(encoding="utf-8"))
+    return _colunas((RAIZ / "mitra" / "schema_pg.sql").read_text(encoding="utf-8"))
 
 
 def _colunas(sql: str) -> dict[str, set[str]]:
@@ -72,4 +72,4 @@ def test_linha_le_por_nome_e_por_posicao_como_sqlite_row():
 def test_url_postgres_e_reconhecida():
     assert banco.eh_url_postgres("postgresql://u:s@h:5432/b")
     assert banco.eh_url_postgres("postgresql+psycopg://u:s@h/b")
-    assert not banco.eh_url_postgres("data/regulaia.db") and not banco.eh_url_postgres(RAIZ / "x.db")
+    assert not banco.eh_url_postgres("data/mitra.db") and not banco.eh_url_postgres(RAIZ / "x.db")

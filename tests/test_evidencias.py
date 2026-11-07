@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from regulaia import agenda, db, demo, evidencias as ev, torre
+from mitra import agenda, db, demo, evidencias as ev, torre
 
 HOJE = date(2026, 11, 7)
 DESDE = date(2026, 5, 1)
@@ -23,7 +23,7 @@ def _pdf(nome):
     caminho = ev.exemplo(nome)
     if not caminho.exists():
         pytest.importorskip("reportlab")
-        from regulaia import exemplos
+        from mitra import exemplos
         exemplos.gerar()
     return ev.texto_pdf(caminho)
 

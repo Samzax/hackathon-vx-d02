@@ -1,9 +1,9 @@
 {
  "openapi": "3.1.0",
  "info": {
-  "title": "RegulaIA API",
+  "title": "Mitra API",
   "summary": "Torre de controle regulatória: cada obrigação de cada ativo, com a norma, o trecho e o prazo.",
-  "description": "Autenticação por cookie de sessão HttpOnly (POST /auth/login ou /auth/demo). Toda escrita precisa do cabeçalho X-CSRF-Token com o valor do cookie regulaia_csrf. O agente e os jobs usam Authorization: Bearer <REGULAIA_TOKEN_SERVICO>.",
+  "description": "Autenticação por cookie de sessão HttpOnly (POST /auth/login ou /auth/demo). Toda escrita precisa do cabeçalho X-CSRF-Token com o valor do cookie mitra_csrf. O agente e os jobs usam Authorization: Bearer <MITRA_TOKEN_SERVICO>.",
   "version": "1.0.0"
  },
  "paths": {
@@ -97,6 +97,48 @@
        "application/json": {
         "schema": {
          "$ref": "#/components/schemas/Eu"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/senha": {
+   "put": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Trocar a própria senha (obrigatório quando é provisória)",
+    "description": "A pessoa troca a própria senha. A primeira conta de uma cliente nasce com senha provisória, e a\ntroca aqui limpa a marca `trocar_senha`. Senha nova derruba as outras sessões da conta.",
+    "operationId": "trocar_senha_api_v1_auth_senha_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovaSenha"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Eu"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
         }
        }
       }
@@ -562,6 +604,24 @@
        "type": "string",
        "title": "Codigo"
       }
+     },
+     {
+      "name": "empresa_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "restringe ao escopo desta empresa (normas públicas e as dela): é o que o agente preso a uma empresa manda, para a obrigação própria de outra cliente responder 404 também na plataforma",
+       "title": "Empresa Id"
+      },
+      "description": "restringe ao escopo desta empresa (normas públicas e as dela): é o que o agente preso a uma empresa manda, para a obrigação própria de outra cliente responder 404 também na plataforma"
      }
     ],
     "responses": {
@@ -661,6 +721,8 @@
       "required": true,
       "schema": {
        "type": "integer",
+       "maximum": 9000,
+       "minimum": 1900,
        "title": "Ano"
       }
      },
@@ -1688,7 +1750,7 @@
      "content": {
       "application/json": {
        "schema": {
-        "$ref": "#/components/schemas/Responsavel"
+        "$ref": "#/components/schemas/Responsavel-Input"
        }
       }
      }
@@ -1832,7 +1894,7 @@
      "content": {
       "application/json": {
        "schema": {
-        "$ref": "#/components/schemas/Decisao"
+        "$ref": "#/components/schemas/api__rotas__regulatorio__Decisao"
        }
       }
      }
@@ -2036,7 +2098,7 @@
     "tags": [
      "descoberta"
     ],
-    "summary": "A fila da curadoria RegulaIA: normas já publicadas que a busca achou e a IA triou (só a plataforma)",
+    "summary": "A fila da curadoria Mitra: normas já publicadas que a busca achou e a IA triou (só a plataforma)",
     "operationId": "fila_api_v1_normas_candidatas_get",
     "parameters": [
      {
@@ -2153,7 +2215,7 @@
     "tags": [
      "descoberta"
     ],
-    "summary": "Curadoria RegulaIA: aprovar (vai para a extração das obrigações) ou descartar, com nota",
+    "summary": "Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota",
     "operationId": "decidir_api_v1_normas_candidatas__chave__decisao_post",
     "parameters": [
      {
@@ -2375,6 +2437,1622 @@
     }
    }
   },
+  "/api/v1/pergunta/estado": {
+   "get": {
+    "tags": [
+     "pergunta"
+    ],
+    "summary": "Se o Pergunte à torre está ligado, com qual modelo, e o gasto de IA do dia",
+    "operationId": "estado_api_v1_pergunta_estado_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EstadoPergunta"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/pergunta": {
+   "post": {
+    "tags": [
+     "pergunta"
+    ],
+    "summary": "Pergunta em linguagem natural; o modelo consulta a torre no escopo da sessão e cita a fonte",
+    "operationId": "perguntar_api_v1_pergunta_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PedidoPergunta"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RespostaPergunta"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/instanciacoes": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "As instanciações que a sessão vê, as que ainda não entraram em operação primeiro",
+    "operationId": "listar_api_v1_instanciacoes_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Estado"
+         },
+         "type": "array",
+         "title": "Response Listar Api V1 Instanciacoes Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Criar a empresa e a instanciação dela (curadoria da plataforma)",
+    "operationId": "criar_api_v1_instanciacoes_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Nova"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/api__rotas__instanciacao__Criada"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "As etapas da instanciação, o que falta em cada uma e quem mexeu por último",
+    "operationId": "estado_api_v1_empresas__empresa_id__instanciacao_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Estado"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/instanciacoes/sigbm": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "As barragens do CNPJ no SIGBM público (todas, não só as da PNSB), para escolher quais entram",
+    "operationId": "do_sigbm_api_v1_instanciacoes_sigbm_get",
+    "parameters": [
+     {
+      "name": "cnpj",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "description": "CNPJ formatado ou só os dígitos",
+       "examples": [
+        "00.000.000/0001-00"
+       ],
+       "title": "Cnpj"
+      },
+      "description": "CNPJ formatado ou só os dígitos"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DoSigbm"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/sigbm": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Trazer do SIGBM as barragens escolhidas (curadoria da plataforma)",
+    "operationId": "importar_do_sigbm_api_v1_empresas__empresa_id__instanciacao_sigbm_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EscolhaSigbm"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Estado"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/unidades": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "As unidades (operações) da empresa, com os ativos de cada uma",
+    "operationId": "unidades_api_v1_empresas__empresa_id__unidades_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Unidade"
+         },
+         "title": "Response Unidades Api V1 Empresas  Empresa Id  Unidades Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Criar uma unidade (a própria empresa)",
+    "operationId": "criar_unidade_api_v1_empresas__empresa_id__unidades_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovaUnidade"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Unidade"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/ativos": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Cadastrar um ativo por formulário (a própria empresa)",
+    "operationId": "criar_ativo_api_v1_empresas__empresa_id__instanciacao_ativos_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovoAtivo"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AtivoCriado"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/instanciacoes/modelo.csv": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "O modelo de planilha para cadastrar ativos em lote",
+    "operationId": "modelo_api_v1_instanciacoes_modelo_csv_get",
+    "parameters": [
+     {
+      "name": "tipo",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(barragem|unidade|equipamento|licenca)$",
+       "default": "barragem",
+       "title": "Tipo"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/planilha": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Conferir e importar a planilha de ativos (a própria empresa): tudo ou nada",
+    "operationId": "planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "conferir",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "description": "só conferir, sem gravar nada",
+       "default": false,
+       "title": "Conferir"
+      },
+      "description": "só conferir, sem gravar nada"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Planilha"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/dados-faltando": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "O que as regras do catálogo pedem e ninguém informou (lista de tarefas, não bloqueio)",
+    "operationId": "dados_faltando_api_v1_empresas__empresa_id__dados_faltando_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/DadoFaltando"
+         },
+         "title": "Response Dados Faltando Api V1 Empresas  Empresa Id  Dados Faltando Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/primeira-conta": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "A primeira conta da cliente (TI da empresa), com senha provisória (curadoria)",
+    "description": "Só a primeira: daí em diante é a TI da própria empresa que cria as demais contas (e escolhe o\nescopo por unidade de cada uma). Se a empresa já tem conta, a curadoria não cria outra.",
+    "operationId": "primeira_conta_api_v1_empresas__empresa_id__instanciacao_primeira_conta_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PrimeiraConta"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ContaCriada"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/operacao": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Entrar em operação: a torre passa a cobrar (a própria empresa; aceita pendência)",
+    "operationId": "entrar_em_operacao_api_v1_empresas__empresa_id__instanciacao_operacao_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Operacao"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EmOperacao"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/licencas": {
+   "get": {
+    "tags": [
+     "licenças"
+    ],
+    "summary": "As licenças da empresa, com a contagem de condicionantes por status",
+    "operationId": "listar_api_v1_empresas__empresa_id__licencas_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Licenca"
+         },
+         "title": "Response Listar Api V1 Empresas  Empresa Id  Licencas Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "licenças"
+    ],
+    "summary": "Enviar o PDF da licença (a própria empresa): o texto fica para conferir os trechos",
+    "operationId": "enviar_api_v1_empresas__empresa_id__licencas_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "tipo",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Tipo"
+      }
+     },
+     {
+      "name": "numero",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Numero"
+      }
+     },
+     {
+      "name": "orgao",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Orgao"
+      }
+     },
+     {
+      "name": "emitida_em",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Emitida Em"
+      }
+     },
+     {
+      "name": "validade",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Validade"
+      }
+     },
+     {
+      "name": "renovar_dias",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 120,
+       "title": "Renovar Dias"
+      }
+     },
+     {
+      "name": "unidade",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Unidade"
+      }
+     },
+     {
+      "name": "ativo_codigo",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Ativo Codigo"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_enviar_api_v1_empresas__empresa_id__licencas_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Licenca"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/licencas/{licenca_id}/leitura": {
+   "post": {
+    "tags": [
+     "licenças"
+    ],
+    "summary": "Ler a licença: a IA propõe as condicionantes e o Python confere o trecho literal",
+    "operationId": "ler_api_v1_licencas__licenca_id__leitura_post",
+    "parameters": [
+     {
+      "name": "licenca_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Licenca Id"
+      }
+     },
+     {
+      "name": "empresa_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/api__rotas__licencas__Leitura"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/condicionantes": {
+   "get": {
+    "tags": [
+     "licenças"
+    ],
+    "summary": "As condicionantes da empresa (propostas, aprovadas e rejeitadas)",
+    "operationId": "condicionantes_api_v1_empresas__empresa_id__condicionantes_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "status_",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Status "
+      }
+     },
+     {
+      "name": "licenca_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Licenca Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Condicionante"
+         },
+         "title": "Response Condicionantes Api V1 Empresas  Empresa Id  Condicionantes Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/condicionantes/{condicionante_id}/decisao": {
+   "post": {
+    "tags": [
+     "licenças"
+    ],
+    "summary": "Aprovar (vira obrigação da empresa) ou rejeitar: só o Regulatório ou a Diretoria dela",
+    "operationId": "decidir_api_v1_condicionantes__condicionante_id__decisao_post",
+    "parameters": [
+     {
+      "name": "condicionante_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Condicionante Id"
+      }
+     },
+     {
+      "name": "empresa_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/api__rotas__licencas__Decisao"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Decidida"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/licencas/{licenca_id}/renovacao": {
+   "post": {
+    "tags": [
+     "licenças"
+    ],
+    "summary": "A validade da licença vira obrigação: pedir a renovação com a antecedência dela",
+    "operationId": "renovacao_api_v1_licencas__licenca_id__renovacao_post",
+    "parameters": [
+     {
+      "name": "licenca_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Licenca Id"
+      }
+     },
+     {
+      "name": "empresa_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Renovacao"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/responsaveis/papeis": {
+   "get": {
+    "tags": [
+     "responsáveis"
+    ],
+    "summary": "Os papéis que um responsável pode ter",
+    "operationId": "papeis_api_v1_responsaveis_papeis_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Papeis"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/responsaveis": {
+   "get": {
+    "tags": [
+     "responsáveis"
+    ],
+    "summary": "Responsáveis técnicos da empresa, sempre com o CPF mascarado",
+    "operationId": "listar_api_v1_empresas__empresa_id__responsaveis_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Responsavel-Output"
+         },
+         "title": "Response Listar Api V1 Empresas  Empresa Id  Responsaveis Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "responsáveis"
+    ],
+    "summary": "Cadastrar um responsável técnico (a própria empresa); o CPF entra cifrado",
+    "operationId": "criar_api_v1_empresas__empresa_id__responsaveis_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Novo"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Criado"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/responsaveis/{responsavel_id}/cpf": {
+   "get": {
+    "tags": [
+     "responsáveis"
+    ],
+    "summary": "Ver o CPF inteiro (Regulatório e TI da própria empresa). Fica na auditoria",
+    "operationId": "ver_cpf_api_v1_responsaveis__responsavel_id__cpf_get",
+    "parameters": [
+     {
+      "name": "responsavel_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Responsavel Id"
+      }
+     },
+     {
+      "name": "empresa_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Cpf"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/responsaveis/{responsavel_id}": {
+   "delete": {
+    "tags": [
+     "responsáveis"
+    ],
+    "summary": "Remover um responsável (a própria empresa)",
+    "operationId": "apagar_api_v1_responsaveis__responsavel_id__delete",
+    "parameters": [
+     {
+      "name": "responsavel_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Responsavel Id"
+      }
+     },
+     {
+      "name": "empresa_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Ok"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/dados-pessoais": {
+   "get": {
+    "tags": [
+     "responsáveis"
+    ],
+    "summary": "LGPD: exportar os dados pessoais da empresa (TI da própria empresa). Fica na auditoria",
+    "operationId": "exportar_api_v1_empresas__empresa_id__dados_pessoais_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DadosPessoais"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "responsáveis"
+    ],
+    "summary": "LGPD: apagar os dados pessoais da empresa (TI da própria empresa). Fica na auditoria",
+    "operationId": "apagar_dados_pessoais_api_v1_empresas__empresa_id__dados_pessoais_delete",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Apagados"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/personalizacao": {
+   "get": {
+    "tags": [
+     "personalização"
+    ],
+    "summary": "As regras próprias da empresa: prazo interno, responsável padrão e normas internas",
+    "operationId": "ver_api_v1_empresas__empresa_id__personalizacao_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Personalizacao"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/prazos-internos": {
+   "put": {
+    "tags": [
+     "personalização"
+    ],
+    "summary": "Adiantar o prazo de uma obrigação nesta empresa (a norma não muda)",
+    "operationId": "prazo_interno_api_v1_empresas__empresa_id__prazos_internos_put",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovoPrazo"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Ok"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/responsaveis-padrao": {
+   "put": {
+    "tags": [
+     "personalização"
+    ],
+    "summary": "Quem responde por obrigação nova de uma área nesta empresa",
+    "operationId": "responsavel_padrao_api_v1_empresas__empresa_id__responsaveis_padrao_put",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResponsavelPadrao"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Ok"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/normas-internas": {
+   "post": {
+    "tags": [
+     "personalização"
+    ],
+    "summary": "Obrigação própria sem licença (padrão corporativo), aprovada pela própria empresa",
+    "operationId": "norma_interna_api_v1_empresas__empresa_id__normas_internas_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovaNormaInterna"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/api__rotas__personalizacao__Criada"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/usuarios": {
    "get": {
     "tags": [
@@ -2417,7 +4095,7 @@
       "content": {
        "application/json": {
         "schema": {
-         "$ref": "#/components/schemas/Criada"
+         "$ref": "#/components/schemas/api__rotas__admin__Criada"
         }
        }
       }
@@ -2553,6 +4231,8 @@
       "required": false,
       "schema": {
        "type": "integer",
+       "maximum": 1000,
+       "minimum": 1,
        "default": 200,
        "title": "Limite"
       }
@@ -3013,6 +4693,19 @@
     "title": "AnaliseRadar",
     "description": "O que o radar guardou de um ato analisado: candidatas, motivo, modelo, custo e mudanças."
    },
+   "Apagados": {
+    "properties": {
+     "removidos": {
+      "type": "integer",
+      "title": "Removidos"
+     }
+    },
+    "type": "object",
+    "required": [
+     "removidos"
+    ],
+    "title": "Apagados"
+   },
    "Areas": {
     "properties": {
      "areas": {
@@ -3108,6 +4801,24 @@
     ],
     "title": "Ativo"
    },
+   "AtivoCriado": {
+    "properties": {
+     "ativo_id": {
+      "type": "integer",
+      "title": "Ativo Id"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo_id",
+     "codigo"
+    ],
+    "title": "AtivoCriado"
+   },
    "Ato": {
     "properties": {
      "identificacao": {
@@ -3130,6 +4841,18 @@
       "maxLength": 200000,
       "minLength": 20,
       "title": "Texto"
+     },
+     "empresa_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Empresa Id",
+      "description": "analisa no escopo desta empresa (normas públicas e obrigações próprias dela). É o que o agente preso a uma empresa manda; sem ele, a plataforma analisa contra o catálogo inteiro e a cliente contra o dela. Empresa de outra cliente: 404."
      }
     },
     "type": "object",
@@ -3194,6 +4917,63 @@
     ],
     "title": "Atributos"
    },
+   "BarragemSigbm": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "title": "Codigo",
+      "description": "o código da barragem no SIGBM"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "uf": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uf"
+     },
+     "municipio": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Municipio"
+     },
+     "na_pnsb": {
+      "type": "boolean",
+      "title": "Na Pnsb"
+     },
+     "alertas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Alertas",
+      "description": "o que o SIGBM já mostra de problema (embargo, emergência, DCE/DCO)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo",
+     "nome",
+     "uf",
+     "municipio",
+     "na_pnsb",
+     "alertas"
+    ],
+    "title": "BarragemSigbm"
+   },
    "Body_comprovante_api_v1_comprovantes_post": {
     "properties": {
      "arquivo": {
@@ -3208,6 +4988,20 @@
     ],
     "title": "Body_comprovante_api_v1_comprovantes_post"
    },
+   "Body_enviar_api_v1_empresas__empresa_id__licencas_post": {
+    "properties": {
+     "arquivo": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "Arquivo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "arquivo"
+    ],
+    "title": "Body_enviar_api_v1_empresas__empresa_id__licencas_post"
+   },
    "Body_ler_api_v1_evidencias_leitura_post": {
     "properties": {
      "arquivo": {
@@ -3221,6 +5015,20 @@
      "arquivo"
     ],
     "title": "Body_ler_api_v1_evidencias_leitura_post"
+   },
+   "Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post": {
+    "properties": {
+     "arquivo": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "Arquivo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "arquivo"
+    ],
+    "title": "Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post"
    },
    "Busca": {
     "properties": {
@@ -3436,6 +5244,237 @@
     ],
     "title": "Comprovante"
    },
+   "Condicionante": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "licenca_id": {
+      "type": "integer",
+      "title": "Licenca Id"
+     },
+     "licenca": {
+      "type": "string",
+      "title": "Licenca",
+      "description": "a licença de onde ela veio",
+      "examples": [
+       "LO 123/2026"
+      ]
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "prazo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prazo"
+     },
+     "periodicidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodicidade"
+     },
+     "agenda": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Agenda",
+      "description": "a agenda que a torre usa (ver mitra/agenda.py)"
+     },
+     "evidencia": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidencia"
+     },
+     "aplica_a": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Aplica A",
+      "description": "empresa, unidade ou ativo"
+     },
+     "alvo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Alvo"
+     },
+     "trecho": {
+      "type": "string",
+      "title": "Trecho",
+      "description": "o texto literal da licença, conferido palavra por palavra"
+     },
+     "pagina": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pagina",
+      "description": "em que página do PDF está o trecho"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status",
+      "description": "pendente, aprovada ou rejeitada"
+     },
+     "codigo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Codigo",
+      "description": "a obrigação criada na aprovação"
+     },
+     "proposta_em": {
+      "type": "string",
+      "title": "Proposta Em"
+     },
+     "decidida_por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decidida Por"
+     },
+     "decidida_em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decidida Em"
+     },
+     "decide": {
+      "type": "boolean",
+      "title": "Decide",
+      "description": "se quem pede pode aprovar ou rejeitar"
+     },
+     "quem_decide": {
+      "type": "string",
+      "title": "Quem Decide",
+      "examples": [
+       "Regulatório ou Diretoria da Mineradora Serra Azul"
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "licenca_id",
+     "licenca",
+     "titulo",
+     "prazo",
+     "periodicidade",
+     "agenda",
+     "evidencia",
+     "aplica_a",
+     "alvo",
+     "trecho",
+     "pagina",
+     "status",
+     "codigo",
+     "proposta_em",
+     "decidida_por",
+     "decidida_em",
+     "decide",
+     "quem_decide"
+    ],
+    "title": "Condicionante"
+   },
+   "ConferenciaResposta": {
+    "properties": {
+     "ok": {
+      "type": "boolean",
+      "title": "Ok"
+     },
+     "citacoes": {
+      "type": "integer",
+      "title": "Citacoes",
+      "description": "Trechos entre aspas na resposta"
+     },
+     "citacoes_fora": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Citacoes Fora",
+      "description": "Trechos citados que não estão no que as ferramentas devolveram"
+     },
+     "datas_fora": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Datas Fora"
+     },
+     "codigos_fora": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Codigos Fora"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ok",
+     "citacoes",
+     "citacoes_fora",
+     "datas_fora",
+     "codigos_fora"
+    ],
+    "title": "ConferenciaResposta"
+   },
    "Conta": {
     "properties": {
      "email": {
@@ -3494,6 +5533,35 @@
      "papel"
     ],
     "title": "Conta"
+   },
+   "ContaCriada": {
+    "properties": {
+     "usuario_id": {
+      "type": "integer",
+      "title": "Usuario Id"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "papel": {
+      "type": "string",
+      "title": "Papel"
+     },
+     "trocar_senha": {
+      "type": "boolean",
+      "title": "Trocar Senha",
+      "description": "a senha é provisória: a pessoa troca no primeiro acesso"
+     }
+    },
+    "type": "object",
+    "required": [
+     "usuario_id",
+     "email",
+     "papel",
+     "trocar_senha"
+    ],
+    "title": "ContaCriada"
    },
    "ContaVista": {
     "properties": {
@@ -3643,18 +5711,45 @@
     ],
     "title": "Contas"
    },
-   "Criada": {
+   "Cpf": {
     "properties": {
-     "id": {
-      "type": "integer",
-      "title": "Id"
+     "cpf": {
+      "type": "string",
+      "title": "Cpf",
+      "description": "o CPF inteiro; esta visualização ficou na auditoria"
      }
     },
     "type": "object",
     "required": [
-     "id"
+     "cpf"
     ],
-    "title": "Criada"
+    "title": "Cpf"
+   },
+   "Criado": {
+    "properties": {
+     "responsavel_id": {
+      "type": "integer",
+      "title": "Responsavel Id"
+     },
+     "obrigacao_art": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Obrigacao Art",
+      "description": "a obrigação de renovar a ART, se havia vigência"
+     }
+    },
+    "type": "object",
+    "required": [
+     "responsavel_id",
+     "obrigacao_art"
+    ],
+    "title": "Criado"
    },
    "CustoIA": {
     "properties": {
@@ -3679,40 +5774,97 @@
     ],
     "title": "CustoIA"
    },
-   "Decisao": {
+   "DadoFaltando": {
     "properties": {
-     "aprovar": {
-      "type": "boolean",
-      "title": "Aprovar"
+     "ativo": {
+      "type": "string",
+      "title": "Ativo"
      },
-     "correcoes": {
+     "ativo_id": {
+      "type": "integer",
+      "title": "Ativo Id"
+     },
+     "ativo_nome": {
+      "type": "string",
+      "title": "Ativo Nome"
+     },
+     "campo": {
+      "type": "string",
+      "title": "Campo"
+     },
+     "pergunta": {
+      "type": "string",
+      "title": "Pergunta",
+      "description": "o que perguntar a quem preenche"
+     },
+     "obrigacoes": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Obrigacoes",
+      "description": "as obrigações que dependem deste dado"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo",
+     "ativo_id",
+     "ativo_nome",
+     "campo",
+     "pergunta",
+     "obrigacoes"
+    ],
+    "title": "DadoFaltando"
+   },
+   "DadosPessoais": {
+    "properties": {
+     "empresa": {
+      "type": "string",
+      "title": "Empresa"
+     },
+     "pessoas": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Pessoas",
+      "description": "o que a plataforma guarda de pessoa, com o CPF em claro"
+     }
+    },
+    "type": "object",
+    "required": [
+     "empresa",
+     "pessoas"
+    ],
+    "title": "DadosPessoais"
+   },
+   "Decidida": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "codigo": {
       "anyOf": [
        {
-        "additionalProperties": {
-         "anyOf": [
-          {
-           "type": "string"
-          },
-          {
-           "type": "null"
-          }
-         ]
-        },
-        "type": "object"
+        "type": "string"
        },
        {
         "type": "null"
        }
       ],
-      "title": "Correcoes",
-      "description": "campos corrigidos por quem aprova antes de aprovar ({campo: valor})"
+      "title": "Codigo",
+      "description": "o código da obrigação criada, quando aprovada"
      }
     },
     "type": "object",
     "required": [
-     "aprovar"
+     "status",
+     "codigo"
     ],
-    "title": "Decisao"
+    "title": "Decidida"
    },
    "DecisaoCandidata": {
     "properties": {
@@ -3828,6 +5980,38 @@
     ],
     "title": "DecisaoRegistrada"
    },
+   "DoSigbm": {
+    "properties": {
+     "cnpj": {
+      "type": "string",
+      "title": "Cnpj"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "exportado_em": {
+      "type": "string",
+      "title": "Exportado Em"
+     },
+     "barragens": {
+      "items": {
+       "$ref": "#/components/schemas/BarragemSigbm"
+      },
+      "type": "array",
+      "title": "Barragens",
+      "description": "todas as do CNPJ, não só as da PNSB"
+     }
+    },
+    "type": "object",
+    "required": [
+     "cnpj",
+     "nome",
+     "exportado_em",
+     "barragens"
+    ],
+    "title": "DoSigbm"
+   },
    "Edicao": {
     "properties": {
      "nome": {
@@ -3879,6 +6063,28 @@
     "type": "object",
     "title": "Edicao"
    },
+   "EmOperacao": {
+    "properties": {
+     "monitorado_desde": {
+      "type": "string",
+      "title": "Monitorado Desde"
+     },
+     "pendencias": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Pendencias",
+      "description": "as etapas que continuam pendentes (entrar em operação não exige tudo)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "monitorado_desde",
+     "pendencias"
+    ],
+    "title": "EmOperacao"
+   },
    "Empresa": {
     "properties": {
      "id": {
@@ -3892,6 +6098,11 @@
      "ficticia": {
       "type": "boolean",
       "title": "Ficticia"
+     },
+     "setor": {
+      "type": "string",
+      "title": "Setor",
+      "default": "mineracao"
      },
      "monitorado_desde": {
       "anyOf": [
@@ -4016,6 +6227,114 @@
     ],
     "title": "EntregaFeita"
    },
+   "EscolhaSigbm": {
+    "properties": {
+     "codigos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Codigos",
+      "description": "os códigos SIGBM das barragens que entram na torre"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigos"
+    ],
+    "title": "EscolhaSigbm"
+   },
+   "Estado": {
+    "properties": {
+     "empresa_id": {
+      "type": "integer",
+      "title": "Empresa Id"
+     },
+     "empresa": {
+      "type": "string",
+      "title": "Empresa"
+     },
+     "cnpj": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cnpj"
+     },
+     "razao_social": {
+      "type": "string",
+      "title": "Razao Social"
+     },
+     "ufs": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Ufs"
+     },
+     "no_sigbm": {
+      "type": "boolean",
+      "title": "No Sigbm",
+      "description": "o CNPJ tem barragem no SIGBM público"
+     },
+     "etapas": {
+      "items": {
+       "$ref": "#/components/schemas/Etapa"
+      },
+      "type": "array",
+      "title": "Etapas"
+     },
+     "percentual": {
+      "type": "integer",
+      "title": "Percentual",
+      "description": "vem das etapas prontas e em andamento, não de um número inventado"
+     },
+     "em_operacao": {
+      "type": "boolean",
+      "title": "Em Operacao"
+     },
+     "monitorado_desde": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Monitorado Desde",
+      "description": "a partir de quando a torre cobra"
+     },
+     "criada_por": {
+      "type": "string",
+      "title": "Criada Por"
+     },
+     "criada_em": {
+      "type": "string",
+      "title": "Criada Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "empresa_id",
+     "empresa",
+     "cnpj",
+     "razao_social",
+     "ufs",
+     "no_sigbm",
+     "etapas",
+     "percentual",
+     "em_operacao",
+     "monitorado_desde",
+     "criada_por",
+     "criada_em"
+    ],
+    "title": "Estado"
+   },
    "EstadoIA": {
     "properties": {
      "ligada": {
@@ -4046,6 +6365,114 @@
      "teto_dia_usd"
     ],
     "title": "EstadoIA"
+   },
+   "EstadoPergunta": {
+    "properties": {
+     "ligada": {
+      "type": "boolean",
+      "title": "Ligada"
+     },
+     "modelo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Modelo",
+      "description": "O modelo que responde agora (o primeiro provedor ligado)"
+     },
+     "gasto_hoje_usd": {
+      "type": "number",
+      "title": "Gasto Hoje Usd"
+     },
+     "teto_dia_usd": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Teto Dia Usd"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ligada",
+     "modelo",
+     "gasto_hoje_usd",
+     "teto_dia_usd"
+    ],
+    "title": "EstadoPergunta"
+   },
+   "Etapa": {
+    "properties": {
+     "etapa": {
+      "type": "string",
+      "title": "Etapa",
+      "description": "cadastro, ativos, dados, cobertura, licencas, responsaveis, contas, operacao"
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "estado": {
+      "type": "string",
+      "title": "Estado",
+      "description": "pendente, em_andamento ou pronta"
+     },
+     "falta": {
+      "type": "string",
+      "title": "Falta",
+      "description": "o que fazer agora, em português; vazio quando a etapa está pronta"
+     },
+     "numeros": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Numeros",
+      "description": "os números da etapa (ativos, propostas, contas...)"
+     },
+     "por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Por",
+      "description": "quem mexeu nela por último"
+     },
+     "em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "etapa",
+     "titulo",
+     "estado",
+     "falta",
+     "numeros",
+     "por",
+     "em"
+    ],
+    "title": "Etapa"
    },
    "Eu": {
     "properties": {
@@ -4101,12 +6528,27 @@
      "plataforma": {
       "type": "boolean",
       "title": "Plataforma",
-      "description": "age como a equipe da RegulaIA (curadoria das normas públicas)"
+      "description": "age como a equipe da Mitra (curadoria das normas públicas)"
      },
      "so_leitura": {
       "type": "boolean",
       "title": "So Leitura",
       "description": "nos dados operacionais das clientes (entrega, comprovante, evidência, comentário, atribuição, cadastro e responsável do ativo) a sessão só lê"
+     },
+     "unidades": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Unidades",
+      "description": "as unidades (operações) a que a conta está presa; vazio: toda a empresa",
+      "default": []
+     },
+     "trocar_senha": {
+      "type": "boolean",
+      "title": "Trocar Senha",
+      "description": "senha provisória: a pessoa troca por PUT /auth/senha antes de usar a torre",
+      "default": false
      },
      "visao": {
       "type": "string",
@@ -4752,7 +7194,7 @@
       },
       "type": "array",
       "title": "Em Curadoria",
-      "description": "relevantes pela IA, esperando a curadoria RegulaIA"
+      "description": "relevantes pela IA, esperando a curadoria Mitra"
      },
      "aprovadas": {
       "items": {
@@ -4800,7 +7242,7 @@
     ],
     "title": "Jurisdicao"
    },
-   "Leitura": {
+   "Leitura-Input": {
     "properties": {
      "ativo": {
       "anyOf": [
@@ -4927,6 +7369,140 @@
     },
     "type": "object",
     "title": "Leitura"
+   },
+   "Licenca": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "tipo": {
+      "type": "string",
+      "title": "Tipo",
+      "description": "LP, LI, LO, LAC, outorga ou autorizacao"
+     },
+     "numero": {
+      "type": "string",
+      "title": "Numero"
+     },
+     "orgao": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Orgao"
+     },
+     "emitida_em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Emitida Em"
+     },
+     "validade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Validade",
+      "description": "AAAA-MM-DD; vira obrigação de renovação"
+     },
+     "renovar_dias": {
+      "type": "integer",
+      "title": "Renovar Dias",
+      "description": "quantos dias antes do vencimento pedir a renovação"
+     },
+     "unidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Unidade"
+     },
+     "ativo_codigo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ativo Codigo"
+     },
+     "arquivo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Arquivo"
+     },
+     "sha256": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sha256"
+     },
+     "enviada_por": {
+      "type": "string",
+      "title": "Enviada Por"
+     },
+     "enviada_em": {
+      "type": "string",
+      "title": "Enviada Em"
+     },
+     "condicionantes": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Condicionantes",
+      "description": "quantas condicionantes em cada status"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "tipo",
+     "numero",
+     "orgao",
+     "emitida_em",
+     "validade",
+     "renovar_dias",
+     "unidade",
+     "ativo_codigo",
+     "arquivo",
+     "sha256",
+     "enviada_por",
+     "enviada_em",
+     "condicionantes"
+    ],
+    "title": "Licenca"
    },
    "Linha": {
     "properties": {
@@ -5235,6 +7811,30 @@
       "title": "Dados Faltando Rotulos",
       "description": "o que falta no cadastro, em português",
       "default": []
+     },
+     "vence_interno": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vence Interno",
+      "description": "a meta da empresa (prazo interno), antes do prazo legal de `vence`: a torre cobra por ela"
+     },
+     "dias_antes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dias Antes",
+      "description": "quantos dias antes do prazo legal é a meta interna"
      }
     },
     "type": "object",
@@ -5266,10 +7866,83 @@
     ],
     "title": "LinhaPainel"
    },
+   "LinhaPlanilha": {
+    "properties": {
+     "linha": {
+      "type": "integer",
+      "title": "Linha",
+      "description": "o número da linha no arquivo, como a pessoa vê"
+     },
+     "tipo": {
+      "type": "string",
+      "title": "Tipo"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "unidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Unidade"
+     },
+     "responsavel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responsavel"
+     },
+     "atributos": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Atributos"
+     },
+     "erro": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Erro",
+      "description": "o que está errado nesta linha; vazio: a linha está boa"
+     }
+    },
+    "type": "object",
+    "required": [
+     "linha",
+     "tipo",
+     "codigo",
+     "nome",
+     "unidade",
+     "responsavel",
+     "atributos",
+     "erro"
+    ],
+    "title": "LinhaPlanilha"
+   },
    "Login": {
     "properties": {
      "email": {
       "type": "string",
+      "maxLength": 320,
       "title": "Email",
       "examples": [
        "diretoria@serraazul.example"
@@ -5277,6 +7950,7 @@
      },
      "senha": {
       "type": "string",
+      "maxLength": 200,
       "title": "Senha"
      }
     },
@@ -5286,6 +7960,29 @@
      "senha"
     ],
     "title": "Login"
+   },
+   "Mensagem": {
+    "properties": {
+     "papel": {
+      "type": "string",
+      "enum": [
+       "usuario",
+       "torre"
+      ],
+      "title": "Papel"
+     },
+     "texto": {
+      "type": "string",
+      "maxLength": 8000,
+      "title": "Texto"
+     }
+    },
+    "type": "object",
+    "required": [
+     "papel",
+     "texto"
+    ],
+    "title": "Mensagem"
    },
    "Mercado": {
     "properties": {
@@ -5498,7 +8195,7 @@
       "type": "string",
       "title": "Quem Decide",
       "examples": [
-       "curadoria RegulaIA",
+       "curadoria Mitra",
        "Regulatório ou Diretoria da Mineradora Serra Azul"
       ]
      },
@@ -5903,6 +8600,135 @@
     ],
     "title": "NormaCandidata"
    },
+   "NormaInterna": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "norma": {
+      "type": "string",
+      "title": "Norma"
+     },
+     "area": {
+      "type": "string",
+      "title": "Area"
+     },
+     "tipo_ativo": {
+      "type": "string",
+      "title": "Tipo Ativo"
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "agenda": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Agenda"
+     },
+     "periodicidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodicidade"
+     },
+     "prazo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prazo"
+     },
+     "evidencia": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidencia"
+     },
+     "responsavel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responsavel"
+     },
+     "vigencia_desde": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vigencia Desde"
+     },
+     "decidida_por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decidida Por"
+     },
+     "decidida_em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decidida Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo",
+     "norma",
+     "area",
+     "tipo_ativo",
+     "titulo",
+     "agenda",
+     "periodicidade",
+     "prazo",
+     "evidencia",
+     "responsavel",
+     "vigencia_desde",
+     "decidida_por",
+     "decidida_em"
+    ],
+    "title": "NormaInterna"
+   },
    "NormaNaCobertura": {
     "properties": {
      "chave": {
@@ -5956,6 +8782,426 @@
      "cita_catalogo"
     ],
     "title": "NormaNaCobertura"
+   },
+   "Nova": {
+    "properties": {
+     "nome": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Nome",
+      "description": "o nome que aparece na torre (único)"
+     },
+     "razao_social": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Razao Social"
+     },
+     "cnpj": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 20
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cnpj",
+      "description": "vazio: empreendedor pessoa física"
+     },
+     "ufs": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Ufs",
+      "description": "UFs em que opera (duas letras)",
+      "default": []
+     },
+     "ficticia": {
+      "type": "boolean",
+      "title": "Ficticia",
+      "description": "empresa de demonstração",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "nome",
+     "razao_social"
+    ],
+    "title": "Nova"
+   },
+   "NovaNormaInterna": {
+    "properties": {
+     "titulo": {
+      "type": "string",
+      "maxLength": 300,
+      "minLength": 3,
+      "title": "Titulo",
+      "examples": [
+       "Inspeção interna mensal da pilha"
+      ]
+     },
+     "tipo_ativo": {
+      "type": "string",
+      "pattern": "^(barragem|unidade|equipamento|licenca)$",
+      "title": "Tipo Ativo",
+      "default": "barragem"
+     },
+     "area": {
+      "type": "string",
+      "title": "Area",
+      "default": "documentacao"
+     },
+     "agenda": {
+      "type": "string",
+      "title": "Agenda",
+      "description": "a agenda da torre (mensal+10d, anos:3, evento...)",
+      "default": "evento"
+     },
+     "periodicidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodicidade",
+      "examples": [
+       "Mensal"
+      ]
+     },
+     "prazo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prazo",
+      "examples": [
+       "Até 10 dias após o fim do mês"
+      ]
+     },
+     "evidencia": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidencia",
+      "examples": [
+       "Relatório interno assinado"
+      ]
+     },
+     "aplica_se_a": {
+      "type": "string",
+      "title": "Aplica Se A",
+      "default": "todos os ativos do tipo"
+     },
+     "regra": {
+      "type": "string",
+      "title": "Regra",
+      "description": "a regra de aplicabilidade (ver mitra/regras.py)",
+      "default": "*"
+     },
+     "norma": {
+      "type": "string",
+      "maxLength": 120,
+      "title": "Norma",
+      "default": "Padrão interno"
+     },
+     "vigencia_desde": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vigencia Desde",
+      "description": "AAAA-MM-DD; vazio: vale desde já"
+     }
+    },
+    "type": "object",
+    "required": [
+     "titulo"
+    ],
+    "title": "NovaNormaInterna"
+   },
+   "NovaSenha": {
+    "properties": {
+     "senha_atual": {
+      "type": "string",
+      "maxLength": 200,
+      "title": "Senha Atual",
+      "description": "a senha de agora (a provisória, no primeiro acesso)"
+     },
+     "nova": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 8,
+      "title": "Nova"
+     }
+    },
+    "type": "object",
+    "required": [
+     "senha_atual",
+     "nova"
+    ],
+    "title": "NovaSenha"
+   },
+   "NovaUnidade": {
+    "properties": {
+     "nome": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Nome",
+      "examples": [
+       "Mina Serra Azul"
+      ]
+     },
+     "uf": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uf"
+     },
+     "municipio": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Municipio"
+     }
+    },
+    "type": "object",
+    "required": [
+     "nome"
+    ],
+    "title": "NovaUnidade"
+   },
+   "Novo": {
+    "properties": {
+     "papel": {
+      "type": "string",
+      "pattern": "^(responsavel_tecnico|coordenador_paebm|responsavel_ambiental|responsavel_seguranca)$",
+      "title": "Papel"
+     },
+     "nome": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Nome"
+     },
+     "cpf": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 20
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cpf",
+      "description": "guardado cifrado; a API nunca devolve inteiro na lista"
+     },
+     "registro": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 60
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Registro"
+     },
+     "art_numero": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 60
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Art Numero"
+     },
+     "art_vigencia_ate": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Art Vigencia Ate",
+      "description": "AAAA-MM-DD"
+     },
+     "unidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Unidade",
+      "description": "a unidade por que responde"
+     },
+     "ativo_codigo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ativo Codigo",
+      "description": "ou o ativo"
+     },
+     "ficticio": {
+      "type": "boolean",
+      "title": "Ficticio",
+      "description": "dado de demonstração",
+      "default": false
+     },
+     "consentimento_para": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Consentimento Para",
+      "description": "empreendedor pessoa física: para que a pessoa consentiu em informar os próprios dados"
+     }
+    },
+    "type": "object",
+    "required": [
+     "papel",
+     "nome"
+    ],
+    "title": "Novo"
+   },
+   "NovoAtivo": {
+    "properties": {
+     "tipo": {
+      "type": "string",
+      "title": "Tipo",
+      "description": "barragem, unidade, equipamento ou licenca"
+     },
+     "codigo": {
+      "type": "string",
+      "maxLength": 40,
+      "minLength": 1,
+      "title": "Codigo",
+      "examples": [
+       "B1"
+      ]
+     },
+     "nome": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Nome"
+     },
+     "unidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Unidade",
+      "description": "a operação a que pertence (crie a unidade antes)"
+     },
+     "responsavel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responsavel",
+      "description": "a área responsável"
+     },
+     "atributos": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Atributos",
+      "description": "os campos do cadastro (ver GET /cadastro/campos)",
+      "default": {}
+     }
+    },
+    "type": "object",
+    "required": [
+     "tipo",
+     "codigo",
+     "nome"
+    ],
+    "title": "NovoAtivo"
+   },
+   "NovoPrazo": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "maxLength": 40,
+      "title": "Codigo",
+      "examples": [
+       "R95-01"
+      ]
+     },
+     "dias_antes": {
+      "type": "integer",
+      "maximum": 365.0,
+      "minimum": 0.0,
+      "title": "Dias Antes",
+      "description": "0 tira a meta e volta a cobrar só pelo prazo legal"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo",
+     "dias_antes"
+    ],
+    "title": "NovoPrazo"
    },
    "ObrigacaoResumo": {
     "properties": {
@@ -6124,6 +9370,25 @@
     ],
     "title": "Opcao"
    },
+   "Operacao": {
+    "properties": {
+     "desde": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Desde",
+      "description": "a partir de quando a torre cobra; padrão: hoje"
+     }
+    },
+    "type": "object",
+    "title": "Operacao"
+   },
    "Painel": {
     "properties": {
      "hoje": {
@@ -6169,6 +9434,47 @@
     ],
     "title": "Painel"
    },
+   "Papeis": {
+    "properties": {
+     "papeis": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Papeis",
+      "description": "{papel: nome para mostrar}"
+     }
+    },
+    "type": "object",
+    "required": [
+     "papeis"
+    ],
+    "title": "Papeis"
+   },
+   "PedidoPergunta": {
+    "properties": {
+     "pergunta": {
+      "type": "string",
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Pergunta"
+     },
+     "historico": {
+      "items": {
+       "$ref": "#/components/schemas/Mensagem"
+      },
+      "type": "array",
+      "maxItems": 20,
+      "title": "Historico",
+      "description": "A conversa até aqui (as últimas mensagens valem)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "pergunta"
+    ],
+    "title": "PedidoPergunta"
+   },
    "PeriodoEntrega": {
     "properties": {
      "periodo": {
@@ -6186,6 +9492,136 @@
      "rotulo"
     ],
     "title": "PeriodoEntrega"
+   },
+   "Personalizacao": {
+    "properties": {
+     "prazos_internos": {
+      "items": {
+       "$ref": "#/components/schemas/PrazoInterno"
+      },
+      "type": "array",
+      "title": "Prazos Internos"
+     },
+     "responsaveis_padrao": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Responsaveis Padrao",
+      "description": "{área: responsável}"
+     },
+     "normas_internas": {
+      "items": {
+       "$ref": "#/components/schemas/NormaInterna"
+      },
+      "type": "array",
+      "title": "Normas Internas"
+     },
+     "areas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Areas",
+      "description": "as áreas que uma obrigação pode ter"
+     }
+    },
+    "type": "object",
+    "required": [
+     "prazos_internos",
+     "responsaveis_padrao",
+     "normas_internas",
+     "areas"
+    ],
+    "title": "Personalizacao"
+   },
+   "Planilha": {
+    "properties": {
+     "linhas": {
+      "items": {
+       "$ref": "#/components/schemas/LinhaPlanilha"
+      },
+      "type": "array",
+      "title": "Linhas"
+     },
+     "importados": {
+      "type": "integer",
+      "title": "Importados",
+      "description": "quantos ativos entraram (0 se alguma linha tem erro)"
+     },
+     "erros": {
+      "type": "integer",
+      "title": "Erros"
+     }
+    },
+    "type": "object",
+    "required": [
+     "linhas",
+     "importados",
+     "erros"
+    ],
+    "title": "Planilha"
+   },
+   "PrazoInterno": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "dias_antes": {
+      "type": "integer",
+      "title": "Dias Antes",
+      "description": "quantos dias antes do prazo legal a empresa quer entregar"
+     },
+     "definido_por": {
+      "type": "string",
+      "title": "Definido Por"
+     },
+     "definido_em": {
+      "type": "string",
+      "title": "Definido Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo",
+     "dias_antes",
+     "definido_por",
+     "definido_em"
+    ],
+    "title": "PrazoInterno"
+   },
+   "PrimeiraConta": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "maxLength": 320,
+      "title": "Email",
+      "examples": [
+       "ti@mineradora.example"
+      ]
+     },
+     "nome": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Nome"
+     },
+     "senha_provisoria": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 8,
+      "title": "Senha Provisoria",
+      "description": "a pessoa troca no primeiro acesso (PUT /auth/senha); a torre não libera antes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "nome",
+     "senha_provisoria"
+    ],
+    "title": "PrimeiraConta"
    },
    "Proposta": {
     "properties": {
@@ -6268,7 +9704,7 @@
    "Registro": {
     "properties": {
      "leitura": {
-      "$ref": "#/components/schemas/Leitura"
+      "$ref": "#/components/schemas/Leitura-Input"
      },
      "arquivo": {
       "type": "string",
@@ -6293,7 +9729,47 @@
     ],
     "title": "Registro"
    },
-   "Responsavel": {
+   "Renovacao": {
+    "properties": {
+     "codigo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Codigo",
+      "description": "a obrigação de renovar; vazio se a licença não tem validade"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo"
+    ],
+    "title": "Renovacao"
+   },
+   "Reprovada": {
+    "properties": {
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "motivo": {
+      "type": "string",
+      "title": "Motivo",
+      "description": "por que o Python não aceitou a proposta da IA"
+     }
+    },
+    "type": "object",
+    "required": [
+     "titulo",
+     "motivo"
+    ],
+    "title": "Reprovada"
+   },
+   "Responsavel-Input": {
     "properties": {
      "area": {
       "anyOf": [
@@ -6313,10 +9789,212 @@
     ],
     "title": "Responsavel"
    },
+   "Responsavel-Output": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "papel": {
+      "type": "string",
+      "title": "Papel",
+      "description": "responsavel_tecnico, coordenador_paebm, responsavel_ambiental..."
+     },
+     "papel_rotulo": {
+      "type": "string",
+      "title": "Papel Rotulo"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "cpf_mascarado": {
+      "type": "string",
+      "title": "Cpf Mascarado",
+      "description": "o CPF como a API devolve por padrão; nunca o inteiro",
+      "examples": [
+       "***.456.789-**"
+      ]
+     },
+     "registro": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Registro",
+      "description": "registro no conselho",
+      "examples": [
+       "CREA MG-123456"
+      ]
+     },
+     "art_numero": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Art Numero"
+     },
+     "art_vigencia_ate": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Art Vigencia Ate",
+      "description": "ART vencendo vira obrigação"
+     },
+     "unidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Unidade"
+     },
+     "ativo_codigo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ativo Codigo"
+     },
+     "ficticio": {
+      "type": "boolean",
+      "title": "Ficticio",
+      "description": "dado de demonstração (na demo, só CPF fictício)"
+     },
+     "criado_por": {
+      "type": "string",
+      "title": "Criado Por"
+     },
+     "criado_em": {
+      "type": "string",
+      "title": "Criado Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "papel",
+     "papel_rotulo",
+     "nome",
+     "cpf_mascarado",
+     "registro",
+     "art_numero",
+     "art_vigencia_ate",
+     "unidade",
+     "ativo_codigo",
+     "ficticio",
+     "criado_por",
+     "criado_em"
+    ],
+    "title": "Responsavel"
+   },
+   "ResponsavelPadrao": {
+    "properties": {
+     "area": {
+      "type": "string",
+      "title": "Area",
+      "description": "barragem, emergencia, ambiental, equipamento, seguranca_trabalho, documentacao ou comunicacao"
+     },
+     "responsavel": {
+      "type": "string",
+      "title": "Responsavel",
+      "description": "vazio tira o padrão"
+     }
+    },
+    "type": "object",
+    "required": [
+     "area",
+     "responsavel"
+    ],
+    "title": "ResponsavelPadrao"
+   },
+   "RespostaPergunta": {
+    "properties": {
+     "texto": {
+      "type": "string",
+      "title": "Texto",
+      "description": "A resposta em Markdown"
+     },
+     "modelo": {
+      "type": "string",
+      "title": "Modelo"
+     },
+     "ferramentas": {
+      "items": {
+       "$ref": "#/components/schemas/UsoFerramenta"
+      },
+      "type": "array",
+      "title": "Ferramentas"
+     },
+     "conferencia": {
+      "$ref": "#/components/schemas/ConferenciaResposta"
+     },
+     "tokens_in": {
+      "type": "integer",
+      "title": "Tokens In"
+     },
+     "tokens_out": {
+      "type": "integer",
+      "title": "Tokens Out"
+     },
+     "tokens_cache": {
+      "type": "integer",
+      "title": "Tokens Cache"
+     },
+     "custo_usd": {
+      "type": "number",
+      "title": "Custo Usd"
+     },
+     "corrigida": {
+      "type": "boolean",
+      "title": "Corrigida",
+      "description": "A conferência mandou o modelo corrigir uma vez"
+     },
+     "segundos": {
+      "type": "number",
+      "title": "Segundos",
+      "description": "Quanto a pergunta levou, do pedido à resposta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "texto",
+     "modelo",
+     "ferramentas",
+     "conferencia",
+     "tokens_in",
+     "tokens_out",
+     "tokens_cache",
+     "custo_usd",
+     "corrigida",
+     "segundos"
+    ],
+    "title": "RespostaPergunta"
+   },
    "ResultadoLeitura": {
     "properties": {
      "leitura": {
-      "$ref": "#/components/schemas/Leitura"
+      "$ref": "#/components/schemas/api__rotas__evidencias__Leitura"
      },
      "completa": {
       "type": "boolean",
@@ -6551,6 +10229,104 @@
      "temas"
     ],
     "title": "Troca"
+   },
+   "Unidade": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "uf": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uf"
+     },
+     "municipio": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Municipio"
+     },
+     "criada_por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Criada Por"
+     },
+     "criada_em": {
+      "type": "string",
+      "title": "Criada Em"
+     },
+     "ativos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Ativos",
+      "description": "os ativos da empresa que pertencem a esta unidade",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "nome",
+     "uf",
+     "municipio",
+     "criada_por",
+     "criada_em"
+    ],
+    "title": "Unidade"
+   },
+   "UsoFerramenta": {
+    "properties": {
+     "ferramenta": {
+      "type": "string",
+      "title": "Ferramenta"
+     },
+     "args": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Args"
+     },
+     "erro": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Erro"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ferramenta",
+     "args"
+    ],
+    "title": "UsoFerramenta"
    },
    "ValidationError": {
     "properties": {
@@ -6958,7 +10734,7 @@
        "Diretoria (todos os ativos)",
        "Gerência de Geotecnia",
        "TI (usuários e acessos)",
-       "Curadoria RegulaIA (plataforma)"
+       "Curadoria Mitra (plataforma)"
       ]
      }
     },
@@ -6967,6 +10743,352 @@
      "visao"
     ],
     "title": "Visao"
+   },
+   "api__rotas__admin__Criada": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id"
+    ],
+    "title": "Criada"
+   },
+   "api__rotas__evidencias__Leitura": {
+    "properties": {
+     "ativo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ativo"
+     },
+     "empresa_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Empresa Id"
+     },
+     "documento": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Documento"
+     },
+     "obrigacao": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Obrigacao"
+     },
+     "data": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Data"
+     },
+     "periodo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodo"
+     },
+     "pontuacao_maxima": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pontuacao Maxima"
+     },
+     "estado_conservacao": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Estado Conservacao",
+      "default": {}
+     },
+     "metodo": {
+      "type": "string",
+      "title": "Metodo",
+      "default": "regra"
+     },
+     "problemas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Problemas",
+      "default": []
+     },
+     "avisos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Avisos",
+      "default": []
+     },
+     "gatilhos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Gatilhos",
+      "default": []
+     },
+     "acionar": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Acionar",
+      "default": []
+     }
+    },
+    "type": "object",
+    "title": "Leitura"
+   },
+   "api__rotas__instanciacao__Criada": {
+    "properties": {
+     "empresa_id": {
+      "type": "integer",
+      "title": "Empresa Id"
+     },
+     "estado": {
+      "$ref": "#/components/schemas/Estado"
+     }
+    },
+    "type": "object",
+    "required": [
+     "empresa_id",
+     "estado"
+    ],
+    "title": "Criada"
+   },
+   "api__rotas__licencas__Decisao": {
+    "properties": {
+     "aprovar": {
+      "type": "boolean",
+      "title": "Aprovar"
+     },
+     "correcoes": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ]
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Correcoes",
+      "description": "o que quem aprova corrigiu antes (titulo, prazo, periodicidade, agenda, evidencia, aplica_a, alvo)"
+     },
+     "nota": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nota"
+     }
+    },
+    "type": "object",
+    "required": [
+     "aprovar"
+    ],
+    "title": "Decisao"
+   },
+   "api__rotas__licencas__Leitura": {
+    "properties": {
+     "licenca_id": {
+      "type": "integer",
+      "title": "Licenca Id"
+     },
+     "propostas": {
+      "items": {
+       "$ref": "#/components/schemas/Condicionante"
+      },
+      "type": "array",
+      "title": "Propostas",
+      "description": "as que passaram na conferência e ficaram pendentes"
+     },
+     "reprovadas": {
+      "items": {
+       "$ref": "#/components/schemas/Reprovada"
+      },
+      "type": "array",
+      "title": "Reprovadas",
+      "description": "o que a IA propôs e o Python recusou (não entra)"
+     },
+     "validade_lida": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Validade Lida",
+      "description": "a validade que a IA achou no texto, para conferir"
+     },
+     "numero_lido": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Numero Lido"
+     },
+     "orgao_lido": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Orgao Lido"
+     },
+     "modelo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Modelo"
+     },
+     "custo_usd": {
+      "type": "number",
+      "title": "Custo Usd"
+     },
+     "problemas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Problemas",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "licenca_id",
+     "propostas",
+     "reprovadas",
+     "validade_lida",
+     "numero_lido",
+     "orgao_lido",
+     "modelo",
+     "custo_usd"
+    ],
+    "title": "Leitura"
+   },
+   "api__rotas__personalizacao__Criada": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo"
+    ],
+    "title": "Criada"
+   },
+   "api__rotas__regulatorio__Decisao": {
+    "properties": {
+     "aprovar": {
+      "type": "boolean",
+      "title": "Aprovar"
+     },
+     "correcoes": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ]
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Correcoes",
+      "description": "campos corrigidos por quem aprova antes de aprovar ({campo: valor})"
+     }
+    },
+    "type": "object",
+    "required": [
+     "aprovar"
+    ],
+    "title": "Decisao"
    }
   }
  }

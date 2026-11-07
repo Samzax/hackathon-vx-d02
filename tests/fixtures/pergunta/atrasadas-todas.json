@@ -1,0 +1,32 @@
+[
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "",
+  "chamadas": [
+   {
+    "id": "tooluse_9X87W1OHKuyk7VSiHJQ2dF",
+    "nome": "pendencias",
+    "args": {
+     "status": [
+      "atrasada"
+     ]
+    }
+   }
+  ],
+  "tokens_in": 2,
+  "tokens_out": 54,
+  "cache_lido": 6256,
+  "cache_escrito": 0,
+  "cortada": false
+ },
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "**4 obrigações atrasadas hoje (07/11/2026)**, a mais antiga primeiro:\n\n1. **B3 — R95-01** \"Preencher as FIR quinzenalmente\" — Res. ANM 95/2022, art. 19 I — vencida em **15/10/2026**, falta a 1ª quinzena de outubro/2026. Responsável: **Gerência de Geotecnia**.\n   > \"I - preencher, quinzenalmente ou em menor período, a seu critério, as FIR\"\n\n2. **L1 — LO-02** \"Monitorar os efluentes líquidos da estação de tratamento\" — LO 000/2023 (fictícia), Condicionante 2 — vencida em **15/10/2026**, falta setembro/2026. Responsável: **Gerência de Meio Ambiente**.\n\n3. **B3 — R95-02** \"Preencher o EIR no SIGBM até o fim da quinzena subsequente à inspeção\" — Res. ANM 95/2022, art. 21 — vencida em **30/10/2026**, falta a 1ª quinzena de outubro/2026. Responsável: **Gerência de Geotecnia**.\n   > \"O preenchimento do EIR no SIGBM deverá ocorrer até o final da quinzena subsequente à inspeção em campo que gerou o preenchimento da FIR\"\n\n4. **E1 — N13-03** \"Exame externo periódico do vaso — categoria III sem SPIE\" — NR-13, item 13.5.4.5 — vencida em **30/10/2026**, data faltando: 30/10/2026. Responsável: **Manutenção da Usina**.\n   > \"A inspeção de segurança periódica, constituída por exames externo e interno, deve obedecer aos prazos máximos indicados na Tabela 2, com base na categoria do vaso\"\n\n**Prioridade:** começar pela B3 (R95-01, vencida há mais tempo, 15/10), em paralelo com L1 (LO-02, mesma data), depois B3 (R95-02) e E1 (N13-03).\n\nTambém há 1 pendência de **dado_faltando** e 3 **vence_logo** não listadas aqui — posso detalhar se quiser. Registre as entregas em **Entregas** e trate tudo pela **Caixa de entrada**.",
+  "chamadas": [],
+  "tokens_in": 2,
+  "tokens_out": 781,
+  "cache_lido": 7244,
+  "cache_escrito": 0,
+  "cortada": false
+ }
+]

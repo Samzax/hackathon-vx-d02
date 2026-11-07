@@ -67,8 +67,8 @@ export function TorreProvider({ children, carregando, erro }:
     queryFn: () => dados(api.GET("/api/v1/empresas")),
     enabled: !!eu.data && !ti,
   });
-  const [empresaEscolhida, setEmpresaEscolhida] = useState<number | null>(() => Number(ler("regulaia_empresa")) || null);
-  const [hojeEscolhido, setHojeEscolhido] = useState<string | null>(() => ler("regulaia_hoje"));
+  const [empresaEscolhida, setEmpresaEscolhida] = useState<number | null>(() => Number(ler("mitra_empresa")) || null);
+  const [hojeEscolhido, setHojeEscolhido] = useState<string | null>(() => ler("mitra_hoje"));
 
   useEffect(() => {
     if (eu.error instanceof ErroApi && eu.error.status === 401) router.replace("/entrar/");
@@ -81,12 +81,12 @@ export function TorreProvider({ children, carregando, erro }:
 
   const setEmpresaId = useCallback((id: number) => {
     setEmpresaEscolhida(id);
-    gravar("regulaia_empresa", String(id));
+    gravar("mitra_empresa", String(id));
   }, []);
   const setHoje = useCallback((iso: string) => {
     const v = iso && iso !== hojeDemo ? iso : null;
     setHojeEscolhido(v);
-    gravar("regulaia_hoje", v);
+    gravar("mitra_hoje", v);
   }, [hojeDemo]);
 
   const trocarVisao = useCallback(async (visao: string) => {

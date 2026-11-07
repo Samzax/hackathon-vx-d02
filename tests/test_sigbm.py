@@ -6,7 +6,7 @@ from datetime import date
 
 import pytest
 
-from regulaia import agenda, db, demo, sigbm, torre
+from mitra import agenda, db, demo, sigbm, torre
 
 HOJE = date(2026, 11, 7)
 
@@ -111,7 +111,7 @@ def test_responsavel_da_obrigacao_vale_no_painel_e_no_boletim():
 def test_calendario_do_mes_e_planilha():
     import io
     import openpyxl
-    from regulaia import operacao
+    from mitra import operacao
 
     conn = db.conectar(":memory:")
     ids = demo.montar(conn)

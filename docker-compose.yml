@@ -10,15 +10,15 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: regulaia
-      POSTGRES_USER: regulaia
-      POSTGRES_PASSWORD: regulaia-local
+      POSTGRES_DB: mitra
+      POSTGRES_USER: mitra
+      POSTGRES_PASSWORD: mitra-local
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U regulaia -d regulaia"]
+      test: ["CMD-SHELL", "pg_isready -U mitra -d mitra"]
       interval: 2s
       timeout: 3s
       retries: 30
@@ -28,10 +28,10 @@ services:
       context: .
       dockerfile: api/Dockerfile
     environment:
-      REGULAIA_DATABASE_URL: postgresql://regulaia:regulaia-local@postgres:5432/regulaia
-      REGULAIA_COOKIE_SEGURO: "0"
-      REGULAIA_ORIGENS: http://localhost:3000
-      REGULAIA_TOKEN_SERVICO: ${REGULAIA_TOKEN_SERVICO:-token-local-do-agente}
+      MITRA_DATABASE_URL: postgresql://mitra:mitra-local@postgres:5432/mitra
+      MITRA_COOKIE_SEGURO: "0"
+      MITRA_ORIGENS: http://localhost:3000
+      MITRA_TOKEN_SERVICO: ${MITRA_TOKEN_SERVICO:-token-local-do-agente}
     env_file:
       - path: .env
         required: false
@@ -49,7 +49,7 @@ services:
       dockerfile: api/Dockerfile
     command: ["python", "-m", "api.jobs", "radar"]
     environment:
-      REGULAIA_DATABASE_URL: postgresql://regulaia:regulaia-local@postgres:5432/regulaia
+      MITRA_DATABASE_URL: postgresql://mitra:mitra-local@postgres:5432/mitra
     env_file:
       - path: .env
         required: false
@@ -60,13 +60,13 @@ services:
 
   descoberta:
     # normas já publicadas que valem para a carteira: lê o Senado, o ANMlegis e a Assembleia de Minas e
-    # passa as candidatas novas pela IA (fica para a curadoria RegulaIA aprovar ou descartar)
+    # passa as candidatas novas pela IA (fica para a curadoria Mitra aprovar ou descartar)
     build:
       context: .
       dockerfile: api/Dockerfile
     command: ["python", "-m", "api.jobs", "descoberta"]
     environment:
-      REGULAIA_DATABASE_URL: postgresql://regulaia:regulaia-local@postgres:5432/regulaia
+      MITRA_DATABASE_URL: postgresql://mitra:mitra-local@postgres:5432/mitra
     env_file:
       - path: .env
         required: false

@@ -1,0 +1,30 @@
+[
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "",
+  "chamadas": [
+   {
+    "id": "tooluse_CiICOIJjy1puJhmLZEeP5s",
+    "nome": "ficha_do_ativo",
+    "args": {
+     "ativo": "VP-101"
+    }
+   }
+  ],
+  "tokens_in": 2,
+  "tokens_out": 58,
+  "cache_lido": 6243,
+  "cache_escrito": 0,
+  "cortada": false
+ },
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "**VP-101 (E1 – Reservatório de ar comprimido da usina)** tem uma obrigação atrasada que pede atenção imediata.\n\n- **Cadastro**: vaso de pressão, categoria III, sem SPIE, em operação, responsável: Manutenção da Usina.\n\n**Pendência crítica:**\n- **N13-03** – Exame externo periódico (categoria III sem SPIE) — **NR-13, item 13.5.4.5** — status **atrasada**, vencia em 30/10/2026. Trecho da norma: *\"A inspeção de segurança periódica, constituída por exames externo e interno, deve obedecer aos prazos máximos indicados na Tabela 2, com base na categoria do vaso\"*.\n\n**Em dia:**\n- **N13-04** – Exame interno periódico — NR-13, 13.5.4.5 — próximo vencimento 30/10/2027.\n\n**Por gatilho (sem calendário, dependem de evento):**\n- N13-01 (registro de segurança), N13-02 (prontuário atualizado), N13-07 (inspeção extraordinária), N13-08 (relatório de inspeção em até 60 dias), N13-09 (comunicação de incidente grave) e N13-10 (sinalização de categoria/número) — todas sob Manutenção da Usina.\n\n**Últimas evidências recebidas**: exame interno em 30/10/2021 (N13-04) e exame externo em 30/10/2023 (N13-03) — ambas registradas no histórico da demo em 2026-11-07.\n\nNão há histórico recente de entregas ou mudanças de responsável registrado na ficha. Para regularizar o exame externo atrasado, registre a entrega em **Entregas** ou veja o item na **Caixa de entrada**.",
+  "chamadas": [],
+  "tokens_in": 2,
+  "tokens_out": 603,
+  "cache_lido": 6243,
+  "cache_escrito": 1826,
+  "cortada": false
+ }
+]

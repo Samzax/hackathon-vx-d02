@@ -1,6 +1,6 @@
 # Infra AWS (CDK em Python)
 
-Uma pilha (`regulaia_stack.py`) com tudo que a RegulaIA precisa em us-east-1:
+Uma pilha (`mitra_stack.py`) com tudo que a Mitra precisa em us-east-1:
 
 | Peça | Serviço | Por quê |
 |---|---|---|
@@ -19,19 +19,53 @@ dólares por dia (ALB, Fargate 0,5 vCPU, RDS micro), dentro do crédito do Free 
 
 ## Comandos
 
+Duas pilhas: `RegulaIABuild` (ECR `regulaia-api` + CodeBuild: a imagem é construída na AWS, sem Docker
+local) e `RegulaIA` (a aplicação Mitra — os ids das pilhas e do ECR mantêm o nome antigo porque já
+estão deployados; renomear criaria um ambiente novo). A imagem sai do último commit (`git archive HEAD`) mais o
+`api/Dockerfile` da pasta: rascunho não commitado de outra sessão nunca vai para a imagem.
+
 ```bash
 uv sync --group infra
-uv run --group infra pytest tests/test_infra.py      # confere a pilha sem conta AWS
+uv run --group infra pytest tests/test_infra.py      # confere as pilhas sem conta AWS
 cd infra && npx aws-cdk@2 synth                       # gera o CloudFormation
 cd infra && npx aws-cdk@2 bootstrap                   # uma vez por conta/região
-cd infra && npx aws-cdk@2 deploy                      # sobe tudo; imprime o endereço
+cd infra && npx aws-cdk@2 deploy RegulaIABuild        # uma vez: ECR + CodeBuild
+uv run --with "botocore[crt]" python infra/construir.py           # build na AWS; imprime TAG=...
+cd infra && npx aws-cdk@2 deploy RegulaIA -c imagem_tag=<TAG>         # sem IA
+cd infra && npx aws-cdk@2 deploy RegulaIA -c imagem_tag=<TAG> -c ia=1 # com o Bedrock
 ```
 
-Com domínio próprio, HTTPS e cookie `Secure`: `npx aws-cdk@2 deploy -c certificado=arn:aws:acm:...`.
+Na conta do evento: `AWS_PROFILE=vx` (`aws login --profile vx`) e `CDK_DEFAULT_ACCOUNT=777390839891`.
+Segredos gerados pela AWS: senha do banco, token do agente, `MITRA_CHAVE_DADOS` (64 alfanuméricos; o
+código deriva a chave Fernet) e `MITRA_SENHA_DEMO` (contas da demo no link público). Jobs: radar do
+DOU todo dia 06:00 BRT; descoberta de normas domingo 03:00 BRT.
+
+HTTPS sem domínio: o CloudFront fica na frente do ALB (`https://<id>.cloudfront.net`, certificado da AWS,
+cookie `Secure`); o ALB só aceita os IPs do CloudFront e nada é cacheado além de `/_next/static/*`.
+Com domínio próprio: `npx aws-cdk@2 deploy -c certificado=arn:aws:acm:...` (o ALB faz o HTTPS e o CloudFront sai).
+
+## Deploy automático (GitHub Actions)
+
+Cada push no `main` roda `.github/workflows/deploy.yml`: build da imagem no runner (mesma
+`api/Dockerfile`), push no ECR `regulaia-api` com a tag do commit e `cdk deploy RegulaIA`. Sem
+segredo no GitHub: o job assume a role `github-deploy` por OIDC, restrita a este repositório e ao
+branch `main`. A role é criada uma vez, fora do CDK (o CDK não deve gerenciar quem faz o deploy dele):
+
+```bash
+aws iam create-open-id-connect-provider --profile vx \
+  --url https://token.actions.githubusercontent.com --client-id-list sts.amazonaws.com
+aws iam create-role --profile vx --role-name github-deploy \
+  --assume-role-policy-document file://infra/github-deploy-confianca.json
+aws iam put-role-policy --profile vx --role-name github-deploy \
+  --policy-name deploy --policy-document file://infra/github-deploy-permissoes.json
+```
+
+Permissões mínimas (os dois JSON ao lado): push só no repositório `regulaia-api` e `sts:AssumeRole`
+nas roles `cdk-*` do bootstrap — quem aplica o CloudFormation são as roles do CDK, como no deploy manual.
 
 ## Antes do deploy na conta do evento
 
-- Em `regulaia/modelos.toml`, trocar `ID_DO_HAIKU_4_5_NO_BEDROCK` e `ID_DO_SONNET_5_NO_BEDROCK` pelos
+- Em `mitra/modelos.toml`, trocar `ID_DO_HAIKU_4_5_NO_BEDROCK` e `ID_DO_SONNET_5_NO_BEDROCK` pelos
   IDs (ou perfis de inferência) que o console do Bedrock mostrar, e pôr o Bedrock no topo de cada camada.
 - A conta do evento não pode receber dado pessoal: o repositório já leva só as linhas de empresa do
   SIGBM (sem CPF), e a imagem não leva `.env` nem `data/raw/`.

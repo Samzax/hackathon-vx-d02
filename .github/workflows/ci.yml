@@ -43,14 +43,14 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: regulaia
-          POSTGRES_USER: regulaia
+          POSTGRES_DB: mitra
+          POSTGRES_USER: mitra
           POSTGRES_PASSWORD: ci-apenas
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U regulaia" --health-interval 2s --health-timeout 3s --health-retries 30
+          --health-cmd "pg_isready -U mitra" --health-interval 2s --health-timeout 3s --health-retries 30
     env:
-      REGULAIA_TESTE_PG: postgresql://regulaia:ci-apenas@localhost:5432/regulaia
+      MITRA_TESTE_PG: postgresql://mitra:ci-apenas@localhost:5432/mitra
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -59,7 +59,7 @@ jobs:
       - run: uv sync --locked
       - name: Migração do zero, duas vezes (idempotente)
         env:
-          REGULAIA_DATABASE_URL: postgresql://regulaia:ci-apenas@localhost:5432/regulaia
+          MITRA_DATABASE_URL: postgresql://mitra:ci-apenas@localhost:5432/mitra
         run: |
           uv run alembic upgrade head
           uv run alembic upgrade head
@@ -128,8 +128,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build da API e da demo
         run: |
-          docker build -f api/Dockerfile -t regulaia-api .
-          docker build -t regulaia-demo .
+          docker build -f api/Dockerfile -t mitra-api .
+          docker build -t mitra-demo .
       - name: Compose sobe e a API responde
         run: |
           docker compose up -d --build --wait api || { docker compose logs api postgres; exit 1; }

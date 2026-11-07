@@ -7,10 +7,10 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
-from regulaia import db, demo, sigbm, usuarios
+from mitra import db, demo, sigbm, usuarios
 
 from .. import auditoria
 from ..banco import conexao
@@ -176,10 +176,10 @@ def senha(usuario_id: int, dados: Senha, request: Request, e: Escopo = Depends(t
 
 @rota.get("/auditoria", response_model=list[Linha],
           summary="Trilha de auditoria da própria empresa (Diretoria, Regulatório e TI)")
-def trilha(limite: int = 200, e: Escopo = Depends(escopo), conn=Depends(conexao)):
+def trilha(limite: int = Query(200, ge=1, le=1000), e: Escopo = Depends(escopo), conn=Depends(conexao)):
     if not (e.ve_tudo or e.admin):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "a auditoria é da Diretoria, do Regulatório e da TI")
-    return auditoria.listar(conn, min(limite, 1000), empresa=e.empresa, todas=e.plataforma)
+    return auditoria.listar(conn, limite, empresa=e.empresa, todas=e.plataforma)
 
 
 @rota.get("/sigbm/busca", response_model=Busca, summary="Buscar mineradora no SIGBM público (CNPJ ou nome)")
@@ -231,9 +231,11 @@ def mercado(e: Escopo = Depends(regulatorio)):
 
 
 @rota.post("/demo/recriar", response_model=Ok, summary="Voltar a demo ao estado inicial (só a conta de teste)")
-def recriar(request: Request, e: Escopo = Depends(escopo)):
+def recriar(request: Request, e: Escopo = Depends(escopo), conn=Depends(conexao)):
     if not e.usuario["teste"]:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "só a conta de teste recria a demo")
+    # apaga os dados de todas as empresas (inclusive importadas): fica na trilha, que o limpar() preserva
+    auditoria.registrar(conn, request, "demo_recriada", e.usuario["email"])
     cfg = request.app.state.cfg
     demo.preparar(cfg.banco, cache=cfg.cache)
     return Ok(ok=True)

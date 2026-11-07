@@ -2,14 +2,15 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  BookCheck, CalendarRange, ChartColumn, ChevronDown, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu, Moon, Plus,
+  BookCheck, CalendarRange, ChartColumn, ChevronDown, ClipboardList, FileBadge, FileSearch, Gavel, History, IdCard, Inbox, ListChecks, LogOut, Map, Menu,
+  MessageSquareText, Moon, Plus,
   Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { api, dados } from "@/lib/api";
-import { useAtivos, useMudancas, useNormasCandidatas, usePainel, useRadar } from "@/lib/consultas";
+import { useAtivos, useCondicionantes, useMudancas, useNormasCandidatas, usePainel, useRadar } from "@/lib/consultas";
 import { dataBR, diasEntre, plural, usd } from "@/lib/formato";
 import { RES_220, ZAS, useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
@@ -27,6 +28,7 @@ function useGrupos(): Grupo[] {
   const mudancas = useMudancas();
   const painel = usePainel();
   const candidatas = useNormasCandidatas();
+  const condicionantes = useCondicionantes("pendente");
   if (t.ti) {
     return [{ titulo: "Administração", itens: [
       { href: "/usuarios/", rotulo: "Usuários e acessos", icone: <Users className="size-4" /> },
@@ -37,8 +39,9 @@ function useGrupos(): Grupo[] {
   const grupos: Grupo[] = [
     { titulo: "Operação", itens: [
       { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" />, contador: atrasadas || undefined, tom: "perigo" },
-      { href: "/ativos/", rotulo: "Ativos", icone: <Map className="size-4" /> },
+      { href: "/ativos/", rotulo: "Ativos", icone: t.empresa?.setor === "saude" ? <ListChecks className="size-4" /> : <Map className="size-4" /> },
       { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" /> },
+      { href: "/pergunte/", rotulo: "Pergunte à torre", icone: <MessageSquareText className="size-4" /> },
     ] },
     { titulo: "Regulatório", itens: [
       { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca" },
@@ -47,6 +50,12 @@ function useGrupos(): Grupo[] {
       { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" /> },
       ...(t.plataforma ? [{ href: "/regulatorio/normas-candidatas/", rotulo: "Normas candidatas", icone: <FileSearch className="size-4" />,
         contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const }] : []),
+    ] },
+    { titulo: "Empresa", itens: [
+      { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" /> },
+      { href: "/licencas/", rotulo: "Licenças e condicionantes", icone: <FileBadge className="size-4" />,
+        contador: condicionantes.data?.length || undefined, tom: "marca" },
+      { href: "/responsaveis/", rotulo: "Responsáveis e unidades", icone: <IdCard className="size-4" /> },
     ] },
     { titulo: "Sobre", itens: [
       { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" /> },
@@ -58,7 +67,7 @@ function useGrupos(): Grupo[] {
 }
 
 /** O que cada papel pode abrir; o resto volta para a tela inicial do papel. A fila de normas candidatas
- * é trabalho da curadoria RegulaIA: só a plataforma. */
+ * é trabalho da curadoria Mitra: só a plataforma. */
 export function telaPermitida(caminho: string, ti: boolean, veTudo: boolean, plataforma = false): boolean {
   const c = caminho.endsWith("/") ? caminho : `${caminho}/`;
   if (ti) return c === "/usuarios/" || c === "/auditoria/";
@@ -97,8 +106,8 @@ export function useTema() {
 export function Logo({ className }: { className?: string }) {
   // As duas imagens ficam no DOM para a troca ser instantânea e independente do primeiro render.
   // eslint-disable-next-line @next/next/no-img-element
-  return <span className={cx("logo-tematica inline-flex", className)} aria-label="RegulaIA">
-    <img src="/logo_claro.svg" alt="RegulaIA" width={150} height={30} className="logo-claro" />
+  return <span className={cx("logo-tematica inline-flex", className)} aria-label="Mitra">
+    <img src="/logo_claro.svg" alt="Mitra" width={150} height={30} className="logo-claro" />
     <img src="/logo_escuro.svg" alt="" width={150} height={30} className="logo-escuro" aria-hidden="true" />
   </span>;
 }
@@ -165,6 +174,14 @@ function Controles() {
   });
   const trocarVisao = useMutation({ mutationFn: t.trocarVisao, onError: (e) => avisar(mensagem(e), "erro") });
   const ia = radar.data?.ia;
+  const saude = t.empresa?.setor === "saude";
+  const viagens = saude
+    ? [{ rotulo: "Demo", dia: t.hojeDemo, dica: `${dataBR(t.hojeDemo)}: o dia da demo` }]
+    : [
+        { rotulo: "Demo", dia: t.hojeDemo, dica: `${dataBR(t.hojeDemo)}: o dia da demo` },
+        { rotulo: "Res. 220", dia: RES_220, dica: `${dataBR(RES_220)}: troca de norma` },
+        { rotulo: "ZAS", dia: ZAS, dica: `${dataBR(ZAS)}: dia seguinte ao prazo da ZAS (ANM e NR-22)` },
+      ];
 
   function MenuVisao() {
     const [aberto, setAberto] = useState(false);
@@ -213,12 +230,12 @@ function Controles() {
         <label className="block">
           <span className="mb-1 block text-[13px] font-medium text-texto-2">Empresa</span>
           <Selecao value={t.empresa?.id ?? ""} onChange={(e) => t.setEmpresaId(Number(e.target.value))} aria-label="Empresa">
-            {t.empresas.map((e) => <option key={e.id} value={e.id}>{e.nome}{e.ficticia ? " · fictícia" : ""}</option>)}
+            {t.empresas.map((e) => <option key={e.id} value={e.id}>{e.nome}{e.setor === "saude" ? " · saúde" : ""}{e.ficticia ? " · fictícia" : ""}</option>)}
           </Selecao>
         </label>
       )}
 
-      {t.plataforma && t.veTudo && (
+      {t.plataforma && t.veTudo && !saude && (
         <Botao className="w-full" icone={<Plus className="size-4" />} onClick={() => setImportar(true)}>
           Mineradora do SIGBM
         </Botao>
@@ -230,13 +247,9 @@ function Controles() {
             <span className="mb-1 block text-[13px] font-medium text-texto-2">Hoje</span>
             <Entrada type="date" value={t.hoje} onChange={(e) => e.target.value && t.setHoje(e.target.value)} aria-label="Hoje" />
           </label>
-          <p className="mb-1 mt-2 text-xs text-texto-3">Viagem no tempo</p>
-          <div className="grid grid-cols-3 gap-1">
-            {[
-              { rotulo: "Demo", dia: t.hojeDemo, dica: `${dataBR(t.hojeDemo)}: o dia da demo` },
-              { rotulo: "Res. 220", dia: RES_220, dica: `${dataBR(RES_220)}: troca de norma` },
-              { rotulo: "ZAS", dia: ZAS, dica: `${dataBR(ZAS)}: dia seguinte ao prazo da ZAS (ANM e NR-22)` },
-            ].map((v) => (
+          <p className="mb-1 mt-2 text-xs text-texto-3">{saude ? "Data de referência" : "Viagem no tempo"}</p>
+          <div className={cx("grid gap-1", saude ? "grid-cols-1" : "grid-cols-3")}>
+            {viagens.map((v) => (
               <button
                 key={v.rotulo}
                 type="button"
@@ -287,7 +300,7 @@ function Controles() {
         </>}
       >
         <p className="text-sm text-texto-2">
-          Apaga as entregas, decisões, comentários e empresas importadas, e volta a Mineradora Serra Azul ao estado inicial.
+          Apaga as entregas, decisões, comentários e empresas importadas, e volta as empresas fictícias ao estado inicial.
           As contas de acesso ficam.
         </p>
       </Dialogo>
@@ -299,7 +312,7 @@ function Cabecalho() {
   const t = useTorre();
   const ativos = useAtivos();
   if (t.ti) return null;
-  const viajando = t.hoje > t.hojeDemo && !t.empresa?.monitorado_desde;
+  const viajando = t.empresa?.setor !== "saude" && t.hoje > t.hojeDemo && !t.empresa?.monitorado_desde;
   return (
     <div className="mb-6">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-borda pb-3">
@@ -315,7 +328,7 @@ function Cabecalho() {
           </p>
           {t.soLeitura && (
             <p className="mt-1" data-testid="so-leitura">
-              <Etiqueta title="A equipe RegulaIA acompanha a empresa, mas quem registra entrega, comenta e corrige o cadastro é a própria empresa.">
+              <Etiqueta title="A equipe Mitra acompanha a empresa, mas quem registra entrega, comenta e corrige o cadastro é a própria empresa.">
                 visão da plataforma: só leitura
               </Etiqueta>
             </p>
@@ -379,7 +392,7 @@ export function Moldura({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-[1240px]">
           <Cabecalho />
           {!permitida ? null : t.ti || t.empresa ? children : (
-            <Aviso tipo="info">Nenhuma empresa visível para esta conta ainda. Peça à curadoria da RegulaIA para montar a torre da sua empresa.</Aviso>
+            <Aviso tipo="info">Nenhuma empresa visível para esta conta ainda. Peça à curadoria da Mitra para montar a torre da sua empresa.</Aviso>
           )}
         </div>
       </main>

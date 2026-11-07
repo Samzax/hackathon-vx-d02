@@ -1,0 +1,75 @@
+# Avaliação do "Pergunte à torre" (mitra/pergunta.py) contra a demo (Mineradora Serra Azul, hoje
+# 2026-11-07). Os fatos esperados vêm das ferramentas, não de memória: conferidos com a API da demo.
+#
+#   contem       cada item precisa aparecer na resposta (lista dentro da lista = basta uma das opções)
+#   nao_contem   não pode aparecer
+#   ferramentas  precisa ter usado (lista dentro da lista = qualquer uma delas)
+#
+# Além disso, todo caso exige a conferência limpa: trecho entre aspas, data e código da resposta precisam
+# estar no que as ferramentas devolveram.
+#
+# Com o modelo de verdade: MITRA_BEDROCK=1 AWS_PROFILE=vx uv run python -m mitra.pergunta avaliar
+# (--gravar regrava tests/fixtures/pergunta/, que o CI repete sem chave).
+
+[[caso]]
+id = "atrasadas-b3"
+pergunta = "O que está atrasado na B3 e por qual artigo?"
+contem = ["R95-01", "R95-02", ["art. 19", "artigo 19"], ["art. 21", "artigo 21"], "Res. ANM 95/2022"]
+nao_contem = ["N13-03", "LO-02"]
+ferramentas = [["pendencias", "ficha_do_ativo"]]
+
+[[caso]]
+id = "atrasadas-todas"
+pergunta = "Quais obrigações estão atrasadas hoje e o que eu faço primeiro?"
+contem = ["R95-01", "R95-02", "N13-03", "LO-02", ["Entregas", "Caixa de entrada"]]
+ferramentas = [["pendencias", "boletim"]]
+
+[[caso]]
+id = "dado-faltando-b4"
+pergunta = "Tem algum dado faltando no cadastro que impede de saber se uma obrigação vale?"
+contem = ["B4", "R95-08", ["modificação estrutural", "modificacao estrutural"], ["Ativos", "cadastro"]]
+ferramentas = [["pendencias", "ficha_do_ativo", "boletim"]]
+
+[[caso]]
+id = "mudanca-245"
+pergunta = "Alguma norma mudou recentemente? O que eu preciso decidir?"
+contem = ["OB-01", ["Res. ANM 245", "Resolução ANM nº 245", "Resolução ANM 245"], "2029-12-26", "2027-08-02",
+          ["curadoria", "Curadoria"]]
+ferramentas = ["mudancas_pendentes"]
+
+[[caso]]
+id = "transicao-220"
+pergunta = "O que passa a valer quando a Res. ANM 220/2025 entrar em vigor?"
+contem = ["2027-08-02", "Res. ANM 220/2025", ["OB-02", "OB-03", "OB-04"], ["Res. ANM 95", "Res. 95"]]
+ferramentas = [["linha_do_tempo", "pendencias"]]
+
+[[caso]]
+id = "cobertura-mg"
+pergunta = "Que normas valem para as minhas barragens em Minas Gerais? Estou coberto?"
+contem = ["Lei MG 23.291/2019", ["Copam", "COPAM"], ["curadoria", "Curadoria"]]
+nao_contem = ["totalmente coberto", "cobertura completa"]
+ferramentas = ["cobertura_normativa"]
+
+[[caso]]
+id = "equipamento-nr13"
+pergunta = "Como está o vaso de pressão VP-101?"
+contem = ["E1", "N13-03", "NR-13", ["atrasada", "atrasado"]]
+ferramentas = [["ficha_do_ativo", "pendencias"]]
+
+[[caso]]
+id = "licenca"
+pergunta = "Tem condicionante da licença de operação vencida ou vencendo?"
+contem = ["LO-02", ["Condicionante 2", "condicionante 2"], "LO-06", "2026-11-15"]
+ferramentas = [["pendencias", "ficha_do_ativo"]]
+
+[[caso]]
+id = "ativo-inexistente"
+pergunta = "O que está atrasado na barragem B9?"
+contem = [["não encontr", "não existe", "nao existe", "não há", "não consta"]]
+nao_contem = ["R95-01"]
+
+[[caso]]
+id = "fora-da-torre"
+pergunta = "Qual é a multa máxima que a ANM pode aplicar por barragem sem PAEBM?"
+contem = [["não tem", "não está", "não consigo", "não traz", "não há", "fora", "não rastreia", "não é um dado", "não um dado"]]
+nao_contem = ["R$"]

@@ -132,7 +132,7 @@ export default function Cobertura() {
       <Titulo sobre="Regulatório" titulo="Cobertura normativa">
         Que normas valem para os ativos da {empresa.nome}, por jurisdição e tipo de ativo: o que já está no catálogo, até onde
         cada fonte oficial foi lida, o que a plataforma sabe que não cobre e as normas já publicadas que ainda esperam a curadoria
-        RegulaIA. Jurisdição sem fonte automática aparece como cobertura não verificada, nunca como coberta.
+        Mitra. Jurisdição sem fonte automática aparece como cobertura não verificada, nunca como coberta.
       </Titulo>
       {cobertura.isLoading && <Carregando linhas={5} />}
       {cobertura.error && <ErroCarga erro={cobertura.error} onTentar={() => cobertura.refetch()} />}

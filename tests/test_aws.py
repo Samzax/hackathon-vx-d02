@@ -5,7 +5,7 @@ import tomllib
 
 import pytest
 
-from regulaia import arquivos, ia
+from mitra import arquivos, ia
 
 
 class ConverseFalso:
@@ -72,7 +72,7 @@ def test_bedrock_so_liga_com_a_variavel_e_sem_chave_aws_no_codigo(monkeypatch):
     pytest.importorskip("boto3")
     assert "bedrock" not in ia.Roteador(None, env={}).provedores
     monkeypatch.setenv("AWS_REGION", "us-east-1")
-    rot = ia.Roteador(None, env={"REGULAIA_BEDROCK": "1"})
+    rot = ia.Roteador(None, env={"MITRA_BEDROCK": "1"})
     assert isinstance(rot.provedores["bedrock"], ia.ClienteBedrock)        # cria o cliente sem chamar a AWS
     cfg = tomllib.loads(ia.CONFIG.read_text(encoding="utf-8"))
     assert cfg["provedores"]["bedrock"]["regiao"] == "us-east-1"
@@ -81,7 +81,7 @@ def test_bedrock_so_liga_com_a_variavel_e_sem_chave_aws_no_codigo(monkeypatch):
 
 
 def test_evidencia_vai_para_pasta_local_sem_bucket(tmp_path, monkeypatch):
-    monkeypatch.delenv("REGULAIA_S3_BUCKET", raising=False)
+    monkeypatch.delenv("MITRA_S3_BUCKET", raising=False)
     monkeypatch.setattr(arquivos, "PASTA", tmp_path / "evidencias")
     onde = arquivos.guardar("C:\\fotos\\FIR B3 (1).pdf", b"%PDF-1.4 a")
     assert onde.endswith("/FIR_B3_1_.pdf")
@@ -97,10 +97,10 @@ def test_evidencia_vai_para_o_s3_com_bucket(monkeypatch):
         def put_object(self, **kw):
             self.objetos.append(kw)
 
-    monkeypatch.setenv("REGULAIA_S3_BUCKET", "regulaia-evidencias")
+    monkeypatch.setenv("MITRA_S3_BUCKET", "mitra-evidencias")
     s3 = S3Falso()
     onde = arquivos.guardar("FIR.pdf", b"%PDF", s3=s3)
-    assert onde.startswith("s3://regulaia-evidencias/evidencias/") and onde.endswith("/FIR.pdf")
+    assert onde.startswith("s3://mitra-evidencias/evidencias/") and onde.endswith("/FIR.pdf")
     o = s3.objetos[0]
-    assert o["Bucket"] == "regulaia-evidencias" and o["Body"] == b"%PDF"
+    assert o["Bucket"] == "mitra-evidencias" and o["Body"] == b"%PDF"
     assert o["ServerSideEncryption"] == "AES256" and "ACL" not in o              # nada de objeto público

@@ -1,0 +1,48 @@
+# Deploy automático: a cada push no main, constrói a imagem e atualiza a pilha RegulaIA (o produto Mitra).
+# Sem segredo guardado no GitHub: OIDC → role github-deploy (criação da role em infra/README.md).
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::777390839891:role/github-deploy
+          aws-region: us-east-1
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      # mesma imagem do CodeBuild (api/Dockerfile), tag = commit; espelho do ECR público
+      # no lugar do Docker Hub pelo mesmo motivo do build_stack (limite de pull anônimo)
+      - name: Build e push da imagem
+        run: |
+          IMAGEM="${{ steps.ecr.outputs.registry }}/regulaia-api:${{ github.sha }}"
+          docker build -f api/Dockerfile --build-arg REGISTRO=public.ecr.aws/docker/library -t "$IMAGEM" .
+          docker push "$IMAGEM"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - run: uv sync --group infra
+
+      - name: cdk deploy
+        working-directory: infra
+        run: npx aws-cdk@2 deploy RegulaIA -c imagem_tag=${{ github.sha }} --require-approval never

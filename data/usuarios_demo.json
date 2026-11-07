@@ -1,5 +1,5 @@
 {
- "_leia": "Contas fictícias da demo. A senha vale para todas as que têm senha; no link público, troque por REGULAIA_SENHA_DEMO nos Secrets. A conta 'demo' não tem senha: entra pelo botão 'Entrar na demo'. Cada conta é da empresa em 'empresa'. A conta 'curadoria' é da equipe da RegulaIA (plataforma): aprova as mudanças de norma pública para todas as clientes.",
+ "_leia": "Contas fictícias da demo. A senha vale para todas as que têm senha; no link público, troque por MITRA_SENHA_DEMO nos Secrets. A conta 'demo' não tem senha: entra pelo botão 'Entrar na demo'. Cada conta é da empresa em 'empresa'. A conta 'curadoria' é da equipe da Mitra (plataforma): aprova as mudanças de norma pública para todas as clientes.",
  "senha": "serra-azul-2026",
  "empresa": "Mineradora Serra Azul",
  "contas": [
@@ -9,6 +9,6 @@
   {"email": "regulatorio@serraazul.demo", "nome": "Paulo Ribeiro", "papel": "regulatorio"},
   {"email": "geotecnia@serraazul.demo", "nome": "Ana Souza", "papel": "gestor", "area": "Gerência de Geotecnia"},
   {"email": "usina@serraazul.demo", "nome": "Rafael Lima", "papel": "gestor", "area": "Manutenção da Usina"},
-  {"email": "curadoria@regulaia.demo", "nome": "Curadoria RegulaIA", "papel": "regulatorio", "plataforma": true}
+  {"email": "curadoria@mitra.demo", "nome": "Curadoria Mitra", "papel": "regulatorio", "plataforma": true}
  ]
 }

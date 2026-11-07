@@ -1,7 +1,7 @@
 """Roda a suíte inteira também no Postgres.
 
 Sem variável, os testes usam SQLite (rápido, sem servidor). Com
-REGULAIA_TESTE_PG=postgresql://... cada `db.conectar(":memory:")` vira um schema novo e
+MITRA_TESTE_PG=postgresql://... cada `db.conectar(":memory:")` vira um schema novo e
 isolado no Postgres, e cada arquivo vira um schema próprio (duas conexões no mesmo
 arquivo veem os mesmos dados, como no SQLite). O mesmo domínio, os mesmos testes, os dois
 bancos. Testes que medem algo só do SQLite (PRAGMA, arquivo antigo) levam a marca `sqlite`.
@@ -15,7 +15,7 @@ import uuid
 
 import pytest
 
-URL_PG = os.environ.get("REGULAIA_TESTE_PG")
+URL_PG = os.environ.get("MITRA_TESTE_PG")
 
 
 def pytest_configure(config):
@@ -36,7 +36,7 @@ def _postgres_no_lugar_do_sqlite(monkeypatch):
     if not URL_PG:
         yield
         return
-    from regulaia import banco, db
+    from mitra import banco, db
 
     rodada = uuid.uuid4().hex[:8]
     criados: list[str] = []

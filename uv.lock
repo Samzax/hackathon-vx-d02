@@ -1673,7 +1673,7 @@ wheels = [
 ]
 
 [[package]]
-name = "regulaia"
+name = "mitra"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
@@ -1681,6 +1681,7 @@ dependencies = [
     { name = "altair" },
     { name = "beautifulsoup4" },
     { name = "boto3" },
+    { name = "cryptography" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "openpyxl" },
@@ -1715,6 +1716,7 @@ requires-dist = [
     { name = "altair", specifier = ">=6" },
     { name = "beautifulsoup4", specifier = ">=4.12" },
     { name = "boto3", specifier = ">=1.40" },
+    { name = "cryptography", specifier = ">=50.0.2" },
     { name = "fastapi", specifier = ">=0.162.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "openpyxl", specifier = ">=3.1.5" },

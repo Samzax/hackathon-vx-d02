@@ -1,4 +1,4 @@
--- Vigência e alterações das normas federais, lidas da ficha da Câmara (regulaia/vigencia.py).
+-- Vigência e alterações das normas federais, lidas da ficha da Câmara (mitra/vigencia.py).
 CREATE TABLE IF NOT EXISTS norma_vigencia (
     chave         TEXT COLLATE "C" PRIMARY KEY,
     titulo        TEXT COLLATE "C" NOT NULL,

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from regulaia import db
+from mitra import db
 
 SEED = Path(__file__).resolve().parent.parent / "seed_obligations.csv"
 TRECHO_245 = "III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º."
@@ -189,7 +189,7 @@ def test_cada_obrigacao_da_res220_cita_o_texto_literal():
     """Toda obrigação do cadastro inicial traz o parágrafo da Res. 220 que a cria, palavra por palavra."""
     import csv
 
-    from regulaia import normas
+    from mitra import normas
 
     with open(SEED, encoding="utf-8", newline="") as f:
         linhas = list(csv.DictReader(f))

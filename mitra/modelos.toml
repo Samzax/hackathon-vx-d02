@@ -1,0 +1,81 @@
+# Qual modelo atende cada camada. Para cada camada, vale o primeiro modelo da lista
+# cujo provedor tem chave no .env. Trocar de modelo é editar este arquivo, não o código.
+#
+# Camada 2: modelo barato, atende quase tudo.
+# Camada 3: só quando a camada 2 devolve baixa confiança ou o Python reprova a resposta.
+
+[camadas.2]
+modelos = [
+  { provedor = "deepseek",  modelo = "deepseek-chat" },
+  { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "high" },
+  { provedor = "opencode",  modelo = "claude-haiku-5-5" },
+  { provedor = "anthropic", modelo = "claude-haiku-5-5" },
+  # No evento: troque pelo ID (ou perfil de inferência) que o console do Bedrock mostrar para o Haiku 4.5
+  # e mova esta linha para o topo da lista. Só vale com MITRA_BEDROCK=1 no .env.
+  # Pela API Converse (boto3, o que o código usa) o Haiku 4.5 costuma aparecer como perfil entre regiões
+  # "us.anthropic.claude-haiku-4-5-20251001-v1:0"; o endpoint Mantle usa "anthropic.claude-haiku-4-5".
+  # Conferir no console da conta do evento antes de trocar: o que vale é o que ela habilitou.
+  { provedor = "bedrock",   modelo = "ID_DO_HAIKU_4_5_NO_BEDROCK" },
+]
+
+[camadas.3]
+modelos = [
+  { provedor = "deepseek",  modelo = "deepseek-reasoner" },
+  { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "max" },
+  { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
+  # No evento: ID do Sonnet 5 no console do Bedrock (ver comentário da camada 2). No Mantle é
+  # "anthropic.claude-sonnet-5"; na Converse, o perfil que o console mostrar (us.anthropic....).
+  { provedor = "bedrock",   modelo = "ID_DO_SONNET_5_NO_BEDROCK" },
+]
+
+# Pergunte à torre (mitra/pergunta.py): conversa com uso de ferramentas, não JSON. Vale o primeiro
+# provedor ligado. Na AWS, o Bedrock (MITRA_BEDROCK=1): IDs conferidos com chamada real na conta do
+# evento em 7/11/2026 (perfis de inferência us.*). Fora da AWS, a API da Anthropic ou o DeepSeek.
+[pergunta]
+modelos = [
+  { provedor = "bedrock",   modelo = "us.anthropic.claude-sonnet-5" },
+  { provedor = "bedrock",   modelo = "us.anthropic.claude-haiku-4-5-20251001-v1:0" },
+  { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
+  { provedor = "opencode",  modelo = "deepseek-v4.1-flash" },
+  { provedor = "deepseek",  modelo = "deepseek-chat" },
+]
+
+# formato: "openai" (/chat/completions) ou "anthropic" (/messages).
+[provedores.deepseek]
+chave = "DEEPSEEK_API_KEY"
+formato = "openai"
+base = "https://api.deepseek.com/v1"
+
+[provedores.anthropic]
+chave = "ANTHROPIC_API_KEY"
+formato = "anthropic"
+base = "https://api.anthropic.com/v1"
+
+[provedores.bedrock]
+# Amazon Bedrock pela API Converse (boto3). "chave" aqui não é chave: MITRA_BEDROCK=1 liga o provedor.
+# A credencial vem do perfil AWS do ambiente (AWS_PROFILE) e nunca vai para o .env nem para o código.
+chave = "MITRA_BEDROCK"
+formato = "bedrock"
+regiao = "us-east-1"
+intervalo_minimo_s = 1.1      # regra do evento: menos de 1 requisição por segundo
+
+[provedores.opencode]
+# O plano Go é voltado a agentes de programação: o cliente precisa se identificar
+# e mandar um ID de sessão estável (x-opencode-session).
+chave = "OPENCODE_API_KEY"
+formato = "openai"
+base = "https://opencode.ai/inference/go/openai/v1"
+base_anthropic = "https://opencode.ai/inference/go/anthropic/v1"
+modelos_anthropic = ["claude-haiku-5-5", "minimax-m3", "qwen3.8-max", "qwen3.8-flash", "qwen3.7-plus"]
+cabecalho_sessao = "x-opencode-session"
+
+# US$ por milhão de tokens (entrada, saída), para medir o custo de cada chamada.
+# Fonte: https://opencode.ai/zen/go/v1/models e páginas de preço dos provedores (nov/2026).
+[precos]
+"deepseek-v4.1-flash" = [0.15, 0.60]
+"deepseek-chat"       = [0.15, 0.60]
+"deepseek-reasoner"   = [0.66, 1.98]
+"claude-haiku-5-5"    = [0.10, 0.50]
+"claude-sonnet-5-5"   = [2.00, 10.00]
+"us.anthropic.claude-sonnet-5"                 = [2.00, 10.00]
+"us.anthropic.claude-haiku-4-5-20251001-v1:0"  = [1.00, 5.00]

@@ -1,8 +1,8 @@
-# RegulaIA: imagem da torre para rodar na nuvem (AWS App Runner, ECS ou EC2).
+# Mitra: imagem da torre para rodar na nuvem (AWS App Runner, ECS ou EC2).
 #
-#   docker build -t regulaia .
-#   docker run -p 8501:8501 regulaia                      # demo: sem chave, roda do cache
-#   docker run -p 8501:8501 --env-file .env regulaia      # com IA de verdade (chaves no .env)
+#   docker build -t mitra .
+#   docker run -p 8501:8501 mitra                      # demo: sem chave, roda do cache
+#   docker run -p 8501:8501 --env-file .env mitra      # com IA de verdade (chaves no .env)
 #
 # A demo não precisa de internet nem de chave: as respostas de IA usadas nela estão em
 # data/cache_ia_demo.json. As chaves, quando houver, entram por variável de ambiente,
@@ -27,8 +27,8 @@ COPY . .
 RUN uv sync --locked --no-dev
 
 # usuário sem privilégio; o banco da demo é recriado em data/ a cada início
-RUN useradd --create-home regulaia && chown -R regulaia /app
-USER regulaia
+RUN useradd --create-home mitra && chown -R mitra /app
+USER mitra
 
 EXPOSE 8501
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s \

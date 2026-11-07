@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from regulaia import db, demo
+from mitra import db, demo
 
 AppTest = pytest.importorskip("streamlit.testing.v1").AppTest
 APP = str(Path(__file__).resolve().parent.parent / "app.py")
@@ -21,19 +21,19 @@ def _abrir(conta: str | None = DEMO):
 
 @pytest.fixture
 def banco_temporario(tmp_path, monkeypatch):
-    monkeypatch.setattr(db, "DB_PADRAO", tmp_path / "regulaia.db")
+    monkeypatch.setattr(db, "DB_PADRAO", tmp_path / "mitra.db")
     monkeypatch.setattr(demo, "RADAR", tmp_path / "radar.json")
     # como num clone novo (e no CI): só as respostas de IA que estão no Git (data/cache_ia_demo.json),
     # nunca o data/cache_ia.db local de quem desenvolve
-    from regulaia import impacto
+    from mitra import impacto
     monkeypatch.setattr(impacto, "CACHE_IA", tmp_path / "cache_ia.db")
     # cada teste com conexões novas: o st.cache_resource vive no processo, e no Postgres o
     # conftest fecha as conexões do teste anterior
     import streamlit as st
     st.cache_resource.clear()
-    from regulaia import arquivos
+    from mitra import arquivos
     monkeypatch.setattr(arquivos, "PASTA", tmp_path / "evidencias")
-    monkeypatch.delenv("REGULAIA_S3_BUCKET", raising=False)
+    monkeypatch.delenv("MITRA_S3_BUCKET", raising=False)
 
 
 def test_torre_abre_e_aprova_mudanca(banco_temporario):
@@ -93,7 +93,7 @@ def test_envio_de_fir_tira_a_b3_do_atraso(banco_temporario):
 
 
 def test_pdf_escaneado_sem_ocr_avisa(banco_temporario, monkeypatch):
-    monkeypatch.delenv("REGULAIA_OCR", raising=False)
+    monkeypatch.delenv("MITRA_OCR", raising=False)
     at = _abrir().run()
     exemplo = next(s for s in at.selectbox if s.label.endswith("documento de exemplo"))
     exemplo.select("FIR_B3_2026-10-1Q_escaneada.pdf").run()
@@ -113,7 +113,7 @@ def test_fir_com_anomalia_mostra_alerta(banco_temporario):
 
 def test_clone_novo_sem_chave_mostra_o_radar(tmp_path, monkeypatch):
     """No evento o repositório é clonado limpo: sem cache_ia.db e sem .env, o radar vem do cache da demo."""
-    from regulaia import ia, torre
+    from mitra import ia, torre
 
     monkeypatch.setattr(ia, "load_dotenv", lambda *a, **k: None)
     for chave in ("DEEPSEEK_API_KEY", "ANTHROPIC_API_KEY", "OPENCODE_API_KEY"):
@@ -179,7 +179,7 @@ def test_todas_as_visoes_em_todas_as_datas_da_viagem(banco_temporario):
 
 def test_ato_ficticio_vira_mudanca_pendente(banco_temporario, monkeypatch):
     """O ato de exemplo da aba Radar roda do cache da demo (sem chave) e vira mudança para aprovar."""
-    from regulaia import ia
+    from mitra import ia
 
     monkeypatch.setattr(ia, "load_dotenv", lambda *a, **k: None)
     for chave in ("DEEPSEEK_API_KEY", "ANTHROPIC_API_KEY", "OPENCODE_API_KEY"):
@@ -335,7 +335,7 @@ def test_importar_mineradora_do_sigbm_e_operar(banco_temporario):
 
 def test_numero_da_caixa_abre_entregas_filtrada(banco_temporario):
     """Clicar em "Ver na lista" embaixo das atrasadas leva à aba Entregas só com as atrasadas."""
-    from regulaia import agenda
+    from mitra import agenda
 
     at = _abrir().run()
     n = _atrasadas(at)
@@ -406,7 +406,7 @@ def test_mapa_e_linha_do_tempo_aparecem_na_demo(banco_temporario):
 
 def _senha_demo(monkeypatch) -> str:
     import json
-    monkeypatch.delenv("REGULAIA_SENHA_DEMO", raising=False)
+    monkeypatch.delenv("MITRA_SENHA_DEMO", raising=False)
     return json.loads((Path(APP).parent / "data" / "usuarios_demo.json").read_text(encoding="utf-8"))["senha"]
 
 
@@ -457,7 +457,7 @@ def test_ti_so_ve_contas_e_cria_gestor(banco_temporario, monkeypatch):
     next(b for b in at.button if b.label == "Criar conta").click().run()
     assert not at.exception and not at.error
     conn = db.conectar(db.DB_PADRAO)
-    from regulaia import usuarios
+    from mitra import usuarios
     bruno = usuarios.autenticar(conn, "bruno@serraazul.demo", "mina-2026!")
     assert bruno["papel"] == "gestor" and bruno["area"] == "Manutenção da Mina" and bruno["criado_por"] == "Equipe de TI"
 

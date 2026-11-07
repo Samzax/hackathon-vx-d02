@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-from regulaia import db, demo
+from mitra import db, demo
 
 
 def _bool(nome: str, padrao: bool) -> bool:
@@ -19,32 +19,32 @@ def _bool(nome: str, padrao: bool) -> bool:
 @dataclass(frozen=True)
 class Config:
     # banco: URL postgresql://... (Compose, AWS RDS) ou caminho de arquivo SQLite (dev)
-    banco: str = field(default_factory=lambda: os.environ.get("REGULAIA_DATABASE_URL") or str(db.DB_PADRAO))
+    banco: str = field(default_factory=lambda: os.environ.get("MITRA_DATABASE_URL") or str(db.DB_PADRAO))
     # cache das respostas de IA: no Postgres fica no mesmo banco; no SQLite, no arquivo de sempre
-    banco_cache: str | None = field(default_factory=lambda: os.environ.get("REGULAIA_CACHE_URL"))
+    banco_cache: str | None = field(default_factory=lambda: os.environ.get("MITRA_CACHE_URL"))
     # Postgres: o pool de conexões da API (no SQLite é uma conexão por requisição). `pool_min` ficam
     # sempre abertas, até `pool_max` em uso ao mesmo tempo (quem passa disso espera uma ser devolvida),
     # e a que sobra acima do mínimo fecha depois de `pool_ociosa_s` segundos parada.
-    pool_min: int = field(default_factory=lambda: int(os.environ.get("REGULAIA_POOL_MIN", "1")))
-    pool_max: int = field(default_factory=lambda: int(os.environ.get("REGULAIA_POOL_MAX", "5")))
-    pool_ociosa_s: float = field(default_factory=lambda: float(os.environ.get("REGULAIA_POOL_OCIOSA_S", "600")))
+    pool_min: int = field(default_factory=lambda: int(os.environ.get("MITRA_POOL_MIN", "1")))
+    pool_max: int = field(default_factory=lambda: int(os.environ.get("MITRA_POOL_MAX", "5")))
+    pool_ociosa_s: float = field(default_factory=lambda: float(os.environ.get("MITRA_POOL_OCIOSA_S", "600")))
     # quanto uma requisição espera por uma conexão livre antes de responder 503
-    pool_espera_s: float = field(default_factory=lambda: float(os.environ.get("REGULAIA_POOL_ESPERA_S", "30")))
+    pool_espera_s: float = field(default_factory=lambda: float(os.environ.get("MITRA_POOL_ESPERA_S", "30")))
     # cookie só por HTTPS em produção (atrás do load balancer); local roda em http
-    cookie_seguro: bool = field(default_factory=lambda: _bool("REGULAIA_COOKIE_SEGURO", False))
-    horas_sessao: int = field(default_factory=lambda: int(os.environ.get("REGULAIA_HORAS_SESSAO", "12")))
+    cookie_seguro: bool = field(default_factory=lambda: _bool("MITRA_COOKIE_SEGURO", False))
+    horas_sessao: int = field(default_factory=lambda: int(os.environ.get("MITRA_HORAS_SESSAO", "12")))
     # onde os documentos enviados ficam: s3://bucket/prefixo ou uma pasta local
     armazenamento: str = field(default_factory=lambda: os.environ.get(
-        "REGULAIA_ARMAZENAMENTO", str(db.ROOT / "data" / "uploads")))
+        "MITRA_ARMAZENAMENTO", str(db.ROOT / "data" / "uploads")))
     # origens que podem chamar a API com cookie (front em outro host durante o desenvolvimento)
     origens: tuple[str, ...] = field(default_factory=lambda: tuple(
-        o for o in os.environ.get("REGULAIA_ORIGENS", "http://localhost:3000").split(",") if o))
+        o for o in os.environ.get("MITRA_ORIGENS", "http://localhost:3000").split(",") if o))
     # monta a demo (cadastro, histórico, radar) no primeiro start se o banco estiver vazio
-    montar_demo: bool = field(default_factory=lambda: _bool("REGULAIA_MONTAR_DEMO", True))
+    montar_demo: bool = field(default_factory=lambda: _bool("MITRA_MONTAR_DEMO", True))
     # token de serviço para o agente MCP e jobs (Bearer); vazio desliga
-    token_servico: str | None = field(default_factory=lambda: os.environ.get("REGULAIA_TOKEN_SERVICO") or None)
+    token_servico: str | None = field(default_factory=lambda: os.environ.get("MITRA_TOKEN_SERVICO") or None)
     # o front (Next.js exportado): servido pela própria API, na mesma origem, se a pasta existir
-    front: str = field(default_factory=lambda: os.environ.get("REGULAIA_FRONT") or str(db.ROOT / "front" / "out"))
+    front: str = field(default_factory=lambda: os.environ.get("MITRA_FRONT") or str(db.ROOT / "front" / "out"))
 
     @property
     def postgres(self) -> bool:

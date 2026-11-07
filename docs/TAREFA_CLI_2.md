@@ -14,10 +14,10 @@ Ler antes: `docs/PLATAFORMA.md` (seções Multiempresa e Fase 1), `api/seguranca
 Hoje `api/banco.py` abre e fecha uma conexão por requisição. No Postgres, trocar por um
 `psycopg_pool.ConnectionPool` criado no `lifespan` do app (tamanho por variável de ambiente, com padrão
 pequeno), devolvendo a conexão ao pool no fim da requisição, com rollback se ficou transação aberta. No
-SQLite (testes e demo) continua uma conexão por requisição. `regulaia/banco.py` tem a conexão Postgres
+SQLite (testes e demo) continua uma conexão por requisição. `mitra/banco.py` tem a conexão Postgres
 com a cara do sqlite3: o pool precisa entregar esse mesmo embrulho. `psycopg[binary]` já está nas
 dependências de execução; acrescentar `psycopg-pool`. Teste: várias requisições em sequência e em
-paralelo no Postgres (`REGULAIA_TESTE_PG`) sem vazar conexão (o pool volta ao tamanho mínimo) e uma
+paralelo no Postgres (`MITRA_TESTE_PG`) sem vazar conexão (o pool volta ao tamanho mínimo) e uma
 requisição que falha no meio não deixa transação aberta para a próxima.
 
 ## 2. Plataforma só lê os dados operacionais do cliente
@@ -28,7 +28,7 @@ Decisão: **nos dados operacionais do cliente a plataforma só lê.** Quem entre
 cadastro é a própria empresa. A plataforma continua escrevendo o que é dela: decisão de mudança de
 norma pública, radar, descoberta e curadoria, contas (TI da plataforma) e importação do SIGBM.
 
-- Fechar com 403 e mensagem clara ("a equipe RegulaIA só lê os dados da empresa") as rotas de escrita da
+- Fechar com 403 e mensagem clara ("a equipe Mitra só lê os dados da empresa") as rotas de escrita da
   torre e de evidências: `POST /comprovantes`, `POST /entregas`, `DELETE /entregas`, `POST /atribuicoes`,
   `POST /comentarios`, `PATCH /ativos/{id}/atributos`, `PUT /ativos/{id}/responsavel`, `POST /evidencias/registro`.
   `POST /evidencias/leitura` (ler PDF sem gravar) continua aberta.

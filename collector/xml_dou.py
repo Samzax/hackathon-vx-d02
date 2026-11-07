@@ -20,7 +20,7 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-from .dou import ANM, NORMATIVE_TYPES
+from .dou import ANM, SAUDE, NORMATIVE_TYPES
 
 
 @dataclass
@@ -41,6 +41,10 @@ class XmlAct:
     @property
     def is_anm(self) -> bool:
         return ANM in self.category
+
+    @property
+    def is_saude(self) -> bool:
+        return SAUDE in self.category or "Agência Nacional de Vigilância Sanitária" in self.category
 
     @property
     def is_normative(self) -> bool:
@@ -108,6 +112,21 @@ def load_month(zip_path: str | Path) -> list[XmlAct]:
         ))
     acts.sort(key=lambda a: (a.pub_date, a.pub_name, a.id_materia))
     return acts
+
+
+def atos_do_setor(acts: list[XmlAct], setor: str) -> list[XmlAct]:
+    """Recorte reutilizável do DOU para um setor antes da triagem por regra e IA.
+
+    O XML mensal continua sendo a fonte oficial de dados abertos; mudar o setor não exige
+    mudar o parser nem recorrer ao site do DOU. Setores novos só precisam declarar o órgão
+    que os regula e manter um cadastro de obrigações compatível.
+    """
+    predicados = {"mineracao": lambda a: a.is_anm, "saude": lambda a: a.is_saude}
+    try:
+        predicado = predicados[setor]
+    except KeyError as e:
+        raise ValueError(f"setor desconhecido: {setor}") from e
+    return [a for a in acts if predicado(a)]
 
 
 @dataclass

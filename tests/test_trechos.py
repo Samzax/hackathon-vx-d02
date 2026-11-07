@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from regulaia import normas, vigencia
-from regulaia.impacto import _limpo
+from mitra import normas, vigencia
+from mitra.impacto import _limpo
 
 RAIZ = Path(__file__).resolve().parent.parent
 NORMAS = RAIZ / "data" / "raw" / "normas"
@@ -50,8 +50,8 @@ def test_trecho_existe_no_texto_oficial(cadastro):
 
 
 def test_toda_fonte_tem_url_oficial():
-    """Quem clona o repositório baixa os textos com `uv run python -m regulaia.fontes`."""
-    from regulaia import fontes
+    """Quem clona o repositório baixa os textos com `uv run python -m mitra.fontes`."""
+    from mitra import fontes
 
     usados = {nome for nomes in FONTES.values() for nome in nomes}
     assert usados <= set(fontes.FONTES)

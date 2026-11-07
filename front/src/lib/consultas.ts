@@ -90,7 +90,7 @@ export function useCobertura() {
   });
 }
 
-/** A fila da curadoria RegulaIA (só a plataforma): não depende da empresa nem do dia. */
+/** A fila da curadoria Mitra (só a plataforma): não depende da empresa nem do dia. */
 export function useNormasCandidatas(status: StatusCandidata = "relevante", jurisdicao = "") {
   const { t, chave } = useBase();
   return useQuery({
@@ -116,6 +116,17 @@ export function useDecidirCandidata(callbacks: { onSuccess?: (n: NormaCandidata)
   });
 }
 
+/** As condicionantes da empresa (as propostas de licença esperando a decisão da dona). */
+export function useCondicionantes(status?: "pendente" | "aprovada" | "rejeitada") {
+  const { id, chave } = useBase();
+  return useQuery({
+    queryKey: [...chave, "condicionantes", status ?? "todas"],
+    queryFn: () => dados(api.GET("/api/v1/empresas/{empresa_id}/condicionantes", {
+      params: { path: { empresa_id: id }, query: { status_: status ?? null } } })),
+    enabled: !!id,
+  });
+}
+
 /** Depois de uma escrita, tudo o que é da torre pode ter mudado (contagens, ficha, calendário). */
 export function useInvalidarTorre() {
   const qc = useQueryClient();
@@ -138,5 +149,24 @@ export function useEntregar() {
       }));
     },
     onSuccess: () => invalidar(),
+  });
+}
+
+/** Pergunte à torre: se está ligado aqui (e com qual modelo), sem depender da empresa nem do dia. */
+export function useEstadoPergunta() {
+  const { t, chave } = useBase();
+  return useQuery({
+    queryKey: [chave[0], chave[1], "pergunta-estado"],
+    queryFn: () => dados(api.GET("/api/v1/pergunta/estado")),
+    enabled: !t.ti,
+  });
+}
+
+export type PedidoPergunta = Esquemas["PedidoPergunta"];
+
+/** Uma pergunta: o modelo consulta a torre com a sessão de quem pergunta. Não escreve nada na torre. */
+export function usePerguntar() {
+  return useMutation({
+    mutationFn: (p: PedidoPergunta) => dados(api.POST("/api/v1/pergunta", { body: p })),
   });
 }

@@ -1,4 +1,4 @@
-"""Vigência e alterações das normas federais pela ficha da Câmara (regulaia/vigencia.py).
+"""Vigência e alterações das normas federais pela ficha da Câmara (mitra/vigencia.py).
 
 As páginas vêm de cópias reais em tests/fixtures/vigencia: o resolvedor de URN do LexML para a
 Lei 12.334/2010 e o Decreto 62.934/1968 (revogado pelo Decreto 9.406/2018), as fichas da Câmara e o
@@ -9,9 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from regulaia import db, demo
-from regulaia import descoberta as d
-from regulaia import vigencia as v
+from mitra import db, demo
+from mitra import descoberta as d
+from mitra import vigencia as v
 
 FIX = Path(__file__).parent / "fixtures" / "vigencia"
 CAMARA = "https://www2.camara.leg.br/legin/fed/"

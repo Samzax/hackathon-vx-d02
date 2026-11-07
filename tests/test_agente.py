@@ -29,7 +29,7 @@ def http(tmp_path):
 @pytest.fixture
 def ferramentas(http):
     """As funções das ferramentas, chamadas como o MCP chama (pelo nome, com argumentos)."""
-    mcp = criar_servidor(Torre(http))
+    mcp = criar_servidor(Torre(http, empresa="Mineradora Serra Azul"))
 
     def chamar(nome: str, **args):
         r = asyncio.run(mcp.call_tool(nome, args))
@@ -43,27 +43,37 @@ def ferramentas(http):
 def test_ferramentas_sao_so_de_leitura(http):
     tools = asyncio.run(criar_servidor(Torre(http)).list_tools())
     nomes = {t.name for t in tools}
-    assert {"empresas", "pendencias", "ficha_do_ativo", "mudancas_pendentes", "linha_do_tempo",
+    assert {"empresas", "instanciacao", "pendencias", "ficha_do_ativo", "mudancas_pendentes", "linha_do_tempo",
             "analisar_ato", "boletim", "cobertura_normativa"} <= nomes
-    assert all(t.annotations.read_only_hint and not t.annotations.destructive_hint for t in tools)
+    # analisar_ato não grava na torre, mas chama a IA (custo + cache): o cliente MCP pede confirmação
+    assert all(t.annotations.read_only_hint for t in tools if t.name != "analisar_ato")
+    assert all(not t.annotations.destructive_hint for t in tools)
+    assert not next(t for t in tools if t.name == "analisar_ato").annotations.read_only_hint
     assert not nomes & {"registrar_entrega", "decidir", "aprovar"}       # decisão é de gente, na torre
 
 
 def test_nenhuma_ferramenta_escreve_na_torre(http, ferramentas, tmp_path):
     """Todas as ferramentas, chamadas de verdade: só GET, e o único POST é a análise de ato, que não grava."""
     from api.rotas.regulatorio import ATO_EXEMPLO
-    from regulaia import db
+    from mitra import db
 
     pedidos: list[tuple[str, str]] = []
     http.event_hooks["request"].append(lambda r: pedidos.append((r.method, r.url.path)))
     args = {"ficha_do_ativo": {"ativo": "B3", "hoje": HOJE}, "historico_da_obrigacao": {"codigo": "OB-01"},
             "analisar_ato": {"texto": ATO_EXEMPLO}}
     conn = db.conectar(str(tmp_path / "api.db"))
+    # a Serra Azul da demo entrou pelo seed, não pela instanciação: sem esta linha a ferramenta nova
+    # responde "não encontrado" e o teste pararia nela (a instanciação em si é lida duas vezes, só GET)
+    with conn:
+        eid = conn.execute("SELECT id FROM empresa ORDER BY id LIMIT 1").fetchone()[0]
+        conn.execute("INSERT INTO instanciacao (empresa_id, cnpj, razao_social, ufs, no_sigbm, criada_por, "
+                     "criada_em) VALUES (?, NULL, 'Mineradora Serra Azul S.A.', '[\"MG\"]', 1, 'teste', ?)",
+                     (eid, db.agora()))
     tabelas = ("evidencia", "evento", "responsavel_obrigacao", "obrigacao_versao", "acionamento", "ativo")
     contar = lambda: {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in tabelas}  # noqa: E731
     cadastro = lambda: [r["atributos"] for r in conn.execute("SELECT atributos FROM ativo ORDER BY id")]  # noqa: E731
     antes = (contar(), cadastro())
-    nomes = [t.name for t in asyncio.run(criar_servidor(Torre(http)).list_tools())]
+    nomes = [t.name for t in asyncio.run(criar_servidor(Torre(http, empresa="Mineradora Serra Azul")).list_tools())]
     for nome in nomes:
         ferramentas(nome, **args.get(nome, {}))
     assert (contar(), cadastro()) == antes
@@ -79,6 +89,37 @@ def test_pendencias_da_demo_com_norma_e_dispositivo(ferramentas):
     fir = next(l for l in p["pendencias"] if l["ativo"] == "B3" and l["obrigacao"] == "R95-01")
     assert fir["status"] == "atrasada" and fir["norma"] == "Res. ANM 95/2022" and fir["dispositivo"]
     assert fir["periodos_faltando"]
+
+
+def test_pendencias_de_um_ativo_filtram_pelo_codigo(ferramentas):
+    """O painel filtra pelo código do ativo: com o id, a lista vinha vazia e o agente dizia "nada atrasado"."""
+    p = ferramentas("pendencias", hoje=HOJE, ativo="B3", status=["atrasada"])
+    assert {l["obrigacao"] for l in p["pendencias"]} == {"R95-01", "R95-02"}
+    assert {l["ativo"] for l in p["pendencias"]} == {"B3"} and p["contagem"]["atrasada"] == 2
+
+
+def test_pin_de_empresa_esconde_obrigacao_propria_de_outra_cliente(http, tmp_path):
+    """Agente preso a uma empresa: histórico e análise de ato nunca mostram a condicionante de outra."""
+    from mcp.server.mcpserver.exceptions import ToolError
+
+    from mitra import db
+
+    conn = db.conectar(str(tmp_path / "api.db"))
+    with conn:
+        ob = conn.execute("INSERT INTO obrigacao (codigo, tipo_ativo, norma, empresa) "
+                          "VALUES ('TAC-X-01', 'barragem', 'TAC fictício', 'Mineradora X')").lastrowid
+        conn.execute(
+            "INSERT INTO obrigacao_versao (obrigacao_id, versao, titulo, artigo, aplica_se_a, regra, "
+            "periodicidade, agenda, prazo, vigencia_desde, responsavel, evidencia, fonte, status) "
+            "VALUES (?, 1, 'Caução ambiental do TAC', 'cl. 1', '*', '*', 'Anual', 'anual+0d', '-', "
+            "NULL, 'X', 'Comprovante', 'TAC fictício cl. 1', 'vigente')", (ob,))
+    conn.close()
+    sem_pin = criar_servidor(Torre(http))
+    r = asyncio.run(sem_pin.call_tool("historico_da_obrigacao", {"codigo": "TAC-X-01"}))
+    assert not r.is_error                       # a plataforma (token de serviço) vê
+    preso = criar_servidor(Torre(http, empresa="Mineradora Serra Azul"))
+    with pytest.raises(ToolError, match="Não encontrado"):
+        asyncio.run(preso.call_tool("historico_da_obrigacao", {"codigo": "TAC-X-01"}))
 
 
 def test_ficha_mostra_a_lei_federal_da_zas_na_b2(ferramentas):
@@ -130,12 +171,13 @@ def test_empresa_fixa_prende_o_escopo(http):
     t = Torre(http, empresa="Mineradora Serra Azul")
     assert [e["nome"] for e in t.empresas()] == ["Mineradora Serra Azul"]
     assert t.empresa_id(None) == t.empresas()[0]["id"]
-    with pytest.raises(ErroTorre, match="não encontrada"):
+    # pin que não casa com nada é erro na cara, não um agente destravado em silêncio
+    with pytest.raises(ErroTorre, match="não casa com nenhuma empresa"):
         Torre(http, empresa="Outra Mineração").empresa_id("Outra Mineração")
 
 
 def test_ativo_inexistente_e_token_errado_viram_erro_legivel(http):
-    t = Torre(http)
+    t = Torre(http, empresa="Mineradora Serra Azul")
     with pytest.raises(ErroTorre, match="Ativo 'B9'"):
         t.ativo(t.empresa_id(None), "B9")
     http.headers["Authorization"] = "Bearer outro"
@@ -143,9 +185,64 @@ def test_ativo_inexistente_e_token_errado_viram_erro_legivel(http):
         Torre(http).empresas()
 
 
+def test_erro_de_validacao_vira_frase_nao_repr(http):
+    """O 422 do FastAPI chega como lista de dicts: o agente traduz para 'campo: mensagem'."""
+    t = Torre(http, empresa="Mineradora Serra Azul")
+    with pytest.raises(ErroTorre, match="hoje") as e:
+        t.get(f"/empresas/{t.empresa_id(None)}/painel", hoje="07/11/2026")
+    assert "[{" not in str(e.value)
+
+
 def test_erro_da_torre_e_erro_de_ferramenta(http):
     """ToolError: o protocolo devolve ao cliente um resultado com isError e a mensagem, não derruba a sessão."""
     from mcp.server.mcpserver.exceptions import ToolError
 
     with pytest.raises(ToolError, match="B9"):
-        asyncio.run(criar_servidor(Torre(http)).call_tool("ficha_do_ativo", {"ativo": "B9"}))
+        asyncio.run(criar_servidor(Torre(http, empresa="Mineradora Serra Azul")).call_tool("ficha_do_ativo", {"ativo": "B9"}))
+
+
+def _empresa_instanciada(tmp_path, nome: str) -> int:
+    """Uma empresa que passou pela instanciação, direto no banco do teste: a Serra Azul da demo entrou
+    pelo seed, então a rota da instanciação responde 404 para ela."""
+    from mitra import db, instanciacao
+
+    conn = db.conectar(str(tmp_path / "api.db"))
+    eid = instanciacao.criar(conn, nome=nome, razao_social=f"{nome} S.A.", cnpj=None, ufs=["mg"], por="teste")
+    instanciacao.criar_ativo(conn, eid, tipo="barragem", codigo="B1", nome="Barragem da nova", por="teste")
+    conn.close()
+    return eid
+
+
+def test_instanciacao_conta_as_etapas_e_os_dados_que_faltam(http, tmp_path):
+    """'Em que pé está a instanciação?': as 8 etapas, o que falta em cada uma e o cadastro a completar.
+    Agente sem escopo (plataforma): a empresa instanciada não é a Serra Azul da fixture."""
+    from mitra import instanciacao as dominio
+
+    nome = "Mineradora Instanciada (fictícia)"
+    _empresa_instanciada(tmp_path, nome)
+    mcp = criar_servidor(Torre(http))
+    r = asyncio.run(mcp.call_tool("instanciacao", {"empresa": nome}))
+    assert not r.is_error, r.content
+    i = r.structured_content["result"] if r.structured_content and "result" in r.structured_content \
+        else json.loads(r.content[0].text)
+    assert i["empresa"] == nome and i["em_operacao"] is False and i["monitorado_desde"] is None
+    etapas = {e["titulo"]: e for e in i["etapas"]}
+    assert set(etapas) == set(dominio.TITULOS.values()) and len(i["etapas"]) == len(dominio.ETAPAS)
+    assert etapas["Cadastro da empresa"]["estado"] == "pronta" and etapas["Cadastro da empresa"]["por"] == "teste"
+    assert etapas["Ativos e unidades"]["estado"] == "pronta"
+    assert etapas["Ativos e unidades"]["numeros"] == {"ativos": 1, "unidades": 0}
+    assert etapas["Revisão e entrada em operação"]["estado"] == "pendente"
+    assert etapas["Revisão e entrada em operação"]["falta"]
+    assert 0 < i["percentual"] < 100
+    faltando = i["dados_faltando"]
+    assert faltando["total"] == len(faltando["itens"]) >= 1
+    assert all(item["ativo"] == "B1" and item["pergunta"] and item["obrigacoes"] for item in faltando["itens"])
+
+
+def test_instanciacao_de_empresa_sem_instanciacao_e_erro_legivel(http):
+    """A empresa que entrou por outro caminho não tem etapas: a ferramenta diz isso, não inventa."""
+    from mcp.server.mcpserver.exceptions import ToolError
+
+    mcp = criar_servidor(Torre(http))
+    with pytest.raises(ToolError, match="não passou pela instanciação"):
+        asyncio.run(mcp.call_tool("instanciacao", {"empresa": "Mineradora Serra Azul"}))
