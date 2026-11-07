@@ -6,7 +6,7 @@ from regulaia import agenda, db, demo, torre
 def test_prototipo_saude_reusa_torre_sem_mapa_geografico():
     """O segundo setor usa o mesmo cadastro, agenda e evidências, com ativos não geográficos."""
     conn = db.conectar(":memory:")
-    ids = demo.montar_saude(conn)
+    demo.montar_saude(conn)
     empresa = next(e for e in db.empresas(conn) if e["setor"] == "saude")
     linhas = torre.painel(conn, empresa["id"], date(2026, 11, 7), date(2026, 1, 1))
 

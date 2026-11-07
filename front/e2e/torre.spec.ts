@@ -88,10 +88,10 @@ test("curadoria aprova a Res. 245 e a Diretoria vê a decisão", async ({ page }
   const cartao = page.getByTestId("mudanca").filter({ hasText: "OB-01" });
   await expect(cartao).toContainText("Resolução ANM nº 245, de 31 de julho de 2026");
   await expect(cartao).toContainText("26/12/2029");
-  await expect(cartao).toContainText("Quem decide esta mudança: curadoria RegulaIA");
+  await expect(cartao).toContainText("Quem decide esta mudança: curadoria Mitra");
   await expect(cartao.getByRole("button", { name: "Aprovar" })).toHaveCount(0);
 
-  await verComo(page, "Curadoria RegulaIA (plataforma)");
+  await verComo(page, "Curadoria Mitra (plataforma)");
   await expect(cartao.getByRole("button", { name: "Aprovar", exact: true })).toBeVisible();
   await cartao.getByRole("button", { name: "Aprovar", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "OB-01: mudança aprovada" })).toBeVisible();
@@ -106,7 +106,7 @@ test("curadoria aprova a Res. 245 e a Diretoria vê a decisão", async ({ page }
 test("a curadoria da plataforma só lê os dados da empresa", async ({ page }) => {
   await entrarNaDemo(page);
   await expect(page.getByTestId("so-leitura")).toHaveCount(0);
-  await verComo(page, "Curadoria RegulaIA (plataforma)");
+  await verComo(page, "Curadoria Mitra (plataforma)");
   await expect(page.getByTestId("so-leitura")).toHaveText("visão da plataforma: só leitura");
 
   // vê as mesmas 4 atrasadas, sem o botão de registrar
