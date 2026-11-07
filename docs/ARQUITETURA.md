@@ -45,7 +45,7 @@ O campo `vigencia_desde`/`vigencia_ate` faz a troca de norma sozinha. As 21 obri
 
 **A contagem não zera na troca de norma.** A RPSB da Res. 220 tem código novo e ainda não tem evidência própria. A torre usa a última RPSB feita pela Res. 95 no mesmo ativo, já que o tema é o mesmo, e diz isso na nota. Isso vale para toda obrigação contada da última execução (`anos:N`, `meses:N`). Assim que chega uma evidência própria, ela passa a valer.
 
-**Tempo de resposta.** Com 8 ativos e 72 obrigações, cada clique recalcula todas as abas em 0,3 a 0,4 s (medido com `AppTest`). Os ativos são lidos com uma consulta por ativo, não uma por obrigação. Os metadados das obrigações vêm de uma consulta só, e cada regra é lida uma vez e guardada em cache.
+**Tempo de resposta.** Com 8 ativos e 72 obrigações (a medição é de antes das leis federal e mineira), cada clique recalcula todas as abas em 0,3 a 0,4 s (medido com `AppTest`). Os ativos são lidos com uma consulta por ativo, não uma por obrigação. Os metadados das obrigações vêm de uma consulta só, e cada regra é lida uma vez e guardada em cache.
 
 ## Cadastro: da norma ao CSV, com uma pessoa no meio
 
@@ -58,6 +58,63 @@ norma (ANMlegis ou PDF) -> unidades (artigos / itens) -> blocos de ~9 mil caract
 - **O Python confere cada proposta da IA.** O trecho citado tem de estar no texto do bloco e o dispositivo citado tem de pertencer ao bloco. A regra de aplicabilidade tem de ser válida e só usar atributos que existem no cadastro daquele tipo de ativo. A proposta que falha fica marcada como reprovada, com o motivo.
 - **Repetível.** A curadoria guarda só as escolhas (artigo + parte do título + ajustes). Rodar de novo gera o mesmo CSV a partir da extração versionada.
 - **Leitura das normas.** A da ANM vem do ANMlegis (HTML por artigo). A NR vem do PDF, por item (`22.24.8`). O leitor pula o sumário, junta itens repetidos e descarta os revogados.
+
+## Descoberta: quais normas a carteira precisa e o catálogo ainda não tem
+
+O extrator transforma uma norma em obrigações; o radar do DOU pega a norma nova. Faltava saber quais normas
+já publicadas valem para os ativos das clientes. O catálogo não pode depender de alguém lembrar da lei do
+Pará quando entrar uma cliente com barragem no Pará.
+
+```
+ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, unidade no Brasil...)
+   -> fontes oficiais, ano a ano (Senado, ANMlegis, Assembleia de Minas) -> camada 0, sem IA:
+      termos do tipo de ativo (temas.toml), revogada fora, regra fora (crédito, homenagem, concessão
+      de lavra a uma empresa), e a norma que regulamenta ou altera uma candidata ou uma do catálogo
+   -> triagem pela IA, pela ementa: cobra algo de quem opera o ativo? de qual tipo?
+   -> curadoria RegulaIA aprova ou descarta, com nome e nota -> extrator -> curadoria -> catálogo
+   -> cobertura por cliente: o que está no catálogo, o que espera, até quando cada fonte foi lida
+```
+
+- **Fontes com dados abertos, nada de robô contra verificação.** O Senado tem API de legislação federal
+  (lista por tipo e ano); a Assembleia de Minas publica toda a legislação mineira em CSV por ano, com a
+  situação de vigência; o ANMlegis lista as resoluções da ANM por ano, com a revogada marcada. O LexML,
+  que indexa todos os estados, responde com uma verificação anti-robô: não é usado. Estado sem conector
+  aparece na cobertura como "sem fonte automática: cobertura não verificada", nunca como coberto.
+- **A segunda passada pega o que a palavra-chave perde.** A ementa do Decreto 9.406/2018 ("Regulamenta o
+  Decreto-Lei nº 227...") não tem palavra de mineração; entra porque cita o Código de Mineração, que já é
+  candidato. A passada repete até não aparecer mais nenhuma.
+- **Descarte duvidoso relê pelo texto.** A triagem é pela ementa, e ementa engana: "Institui a Política
+  Estadual dos Atingidos por Barragens" parece só organização do Estado, e a IA descartou a Lei MG
+  23.795/2021. Descarte com confiança abaixo de 0,85 baixa o texto oficial (do artigo 1º em diante) e
+  pergunta de novo, pedindo o artigo que cobra o empreendedor. A lei federal vem do texto atualizado da
+  Câmara (o Planalto bloqueia robô); onde não há texto, fica a decisão pela ementa e a curadoria pode reabrir.
+- **Vigência e alterações das federais** (`regulaia/vigencia.py`). O Senado não diz na listagem se a norma
+  está em vigor. O resolvedor de URN do LexML (liberado no robots.txt, 5 s entre pedidos; a busca do LexML
+  tem desafio anti-robô e não é usada) leva à ficha da norma na Câmara: situação, quem alterou ou revogou
+  e em quais artigos, e o texto consolidado. Quando a Câmara não tem a ficha (decretos recentes), vale o
+  detalhe da norma nos dados abertos do Senado (situação "R" e as normas posteriores); quando nem o LexML
+  liga a norma, vale o endereço do Senado que a própria candidata trouxe da descoberta. Na fila real, as
+  248 candidatas federais foram lidas (229 pela Câmara, 19 pelo Senado) e 140 estavam revogadas (18 delas a IA tinha marcado relevante):
+  saem como descartadas, com a norma revogadora e o link na nota. Aprovada e revogada fica para a curadoria.
+- **O catálogo é conferido contra o texto de hoje.** `vigencia catalogo` lista as alterações de cada norma
+  federal do catálogo com as obrigações que citam os artigos alterados, e confere cada trecho citado no
+  texto atualizado: os 23 da Lei 12.334 continuam lá depois da Lei 15.355/2026 (que mudou os art. 3º e 15,
+  fora do catálogo). Trecho que sumiu do texto vai para a curadoria.
+- **Na dúvida, a IA marca relevante com confiança baixa.** O que ela descarta não chega a ninguém; o que
+  ela marca, a curadoria lê. A curadoria também pode reabrir uma descartada.
+- **Quem altera norma do catálogo vem marcado.** Uma resolução que altera a Res. 95 pode já estar no texto
+  consolidado que o catálogo usa: a fila diz "cita Res. ANM 95/2022: conferir o texto consolidado".
+- **Lacunas conhecidas ficam escritas** (`temas.toml`): Normas Regulamentadoras (sem lista em dados
+  abertos), Conama, Ibama e ANA, e em Minas as deliberações do Copam e as resoluções da Semad e da Feam.
+- **É trabalho da plataforma.** A fila e as decisões ficam fora do "Recriar demo", como as contas; a
+  cliente vê a própria cobertura, não a fila.
+- **Na API, leitura e decisão; busca e triagem são job.** `GET /empresas/{id}/cobertura` (cliente só a dela,
+  gestor só as linhas dos ativos da área), `GET /normas-candidatas` e `GET /normas-candidatas/{chave}` (só a
+  plataforma: a cliente recebe 403), `POST /normas-candidatas/{chave}/decisao` (só a curadoria, com o e-mail
+  da sessão e a auditoria `descoberta.decidir`). Buscar e triar leem dezenas de milhares de normas e chamam a
+  IA: `python -m api.jobs descoberta`, que sai com erro se uma fonte falhou ou a triagem parou.
+- **Aprovada não é coberta.** A cobertura separa "esperando curadoria" de "aprovada, falta extrair": só
+  quando a norma vira obrigação no catálogo a linha pode ficar verde.
 
 ## Leitor de evidência
 
@@ -110,6 +167,10 @@ Os dois são só gerados para download. Mandar por e-mail fica para a versão co
 ## O que a demo mostrou sobre as normas
 
 **A ANM e o MTE dão a mesma data para a ZAS.** A Res. ANM 245/2026 adiou para 26/12/2029 o art. 7 §1 da Res. 220: as áreas de lavra, beneficiamento e disposição de rejeitos deixam de contar como estruturas da barragem, e quem trabalha nelas não pode mais ficar na Zona de Autossalvamento. A NR-22 (item 22.24.8, Portaria MTE 105/2026) dá a mesma data para barragens não alteadas a montante; para as alteadas a montante, a exigência é imediata. Uma barragem passa a ter duas obrigações sobre o mesmo assunto (quem pode ficar na ZAS), de dois reguladores, com o mesmo prazo. A linha do tempo mostra isso sem ninguém ler as duas normas.
+
+**A lei federal já restringe a ZAS desde 2020.** O art. 18-A §2º da Lei 12.334/2010 (incluído pela Lei 14.066/2020) só admite na ZAS os trabalhadores estritamente necessários à operação e à manutenção da barragem, sem data futura. A NR-22 fixa 26/12/2029 para barragens não alteadas a montante, mas sobre uma lista própria de atividades. Na B2, que tem trabalhadores na ZAS, a obrigação da lei já aparece hoje na torre; as da Res. 220 e da NR-22 aparecem na linha do tempo, com as datas futuras. Quem lesse só a NR-22 acharia que tem até 2029.
+
+**Minas cobra mais que a União.** A Lei MG 23.291/2019 exige auditoria técnica de segurança por equipe independente credenciada todo ano para barragem de alto potencial de dano ambiental, com relatório e DCE até 1º de setembro (art. 17), e põe o relatório e o PAE para ciência e assinatura do conselho de administração (art. 18). A classificação estadual não está no SIGBM: numa mineradora importada de MG, ela aparece como dado faltando, e a auditoria não é presumida.
 
 ## Banco de dados: SQLite
 

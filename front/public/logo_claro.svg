@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 30" width="150" height="30">
+  <rect width="30" height="30" rx="7" fill="#1E6A80"/>
+  <path d="M5 11h6M5 15h5M5 19h4" stroke="#FFFFFF" stroke-opacity=".65" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M13.5 7.5h5l7 16h-16.5z" fill="#FFFFFF"/>
+  <text x="39" y="21" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17" font-weight="650" fill="#1B2128">Regula<tspan fill="#1E6A80">IA</tspan></text>
+</svg>

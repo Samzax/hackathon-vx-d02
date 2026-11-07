@@ -12,6 +12,9 @@ modelos = [
   { provedor = "anthropic", modelo = "claude-haiku-5-5" },
   # No evento: troque pelo ID (ou perfil de inferência) que o console do Bedrock mostrar para o Haiku 4.5
   # e mova esta linha para o topo da lista. Só vale com REGULAIA_BEDROCK=1 no .env.
+  # Pela API Converse (boto3, o que o código usa) o Haiku 4.5 costuma aparecer como perfil entre regiões
+  # "us.anthropic.claude-haiku-4-5-20251001-v1:0"; o endpoint Mantle usa "anthropic.claude-haiku-4-5".
+  # Conferir no console da conta do evento antes de trocar: o que vale é o que ela habilitou.
   { provedor = "bedrock",   modelo = "ID_DO_HAIKU_4_5_NO_BEDROCK" },
 ]
 
@@ -20,7 +23,8 @@ modelos = [
   { provedor = "deepseek",  modelo = "deepseek-reasoner" },
   { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "max" },
   { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
-  # No evento: ID do Sonnet 5 no console do Bedrock (ver comentário da camada 2).
+  # No evento: ID do Sonnet 5 no console do Bedrock (ver comentário da camada 2). No Mantle é
+  # "anthropic.claude-sonnet-5"; na Converse, o perfil que o console mostrar (us.anthropic....).
   { provedor = "bedrock",   modelo = "ID_DO_SONNET_5_NO_BEDROCK" },
 ]
 

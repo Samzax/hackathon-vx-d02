@@ -72,3 +72,8 @@ def test_numeros_do_funil_na_tela_e_nos_documentos():
     for doc in ("README.md", "docs/ROTEIRO_DEMO.md", "docs/ARQUITETURA.md"):
         texto = (raiz / doc).read_text(encoding="utf-8")
         assert total in texto and anm in texto, doc
+    # o front lê o funil da API, que lê data/funil_dou.json
+    import json
+    arq = json.loads((raiz / "data" / "funil_dou.json").read_text(encoding="utf-8"))
+    assert (arq["atos"], arq["anm"]) == (sum(f.total for f in funis), sum(f.anm for f in funis))
+    assert arq["normativos"] == sum(len(f.normativos) for f in funis)

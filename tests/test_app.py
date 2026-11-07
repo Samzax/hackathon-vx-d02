@@ -23,6 +23,14 @@ def _abrir(conta: str | None = DEMO):
 def banco_temporario(tmp_path, monkeypatch):
     monkeypatch.setattr(db, "DB_PADRAO", tmp_path / "regulaia.db")
     monkeypatch.setattr(demo, "RADAR", tmp_path / "radar.json")
+    # como num clone novo (e no CI): só as respostas de IA que estão no Git (data/cache_ia_demo.json),
+    # nunca o data/cache_ia.db local de quem desenvolve
+    from regulaia import impacto
+    monkeypatch.setattr(impacto, "CACHE_IA", tmp_path / "cache_ia.db")
+    # cada teste com conexões novas: o st.cache_resource vive no processo, e no Postgres o
+    # conftest fecha as conexões do teste anterior
+    import streamlit as st
+    st.cache_resource.clear()
     from regulaia import arquivos
     monkeypatch.setattr(arquivos, "PASTA", tmp_path / "evidencias")
     monkeypatch.delenv("REGULAIA_S3_BUCKET", raising=False)

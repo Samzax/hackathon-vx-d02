@@ -1,0 +1,8 @@
+{
+ "_leia": "Funil do radar no mês medido: atos da Seção 1 do DOU, os da ANM e os normativos da ANM (os únicos que chegam à IA). Medido no XML mensal de dados abertos da Imprensa Nacional (data/raw/dou/S01082026.zip, fora do Git) por collector.xml_dou.funil_por_dia; tests/test_xml_dou.py confere este arquivo contra o ZIP.",
+ "mes": "ago/2026",
+ "atos": 7884,
+ "anm": 825,
+ "normativos": 2,
+ "fonte": "XML mensal do DOU, Seção 1 (dados abertos da Imprensa Nacional), agosto de 2026"
+}

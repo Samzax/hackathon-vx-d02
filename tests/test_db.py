@@ -112,6 +112,7 @@ def test_correcao_invalida_nao_aprova_nada(conn):
     assert db.versao(conn, "OB-01", "pendente")["prazo"] == "2029-12-31"
 
 
+@pytest.mark.sqlite
 def test_banco_antigo_ganha_a_coluna_de_correcao(tmp_path):
     import sqlite3
 
@@ -203,6 +204,7 @@ def test_cada_obrigacao_da_res220_cita_o_texto_literal():
     assert "DPA2 ≥ 4" in ob11["trecho"] and ob11["regra"] == "dpa2 >= 4"
 
 
+@pytest.mark.sqlite
 def test_montagem_sem_sincronizar_devolve_o_padrao(tmp_path):
     """O banco da demo é montado sem esperar o disco; depois volta ao normal, mesmo se der erro."""
     c = db.conectar(tmp_path / "x.db")
