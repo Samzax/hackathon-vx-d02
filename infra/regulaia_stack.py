@@ -6,6 +6,11 @@
                                        │  ├── Bedrock (IA: análise de atos e leitura de evidências)
                                        │  └── Textract (OCR de PDF escaneado)
     EventBridge (todo dia 06:00 BRT) ──> task Fargate: radar do DOU (mesma imagem, python -m api.jobs radar)
+    EventBridge (domingo 03:00 BRT)  ──> task Fargate: descoberta de normas (python -m api.jobs descoberta)
+
+Imagem: com `-c imagem_tag=<tag>`, vem do ECR (regulaia-api, construída pelo CodeBuild: infra/build_stack.py);
+sem, o CDK constrói localmente com Docker. IA: `-c ia=1` liga o Bedrock; sem, a torre sobe sem IA
+(as análises já gravadas e o cache da demo continuam aparecendo).
 
 Decisões:
 - **Sem NAT Gateway** (o item caro de uma VPC): as tasks ficam em subnet pública com IP próprio, e o
@@ -29,6 +34,7 @@ from aws_cdk import (
     aws_certificatemanager as acm,
     aws_cloudwatch as cw,
     aws_ec2 as ec2,
+    aws_ecr as ecr,
     aws_ecs as ecs,
     aws_ecs_patterns as ecs_patterns,
     aws_elasticloadbalancingv2 as elbv2,
@@ -50,7 +56,8 @@ FORA_DA_SENHA = " %+~`#$&*()|[]{}:;<>?!'/@\"\\,="
 
 class RegulaIA(Stack):
     def __init__(self, scope: Construct, id_: str, *, certificado_arn: str | None = None,
-                 imagem: ecs.ContainerImage | None = None, **kw) -> None:
+                 imagem: ecs.ContainerImage | None = None, imagem_tag: str | None = None,
+                 ia: bool = False, **kw) -> None:
         super().__init__(scope, id_, **kw)
 
         # ------------------------------------------------------------------ rede
@@ -100,9 +107,22 @@ class RegulaIA(Stack):
             self, "TokenAgente", description="Bearer do agente MCP e dos jobs para a API",
             generate_secret_string=sm.SecretStringGenerator(exclude_punctuation=True, password_length=48),
         )
+        # chave da criptografia por campo (CPF): 64 caracteres alfanuméricos; o código deriva dela a chave
+        chave_dados = sm.Secret(
+            self, "ChaveDados", description="REGULAIA_CHAVE_DADOS: criptografia por campo do dado pessoal",
+            generate_secret_string=sm.SecretStringGenerator(exclude_punctuation=True, password_length=64),
+        )
+        # senha das contas da demo no link público (a do arquivo da demo está no Git)
+        senha_demo = sm.Secret(
+            self, "SenhaDemo", description="REGULAIA_SENHA_DEMO: senha das contas ficticias da demo",
+            generate_secret_string=sm.SecretStringGenerator(exclude_punctuation=True, password_length=20),
+        )
 
         # ------------------------------------------------------------------ aplicação
         cluster = ecs.Cluster(self, "Cluster", vpc=vpc, container_insights_v2=ecs.ContainerInsights.ENABLED)
+        if imagem is None and imagem_tag:
+            repo = ecr.Repository.from_repository_name(self, "Imagens", "regulaia-api")
+            imagem = ecs.ContainerImage.from_ecr_repository(repo, tag=imagem_tag)
         imagem = imagem or ecs.ContainerImage.from_asset(str(RAIZ), file="api/Dockerfile",
                                                          exclude=["infra/cdk.out", ".venv", ".git", "front/node_modules"])
         assert banco.secret is not None
@@ -111,6 +131,8 @@ class RegulaIA(Stack):
             "DB_SENHA": ecs.Secret.from_secrets_manager(banco.secret, "password"),
             "DB_HOST": ecs.Secret.from_secrets_manager(banco.secret, "host"),
             "REGULAIA_TOKEN_SERVICO": ecs.Secret.from_secrets_manager(token_agente),
+            "REGULAIA_CHAVE_DADOS": ecs.Secret.from_secrets_manager(chave_dados),
+            "REGULAIA_SENHA_DEMO": ecs.Secret.from_secrets_manager(senha_demo),
         }
         https = certificado_arn is not None
         ambiente = {
@@ -118,7 +140,8 @@ class RegulaIA(Stack):
             "REGULAIA_COOKIE_SEGURO": "1" if https else "0",
             "REGULAIA_ORIGENS": "",
             "AWS_REGION": self.region,
-            "REGULAIA_BEDROCK": "1",          # liga o provedor Bedrock (modelos em regulaia/modelos.toml)
+            "REGULAIA_BEDROCK": "1" if ia else "",   # provedor Bedrock (modelos em regulaia/modelos.toml)
+            "REGULAIA_TETO_DIA_USD": "10",            # link público: teto de gasto com IA por dia
         }
         # a URL do banco é montada aqui, com a senha que veio do Secrets Manager
         url = f"postgresql://$DB_USUARIO:$DB_SENHA@$DB_HOST:5432/{BANCO}"
@@ -126,6 +149,7 @@ class RegulaIA(Stack):
                                    "exec uvicorn api.main:app --host 0.0.0.0 --port 8000 --proxy-headers "
                                    "--forwarded-allow-ips='*' --workers 2"]
         comando_radar = ["sh", "-c", f'export REGULAIA_DATABASE_URL="{url}" && exec python -m api.jobs radar']
+        comando_descoberta = ["sh", "-c", f'export REGULAIA_DATABASE_URL="{url}" && exec python -m api.jobs descoberta']
 
         logs_api = logs.LogGroup(self, "LogsApi", retention=logs.RetentionDays.ONE_MONTH,
                                  removal_policy=RemovalPolicy.DESTROY)
@@ -168,8 +192,9 @@ class RegulaIA(Stack):
             "radar", image=imagem, command=comando_radar, environment=ambiente, secrets=segredos,
             logging=ecs.LogDrivers.aws_logs(stream_prefix="radar", log_retention=logs.RetentionDays.ONE_MONTH),
         )
-        sg_radar = ec2.SecurityGroup(self, "SgRadar", vpc=vpc, description="Radar job: egress only")
-        sg_banco.add_ingress_rule(sg_radar, ec2.Port.tcp(5432), "Radar no Postgres")
+        # os dois jobs (radar e descoberta) usam o mesmo security group: só saída, e o Postgres os aceita
+        sg_radar = ec2.SecurityGroup(self, "SgRadar", vpc=vpc, description="Jobs (radar, descoberta): egress only")
+        sg_banco.add_ingress_rule(sg_radar, ec2.Port.tcp(5432), "Jobs no Postgres")
         events.Rule(
             self, "RadarDiario",
             description="Radar do DOU todo dia às 06:00 de Brasília",
@@ -180,14 +205,33 @@ class RegulaIA(Stack):
             )],
         )
 
+        # ------------------------------------------------------------------ descoberta de normas (job semanal)
+        # lê dezenas de milhares de normas das fontes oficiais: mais memória que o radar
+        tarefa_descoberta = ecs.FargateTaskDefinition(self, "TarefaDescoberta", cpu=1024, memory_limit_mib=2048)
+        tarefa_descoberta.add_container(
+            "descoberta", image=imagem, command=comando_descoberta, environment=ambiente, secrets=segredos,
+            logging=ecs.LogDrivers.aws_logs(stream_prefix="descoberta", log_retention=logs.RetentionDays.ONE_MONTH),
+        )
+        events.Rule(
+            self, "DescobertaSemanal",
+            description="Descoberta de normas todo domingo às 03:00 de Brasília",
+            schedule=events.Schedule.cron(minute="0", hour="6", week_day="SUN"),
+            targets=[targets.EcsTask(
+                cluster=cluster, task_definition=tarefa_descoberta, subnet_selection=ec2.SubnetSelection(
+                    subnet_type=ec2.SubnetType.PUBLIC), assign_public_ip=True, security_groups=[sg_radar],
+            )],
+        )
+
         # ------------------------------------------------------------------ permissões (mínimas)
-        for papel in (servico.task_definition.task_role, tarefa_radar.task_role):
+        for papel in (servico.task_definition.task_role, tarefa_radar.task_role, tarefa_descoberta.task_role):
             documentos.grant_read_write(papel)
             papel.add_to_principal_policy(iam.PolicyStatement(
                 sid="IAViaBedrock",
                 actions=["bedrock:InvokeModel", "bedrock:Converse"],
-                resources=[f"arn:aws:bedrock:{self.region}::foundation-model/*",
-                           f"arn:aws:bedrock:{self.region}:{self.account}:inference-profile/*"],
+                # perfil de inferência us./global. manda a chamada para outra região: o modelo de base
+                # tem de ser liberado em qualquer região, não só na da pilha
+                resources=["arn:aws:bedrock:*::foundation-model/*",
+                           f"arn:aws:bedrock:*:{self.account}:inference-profile/*"],
             ))
             papel.add_to_principal_policy(iam.PolicyStatement(
                 sid="OcrViaTextract", actions=["textract:DetectDocumentText", "textract:AnalyzeDocument"],
@@ -209,3 +253,5 @@ class RegulaIA(Stack):
         CfnOutput(self, "Endereco", value=f"{'https' if https else 'http'}://{servico.load_balancer.load_balancer_dns_name}")
         CfnOutput(self, "BucketDocumentos", value=documentos.bucket_name)
         CfnOutput(self, "SegredoBanco", value=banco.secret.secret_name)
+        CfnOutput(self, "SegredoSenhaDemo", value=senha_demo.secret_name)
+        CfnOutput(self, "NomeCluster", value=cluster.cluster_name)

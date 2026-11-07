@@ -11,7 +11,11 @@
 # O front (Next.js exportado, estático) é compilado num estágio próprio e servido pela própria API
 # na mesma origem (api/main.py monta front/out): cookie de sessão e CSRF sem CORS.
 
-FROM node:24-slim AS front
+# REGISTRO: de onde vêm as imagens base. Padrão, o Docker Hub; o build na AWS (infra/build_stack.py)
+# usa o espelho public.ecr.aws/docker/library, sem o limite de pull anônimo do Docker Hub.
+ARG REGISTRO=docker.io/library
+
+FROM ${REGISTRO}/node:24-slim AS front
 
 ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /front
@@ -20,7 +24,7 @@ RUN npm ci --no-audit --no-fund
 COPY front/ ./
 RUN npm run build
 
-FROM python:3.13-slim
+FROM ${REGISTRO}/python:3.13-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.10 /uv /uvx /usr/local/bin/
 
