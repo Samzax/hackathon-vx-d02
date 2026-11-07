@@ -215,3 +215,19 @@ def test_montagem_sem_sincronizar_devolve_o_padrao(tmp_path):
     with pytest.raises(RuntimeError), db.sem_sincronizar(c):
         raise RuntimeError("falhou no meio")
     assert c.execute("PRAGMA synchronous").fetchone()[0] == padrao
+
+
+def test_migracao_codigo_por_empresa_completa_colunas_de_banco_bem_antigo(tmp_path):
+    """Cache de IA criado quando obrigacao não tinha norma/area: a migração completa as colunas antes
+    de recriar a tabela (era 'no such column: norma' ao abrir o banco)."""
+    import sqlite3
+
+    raw = sqlite3.connect(tmp_path / "antigo.db")
+    raw.row_factory = sqlite3.Row
+    raw.execute("CREATE TABLE obrigacao (id INTEGER PRIMARY KEY, codigo TEXT NOT NULL UNIQUE, "
+                "tipo_ativo TEXT NOT NULL, empresa TEXT)")
+    raw.execute("INSERT INTO obrigacao (codigo, tipo_ativo) VALUES ('OB-01', 'barragem')")
+    db._codigo_por_empresa(raw)
+    assert {"norma", "area", "empresa"} <= {r["name"] for r in raw.execute("PRAGMA table_info(obrigacao)")}
+    raw.execute("INSERT INTO obrigacao (codigo, tipo_ativo, empresa) VALUES ('OB-01', 'barragem', 'Outra')")
+    assert raw.execute("SELECT COUNT(*) FROM obrigacao").fetchone()[0] == 2

@@ -585,7 +585,15 @@ def _main(argv: list[str]) -> int:   # pragma: no cover - roda com o modelo de v
         fs = preparar(funcoes(torre), fora=CHAMA_IA)
         if gravador:
             gravador.comecar(caso["id"])
-        r = perguntar(caso["pergunta"], fs, provedores=provs)
+        try:
+            r = perguntar(caso["pergunta"], fs, provedores=provs)
+        except Demorou as e:        # estourou o prazo: o caso reprova, a avaliação segue
+            p = e.parcial
+            notas.append(Nota(caso["id"], caso["pergunta"], False, [str(e)],
+                              (p.texto if p else "") or "", [u.ferramenta for u in p.ferramentas] if p else [],
+                              p.modelo if p else "-", p.custo_usd if p else 0.0, p.segundos if p else 0.0))
+            print(f"FALHOU {caso['id']}: {e}", flush=True)
+            continue
         falhas = avaliar_resposta(caso, r)
         notas.append(Nota(caso["id"], caso["pergunta"], not falhas, falhas, r.texto,
                           [u.ferramenta for u in r.ferramentas], r.modelo, r.custo_usd, r.segundos))

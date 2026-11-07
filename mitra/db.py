@@ -84,6 +84,11 @@ def _codigo_por_empresa(conn) -> None:
         "AND name LIKE 'sqlite_autoindex%'").fetchone()
     if autoindex is None:
         return
+    # banco mais antigo ainda (cache de IA de antes de norma/area): completa as colunas antes de copiar
+    colunas = {r["name"] for r in conn.execute("PRAGMA table_info(obrigacao)")}
+    for col in ("norma", "area", "empresa"):
+        if col not in colunas:
+            conn.execute(f"ALTER TABLE obrigacao ADD COLUMN {col} TEXT")
     conn.executescript("""
         PRAGMA foreign_keys = OFF;
         BEGIN;

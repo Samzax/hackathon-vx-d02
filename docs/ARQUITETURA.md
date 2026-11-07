@@ -298,9 +298,17 @@ Mais duas proteções:
 | Extrair obrigações da NR-13 | 1 vez por norma | US$ 0,045 |
 | Extrair obrigações da NR-22 (capítulo de barragens) | 1 vez por norma | US$ 0,009 |
 | Analisar o impacto de um ato candidato do DOU | ~2 mil tokens de entrada | US$ 0,0005 a 0,003 |
-| Funil de um mês do DOU (7.884 atos) | 825 da ANM → 2 candidatos para a IA | menos de US$ 0,01 |
+| Funil de um mês do DOU (7.884 atos) | 80 atos de interesse → ~70 para a IA barata | ~US$ 0,05 |
 
-As regras resolvem 99,97% do volume. A IA só vê o que sobrou, e cada resposta fica em cache.
+**O radar lê além da ANM (7/11).** A camada 0 aceita ato normativo dos órgãos de interesse (ANM, MTE,
+meio ambiente, ANA, saúde/Anvisa, leis e decretos federais — `collector/dou.py: ORGAOS_RADAR`) e, de
+qualquer órgão, o que cita termos de um tipo de ativo da carteira (`temas.toml`); as regras de descarte
+da descoberta (crédito, homenagem, concessão a uma empresa) valem aqui também. Antes o filtro era "é da
+ANM?", e a Portaria MTE 105/2026 — que altera a NR-22, uma norma do catálogo — passava no DOU sem
+ninguém ver. O recall da camada 0 é medido por gabarito (`tests/test_radar_recall.py` e
+`python -m mitra.descoberta avaliar`): a meta é 1,0 — falso negativo é norma que ninguém veria.
+
+As regras resolvem 99,1% do volume (eram 99,97% quando o radar era só ANM: a cobertura maior custa ~US$ 0,05/mês). A IA só vê o que sobrou, e cada resposta fica em cache.
 
 **A demo roda sem chave e sem internet.** As respostas de IA da demo (análises de impacto e extração das normas) estão em `data/cache_ia_demo.json`, no Git, com o custo original de cada chamada. Num clone novo, `demo.preparar` carrega esse arquivo no cache local antes de rodar o radar. Sem ele, a aba "Mudanças" ficaria vazia e não daria erro (há teste para isso). Para atualizar o arquivo: `uv run python -m mitra.demo --exportar-cache`.
 

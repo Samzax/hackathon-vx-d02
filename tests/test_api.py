@@ -1016,13 +1016,19 @@ def test_job_da_descoberta_busca_tria_e_nao_mexe_no_que_a_curadoria_decidiu(clie
     conn.close()
     ia = IAFalsa({}, IRRELEVANTE)
     resumo = jobs.descoberta(cfg, desde=2010, baixador=BaixadorFixo(tmp_path / "fontes"), paralelo=1,
-                             roteador=Roteador(db.conectar(cfg.cache), provedores={"opencode": ia}))
+                             roteador=Roteador(db.conectar(cfg.cache), provedores={"opencode": ia}), revisar=False)
     assert {r["fonte"] for r in resumo["busca"]} == {"senado", "anm", "almg"} and not jobs.falhou(resumo)
     assert all(r["lidas"] for r in resumo["busca"]) and resumo["triagem"]["erro"] is None
     assert (resumo["triagem"]["triadas"], resumo["triagem"]["restam"]) == (1, 0) and "nova" not in resumo["fila"]
     assert [c[0] for c in ia.chamadas] == ["RESOLUÇÃO ANM Nº 127, DE 22 DE DEZEMBRO DE 2022"]   # só a nova vai à IA
     assert cliente.get(_url("/normas-candidatas/BR:RES-ANM:127/2022")).json()["status"] == "irrelevante"
     assert cliente.get(_url(f"/normas-candidatas/{CAUCAO}")).json()["status"] == "aprovada"      # decisão fica
+    # com a revisão ligada (o padrão do job semanal), os descartes duvidosos são relidos pelo texto,
+    # e a decisão da curadoria continua intocada
+    resumo = jobs.descoberta(cfg, desde=2010, baixador=BaixadorFixo(tmp_path / "fontes"), paralelo=1,
+                             roteador=Roteador(db.conectar(cfg.cache), provedores={"opencode": ia}))
+    assert resumo["revisao"]["erro"] is None and resumo["revisao"]["triadas"] >= 1
+    assert cliente.get(_url(f"/normas-candidatas/{CAUCAO}")).json()["status"] == "aprovada"
     mg = _cobertura(cliente, _empresa(cliente))[("MG", "barragem")]
     assert [(f["desde"], f["ate"]) for f in mg["fontes"]] == [(2010, 2026)]     # a cobertura diz o que foi lido
     assert jobs.falhou({"busca": [{"falhas": ["2020: ConnectError"]}]})

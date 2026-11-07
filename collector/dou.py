@@ -37,6 +37,7 @@ ORGAOS_RADAR = {
     "Ministério do Trabalho e Emprego": "MTE (NRs, portarias de SST)",
     "Ministério do Meio Ambiente": "meio ambiente (MMA, Ibama, ICMBio, Conama)",
     "Agência Nacional de Águas": "ANA",
+    SAUDE: "saúde (MS e Anvisa)",       # a hierarquia da Anvisa começa com o Ministério da Saúde
     "Atos do Poder Legislativo": "lei federal",
     "Atos do Poder Executivo": "decreto ou medida provisória federal",
 }
