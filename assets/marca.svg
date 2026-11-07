@@ -1,5 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="7" fill="#1E6A80"/>
-  <path d="M5 11.5h6M5 15.5h5M5 19.5h4" stroke="#BFE3EC" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M14.5 8h5l7.5 17h-17.5z" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Mitra">
+  <defs><clipPath id="shield"><path d="M3 5.4C7.7 5.4 11.1 8.1 16 10.8c4.9-2.7 8.3-5.4 13-5.4v13.1c0 4.8-5.4 8.1-13 11.2C8.4 26.6 3 23.3 3 18.5Z"/></clipPath></defs>
+  <path d="M3 5.4C7.7 5.4 11.1 8.1 16 10.8c4.9-2.7 8.3-5.4 13-5.4v13.1c0 4.8-5.4 8.1-13 11.2C8.4 26.6 3 23.3 3 18.5Z" fill="#082B49"/>
+  <path d="M0 23c6-3 10.4-1.3 16 1.5 5.6-2.8 10-4.5 16-1.5v10H0Z" fill="#16A4A1" clip-path="url(#shield)"/>
+  <path d="M9 11.1h4.5l2.5 2.4 2.5-2.4H23v10.4L16 25l-7-3.5Z" fill="#FFF"/>
+  <path d="M11.8 15.7h8.4M11.8 18.5h6.5M11.8 21.3h4.1" stroke="#16A4A1" stroke-width="1.8" stroke-linecap="round"/>
 </svg>

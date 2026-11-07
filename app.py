@@ -1,4 +1,4 @@
-"""RegulaIA — Torre de Controle Regulatória (interface da demo).
+"""Mitra — Torre de Controle Regulatória (interface da demo).
 
 Uso: uv run streamlit run app.py
 """
@@ -19,7 +19,7 @@ from regulaia import agenda, arquivos, db, demo, impacto, ocr, operacao, pdf, si
 from regulaia import evidencias as ev
 from regulaia.ia import Roteador
 
-st.set_page_config(page_title="RegulaIA · Torre de Controle", page_icon="assets/marca.svg", layout="wide")
+st.set_page_config(page_title="Mitra · Torre de Controle", page_icon="assets/marca.svg", layout="wide")
 # no celular o Streamlit empilha as colunas: os 5 números do topo ocupariam a tela inteira.
 # Só abaixo de 640 px, linha de métricas fica 3 por linha e com número menor; no desktop nada muda.
 st.html("""<style>
@@ -305,7 +305,7 @@ def _tela_entrar():
                     _entrar(conta)
                     st.rerun()
                 st.error("E-mail ou senha não conferem, ou a conta está desativada.")
-        st.caption("Sem conta? Peça à TI da sua empresa: é ela que cria os acessos.")
+        st.caption("Esqueceu sua senha? Entre em contato com o suporte.")
 
 
 usuario = usuarios.por_email(conn, st.session_state.get("usuario", ""))
@@ -1112,7 +1112,7 @@ with aba_entregas:
     nome_arq = f"obrigacoes_{(visao if not diretoria else 'diretoria').replace(' ', '_')}_{hoje:%Y-%m-%d}"
     e1, e2, e3 = st.columns([1, 1, 2])
     e1.download_button(f"Excel ({len(filtradas)} linhas)",
-                       partial(operacao.planilha, filtradas, f"RegulaIA · {empresa['nome']}"), icon=":material/download:",
+                       partial(operacao.planilha, filtradas, f"Mitra · {empresa['nome']}"), icon=":material/download:",
                        file_name=f"{nome_arq}.xlsx", disabled=not filtradas,
                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     e2.download_button("Agenda (.ics)",
