@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+  --page: #f4f7f9;
+  --surface: #ffffff;
+  --border: #e3eaef;
+  --text: #0f1b2d;
+  --muted: #5b6b78;
+  --primary: #0e7c86;
+  --highlight: #14b8a6;
+  --sidebar: #0b2a33;
+  --sidebar-active: #134552;
+  --sidebar-text: #cfe3e8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0a1519;
+    --surface: #111f25;
+    --border: #1f3139;
+    --text: #e7f0f3;
+    --muted: #9fb3bc;
+    --primary: #14b8a6;
+    --highlight: #5eead4;
+    --sidebar: #071e25;
+    --sidebar-active: #134552;
+    --sidebar-text: #cfe3e8;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--font-inter), sans-serif;
+}
+button, a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--highlight); outline-offset: 3px; }
+
+.shell { min-height: 100vh; display: flex; }
+.sidebar {
+  width: 256px; flex: 0 0 256px; min-height: 100vh; padding: 24px 16px 18px;
+  background: var(--sidebar); color: var(--sidebar-text); display: flex; flex-direction: column;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 28px; color: white; }
+.logo { width: 32px; height: 32px; border-radius: 9px; background: var(--highlight); display: grid; place-items: center; color: #04282b; font-weight: 800; }
+.brand strong { font-size: 20px; letter-spacing: -.02em; }
+.nav { display: grid; gap: 6px; }
+.nav a { color: var(--sidebar-text); text-decoration: none; padding: 11px 12px; border-radius: 10px; font-size: 14px; }
+.nav a:first-child, .nav a:hover { background: var(--sidebar-active); color: white; }
+.demo-card { margin-top: auto; padding: 14px; border: 1px solid rgba(207,227,232,.16); border-radius: 12px; background: rgba(255,255,255,.05); font-size: 12px; line-height: 1.5; }
+.demo-card strong { display: block; color: white; margin-bottom: 4px; }
+.main { width: min(100%, 1440px); padding: 34px 42px 56px; }
+.header { display: flex; justify-content: space-between; gap: 24px; align-items: end; border-bottom: 1px solid var(--border); padding-bottom: 22px; }
+.eyebrow { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+h1 { margin: 7px 0 0; font-size: clamp(26px, 3vw, 38px); line-height: 1.05; letter-spacing: -.04em; }
+.header-meta { color: var(--muted); font-size: 13px; text-align: right; line-height: 1.6; }
+.grid { display: grid; gap: 16px; }
+.kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: 24px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: 0 8px 26px rgba(15,27,45,.04); }
+.kpi { border-top: 3px solid var(--status); min-height: 108px; }
+.kpi span { color: var(--muted); font-size: 13px; }
+.kpi strong { display: block; margin-top: 10px; font-size: 32px; line-height: 1; }
+.content { grid-template-columns: minmax(0, 1.5fr) minmax(280px, .85fr); margin-top: 24px; }
+.card h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+.card p { color: var(--muted); line-height: 1.6; }
+.decision { background: color-mix(in srgb, var(--highlight) 10%, var(--surface)); border-color: color-mix(in srgb, var(--highlight) 35%, var(--border)); }
+.decision-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 22px; }
+.action { border: 0; border-radius: 9px; padding: 11px 15px; background: var(--primary); color: white; font: inherit; font-weight: 700; cursor: pointer; }
+.action:hover { filter: brightness(1.08); }
+.dashed { min-height: 180px; border-style: dashed; display: grid; place-items: center; text-align: center; }
+.status-dot { width: 9px; height: 9px; border-radius: 999px; background: var(--highlight); display: inline-block; margin-right: 7px; }
+@media (max-width: 900px) { .sidebar { width: 210px; flex-basis: 210px; } .main { padding: 28px 24px 44px; } .kpis { grid-template-columns: repeat(3, 1fr); } .content { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .shell { display: block; } .sidebar { width: 100%; min-height: auto; padding: 14px; } .brand { padding-bottom: 14px; } .nav { grid-template-columns: repeat(2, 1fr); } .demo-card { display: none; } .main { padding: 24px 16px 36px; } .header { align-items: start; flex-direction: column; } .header-meta { text-align: left; } .kpis { grid-template-columns: repeat(2, 1fr); } .kpi strong { font-size: 28px; } }
