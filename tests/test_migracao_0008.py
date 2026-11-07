@@ -62,8 +62,7 @@ def test_apaga_a_conta_legada_e_as_sessoes_dela(conn):
     _sessao(conn, nova)
 
     with conn:
-        for comando in _migracao().SQL:
-            conn.execute(comando)
+        conn.executescript(_migracao().SQL.read_text(encoding="utf-8"))
 
     assert _emails(conn) == {"curadoria@mitra.demo"}
     assert [r[0] for r in conn.execute("SELECT usuario_id FROM sessao")] == [nova]
@@ -73,14 +72,12 @@ def test_conta_com_o_mesmo_email_criada_pela_ti_fica(conn):
     """Guarda do criado_por: se alguém recriou o e-mail à mão, não é a conta do seed."""
     _conta(conn, "curadoria@regulaia.demo", "ti@serraazul.demo")
     with conn:
-        for comando in _migracao().SQL:
-            conn.execute(comando)
+        conn.executescript(_migracao().SQL.read_text(encoding="utf-8"))
     assert _emails(conn) == {"curadoria@regulaia.demo"}
 
 
 def test_rodar_de_novo_nao_quebra(conn):
     with conn:
         for _ in range(2):
-            for comando in _migracao().SQL:
-                conn.execute(comando)
+            conn.executescript(_migracao().SQL.read_text(encoding="utf-8"))
     assert _emails(conn) == set()

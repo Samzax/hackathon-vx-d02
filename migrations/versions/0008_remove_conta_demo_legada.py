@@ -12,6 +12,8 @@ Revision ID: 0008
 Revises: 0007
 """
 
+from pathlib import Path
+
 from alembic import op
 
 revision = "0008"
@@ -19,16 +21,11 @@ down_revision = "0007"
 branch_labels = None
 depends_on = None
 
-EMAIL = "curadoria@regulaia.demo"
-SQL = [
-    f"DELETE FROM sessao WHERE usuario_id IN (SELECT id FROM usuario WHERE email = '{EMAIL}' AND criado_por = 'demo')",
-    f"DELETE FROM usuario WHERE email = '{EMAIL}' AND criado_por = 'demo'",
-]
+SQL = Path(__file__).with_name("0008_remove_conta_demo_legada.sql")
 
 
 def upgrade() -> None:
-    for comando in SQL:
-        op.execute(comando)
+    op.execute(SQL.read_text(encoding="utf-8"))
 
 
 def downgrade() -> None:
