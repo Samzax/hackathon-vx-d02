@@ -81,6 +81,13 @@ def test_pendencias_da_demo_com_norma_e_dispositivo(ferramentas):
     assert fir["periodos_faltando"]
 
 
+def test_pendencias_de_um_ativo_filtram_pelo_codigo(ferramentas):
+    """O painel filtra pelo código do ativo: com o id, a lista vinha vazia e o agente dizia "nada atrasado"."""
+    p = ferramentas("pendencias", hoje=HOJE, ativo="B3", status=["atrasada"])
+    assert {l["obrigacao"] for l in p["pendencias"]} == {"R95-01", "R95-02"}
+    assert {l["ativo"] for l in p["pendencias"]} == {"B3"} and p["contagem"]["atrasada"] == 2
+
+
 def test_ficha_mostra_a_lei_federal_da_zas_na_b2(ferramentas):
     f = ferramentas("ficha_do_ativo", ativo="b2", hoje=HOJE)
     assert f["ativo"]["codigo"] == "B2" and f["ativo"]["atributos"]["trabalhadores_zas"] is True

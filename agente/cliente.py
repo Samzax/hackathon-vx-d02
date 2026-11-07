@@ -10,13 +10,13 @@ import os
 from typing import Any
 
 import httpx
-from mcp.server.mcpserver.exceptions import ToolError
 
 PREFIXO = "/api/v1"
 
 
-class ErroTorre(ToolError):
-    """A API recusou ou não achou: vira resultado de erro da ferramenta, e o modelo explica ao usuário."""
+class ErroTorre(Exception):
+    """A API recusou ou não achou: vira resultado de erro da ferramenta (ToolError no MCP, texto no
+    chat), e o modelo explica ao usuário."""
 
 
 class Torre:
