@@ -87,7 +87,7 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
         verdade num SQLite novo servindo o `out/`, seis cenários (entrar na demo e ver as 4 atrasadas,
         registrar uma entrega, gestor só com a área dele, curadoria aprovando a Res. 245, a curadoria só lendo
         os dados da empresa, TI só com contas e auditoria). CI: jobs `front` (tipos, lint, typecheck, vitest, build) e `front-e2e`.
-      - Em aberto: o Streamlit (`app.py`) continua na `main` até a troca; "Pergunte à torre" (2C) ainda não.
+      - Em aberto: o Streamlit (`app.py`) continua na `main` até a troca.
 - [x] 2B AWS CDK (`infra/`, commit 49c404b): ALB + ECS Fargate (API e front na mesma origem, migração no start),
       RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
       06:00 BRT), Secrets Manager, CloudWatch com 3 alarmes, sem NAT. `tests/test_infra.py` confere a pilha;
@@ -95,8 +95,14 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
 - [x] 2C servidor MCP (`agente/`): 12 ferramentas de leitura sobre a API com o token de serviço,
       `REGULAIA_EMPRESA` prende o escopo numa cliente, erro da API vira erro de ferramenta legível; stdio e
       streamable HTTP. `tests/test_agente.py` contra a API real; conferido com um cliente MCP de verdade (stdio).
-- [ ] 2C chat "Pergunte à torre" no front: rota na API (ex.: `POST /api/v1/pergunta`) que roda o Claude
-      (Bedrock na AWS) com as mesmas ferramentas no escopo da sessão, e a tela no front (sessão do front).
+- [x] 2C chat "Pergunte à torre": `POST /api/v1/pergunta` roda o Claude (Sonnet 5 no Bedrock; Haiku 4.5 de
+      reserva) com as 11 ferramentas de leitura do agente (`agente/ferramentas.py`, as mesmas do MCP, menos a
+      que chama IA), que consultam a API por dentro com a sessão de quem pergunta: mesmo escopo e mesma regra
+      de acesso da tela. O Python confere trecho entre aspas, data e código contra o que as ferramentas
+      devolveram; uma rodada de correção e o que sobrar aparece marcado. Cache de prompt do Bedrock, custo no
+      teto do dia (`analise_ia`), auditoria, prazo de 45 s (o CloudFront corta em 60 s). Tela `/pergunte` no
+      front. Avaliação com 10 casos de critério objetivo (`tests/pergunta_avaliacao.toml`), rodada contra o
+      modelo de verdade (`docs/AVALIACAO_PERGUNTA.md`) e repetida no CI pelas respostas gravadas.
 
 ### Descoberta de normas (produto, não a demo)
 - [x] `regulaia/descoberta.py`: perfil da carteira (jurisdição x tipo de ativo), três fontes oficiais com dados

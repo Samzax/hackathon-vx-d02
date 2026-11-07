@@ -770,6 +770,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pergunta/estado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Se o Pergunte à torre está ligado, com qual modelo, e o gasto de IA do dia */
+        get: operations["estado_api_v1_pergunta_estado_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pergunta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pergunta em linguagem natural; o modelo consulta a torre no escopo da sessão e cita a fonte */
+        post: operations["perguntar_api_v1_pergunta_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usuarios": {
         parameters: {
             query?: never;
@@ -1210,6 +1244,25 @@ export interface components {
             /** Sha256 */
             sha256: string;
         };
+        /** ConferenciaResposta */
+        ConferenciaResposta: {
+            /** Ok */
+            ok: boolean;
+            /**
+             * Citacoes
+             * @description Trechos entre aspas na resposta
+             */
+            citacoes: number;
+            /**
+             * Citacoes Fora
+             * @description Trechos citados que não estão no que as ferramentas devolveram
+             */
+            citacoes_fora: string[];
+            /** Datas Fora */
+            datas_fora: string[];
+            /** Codigos Fora */
+            codigos_fora: string[];
+        };
         /** Conta */
         Conta: {
             /** Email */
@@ -1409,6 +1462,20 @@ export interface components {
              * @description há chave de IA: sem ela, só regra e respostas em cache
              */
             ligada: boolean;
+            /** Gasto Hoje Usd */
+            gasto_hoje_usd: number;
+            /** Teto Dia Usd */
+            teto_dia_usd: number | null;
+        };
+        /** EstadoPergunta */
+        EstadoPergunta: {
+            /** Ligada */
+            ligada: boolean;
+            /**
+             * Modelo
+             * @description O modelo que responde agora (o primeiro provedor ligado)
+             */
+            modelo: string | null;
             /** Gasto Hoje Usd */
             gasto_hoje_usd: number;
             /** Teto Dia Usd */
@@ -1947,6 +2014,16 @@ export interface components {
             /** Senha */
             senha: string;
         };
+        /** Mensagem */
+        Mensagem: {
+            /**
+             * Papel
+             * @enum {string}
+             */
+            papel: "usuario" | "torre";
+            /** Texto */
+            texto: string;
+        };
         /**
          * Mercado
          * @description Agregados do SIGBM público (data/mercado_sigbm.json, conferido por teste contra o export).
@@ -2271,6 +2348,16 @@ export interface components {
             /** Linhas */
             linhas: components["schemas"]["LinhaPainel"][];
         };
+        /** PedidoPergunta */
+        PedidoPergunta: {
+            /** Pergunta */
+            pergunta: string;
+            /**
+             * Historico
+             * @description A conversa até aqui (as últimas mensagens valem)
+             */
+            historico?: components["schemas"]["Mensagem"][];
+        };
         /** PeriodoEntrega */
         PeriodoEntrega: {
             /** Periodo */
@@ -2313,6 +2400,37 @@ export interface components {
         Responsavel: {
             /** Area */
             area: string | null;
+        };
+        /** RespostaPergunta */
+        RespostaPergunta: {
+            /**
+             * Texto
+             * @description A resposta em Markdown
+             */
+            texto: string;
+            /** Modelo */
+            modelo: string;
+            /** Ferramentas */
+            ferramentas: components["schemas"]["UsoFerramenta"][];
+            conferencia: components["schemas"]["ConferenciaResposta"];
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Tokens Cache */
+            tokens_cache: number;
+            /** Custo Usd */
+            custo_usd: number;
+            /**
+             * Corrigida
+             * @description A conferência mandou o modelo corrigir uma vez
+             */
+            corrigida: boolean;
+            /**
+             * Segundos
+             * @description Quanto a pergunta levou, do pedido à resposta
+             */
+            segundos: number;
         };
         /** ResultadoLeitura */
         ResultadoLeitura: {
@@ -2413,6 +2531,17 @@ export interface components {
             entram: number;
             /** Temas */
             temas: components["schemas"]["TemaTroca"][];
+        };
+        /** UsoFerramenta */
+        UsoFerramenta: {
+            /** Ferramenta */
+            ferramenta: string;
+            /** Args */
+            args: {
+                [key: string]: unknown;
+            };
+            /** Erro */
+            erro?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -3958,6 +4087,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Registrada"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    estado_api_v1_pergunta_estado_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstadoPergunta"];
+                };
+            };
+        };
+    };
+    perguntar_api_v1_pergunta_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoPergunta"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RespostaPergunta"];
                 };
             };
             /** @description Validation Error */

@@ -1,0 +1,28 @@
+[
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "",
+  "chamadas": [
+   {
+    "id": "tooluse_ji0385xRhDS3MGa1hlDTxr",
+    "nome": "linha_do_tempo",
+    "args": {}
+   }
+  ],
+  "tokens_in": 2,
+  "tokens_out": 31,
+  "cache_lido": 6257,
+  "cache_escrito": 0,
+  "cortada": false
+ },
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "Em **02/08/2027** a Res. ANM 220/2025 entra em vigor e substitui a Res. ANM 95/2022 para as barragens B1, B2, B3 e B4 — todas já com datas confirmadas (não é \"proposta\"). Entram ao todo 60 obrigações novas (da 220) distribuídas assim:\n\n**B1** (18 obrigações) — ex.: **OB-02** Preencher a FIR (art. 38 I), **OB-06** Concluir a RPSB com consultoria externa (arts. 43 e 44 I), **OB-20** Monitoramento automatizado de instrumentação 24h (art. 20 §2), **OB-22** Sirenes de alerta na ZAS (art. 49).\n\n**B2** (19 obrigações) — as mesmas linhas de B1, mais **OB-01** Retirar da ZAS os trabalhadores de lavra/beneficiamento/disposição (art. 7 §1) e **OB-10** RPSB a cada 10 m alteados (art. 44 §2).\n\n**B3** (10 obrigações) — ex.: **OB-05** Elaborar o RISR e enviar a DCE (art. 39 II), **OB-07** Concluir a RPSB (arts. 43 e 44 II), **OB-12** Exercício simulado interno (art. 55), **OB-17** Seminário Orientativo quando a prefeitura pedir (art. 56 §1).\n\n**B4** (13 obrigações) — as comuns, mais **OB-09** Nova RPSB após modificação estrutural (art. 44 §1).\n\nComuns a várias barragens: **OB-03** Enviar o EIR no SIGBM (art. 38 II), **OB-11/16** Treinamentos e simulado anual do PAEBM, **OB-14/15** RCO e DCO (art. 57), **OB-18/19** Reporte em 24h e ISE para anomalias graves (arts. 38 §4 e 42), **OB-23** Atualização do PGRBM a cada 2 anos (art. 59, parágrafo único), **OB-24** Entrega do PAEBM às defesas civis (art. 46 §4).\n\n⚠️ Há também um item marcado **\"proposta\"** (ainda não aprovado): em **26/12/2029**, para **B2**, a **OB-01** (retirada de trabalhadores da ZAS, art. 7 §1) ganharia nova data, junto com **N22-ZAS2** da NR-22 (22.24.8) sobre restringir a permanência na ZAS. Essa data só vale se a mudança for aprovada em **Mudanças**.\n\nA lista completa de obrigações que a Res. 95/2022 deixa de gerar não veio nesta consulta — recomendo olhar a ficha de cada ativo ou **Transição e linha do tempo** na torre para o comparativo obrigação a obrigação.",
+  "chamadas": [],
+  "tokens_in": 2,
+  "tokens_out": 980,
+  "cache_lido": 15623,
+  "cache_escrito": 0,
+  "cortada": false
+ }
+]

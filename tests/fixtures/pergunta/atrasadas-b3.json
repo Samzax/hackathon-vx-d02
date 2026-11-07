@@ -1,0 +1,33 @@
+[
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "",
+  "chamadas": [
+   {
+    "id": "tooluse_d8IWZzayPNvmHKxIZjmN2S",
+    "nome": "pendencias",
+    "args": {
+     "ativo": "B3",
+     "status": [
+      "atrasada"
+     ]
+    }
+   }
+  ],
+  "tokens_in": 2,
+  "tokens_out": 78,
+  "cache_lido": 6246,
+  "cache_escrito": 0,
+  "cortada": false
+ },
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "Na **B3** há 2 obrigações **atrasadas**, ambas da Res. ANM 95/2022, responsabilidade da Gerência de Geotecnia:\n\n- **R95-01** – Preencher as FIR quinzenalmente\n  - **Res. ANM 95/2022, art. 19, I**: *\"preencher, quinzenalmente ou em menor período, a seu critério, as FIR\"*\n  - Venceu em **2026-10-15**; falta o período da **1ª quinzena de outubro/2026**.\n\n- **R95-02** – Preencher o EIR no SIGBM até o fim da quinzena subsequente à inspeção\n  - **Res. ANM 95/2022, art. 21**: *\"O preenchimento do EIR no SIGBM deverá ocorrer até o final da quinzena subsequente à inspeção em campo que gerou o preenchimento da FIR\"*\n  - Venceu em **2026-10-30**; falta o período da **1ª quinzena de outubro/2026**.\n\nHoje na torre é **2026-11-07**, então ambas estão atrasadas há mais de uma semana. Para regularizar, registre a entrega em **Entregas** ou trate a pendência na **Caixa de entrada**.",
+  "chamadas": [],
+  "tokens_in": 2,
+  "tokens_out": 420,
+  "cache_lido": 6864,
+  "cache_escrito": 0,
+  "cortada": false
+ }
+]

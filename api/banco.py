@@ -13,6 +13,8 @@ Uma requisição usa uma conexão só: a sessão (`seguranca.escopo`), a rota e 
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+
 from fastapi import Depends, HTTPException, Request, status
 
 from regulaia import banco, db
@@ -50,10 +52,14 @@ def _devolver(pool, pg) -> None:
         pool.putconn(pg)
 
 
-def conexao(request: Request):
-    pool = getattr(request.app.state, "pool", None)
+@contextmanager
+def emprestar(app):
+    """Uma conexão por um instante, fora das dependências da rota: para quem não pode segurar uma
+    conexão a requisição inteira (o Pergunte à torre, que faz requisições internas enquanto o modelo
+    pensa, e cada uma delas pega a sua)."""
+    pool = getattr(app.state, "pool", None)
     if pool is None:
-        conn = db.conectar(request.app.state.cfg.banco)
+        conn = db.conectar(app.state.cfg.banco)
         try:
             yield conn
         finally:
@@ -72,11 +78,31 @@ def conexao(request: Request):
         _devolver(pool, pg)
 
 
+def conexao(request: Request):
+    with emprestar(request.app) as conn:
+        yield conn
+
+
 def _roteador(cache) -> Roteador:
     try:
         return Roteador(cache)
     except Exception:
         return Roteador(cache, env={}, provedores={})
+
+
+@contextmanager
+def roteador_avulso(app):
+    """O roteador de IA (custo do dia, teto) com conexão emprestada só pelo bloco `with`."""
+    cfg: Config = app.state.cfg
+    with emprestar(app) as conn:
+        if cfg.cache == cfg.banco:
+            yield _roteador(conn)
+            return
+        cache = db.conectar(cfg.cache)
+        try:
+            yield _roteador(cache)
+        finally:
+            cache.close()
 
 
 def roteador(request: Request, conn=Depends(conexao)):

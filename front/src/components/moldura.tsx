@@ -2,7 +2,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  BookCheck, CalendarRange, ChartColumn, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu, Moon, Plus,
+  BookCheck, CalendarRange, ChartColumn, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu,
+  MessageSquareText, Moon, Plus,
   Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +40,7 @@ function useGrupos(): Grupo[] {
       { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" />, contador: atrasadas || undefined, tom: "perigo" },
       { href: "/ativos/", rotulo: "Ativos", icone: <Map className="size-4" /> },
       { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" /> },
+      { href: "/pergunte/", rotulo: "Pergunte à torre", icone: <MessageSquareText className="size-4" /> },
     ] },
     { titulo: "Regulatório", itens: [
       { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca" },

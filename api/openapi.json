@@ -2375,6 +2375,68 @@
     }
    }
   },
+  "/api/v1/pergunta/estado": {
+   "get": {
+    "tags": [
+     "pergunta"
+    ],
+    "summary": "Se o Pergunte à torre está ligado, com qual modelo, e o gasto de IA do dia",
+    "operationId": "estado_api_v1_pergunta_estado_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EstadoPergunta"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/pergunta": {
+   "post": {
+    "tags": [
+     "pergunta"
+    ],
+    "summary": "Pergunta em linguagem natural; o modelo consulta a torre no escopo da sessão e cita a fonte",
+    "operationId": "perguntar_api_v1_pergunta_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PedidoPergunta"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RespostaPergunta"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/usuarios": {
    "get": {
     "tags": [
@@ -3436,6 +3498,50 @@
     ],
     "title": "Comprovante"
    },
+   "ConferenciaResposta": {
+    "properties": {
+     "ok": {
+      "type": "boolean",
+      "title": "Ok"
+     },
+     "citacoes": {
+      "type": "integer",
+      "title": "Citacoes",
+      "description": "Trechos entre aspas na resposta"
+     },
+     "citacoes_fora": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Citacoes Fora",
+      "description": "Trechos citados que não estão no que as ferramentas devolveram"
+     },
+     "datas_fora": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Datas Fora"
+     },
+     "codigos_fora": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Codigos Fora"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ok",
+     "citacoes",
+     "citacoes_fora",
+     "datas_fora",
+     "codigos_fora"
+    ],
+    "title": "ConferenciaResposta"
+   },
    "Conta": {
     "properties": {
      "email": {
@@ -4046,6 +4152,49 @@
      "teto_dia_usd"
     ],
     "title": "EstadoIA"
+   },
+   "EstadoPergunta": {
+    "properties": {
+     "ligada": {
+      "type": "boolean",
+      "title": "Ligada"
+     },
+     "modelo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Modelo",
+      "description": "O modelo que responde agora (o primeiro provedor ligado)"
+     },
+     "gasto_hoje_usd": {
+      "type": "number",
+      "title": "Gasto Hoje Usd"
+     },
+     "teto_dia_usd": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Teto Dia Usd"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ligada",
+     "modelo",
+     "gasto_hoje_usd",
+     "teto_dia_usd"
+    ],
+    "title": "EstadoPergunta"
    },
    "Eu": {
     "properties": {
@@ -5287,6 +5436,29 @@
     ],
     "title": "Login"
    },
+   "Mensagem": {
+    "properties": {
+     "papel": {
+      "type": "string",
+      "enum": [
+       "usuario",
+       "torre"
+      ],
+      "title": "Papel"
+     },
+     "texto": {
+      "type": "string",
+      "maxLength": 8000,
+      "title": "Texto"
+     }
+    },
+    "type": "object",
+    "required": [
+     "papel",
+     "texto"
+    ],
+    "title": "Mensagem"
+   },
    "Mercado": {
     "properties": {
      "fonte": {
@@ -6169,6 +6341,30 @@
     ],
     "title": "Painel"
    },
+   "PedidoPergunta": {
+    "properties": {
+     "pergunta": {
+      "type": "string",
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Pergunta"
+     },
+     "historico": {
+      "items": {
+       "$ref": "#/components/schemas/Mensagem"
+      },
+      "type": "array",
+      "maxItems": 20,
+      "title": "Historico",
+      "description": "A conversa até aqui (as últimas mensagens valem)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "pergunta"
+    ],
+    "title": "PedidoPergunta"
+   },
    "PeriodoEntrega": {
     "properties": {
      "periodo": {
@@ -6312,6 +6508,69 @@
      "area"
     ],
     "title": "Responsavel"
+   },
+   "RespostaPergunta": {
+    "properties": {
+     "texto": {
+      "type": "string",
+      "title": "Texto",
+      "description": "A resposta em Markdown"
+     },
+     "modelo": {
+      "type": "string",
+      "title": "Modelo"
+     },
+     "ferramentas": {
+      "items": {
+       "$ref": "#/components/schemas/UsoFerramenta"
+      },
+      "type": "array",
+      "title": "Ferramentas"
+     },
+     "conferencia": {
+      "$ref": "#/components/schemas/ConferenciaResposta"
+     },
+     "tokens_in": {
+      "type": "integer",
+      "title": "Tokens In"
+     },
+     "tokens_out": {
+      "type": "integer",
+      "title": "Tokens Out"
+     },
+     "tokens_cache": {
+      "type": "integer",
+      "title": "Tokens Cache"
+     },
+     "custo_usd": {
+      "type": "number",
+      "title": "Custo Usd"
+     },
+     "corrigida": {
+      "type": "boolean",
+      "title": "Corrigida",
+      "description": "A conferência mandou o modelo corrigir uma vez"
+     },
+     "segundos": {
+      "type": "number",
+      "title": "Segundos",
+      "description": "Quanto a pergunta levou, do pedido à resposta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "texto",
+     "modelo",
+     "ferramentas",
+     "conferencia",
+     "tokens_in",
+     "tokens_out",
+     "tokens_cache",
+     "custo_usd",
+     "corrigida",
+     "segundos"
+    ],
+    "title": "RespostaPergunta"
    },
    "ResultadoLeitura": {
     "properties": {
@@ -6551,6 +6810,36 @@
      "temas"
     ],
     "title": "Troca"
+   },
+   "UsoFerramenta": {
+    "properties": {
+     "ferramenta": {
+      "type": "string",
+      "title": "Ferramenta"
+     },
+     "args": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Args"
+     },
+     "erro": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Erro"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ferramenta",
+     "args"
+    ],
+    "title": "UsoFerramenta"
    },
    "ValidationError": {
     "properties": {

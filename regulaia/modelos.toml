@@ -28,6 +28,18 @@ modelos = [
   { provedor = "bedrock",   modelo = "ID_DO_SONNET_5_NO_BEDROCK" },
 ]
 
+# Pergunte à torre (regulaia/pergunta.py): conversa com uso de ferramentas, não JSON. Vale o primeiro
+# provedor ligado. Na AWS, o Bedrock (REGULAIA_BEDROCK=1): IDs conferidos com chamada real na conta do
+# evento em 7/11/2026 (perfis de inferência us.*). Fora da AWS, a API da Anthropic ou o DeepSeek.
+[pergunta]
+modelos = [
+  { provedor = "bedrock",   modelo = "us.anthropic.claude-sonnet-5" },
+  { provedor = "bedrock",   modelo = "us.anthropic.claude-haiku-4-5-20251001-v1:0" },
+  { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
+  { provedor = "opencode",  modelo = "deepseek-v4.1-flash" },
+  { provedor = "deepseek",  modelo = "deepseek-chat" },
+]
+
 # formato: "openai" (/chat/completions) ou "anthropic" (/messages).
 [provedores.deepseek]
 chave = "DEEPSEEK_API_KEY"
@@ -64,4 +76,6 @@ cabecalho_sessao = "x-opencode-session"
 "deepseek-chat"       = [0.15, 0.60]
 "deepseek-reasoner"   = [0.66, 1.98]
 "claude-haiku-5-5"    = [0.10, 0.50]
-"claude-sonnet-5-5"   = [3.00, 15.00]
+"claude-sonnet-5-5"   = [2.00, 10.00]
+"us.anthropic.claude-sonnet-5"                 = [2.00, 10.00]
+"us.anthropic.claude-haiku-4-5-20251001-v1:0"  = [1.00, 5.00]

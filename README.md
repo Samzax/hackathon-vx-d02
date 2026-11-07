@@ -118,6 +118,7 @@ uv run python -m api.jobs descoberta                        # buscar + triar, co
 | A imagem Docker leva o que a demo precisa e deixa de fora `.env` e dados brutos | `test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto` |
 | A descoberta lê as três fontes reais, deixa fora revogada, crédito e concessão de lavra, pega o decreto que só cita o Código de Mineração, e estado sem fonte nunca aparece como coberto | `tests/test_descoberta.py`, `test_decreto_que_so_cita_o_codigo_de_mineracao_entra_pela_citacao`, `test_estado_sem_conector_nunca_aparece_como_coberto` |
 | A cliente vê só a própria cobertura e recebe 403 na fila da curadoria; a decisão leva o e-mail de quem decidiu, fica na auditoria e muda a cobertura da cliente para "aprovada, falta extrair" | `tests/test_api.py`, `test_fila_de_normas_candidatas_e_so_da_plataforma`, `test_curadoria_aprova_com_o_email_na_auditoria_e_a_cobertura_da_cliente_muda`; `front/e2e/torre.spec.ts` |
+| O chat "Pergunte à torre" só responde com o que as ferramentas devolveram: trecho, data ou código fora delas volta para o modelo corrigir e, se ficar, aparece marcado; o gestor vê pelo chat só o que vê na tela; a TI não usa; passou de 45 s, 504 com o gasto contado | `tests/test_pergunta.py` (10 casos do modelo de verdade, gravados e repetidos no CI) |
 | No front, contra a API real: entrar na demo, ver as 4 atrasadas, registrar uma entrega, o gestor vendo só a área dele, a curadoria aprovando a Res. 245 | `front/e2e/torre.spec.ts` (Playwright) |
 
 ## Conteúdo
@@ -130,7 +131,7 @@ uv run python -m api.jobs descoberta                        # buscar + triar, co
 | `regulaia/` | Banco, versões, regras, agenda, torre, extrator, impacto, leitor de evidência, boletim e plano em PDF |
 | `collector/` | Leitor do XML mensal do DOU (dados abertos) |
 | [regulaia/descoberta.py](regulaia/descoberta.py), [regulaia/temas.toml](regulaia/temas.toml) | Descoberta de normas: perfil da carteira, fontes oficiais, triagem, curadoria e cobertura |
-| `agente/` | Servidor MCP: o Claude (ou outro cliente MCP) consulta a torre pela API, só leitura |
+| `agente/` | Servidor MCP: o Claude (ou outro cliente MCP) consulta a torre pela API, só leitura. As mesmas ferramentas servem o chat "Pergunte à torre" (`regulaia/pergunta.py`, `api/rotas/pergunta.py`) |
 | [data/serra_azul.json](data/serra_azul.json), [data/historico_serra_azul.json](data/historico_serra_azul.json) | A empresa da demo e o histórico de entregas, com as falhas planejadas |
 | `data/exemplos/` | PDFs fictícios para o leitor de evidência |
 | [data/mercado_sigbm.json](data/mercado_sigbm.json) | Números de mercado com fonte: barragens, empresas, embargos, dano potencial e concentração no SIGBM (só agregados) |
@@ -204,6 +205,19 @@ No Claude Desktop (`claude_desktop_config.json`):
 ```
 
 `REGULAIA_EMPRESA` prende o agente a uma empresa (para entregar a uma cliente); sem ela, o token de serviço vê todas. Os testes (`tests/test_agente.py`) chamam as ferramentas contra a API real com o banco da demo.
+
+### Pergunte à torre (chat no front)
+
+A tela **Pergunte à torre** (`/pergunte`) faz o mesmo sem instalar nada: a pergunta vai para `POST /api/v1/pergunta`, que roda o Claude com as ferramentas de leitura do agente (menos a análise de ato, que chama IA). As ferramentas consultam a API por dentro com a sessão de quem pergunta, então o gestor da usina não recebe pelo chat a barragem da Geotecnia, e a TI não usa o chat. Antes de mostrar, o Python confere cada trecho entre aspas, data e código de obrigação ou ativo contra o que as ferramentas devolveram: o que não bate volta para o modelo corrigir uma vez e, se ficar, aparece marcado na resposta. Cada resposta mostra o que foi consultado, o modelo, o tempo e o custo; o custo entra no teto diário de IA.
+
+Na AWS, o modelo é o Claude Sonnet 5 pelo Bedrock (Haiku 4.5 de reserva), com cache de prompt: uma pergunta custa em torno de US$ 0,01 a 0,05. Fora da AWS, vale o primeiro provedor ligado na lista `[pergunta]` de `regulaia/modelos.toml`; sem nenhum, a tela avisa que está desligada.
+
+```bash
+# avaliação contra o modelo de verdade (10 casos com critério objetivo); --gravar atualiza as respostas que o CI repete
+REGULAIA_BEDROCK=1 AWS_PROFILE=... uv run --with "botocore[crt]" python -m regulaia.pergunta avaliar --gravar
+```
+
+O resultado fica em `docs/AVALIACAO_PERGUNTA.md`.
 
 ## Link público antes da AWS
 

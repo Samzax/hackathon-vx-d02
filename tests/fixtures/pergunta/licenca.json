@@ -1,0 +1,28 @@
+[
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "",
+  "chamadas": [
+   {
+    "id": "tooluse_C4P1BtyIqb9IOMFvDWTADv",
+    "nome": "pendencias",
+    "args": {}
+   }
+  ],
+  "tokens_in": 2,
+  "tokens_out": 80,
+  "cache_lido": 6250,
+  "cache_escrito": 0,
+  "cortada": false
+ },
+ {
+  "modelo": "us.anthropic.claude-sonnet-5",
+  "texto": "Sim — no ativo **L1**, há condicionante da licença de operação atrasada e uma obrigação ligada a ela vencendo logo:\n\n**Atrasada**\n- **LO-02** – Monitorar os efluentes líquidos da estação de tratamento\n  Norma: **LO 000/2023 (fictícia), Condicionante 2**\n  Vencida em **2026-10-15**, falta o período **setembro/2026**\n  Responsável: Gerência de Meio Ambiente\n\n**Vence logo**\n- **LO-06** – Requerer a renovação da licença de operação\n  Norma: **LC 140/2011, art. 14 §4**\n  Vence em **2026-11-15**\n  Responsável: Gerência de Meio Ambiente\n  *(obs.: esta não é uma condicionante da LO em si, mas decorre da proximidade do vencimento da licença)*\n\nHoje na torre é **2026-11-07**. Para regularizar o monitoramento de setembro e acompanhar o pedido de renovação, vá em **Entregas** (registrar o comprovante) e na **Caixa de entrada** para tratar a prioridade.",
+  "chamadas": [],
+  "tokens_in": 2,
+  "tokens_out": 388,
+  "cache_lido": 6250,
+  "cache_escrito": 1785,
+  "cortada": false
+ }
+]

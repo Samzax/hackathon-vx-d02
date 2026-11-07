@@ -83,9 +83,18 @@ class Torre:
         return achadas[0]["id"]
 
     def ativo(self, empresa_id: int, ativo: str | int) -> dict:
-        """Aceita o código (B1) ou o id do ativo."""
+        """Aceita o código (B1), o id ou um pedaço do nome que só um ativo tenha ("VP-101", "Córrego
+        Fundo"): quem pergunta fala do ativo pelo nome que usa no dia a dia, não pelo código da torre."""
         chave = str(ativo).strip().casefold()
-        for a in self.get(f"/empresas/{empresa_id}/ativos"):
+        todos = self.get(f"/empresas/{empresa_id}/ativos")
+        for a in todos:
             if a["codigo"].casefold() == chave or str(a["id"]) == chave:
                 return a
-        raise ErroTorre(f"Ativo '{ativo}' não encontrado nessa empresa.")
+        pelo_nome = [a for a in todos if chave and chave in a["nome"].casefold()]
+        if len(pelo_nome) == 1:
+            return pelo_nome[0]
+        if pelo_nome:
+            raise ErroTorre(f"Mais de um ativo com '{ativo}' no nome: "
+                            + ", ".join(f"{a['codigo']} ({a['nome']})" for a in pelo_nome))
+        raise ErroTorre(f"Ativo '{ativo}' não encontrado nessa empresa. Ativos: "
+                        + ", ".join(f"{a['codigo']} ({a['nome']})" for a in todos[:30]))

@@ -140,3 +140,22 @@ export function useEntregar() {
     onSuccess: () => invalidar(),
   });
 }
+
+/** Pergunte à torre: se está ligado aqui (e com qual modelo), sem depender da empresa nem do dia. */
+export function useEstadoPergunta() {
+  const { t, chave } = useBase();
+  return useQuery({
+    queryKey: [chave[0], chave[1], "pergunta-estado"],
+    queryFn: () => dados(api.GET("/api/v1/pergunta/estado")),
+    enabled: !t.ti,
+  });
+}
+
+export type PedidoPergunta = Esquemas["PedidoPergunta"];
+
+/** Uma pergunta: o modelo consulta a torre com a sessão de quem pergunta. Não escreve nada na torre. */
+export function usePerguntar() {
+  return useMutation({
+    mutationFn: (p: PedidoPergunta) => dados(api.POST("/api/v1/pergunta", { body: p })),
+  });
+}

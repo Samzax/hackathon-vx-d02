@@ -21,7 +21,7 @@ from regulaia import db, demo, usuarios
 from .banco import abrir_pool, conexao
 from .config import Config
 from .observabilidade import RequestId, configurar_logs, log
-from .rotas import admin, auth, descoberta, evidencias, regulatorio, torre
+from .rotas import admin, auth, descoberta, evidencias, pergunta, regulatorio, torre
 
 VERSAO = "1.0.0"
 PREFIXO = "/api/v1"
@@ -77,7 +77,8 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
     app.add_middleware(RequestId)
     app.add_middleware(CORSMiddleware, allow_origins=list(cfg.origens), allow_credentials=True,
                        allow_methods=["*"], allow_headers=["*"], expose_headers=["X-Request-Id"])
-    for r in (auth.rota, torre.rota, regulatorio.rota, descoberta.rota, evidencias.rota, admin.rota):
+    for r in (auth.rota, torre.rota, regulatorio.rota, descoberta.rota, evidencias.rota, pergunta.rota,
+              admin.rota):
         app.include_router(r, prefix=PREFIXO)
 
     @app.get("/health", tags=["operação"], summary="Vivo e com banco")

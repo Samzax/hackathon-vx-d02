@@ -253,6 +253,17 @@ Os prompts não podem depender de um modelo específico. A saída é sempre JSON
 
 Sobre o `AGENTS.md`: ele é uma convenção para agentes de programação (Codex, OpenCode, Claude Code) e não é lido por chamadas de API. O equivalente no nosso produto é o arquivo de configuração: ele manda a camada 2 usar um modelo barato (Haiku, DeepSeek) e só a camada 3 usar um forte (Sonnet).
 
+## Pergunte à torre: o chat que só fala do que a torre tem
+
+O chat é um laço de uso de ferramentas (`regulaia/pergunta.py`): o modelo pede consultas, o Python as executa e devolve o resultado, até o modelo responder. As decisões:
+
+- **As ferramentas são as do agente MCP** (`agente/ferramentas.py`), sem depender do pacote `mcp`. Um só lugar define o que o Claude pode consultar, no Claude Desktop e no front. A análise de ato fica de fora do chat: ela chama outra IA.
+- **As ferramentas passam pela API, não pelo banco.** A rota chama a própria API em processo, com o cookie ou o token de quem pergunta. Assim, escopo da área, papel e empresa valem igual à tela, sem uma segunda implementação das regras de acesso. Durante o laço, a rota não segura conexão do pool: cada consulta pega e devolve a sua.
+- **Conferência pelo Python, não pela palavra do modelo.** Trecho entre aspas (a partir de 25 caracteres), data (AAAA-MM-DD e DD/MM/AAAA) e código (OB-01, R95-08, B3, LO-02) precisam estar no que as ferramentas devolveram, nos argumentos que o modelo consultou ou na própria pergunta. O que não estiver volta para o modelo uma vez, com a lista do que não bateu; o que sobrar aparece marcado para quem lê. Resposta que para no limite de tokens também volta, com o pedido de uma mais curta, em vez de chegar cortada no meio da frase.
+- **Custo.** O Bedrock guarda em cache o prompt fixo (instruções e descrição das ferramentas) e a conversa até ali: leitura de cache sai a 10% do preço de entrada. O prompt manda não repetir consulta. Uma pergunta custa de US$ 0,004 a 0,05 no Sonnet 5; o custo vai para a tabela `analise_ia`, a mesma que o teto diário soma.
+- **Prazo.** Na AWS o CloudFront espera a origem por 60 s. A pergunta tem 45 s: passou disso, a rota responde 504 com uma sugestão ("pergunte de um ativo, uma norma") e o gasto já feito entra no teto.
+- **Avaliação.** `tests/pergunta_avaliacao.toml` tem 10 perguntas com critério objetivo (o que a resposta precisa conter, o que não pode, que ferramenta precisa ter usado, conferência sem nada fora). `python -m regulaia.pergunta avaliar --gravar` roda contra o modelo de verdade, escreve `docs/AVALIACAO_PERGUNTA.md` e grava cada passo do modelo; o CI repete essas gravações sem chave, então mudança de ferramenta ou de prompt que quebre um caso aparece no teste.
+
 ## Fontes de dados
 
 - O `robots.txt` de www.in.gov.br proíbe robôs. O radar usa os canais oficiais de acesso em lote: o XML mensal de dados abertos e o INLABS.
