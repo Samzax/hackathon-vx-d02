@@ -4,7 +4,6 @@ escopo da área, teto, auditoria) e as respostas gravadas do modelo de verdade, 
 from __future__ import annotations
 
 import json
-import sqlite3
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,6 +12,7 @@ from agente.cliente import Torre
 from agente.ferramentas import CHAMA_IA, ferramentas
 from api.main import criar_app
 from api.rotas import pergunta as rota_pergunta
+from mitra import db
 from mitra import pergunta as pg
 from mitra.ia import SemProvedor
 from tests.test_api import _url, cfg, como, entrar  # noqa: F401  (cfg é fixture)
@@ -256,7 +256,7 @@ def test_rota_responde_audita_e_soma_o_custo_no_dia(cliente, cfg):  # noqa: F811
     aud = cliente.get(_url("/auditoria")).json()
     reg = next(a for a in aud if a["acao"] == "pergunta")
     assert reg["alvo"] == "O que está atrasado na B3?" and reg["usuario"] == "demo@serraazul.demo"
-    cache = sqlite3.connect(cfg.cache)
+    cache = db.conectar(cfg.cache)
     assert cache.execute("SELECT COUNT(*) FROM analise_ia WHERE tarefa = 'pergunta'").fetchone()[0] == 1
 
 
@@ -290,7 +290,7 @@ def test_teto_do_dia_e_ia_desligada(cliente, cfg, monkeypatch):  # noqa: F811
     assert cliente.post(_url("/pergunta"), json={"pergunta": "Oi"}).status_code == 503
     _gravadas(cliente, [_passo("Ok.")])
     monkeypatch.setenv("MITRA_TETO_DIA_USD", "0.000001")
-    cache = sqlite3.connect(cfg.cache)
+    cache = db.conectar(cfg.cache)
     with cache:
         cache.execute("INSERT INTO analise_ia (chave, tarefa, provedor, modelo, resposta, tokens_in, tokens_out, "
                       "custo_usd) VALUES ('x', 'pergunta', 'bedrock', 'm', '{}', 1, 1, 0.5)")
@@ -308,5 +308,5 @@ def test_rota_que_passa_do_prazo_responde_504_e_conta_o_gasto(cliente, cfg, monk
     monkeypatch.setattr(pg.perguntar, "__kwdefaults__", {**pg.perguntar.__kwdefaults__, "prazo": 0.0})
     r = cliente.post(_url("/pergunta"), json={"pergunta": "Oi"})
     assert r.status_code == 504 and "mais específica" in r.json()["detail"]
-    cache = sqlite3.connect(cfg.cache)
+    cache = db.conectar(cfg.cache)
     assert cache.execute("SELECT COUNT(*) FROM analise_ia WHERE tarefa = 'pergunta'").fetchone()[0] == 1

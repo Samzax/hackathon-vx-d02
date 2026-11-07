@@ -290,5 +290,7 @@ def test_a_mesma_empresa_nao_repete_o_codigo(conn):
     a = inst.criar(conn, nome="Cliente A (fictícia)", razao_social="A", cnpj=None, ufs=[], por=POR)
     _condicionante(conn, a, "Cliente A (fictícia)", "LO-01", "Primeira")
     import sqlite3
-    with pytest.raises(sqlite3.IntegrityError):
+
+    import psycopg
+    with pytest.raises((sqlite3.IntegrityError, psycopg.errors.UniqueViolation)):
         _condicionante(conn, a, "Cliente A (fictícia)", "LO-01", "Repetida na mesma empresa")
