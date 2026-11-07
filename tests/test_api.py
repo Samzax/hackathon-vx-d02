@@ -224,7 +224,7 @@ def test_norma_publica_so_a_curadoria_decide_e_a_decisao_vale(cliente):
     pendentes = cliente.get(_url(f"/empresas/{emp}/mudancas")).json()
     ob01 = next(m for m in pendentes if m["codigo"] == "OB-01")
     assert ob01["diferencas"]["prazo"][1] == "2029-12-26" and ob01["trecho"]
-    assert ob01["escopo"] == "norma pública" and not ob01["decide"] and ob01["quem_decide"] == "curadoria RegulaIA"
+    assert ob01["escopo"] == "norma pública" and not ob01["decide"] and ob01["quem_decide"] == "curadoria Mitra"
     decisao = _url(f"/mudancas/{ob01['versao_id']}/decisao")
     como(cliente, "geotecnia@serraazul.demo")
     assert cliente.post(decisao, json={"aprovar": True}).status_code == 403
@@ -235,7 +235,7 @@ def test_norma_publica_so_a_curadoria_decide_e_a_decisao_vale(cliente):
     assert cliente.post(decisao, json={"aprovar": True}).status_code == 200
     assert not [m for m in cliente.get(_url(f"/empresas/{emp}/mudancas")).json() if m["codigo"] == "OB-01"]
     h = cliente.get(_url("/obrigacoes/OB-01/historico")).json()
-    assert [v["status"] for v in h] == ["substituida", "vigente"] and h[-1]["decidida_por"] == "Curadoria RegulaIA"
+    assert [v["status"] for v in h] == ["substituida", "vigente"] and h[-1]["decidida_por"] == "Curadoria Mitra"
 
 
 def test_correcao_invalida_e_recusada_e_auditada(cliente):
@@ -506,13 +506,16 @@ def test_cada_cliente_ve_so_a_propria_trilha_e_a_plataforma_ve_todas(cliente, ou
 
 def test_conta_de_teste_olha_como_a_curadoria_e_o_token_de_servico_ve_todas(cliente, outra):
     eu = como(cliente)
-    assert eu["empresa"] == SERRA_AZUL and eu["visoes"][-1] == "Curadoria RegulaIA (plataforma)"
+    assert eu["empresa"] == SERRA_AZUL and eu["visoes"][-1] == "Curadoria Mitra (plataforma)"
     assert _ids(cliente) == [outra["serra"]]
-    r = cliente.put(_url("/auth/visao"), json={"visao": "Curadoria RegulaIA (plataforma)"})
+    r = cliente.put(_url("/auth/visao"), json={"visao": "Curadoria Mitra (plataforma)"})
     assert r.status_code == 200 and r.json()["plataforma"] and r.json()["empresa"] is None
-    assert set(_ids(cliente)) == {outra["serra"], outra["id"]}
     h = {"Authorization": "Bearer token-de-teste-do-agente"}
-    assert {e["id"] for e in cliente.get(_url("/empresas"), headers=h).json()} == {outra["serra"], outra["id"]}
+    empresas = cliente.get(_url("/empresas"), headers=h).json()
+    ids = {e["id"] for e in empresas}
+    assert {outra["serra"], outra["id"]} <= ids
+    assert any(e["setor"] == "saude" for e in empresas)
+    assert set(_ids(cliente)) == ids
 
 
 def test_conta_sem_empresa_nao_entra(cliente, cfg):
@@ -562,7 +565,7 @@ def _como_plataforma(c: TestClient, quem: str) -> None:
         c.headers.update(TOKEN)
     elif quem == "conta de teste como curadoria":
         como(c)
-        assert c.put(_url("/auth/visao"), json={"visao": "Curadoria RegulaIA (plataforma)"}).status_code == 200
+        assert c.put(_url("/auth/visao"), json={"visao": "Curadoria Mitra (plataforma)"}).status_code == 200
     else:
         como(c, CURADORIA)
 
@@ -576,7 +579,7 @@ def test_plataforma_so_le_os_dados_operacionais_da_empresa(cliente, quem):
     antes = cliente.get(_url(f"/ativos/{b3}")).json()
     r = _escritas_da_empresa(cliente, emp)
     assert {k: v.status_code for k, v in r.items()} == dict.fromkeys(r, 403)
-    assert all(v.json()["detail"].startswith("a equipe RegulaIA só lê os dados da empresa") for v in r.values())
+    assert all(v.json()["detail"].startswith("a equipe Mitra só lê os dados da empresa") for v in r.values())
     depois = cliente.get(_url(f"/ativos/{b3}")).json()
     assert (depois["ativo"], depois["evidencias"], depois["eventos"]) == (antes["ativo"], antes["evidencias"],
                                                                          antes["eventos"])
@@ -656,8 +659,13 @@ def test_resumo_areas_e_campos_do_cadastro(cliente, cfg):
     emp = _empresa(cliente)
     r = cliente.get(_url(f"/empresas/{emp}/resumo")).json()
     conn = db.conectar(cfg.banco)
-    n_ob, n_normas = conn.execute("SELECT COUNT(*), COUNT(DISTINCT norma) FROM obrigacao").fetchone()
-    n_ev = conn.execute("SELECT COUNT(*) FROM evidencia").fetchone()[0]
+    nome = conn.execute("SELECT nome FROM empresa WHERE id = ?", (emp,)).fetchone()[0]
+    n_ob, n_normas = conn.execute(
+        "SELECT COUNT(*), COUNT(DISTINCT norma) FROM obrigacao WHERE empresa IS NULL OR empresa = ?", (nome,)
+    ).fetchone()
+    n_ev = conn.execute(
+        "SELECT COUNT(*) FROM evidencia WHERE ativo_id IN (SELECT id FROM ativo WHERE empresa_id = ?)", (emp,)
+    ).fetchone()[0]
     conn.close()
     assert (r["ativos"], r["obrigacoes"], r["normas"], r["evidencias"]) == (8, n_ob, n_normas, n_ev) and n_ev
     a = cliente.get(_url(f"/empresas/{emp}/areas")).json()
@@ -728,7 +736,7 @@ def test_mudanca_traz_a_analise_o_tamanho_e_a_decisao_fica_registrada(cliente):
     assert cliente.post(_url(f"/mudancas/{ob01['versao_id']}/decisao"), json={"aprovar": True}).status_code == 200
     d = cliente.get(_url(f"/empresas/{emp}/decisoes")).json()
     assert [(x["codigo"], x["aprovada"], x["corrigida"]) for x in d] == [("OB-01", True, False)]
-    assert d[0]["decidida_por"] == "Curadoria RegulaIA" and d[0]["ato_nome"].startswith("Resolução ANM nº 245")
+    assert d[0]["decidida_por"] == "Curadoria Mitra" and d[0]["ato_nome"].startswith("Resolução ANM nº 245")
     obs = cliente.get(_url(f"/empresas/{emp}/obrigacoes")).json()
     assert obs[0]["codigo"] == "OB-01" and obs[0]["mudou"]
     h = cliente.get(_url("/obrigacoes/OB-01/historico")).json()

@@ -16,12 +16,15 @@ def _linhas(caminho: Path) -> int:
 
 def test_numeros_do_cadastro_na_documentacao():
     res220 = _linhas(RAIZ / "seed_obligations.csv")
-    total = res220 + sum(_linhas(p) for p in (RAIZ / "cadastro").glob("*.csv"))
+    cadastro = list((RAIZ / "cadastro").glob("*.csv"))
+    total = res220 + sum(_linhas(p) for p in cadastro)
+    mineracao = res220 + sum(_linhas(p) for p in cadastro if p.name != "saude.csv")
     readme = (RAIZ / "README.md").read_text(encoding="utf-8")
     roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
     arquitetura = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
-    assert f"{total} obrigações cadastradas" in readme
-    assert f"8 ativos e {total} obrigações" in roteiro
+    assert f"8 ativos da mineração e {mineracao} obrigações cadastradas" in readme
+    assert f"{total} obrigações no ambiente de demonstração" in readme
+    assert f"8 ativos e {mineracao} obrigações" in roteiro
     assert f"Res. ANM 220/2025 (vale a partir de 2/8/2027) | {res220} |" in readme
     assert f"as {res220} da Res. 220/2025" in arquitetura
     assert f"Cada uma das {res220} obrigações" in arquitetura

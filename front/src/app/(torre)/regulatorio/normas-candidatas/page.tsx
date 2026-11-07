@@ -129,7 +129,7 @@ function Fila() {
   const normas = useMemo(() => (fila.data?.normas ?? []).filter((n) =>
     !termo || `${n.titulo} ${n.chave} ${n.ementa} ${n.triagem?.deveres ?? ""}`.toLowerCase().includes(termo)), [fila.data, termo]);
 
-  if (!t.plataforma) return <Aviso tipo="info">A fila de normas candidatas é trabalho da curadoria da RegulaIA.</Aviso>;
+  if (!t.plataforma) return <Aviso tipo="info">A fila de normas candidatas é trabalho da curadoria da Mitra.</Aviso>;
   const contagem = fila.data?.contagem ?? {};
   const rotulos = fila.data?.status_rotulos ?? {};
   const decide = fila.data?.decide ?? false;
@@ -176,7 +176,7 @@ function Fila() {
 export default function NormasCandidatas() {
   return (
     <>
-      <Titulo sobre="Curadoria RegulaIA" titulo="Normas candidatas">
+      <Titulo sobre="Curadoria Mitra" titulo="Normas candidatas">
         Leis, decretos e resoluções já publicados que a busca nas fontes oficiais achou para os ativos da carteira e a IA triou pela
         ementa (ou pelo texto, nos descartes duvidosos). Aprovada vai para a extração das obrigações; descartada sai da fila. Vale
         para todas as clientes, e cada decisão fica na auditoria com o seu e-mail.

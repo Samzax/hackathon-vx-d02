@@ -29,7 +29,7 @@ def http(tmp_path):
 @pytest.fixture
 def ferramentas(http):
     """As funções das ferramentas, chamadas como o MCP chama (pelo nome, com argumentos)."""
-    mcp = criar_servidor(Torre(http))
+    mcp = criar_servidor(Torre(http, empresa="Mineradora Serra Azul"))
 
     def chamar(nome: str, **args):
         r = asyncio.run(mcp.call_tool(nome, args))
@@ -66,7 +66,7 @@ def test_nenhuma_ferramenta_escreve_na_torre(http, ferramentas, tmp_path):
     contar = lambda: {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in tabelas}  # noqa: E731
     cadastro = lambda: [r["atributos"] for r in conn.execute("SELECT atributos FROM ativo ORDER BY id")]  # noqa: E731
     antes = (contar(), cadastro())
-    nomes = [t.name for t in asyncio.run(criar_servidor(Torre(http)).list_tools())]
+    nomes = [t.name for t in asyncio.run(criar_servidor(Torre(http, empresa="Mineradora Serra Azul")).list_tools())]
     for nome in nomes:
         ferramentas(nome, **args.get(nome, {}))
     assert (contar(), cadastro()) == antes
@@ -171,7 +171,7 @@ def test_empresa_fixa_prende_o_escopo(http):
 
 
 def test_ativo_inexistente_e_token_errado_viram_erro_legivel(http):
-    t = Torre(http)
+    t = Torre(http, empresa="Mineradora Serra Azul")
     with pytest.raises(ErroTorre, match="Ativo 'B9'"):
         t.ativo(t.empresa_id(None), "B9")
     http.headers["Authorization"] = "Bearer outro"
@@ -181,7 +181,7 @@ def test_ativo_inexistente_e_token_errado_viram_erro_legivel(http):
 
 def test_erro_de_validacao_vira_frase_nao_repr(http):
     """O 422 do FastAPI chega como lista de dicts: o agente traduz para 'campo: mensagem'."""
-    t = Torre(http)
+    t = Torre(http, empresa="Mineradora Serra Azul")
     with pytest.raises(ErroTorre, match="hoje") as e:
         t.get(f"/empresas/{t.empresa_id(None)}/painel", hoje="07/11/2026")
     assert "[{" not in str(e.value)
@@ -192,4 +192,4 @@ def test_erro_da_torre_e_erro_de_ferramenta(http):
     from mcp.server.mcpserver.exceptions import ToolError
 
     with pytest.raises(ToolError, match="B9"):
-        asyncio.run(criar_servidor(Torre(http)).call_tool("ficha_do_ativo", {"ativo": "B9"}))
+        asyncio.run(criar_servidor(Torre(http, empresa="Mineradora Serra Azul")).call_tool("ficha_do_ativo", {"ativo": "B9"}))

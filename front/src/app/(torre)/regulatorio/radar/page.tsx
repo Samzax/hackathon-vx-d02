@@ -90,7 +90,7 @@ function ResultadoAnalise({ an, texto, onEnviado }: { an: Analise; texto: string
       ) : (
         <Aviso tipo="info" className="mt-4">
           {plural(an.aprovadas, "mudança passou", "mudanças passaram")} na conferência. Quem transforma isso em proposta é a curadoria da
-          RegulaIA: a norma é pública e vale para todas as clientes. Aqui é só o teste: nada foi gravado.
+          Mitra: a norma é pública e vale para todas as clientes. Aqui é só o teste: nada foi gravado.
         </Aviso>
       ))}
     </Cartao>

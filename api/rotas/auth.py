@@ -34,7 +34,7 @@ class Eu(BaseModel):
     area: str | None
     teste: bool
     empresa: str | None = Field(description="a empresa cliente que a sessão vê; vazio na plataforma (vê todas)")
-    plataforma: bool = Field(description="age como a equipe da RegulaIA (curadoria das normas públicas)")
+    plataforma: bool = Field(description="age como a equipe da Mitra (curadoria das normas públicas)")
     so_leitura: bool = Field(description="nos dados operacionais das clientes (entrega, comprovante, evidência, "
                                          "comentário, atribuição, cadastro e responsável do ativo) a sessão só lê")
     visao: str

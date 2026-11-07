@@ -658,7 +658,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** A fila da curadoria RegulaIA: normas já publicadas que a busca achou e a IA triou (só a plataforma) */
+        /** A fila da curadoria Mitra: normas já publicadas que a busca achou e a IA triou (só a plataforma) */
         get: operations["fila_api_v1_normas_candidatas_get"];
         put?: never;
         post?: never;
@@ -694,7 +694,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Curadoria RegulaIA: aprovar (vai para a extração das obrigações) ou descartar, com nota */
+        /** Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota */
         post: operations["decidir_api_v1_normas_candidatas__chave__decisao_post"];
         delete?: never;
         options?: never;
@@ -1366,6 +1366,11 @@ export interface components {
             nome: string;
             /** Ficticia */
             ficticia: boolean;
+            /**
+             * Setor
+             * @default mineracao
+             */
+            setor: string;
             /** Monitorado Desde */
             monitorado_desde?: string | null;
             /** Origem */
@@ -1448,7 +1453,7 @@ export interface components {
             empresa: string | null;
             /**
              * Plataforma
-             * @description age como a equipe da RegulaIA (curadoria das normas públicas)
+             * @description age como a equipe da Mitra (curadoria das normas públicas)
              */
             plataforma: boolean;
             /**
@@ -1763,7 +1768,7 @@ export interface components {
             triagem_pendente: number;
             /**
              * Em Curadoria
-             * @description relevantes pela IA, esperando a curadoria RegulaIA
+             * @description relevantes pela IA, esperando a curadoria Mitra
              */
             em_curadoria: components["schemas"]["NormaNaCobertura"][];
             /**
@@ -2046,7 +2051,7 @@ export interface components {
             decide: boolean;
             /**
              * Quem Decide
-             * @example curadoria RegulaIA
+             * @example curadoria Mitra
              * @example Regulatório ou Diretoria da Mineradora Serra Azul
              */
             quem_decide: string;
@@ -2541,7 +2546,7 @@ export interface components {
              * @example Diretoria (todos os ativos)
              * @example Gerência de Geotecnia
              * @example TI (usuários e acessos)
-             * @example Curadoria RegulaIA (plataforma)
+             * @example Curadoria Mitra (plataforma)
              */
             visao: string;
         };

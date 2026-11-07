@@ -129,7 +129,7 @@ function CartaoMudanca({ m }: { m: Mudanca }) {
       ) : (
         <Aviso tipo="info" className="mt-4">
           Quem decide esta mudança: <strong>{m.quem_decide}</strong>.
-          {m.escopo === "norma pública" && " É norma pública: vale para todas as clientes, por isso a curadoria da RegulaIA aprova uma vez para todas."}
+          {m.escopo === "norma pública" && " É norma pública: vale para todas as clientes, por isso a curadoria da Mitra aprova uma vez para todas."}
           {" "}Até lá, nada muda na torre.
         </Aviso>
       )}

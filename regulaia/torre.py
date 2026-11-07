@@ -339,7 +339,7 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
             out.append(f"- **{m.codigo}** · {m.titulo} — {m.ato}: {campos} "
                        f"(ativos: {', '.join(sorted(set(m.ativos) & set(ativos)))})")
         out.append("")
-    out.append("Gerado pela RegulaIA. Cada item traz a norma e o dispositivo; o trecho literal está na torre.")
+    out.append("Gerado pela Mitra. Cada item traz a norma e o dispositivo; o trecho literal está na torre.")
     return "\n".join(out)
 
 
@@ -381,8 +381,8 @@ def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str 
             eventos.append((f.dia, f"{f.ativo}-{f.codigo}-inicio",
                             f"Começa a valer: {f.ativo} · {f.titulo}", dispositivo(f.norma, f.artigo),
                             agenda.AVISO_DIAS))
-    linhas = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//RegulaIA//Torre de Controle//PT-BR",
-              "CALSCALE:GREGORIAN", f"X-WR-CALNAME:RegulaIA · {_ics_texto(responsavel or 'Diretoria')}"]
+    linhas = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mitra//Torre de Controle//PT-BR",
+              "CALSCALE:GREGORIAN", f"X-WR-CALNAME:Mitra · {_ics_texto(responsavel or 'Diretoria')}"]
     carimbo = f"{hoje:%Y%m%d}T000000Z"
     for dia, uid, resumo, desc, aviso in sorted(eventos):
         d = date.fromisoformat(dia)
@@ -569,7 +569,7 @@ def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: s
         out.insert(4, f"{_n(len(trocas), 'ativo afetado', 'ativos afetados')} · "
                       f"{_n(novas_total, 'obrigação sem equivalente', 'obrigações sem equivalente')} "
                       "na norma atual.\n")
-    out.append("Gerado pela RegulaIA a partir do cadastro aprovado. Mudanças ainda pendentes não entram.")
+    out.append("Gerado pela Mitra a partir do cadastro aprovado. Mudanças ainda pendentes não entram.")
     return "\n".join(out)
 
 

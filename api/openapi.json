@@ -1,7 +1,7 @@
 {
  "openapi": "3.1.0",
  "info": {
-  "title": "RegulaIA API",
+  "title": "Mitra API",
   "summary": "Torre de controle regulatória: cada obrigação de cada ativo, com a norma, o trecho e o prazo.",
   "description": "Autenticação por cookie de sessão HttpOnly (POST /auth/login ou /auth/demo). Toda escrita precisa do cabeçalho X-CSRF-Token com o valor do cookie regulaia_csrf. O agente e os jobs usam Authorization: Bearer <REGULAIA_TOKEN_SERVICO>.",
   "version": "1.0.0"
@@ -2054,7 +2054,7 @@
     "tags": [
      "descoberta"
     ],
-    "summary": "A fila da curadoria RegulaIA: normas já publicadas que a busca achou e a IA triou (só a plataforma)",
+    "summary": "A fila da curadoria Mitra: normas já publicadas que a busca achou e a IA triou (só a plataforma)",
     "operationId": "fila_api_v1_normas_candidatas_get",
     "parameters": [
      {
@@ -2171,7 +2171,7 @@
     "tags": [
      "descoberta"
     ],
-    "summary": "Curadoria RegulaIA: aprovar (vai para a extração das obrigações) ou descartar, com nota",
+    "summary": "Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota",
     "operationId": "decidir_api_v1_normas_candidatas__chave__decisao_post",
     "parameters": [
      {
@@ -3925,6 +3925,11 @@
       "type": "boolean",
       "title": "Ficticia"
      },
+     "setor": {
+      "type": "string",
+      "title": "Setor",
+      "default": "mineracao"
+     },
      "monitorado_desde": {
       "anyOf": [
        {
@@ -4133,7 +4138,7 @@
      "plataforma": {
       "type": "boolean",
       "title": "Plataforma",
-      "description": "age como a equipe da RegulaIA (curadoria das normas públicas)"
+      "description": "age como a equipe da Mitra (curadoria das normas públicas)"
      },
      "so_leitura": {
       "type": "boolean",
@@ -4784,7 +4789,7 @@
       },
       "type": "array",
       "title": "Em Curadoria",
-      "description": "relevantes pela IA, esperando a curadoria RegulaIA"
+      "description": "relevantes pela IA, esperando a curadoria Mitra"
      },
      "aprovadas": {
       "items": {
@@ -5530,7 +5535,7 @@
       "type": "string",
       "title": "Quem Decide",
       "examples": [
-       "curadoria RegulaIA",
+       "curadoria Mitra",
        "Regulatório ou Diretoria da Mineradora Serra Azul"
       ]
      },
@@ -6990,7 +6995,7 @@
        "Diretoria (todos os ativos)",
        "Gerência de Geotecnia",
        "TI (usuários e acessos)",
-       "Curadoria RegulaIA (plataforma)"
+       "Curadoria Mitra (plataforma)"
       ]
      }
     },

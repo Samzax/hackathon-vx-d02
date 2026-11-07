@@ -1,4 +1,4 @@
-"""Servidor MCP da RegulaIA: um agente (Claude, ou qualquer cliente MCP) consulta a torre.
+"""Servidor MCP da Mitra: um agente (Claude, ou qualquer cliente MCP) consulta a torre.
 
 Só leitura. O agente explica, cruza e prioriza; quem decide é gente, na torre: aprovar mudança de norma,
 registrar entrega e mexer no cadastro continuam nos botões, com nome na auditoria. A única ferramenta que
@@ -20,7 +20,7 @@ from pydantic import Field
 from .cliente import ErroTorre, Torre
 
 INSTRUCOES = """\
-Você consulta a torre de controle regulatória da RegulaIA: para cada ativo de uma mineradora (barragens,
+Você consulta a torre de controle regulatória da Mitra: para cada ativo de uma mineradora (barragens,
 unidades, equipamentos, licenças), quais obrigações de cada norma valem, quando vencem e se estão em dia.
 
 - Toda obrigação tem norma, dispositivo (artigo/item) e o trecho literal da norma: cite-os ao responder.
@@ -68,13 +68,13 @@ def _norma_descoberta(n: dict) -> dict:
 
 
 def criar_servidor(torre: Torre) -> MCPServer:
-    mcp = MCPServer(name="RegulaIA", title="RegulaIA: torre de controle regulatória",
+    mcp = MCPServer(name="Mitra", title="Mitra: torre de controle regulatória",
                     instructions=INSTRUCOES, version="1.0.0")
 
     @mcp.tool(annotations=LEITURA)
     def empresas() -> list[dict]:
-        """Empresas que este agente enxerga (id, nome, se é fictícia, de onde veio)."""
-        return [{"id": e["id"], "nome": e["nome"], "ficticia": e.get("ficticia"), "origem": e.get("origem")}
+        """Empresas que este agente enxerga (id, nome, setor, se é fictícia, de onde veio)."""
+        return [{"id": e["id"], "nome": e["nome"], "setor": e.get("setor"), "ficticia": e.get("ficticia"), "origem": e.get("origem")}
                 for e in torre.empresas()]
 
     @mcp.tool(annotations=LEITURA)
@@ -175,7 +175,7 @@ def criar_servidor(torre: Torre) -> MCPServer:
     ) -> list[dict]:
         """Que normas valem para os ativos da empresa e quais ainda não estão no catálogo, por jurisdição e
         tipo de ativo: as normas catalogadas, as fontes oficiais lidas (e até que ano), as lacunas conhecidas,
-        as normas já publicadas que a IA achou relevantes e esperam a curadoria RegulaIA, e as aprovadas que
+        as normas já publicadas que a IA achou relevantes e esperam a curadoria Mitra, e as aprovadas que
         esperam a extração das obrigações. Ex.: "que normas valem para as minhas barragens em MG?"."""
         eid = torre.empresa_id(empresa)
         jur = (jurisdicao or "").strip().upper()

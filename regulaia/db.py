@@ -67,6 +67,8 @@ def conectar(caminho: str | Path = DB_PADRAO):
                               ("usuario", "plataforma", "INTEGER NOT NULL DEFAULT 0"), ("auditoria", "empresa", "TEXT")):
         if col not in {r["name"] for r in conn.execute(f"PRAGMA table_info({tabela})")}:
             conn.execute(f"ALTER TABLE {tabela} ADD COLUMN {col} {tipo}")
+    if "setor" not in colunas:
+        conn.execute("ALTER TABLE empresa ADD COLUMN setor TEXT NOT NULL DEFAULT 'mineracao'")
     return conn
 
 
@@ -96,11 +98,11 @@ def limpar(conn) -> None:
 
 
 def criar_empresa(conn, nome: str, ficticia: bool = True, monitorado_desde: str | None = None,
-                  origem: str | None = None) -> int:
+                  origem: str | None = None, setor: str = "mineracao") -> int:
     """`monitorado_desde`: a partir de quando a torre cobra (o que venceu antes não vira atraso)."""
     cur = conn.execute(
-        "INSERT INTO empresa (nome, ficticia, monitorado_desde, origem) VALUES (?, ?, ?, ?)",
-        (nome, int(ficticia), monitorado_desde, origem),
+        "INSERT INTO empresa (nome, ficticia, monitorado_desde, origem, setor) VALUES (?, ?, ?, ?, ?)",
+        (nome, int(ficticia), monitorado_desde, origem, setor),
     )
     return cur.lastrowid
 

@@ -21,6 +21,9 @@ _MTE = "https://www.gov.br/trabalho-e-emprego/pt-br"
 _NRS = _MTE + ("/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/"
                "comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/")
 _PORTARIAS = _MTE + "/assuntos/inspecao-do-trabalho/seguranca-e-saude-no-trabalho/sst-portarias/2026-1/"
+_ANVISA_LEGIS = ("https://anvisalegis.datalegis.net/action/ActionDatalegis.php?acao=abrirTextoAto&"
+                 "cod_menu=9434&cod_modulo=310&numeroAto={numero:08d}&orgao=RDC%2FDC%2FANVISA%2FMS&"
+                 "seqAto=000&tipo=RDC&valorAno={ano}")
 
 # arquivo local -> (norma, URL oficial)
 FONTES: dict[str, tuple[str, str]] = {
@@ -45,6 +48,10 @@ FONTES: dict[str, tuple[str, str]] = {
     "portaria-mte-no-261-ajusta-port-105_26-que-altera-a-nr-22.pdf": (
         "Portaria MTE 261/2026 (ajusta a Portaria 105)",
         _PORTARIAS + "portaria-mte-no-261-ajusta-port-105_26-que-altera-a-nr-22.pdf/@@download/file"),
+    "rdc-63-2011.html": ("RDC Anvisa 63/2011", _ANVISA_LEGIS.format(numero=63, ano=2011)),
+    "rdc-36-2013.html": ("RDC Anvisa 36/2013", _ANVISA_LEGIS.format(numero=36, ano=2013)),
+    "rdc-222-2018.html": ("RDC Anvisa 222/2018", _ANVISA_LEGIS.format(numero=222, ano=2018)),
+    "nr-32-atualizada-2023.pdf": ("NR-32", _NRS + "nr-32-atualizada-2023.pdf"),
 }
 
 
@@ -65,9 +72,15 @@ def baixar(forcar: bool = False, destino: Path = DESTINO) -> list[str]:
                 feitos.append(f"{nome}: FALHOU ({type(e).__name__}); abra {url} no navegador e salve em {alvo}")
                 continue
             if nome.endswith(".html"):
-                # o ANMlegis não declara o charset (é cp1252); quem declara (a ALMG, em UTF-8) é respeitado
-                texto = r.text if "charset" in r.headers.get("content-type", "") else r.content.decode(
-                    "cp1252", errors="replace")
+                # Respeita charset declarado (ALMG); quando ele falta, aceita Anvisa em UTF-8
+                # e preserva a compatibilidade com o ANMlegis, que usa cp1252 sem declarar.
+                if "charset" in r.headers.get("content-type", ""):
+                    texto = r.text
+                else:
+                    try:
+                        texto = r.content.decode("utf-8")
+                    except UnicodeDecodeError:
+                        texto = r.content.decode("cp1252", errors="replace")
                 alvo.write_text(texto, encoding="utf-8")
             else:
                 if not r.content.startswith(b"%PDF"):

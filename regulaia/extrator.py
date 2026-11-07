@@ -72,6 +72,13 @@ VOCABULARIO = {
         "dragas": "verdadeiro se opera dragas flutuantes",
         "trabalhadores": "número de trabalhadores (número)",
     },
+    "estabelecimento_saude": {
+        "tem_nsp": "verdadeiro se o serviço tem Núcleo de Segurança do Paciente",
+        "exposicao_biologica": "verdadeiro se trabalhadores podem se expor a agentes biológicos",
+    },
+    "abrigo_residuos": {
+        "gera_rss": "verdadeiro se a unidade gera resíduos de serviços de saúde",
+    },
 }
 
 SISTEMA = """Você é especialista em conformidade regulatória no Brasil.

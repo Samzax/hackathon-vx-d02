@@ -73,7 +73,7 @@ def _tabela(linhas: list[str], estilo_celula, estilo_cabecalho, largura: float):
     return t
 
 
-def de_markdown(md: str, titulo_documento: str = "RegulaIA") -> bytes:
+def de_markdown(md: str, titulo_documento: str = "Mitra") -> bytes:
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import cm
@@ -122,7 +122,7 @@ def de_markdown(md: str, titulo_documento: str = "RegulaIA") -> bytes:
             corpo.append(Paragraph(_inline(linha[4:]), estilo["li2"], bulletText="–"))
         elif linha.startswith("- "):
             corpo.append(Paragraph(_inline(linha[2:]), estilo["li"], bulletText="•"))
-        elif linha.startswith("Gerado pela RegulaIA"):
+        elif linha.startswith("Gerado pela Mitra"):
             corpo.append(Paragraph(_inline(linha), estilo["rodape"]))
         else:
             corpo.append(Paragraph(_inline(linha), estilo["p"]))
@@ -132,13 +132,13 @@ def de_markdown(md: str, titulo_documento: str = "RegulaIA") -> bytes:
         canvas.saveState()
         canvas.setFont("Helvetica", 7.5)
         canvas.setFillGray(0.45)
-        canvas.drawString(2 * cm, 1.1 * cm, f"RegulaIA · {rodape}")
+        canvas.drawString(2 * cm, 1.1 * cm, f"Mitra · {rodape}")
         canvas.drawRightString(A4[0] - 2 * cm, 1.1 * cm, f"página {doc.page}")
         canvas.restoreState()
 
     saida = BytesIO()
     SimpleDocTemplate(saida, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm, topMargin=1.8 * cm,
-                      bottomMargin=1.8 * cm, title=rodape, author="RegulaIA").build(
+                      bottomMargin=1.8 * cm, title=rodape, author="Mitra").build(
         corpo, onFirstPage=numerar, onLaterPages=numerar)
     return saida.getvalue()
 

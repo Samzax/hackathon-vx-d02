@@ -8,7 +8,8 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS empresa (
     id        INTEGER PRIMARY KEY,
     nome      TEXT NOT NULL UNIQUE,
-    ficticia  INTEGER NOT NULL DEFAULT 1 CHECK (ficticia IN (0, 1))
+    ficticia  INTEGER NOT NULL DEFAULT 1 CHECK (ficticia IN (0, 1)),
+    setor     TEXT NOT NULL DEFAULT 'mineracao'
 );
 
 CREATE TABLE IF NOT EXISTS ativo (

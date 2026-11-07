@@ -60,7 +60,7 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
                 app.state.pool = None
 
     app = FastAPI(
-        title="RegulaIA API",
+        title="Mitra API",
         version=VERSAO,
         summary="Torre de controle regulatória: cada obrigação de cada ativo, com a norma, o trecho e o prazo.",
         description=(

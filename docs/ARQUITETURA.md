@@ -118,7 +118,7 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
 
 ## Leitor de evidência
 
-Quem opera manda o PDF e a torre dá baixa na obrigação certa (`regulaia/evidencias.py`). São 23 tipos de documento:
+Quem opera manda o PDF e a torre dá baixa na obrigação certa (`regulaia/evidencias.py`). São 26 tipos de documento:
 - barragem: FIR, EIR, RISR, DCE, RPSB, DCO, RCO, ISE, RCIE e recibo do EIE, simulado, treinamento e seminário do PAEBM, PGRBM;
 - vaso NR-13: exame externo e interno;
 - mina: treinamento da brigada e simulação de emergência da NR-22;

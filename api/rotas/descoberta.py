@@ -1,4 +1,4 @@
-"""Descoberta de normas: a cobertura normativa de cada cliente e a fila da curadoria RegulaIA.
+"""Descoberta de normas: a cobertura normativa de cada cliente e a fila da curadoria Mitra.
 
 A busca nas fontes oficiais e a triagem pela IA não viram rota: leem dezenas de milhares de normas e
 chamam a IA, por isso rodam como job (`python -m api.jobs descoberta`). Aqui fica o que as telas usam:
@@ -59,7 +59,7 @@ class ItemCobertura(BaseModel):
     lacunas: list[str] = Field(description="o que a plataforma sabe que não cobre por fonte automática")
     catalogadas: list[str] = Field(description="normas do catálogo que valem aqui")
     triagem_pendente: int = Field(description="candidatas que ainda não passaram pela IA")
-    em_curadoria: list[NormaNaCobertura] = Field(description="relevantes pela IA, esperando a curadoria RegulaIA")
+    em_curadoria: list[NormaNaCobertura] = Field(description="relevantes pela IA, esperando a curadoria Mitra")
     aprovadas: list[NormaNaCobertura] = Field(description="aprovadas pela curadoria, falta extrair as obrigações")
 
 
@@ -157,7 +157,7 @@ def cobertura(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(co
 
 
 @rota.get("/normas-candidatas", response_model=FilaCandidatas,
-          summary="A fila da curadoria RegulaIA: normas já publicadas que a busca achou e a IA triou (só a plataforma)")
+          summary="A fila da curadoria Mitra: normas já publicadas que a busca achou e a IA triou (só a plataforma)")
 def fila(status_: list[StatusCandidata] = Query(["relevante"], alias="status"),
          jurisdicao: str | None = Query(None, examples=["MG"]), e: Escopo = Depends(plataforma), conn=Depends(conexao)):
     jur = (jurisdicao or "").strip().upper() or None
@@ -184,7 +184,7 @@ def candidata(chave: str, e: Escopo = Depends(plataforma), conn=Depends(conexao)
 
 
 @rota.post("/normas-candidatas/{chave:path}/decisao", response_model=NormaCandidata,
-           summary="Curadoria RegulaIA: aprovar (vai para a extração das obrigações) ou descartar, com nota")
+           summary="Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota")
 def decidir(chave: str, dados: DecisaoCandidata, request: Request, e: Escopo = Depends(curadoria),
             conn=Depends(conexao)):
     if descoberta.candidata(conn, chave) is None:

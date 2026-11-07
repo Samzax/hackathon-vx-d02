@@ -1,0 +1,10 @@
+{
+  "nota": "Histórico fictício do protótipo de saúde. Uma pendência anual e uma capacitação próxima do prazo fazem a caixa de entrada demonstrar ações concretas.",
+  "hoje": "2026-11-07",
+  "desde": "2026-01-01",
+  "falhas": [
+    {"ativo": "HSP-01", "obrigacao": "RDC36-02", "periodo": "2026-03-31", "nota": "Plano de Segurança do Paciente ainda não foi revisado no ciclo de 2026"}
+  ],
+  "ultimas": {},
+  "cumpridas": {}
+}

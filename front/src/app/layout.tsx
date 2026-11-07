@@ -4,7 +4,7 @@ import "./globals.css";
 import { Provedores } from "./provedores";
 
 export const metadata: Metadata = {
-  title: { default: "RegulaIA · Torre de controle regulatória", template: "%s · RegulaIA" },
+  title: { default: "Mitra · Torre de controle regulatória", template: "%s · Mitra" },
   description: "Cada obrigação de cada ativo, com a norma, o trecho literal e o prazo.",
   icons: { icon: "/marca.svg" },
 };

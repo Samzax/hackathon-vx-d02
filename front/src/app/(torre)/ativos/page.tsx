@@ -284,6 +284,7 @@ function PorNorma({ linhas }: { linhas: Linha[] }) {
 
 function Ativos() {
   const router = useRouter();
+  const t = useTorre();
   const busca = useSearchParams();
   const ativos = useAtivos();
   const painel = usePainel();
@@ -317,7 +318,11 @@ function Ativos() {
       </Titulo>
       {ativos.isLoading && <Carregando linhas={6} />}
 
-      {pontos.length > 0 && (
+      {t.empresa?.setor === "saude" && (
+        <Aviso tipo="info" className="mb-5">Os estabelecimentos de saúde são acompanhados em lista operacional; esta visão não usa mapa.</Aviso>
+      )}
+
+      {t.empresa?.setor !== "saude" && pontos.length > 0 && (
         <div className="mb-5">
           <Mapa pontos={pontos} escolhido={escolhido} onEscolher={escolher} />
           <p className="mt-1.5 text-xs text-texto-3">Posições fictícias, na região do Quadrilátero Ferrífero (MG). Clique num ponto para abrir a ficha.</p>

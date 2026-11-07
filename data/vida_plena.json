@@ -1,0 +1,29 @@
+{
+  "empresa": "Rede Hospitalar Vida Plena",
+  "setor": "saude",
+  "ficticia": true,
+  "nota": "Protótipo fictício para demonstrar a mesma torre em serviços de saúde. Não contém dados de pacientes, profissionais ou estabelecimentos reais.",
+  "ativos": [
+    {
+      "codigo": "HSP-01",
+      "tipo": "estabelecimento_saude",
+      "nome": "Hospital Vida Plena — unidade central",
+      "responsavel": "Qualidade e Segurança do Paciente",
+      "atributos": {"tem_nsp": true, "exposicao_biologica": true, "cnpj": "fictício", "municipio": "São Paulo", "uf": "SP"}
+    },
+    {
+      "codigo": "CLN-02",
+      "tipo": "estabelecimento_saude",
+      "nome": "Clínica Vida Plena — unidade oeste",
+      "responsavel": "Qualidade e Segurança do Paciente",
+      "atributos": {"tem_nsp": true, "exposicao_biologica": true, "cnpj": "fictício", "municipio": "São Paulo", "uf": "SP"}
+    },
+    {
+      "codigo": "RSS-01",
+      "tipo": "abrigo_residuos",
+      "nome": "Abrigo externo de resíduos de serviços de saúde",
+      "responsavel": "Gestão Ambiental e Resíduos",
+      "atributos": {"gera_rss": true, "grupo_rss": "A, D e E", "unidade_origem": "HSP-01"}
+    }
+  ]
+}
