@@ -56,6 +56,18 @@ DOCUMENTOS = {
     "inspecao periodica do spiq": ("Inspeção do SPIQ", "spiq"),
     "liberacao de uso do andaime": ("Liberação de andaime", "andaime"),
     "comunicacao de acidente de trabalho": ("CAT", "acidente fatal"),
+    "termo de embargo": ("Termo de embargo ou interdição", "embargo"),
+    "termo de interdicao": ("Termo de embargo ou interdição", "embargo"),
+}
+
+# Gatilho -> o termo que acha a obrigação-alvo no título (o mesmo do mapa [eventos] do temas.toml) e a
+# norma que o cria. tests/test_eventos_cobertos.py confere os dois lados: gatilho sem obrigação no
+# cadastro é teste vermelho, não uma descoberta silenciosa no meio da implementação (o caso NR-3).
+GATILHOS = {
+    "acidente_fatal": {"obrigacao": "isolar", "norma": "NR-18, 18.16.23"},
+    "incidente_ou_anomalia": {"obrigacao": "ise", "norma": "Res. ANM 95/2022 art. 27; Res. ANM 220/2025 art. 42"},
+    "registro_no_sigbm": {"obrigacao": "reportar no sigbm", "norma": "Res. ANM 220/2025 art. 38 §4"},
+    "embargo_ou_interdicao": {"obrigacao": "embargo", "norma": "NR-3, 3.5.4 e 3.5.5"},
 }
 
 SISTEMA = """Você lê documentos de conformidade de uma mineradora (fichas de inspeção, relatórios,
@@ -71,6 +83,8 @@ class Leitura:
     empresa_id: int | None = None         # o código do ativo só é único dentro da empresa
     documento: str | None = None
     obrigacao: str | None = None
+    apenas_aciona: bool = False           # o documento registra um EVENTO (termo de embargo): abre
+                                          # obrigações por gatilho e não dá baixa em nada
     data: str | None = None
     periodo: str | None = None
     pontuacao_maxima: int | None = None
@@ -83,6 +97,8 @@ class Leitura:
 
     @property
     def completa(self) -> bool:
+        if self.apenas_aciona:
+            return bool(self.ativo and self.data) and not self.problemas
         return bool(self.ativo and self.obrigacao and self.periodo) and not self.problemas
 
 
@@ -202,11 +218,20 @@ _EC_ISE = ("EC1", "EC3", "EC4", "EC5")      # Res. 220, art. 42: EC2 = 5 não ob
 
 def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date, texto_n: str = "") -> None:
     """A regra de ISE é a da norma que vale hoje para o ativo (a obrigação de ISE vigente diz qual).
-    Em obra, a CAT de acidente fatal abre o isolamento do local (NR-18, 18.16.23). O gatilho de
-    embargo/interdição fica pendente: a NR-18 não o traz (é a NR-3, ainda fora do catálogo)."""
+    Em obra, a CAT de acidente fatal abre o isolamento do local (NR-18, 18.16.23) e o termo de embargo
+    ou interdição abre as obrigações da NR-3 (salários durante a paralisação e segurança na correção).
+    Os termos de busca ficam em GATILHOS, conferidos contra o cadastro por teste."""
+    if le.ativo and le.documento == "Termo de embargo ou interdição":
+        aid = next(a["id"] for a in ativos if a["codigo"] == le.ativo)
+        abertas = _obrigacoes(conn, aid, GATILHOS["embargo_ou_interdicao"]["obrigacao"], hoje.isoformat())
+        if abertas:
+            le.acionar += [o["codigo"] for o in abertas]
+            le.gatilhos.append("Embargo ou interdição: manter os salários durante a paralisação e garantir "
+                               "a segurança nas atividades de correção (NR-3, 3.5.4 e 3.5.5)")
+        return
     if le.ativo and le.documento == "CAT" and re.search(r"\bfatal|\bobito|\bfalecimento", texto_n):
         aid = next(a["id"] for a in ativos if a["codigo"] == le.ativo)
-        isolar = _obrigacao(conn, aid, "isolar", hoje.isoformat())
+        isolar = _obrigacao(conn, aid, GATILHOS["acidente_fatal"]["obrigacao"], hoje.isoformat())
         if isolar:
             le.acionar.append(isolar["codigo"])
             le.gatilhos.append("Acidente fatal: comunicar por escrito ao órgão regional e isolar o local "
@@ -215,12 +240,12 @@ def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date, texto_n: str = 
     ise = None
     if le.ativo:
         aid = next(a["id"] for a in ativos if a["codigo"] == le.ativo)
-        ise = _obrigacao(conn, aid, "ise", hoje.isoformat())
+        ise = _obrigacao(conn, aid, GATILHOS["incidente_ou_anomalia"]["obrigacao"], hoje.isoformat())
     if ise and "220/2025" in f"{ise.get('fonte')} {ise.get('artigo')}":
         cinco = [c for c in _EC_ISE if le.estado_conservacao.get(c) == 5]
         if cinco:
             # art. 38 §4: registro no SIGBM em 24 h; art. 42: a ISE. São duas obrigações, as duas abrem.
-            sigbm = _obrigacao(conn, aid, "reportar no sigbm", hoje.isoformat())
+            sigbm = _obrigacao(conn, aid, GATILHOS["registro_no_sigbm"]["obrigacao"], hoje.isoformat())
             le.acionar += [o["codigo"] for o in (sigbm, ise) if o]
             le.gatilhos.append(f"Anomalia com {', '.join(c + ' = 5' for c in cinco)}: Inspeção de Segurança "
                                "Especial obrigatória (Res. ANM 220/2025, art. 42) e registro no SIGBM em até "
@@ -236,13 +261,21 @@ def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date, texto_n: str = 
                            "(Res. ANM 95/2022, art. 27) e registro no SIGBM em até 24 horas (art. 21)")
 
 
-def _obrigacao(conn, ativo_id: int, chave: str, hoje: str) -> dict | None:
+def _obrigacoes(conn, ativo_id: int, chave: str, hoje: str) -> list[dict]:
+    """Todas as obrigações vigentes do ativo cujo título casa o termo (um gatilho pode abrir mais de
+    uma: no embargo, salários E segurança na correção)."""
+    out = []
     for o in db.obrigacoes_do_ativo(conn, ativo_id, em=hoje):
         if o.dados_faltando or not db.vale_em(o.vigente, hoje):
             continue
         if re.search(rf"\b{chave}", normalizar(o.vigente["titulo"])):
-            return o.vigente
-    return None
+            out.append(o.vigente)
+    return out
+
+
+def _obrigacao(conn, ativo_id: int, chave: str, hoje: str) -> dict | None:
+    achadas = _obrigacoes(conn, ativo_id, chave, hoje)
+    return achadas[0] if achadas else None
 
 
 def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura:
@@ -305,8 +338,14 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
     if le.ativo and tipo:
         le.documento = tipo[0]
         aid = next(a["id"] for a in ativos if a["codigo"] == le.ativo)
-        ob = _obrigacao(conn, aid, tipo[1], hoje.isoformat())
-        if ob is None:
+        if tipo[0] == "Termo de embargo ou interdição":
+            # o termo documenta o evento: não comprova obrigação nenhuma, só abre as da NR-3 (gatilho)
+            le.apenas_aciona = True
+            if d:
+                le.data = d.isoformat()
+                if d > hoje:
+                    le.problemas.append("data de execução no futuro")
+        elif (ob := _obrigacao(conn, aid, tipo[1], hoje.isoformat())) is None:
             le.problemas.append(f"{le.ativo} não tem obrigação vigente de {tipo[0]}")
         else:
             le.obrigacao = ob["codigo"]
@@ -334,8 +373,13 @@ def registrar(conn, leitura: Leitura, arquivo: str, guardado_em: str | None = No
         raise ValueError(f"{leitura.ativo} não é ativo da empresa {leitura.empresa_id}")
     aid = ativo["id"]
     if leitura.data:
-        db.encerrar_acionamentos(conn, aid, leitura.obrigacao, leitura.data)
         dia = date.fromisoformat(leitura.data)
+        if leitura.apenas_aciona:       # o termo de embargo só abre: não encerra nem dá baixa em nada
+            for codigo in leitura.acionar:
+                db.acionar(conn, aid, codigo, leitura.data, (dia + timedelta(days=1)).isoformat(),
+                           "; ".join(leitura.gatilhos), origem=arquivo)
+            return 0
+        db.encerrar_acionamentos(conn, aid, leitura.obrigacao, leitura.data)
         for codigo in (c for c in leitura.acionar if c != leitura.obrigacao):   # o relatório da ISE não reabre a ISE
             db.acionar(conn, aid, codigo, leitura.data, (dia + timedelta(days=1)).isoformat(),
                        "; ".join(leitura.gatilhos), origem=arquivo)

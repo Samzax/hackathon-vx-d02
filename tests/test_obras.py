@@ -71,3 +71,22 @@ def test_cat_de_acidente_fatal_abre_o_isolamento_por_gatilho():
     evidencias.registrar(conn, le, "cat.pdf")
     abertos = db.acionamentos_abertos(conn, HOJE.isoformat())
     assert (aid, "N18-12") in abertos                              # isolar o local, aberto por gatilho
+
+
+def test_termo_de_embargo_abre_as_obrigacoes_da_nr3_por_gatilho():
+    """O caso que motivou tudo isto: embargo/interdição é NR-3, e agora ela está no catálogo. O termo
+    enviado abre as duas obrigações por evento (salários na paralisação e segurança na correção)."""
+    conn = db.conectar(":memory:")
+    demo.montar(conn)
+    emp, aid = _construtora(conn)
+    texto = ("Termo de Embargo\n"
+             "Ativo: OB-01\nObra Edifício Horizonte\n"
+             "Data da lavratura: 06/11/2026\n"
+             "O Auditor-Fiscal do Trabalho determina a paralisação parcial da obra (grave e iminente risco).")
+    le = evidencias.ler(conn, texto, emp, HOJE)
+    assert le.documento == "Termo de embargo ou interdição" and le.ativo == "OB-01"
+    assert sorted(le.acionar) == ["N3-01", "N3-02"]
+    assert "NR-3" in le.gatilhos[0] and "salários" in le.gatilhos[0]
+    evidencias.registrar(conn, le, "embargo.pdf")
+    abertos = db.acionamentos_abertos(conn, HOJE.isoformat())
+    assert (aid, "N3-01") in abertos and (aid, "N3-02") in abertos

@@ -71,10 +71,17 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
       termos do tipo de ativo (temas.toml), revogada fora, regra fora (crédito, homenagem, concessão
       de lavra a uma empresa), e a norma que regulamenta ou altera uma candidata ou uma do catálogo
    -> triagem pela IA, pela ementa: cobra algo de quem opera o ativo? de qual tipo?
-   -> curadoria Mitra aprova ou descarta, com nome e nota -> extrator -> curadoria -> catálogo
+   -> curadoria Mitra aprova ou descarta, com nome e nota -> extração automática (a IA propõe,
+      o Python confere o trecho; data/extraido/) -> curadoria humana -> catálogo
    -> cobertura por cliente: o que está no catálogo, o que espera, até quando cada fonte foi lida
 ```
 
+- **As NRs têm conector (7/11):** a página oficial das NRs vigentes do MTE é lida a cada rodada; NR é
+  universo pequeno e curado, então toda NR vigente vira candidata sem depender de termo, e a triagem
+  decide o alcance. **E o catálogo se auto-audita:** `python -m mitra.descoberta lacunas` varre o grafo
+  de citações do cadastro e das extrações — norma citada por quem está dentro e que ninguém buscou vai
+  para a fila com a proveniência (foi a falta disto que escondeu a NR-3, de embargo e interdição). O mapa
+  [eventos] do temas.toml fecha o outro lado: gatilho do leitor sem obrigação no cadastro é teste vermelho.
 - **Fontes com dados abertos, nada de robô contra verificação.** O Senado tem API de legislação federal
   (lista por tipo e ano); a Assembleia de Minas publica toda a legislação mineira em CSV por ano, com a
   situação de vigência; o ANMlegis lista as resoluções da ANM por ano, com a revogada marcada. O LexML,
@@ -118,7 +125,7 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
 
 ## Leitor de evidência
 
-Quem opera manda o PDF e a torre dá baixa na obrigação certa (`mitra/evidencias.py`). São 31 tipos de documento:
+Quem opera manda o PDF e a torre dá baixa na obrigação certa (`mitra/evidencias.py`). São 33 tipos de documento:
 - barragem: FIR, EIR, RISR, DCE, RPSB, DCO, RCO, ISE, RCIE e recibo do EIE, simulado, treinamento e seminário do PAEBM, PGRBM;
 - vaso NR-13: exame externo e interno;
 - mina: treinamento da brigada e simulação de emergência da NR-22;

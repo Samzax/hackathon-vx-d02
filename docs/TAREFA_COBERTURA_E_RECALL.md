@@ -120,3 +120,32 @@ Lembrete: a conta do evento não tem modelos 5.5 no allowlist do Bedrock (Sonnet
 | 12 | IA na AWS (MITRA_BEDROCK=1 + IAM Sonnet 5/Haiku 4.5) | usuário dá o go |
 | 13 | Vídeo da demo | usuário + código |
 | 14 | Revisão por IA no aceitar/rejeitar norma | aguarda o go |
+
+## 8. Anti-NR-3: nenhuma lacuna depende de alguém lembrar dela (implementado em 7/11, à noite)
+
+O caso NR-3 (gatilho de embargo planejado sem a norma no catálogo, descoberto por acaso no meio da
+implementação) expôs três buracos. Fecharam assim — a decisão humana continua onde sempre esteve
+(curadoria), o que acabou foi a dependência de memória:
+
+1. **Conector de estoque para as NRs** (`descoberta.ler_nrs`, fonte `mte`): a página oficial das NRs
+   vigentes é lida a cada rodada; NR vigente vira candidata sem depender de termo (universo pequeno e
+   curado) e a revogada fica marcada. A lacuna "NRs catalogadas à mão" saiu do temas.toml.
+2. **Grafo de citações do catálogo** (`python -m mitra.descoberta lacunas`, também no job semanal):
+   varre cadastro/ + data/extraido/ atrás de normas citadas (lei, decreto, resolução, NR, CLT) que não
+   estão nem no catálogo nem na fila; cada uma vira candidata relevante com a proveniência
+   ("NR-1 — citada por NR-13, NR-18, NR-22"). Na primeira rodada real achou 7, inclusive a NR-1 (GRO).
+3. **Integridade gatilho↔obrigação por teste** (`tests/test_eventos_cobertos.py` + mapa `[eventos]` no
+   temas.toml + registro `GATILHOS` em evidencias.py): gatilho sem obrigação no cadastro, evento sem
+   dono ou termo dessincronizado são teste vermelho (o próprio teste pegou uma dessincronia ao nascer).
+4. **Extração automática na aprovação** (`api/rotas/descoberta.py::_extrair_aprovada`): candidata
+   aprovada dispara a extração em segundo plano (texto baixável -> IA propõe -> Python confere ->
+   data/extraido/); a pessoa continua escolhendo o que entra. Sem texto baixável ou sem IA, fica no
+   caminho manual, com log.
+5. **A própria NR-3 catalogada** (cadastro/nr3.csv, trechos literais conferidos por teste contra o PDF
+   oficial): termo de embargo/interdição agora abre por gatilho as obrigações 3.5.4 e 3.5.5 (segurança
+   na correção e salários na paralisação) — e o termo só abre, não dá baixa em nada (`apenas_aciona`).
+
+Pendências desse bloco: conector de alterações das NRs pelas páginas de portarias SST (hoje a mudança
+de NR chega pelo radar do DOU, órgão MTE); triagem pela ementa continua fraca para título curto de NR
+(a NR-3 seria descartada pela IA se não estivesse catalogada — mitigada porque NR entra sem termo e a
+curadoria lê a fila completa).

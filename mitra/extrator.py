@@ -234,6 +234,25 @@ def extrair(roteador: Roteador, norma: str, unidades: list[normas.Unidade], tipo
     return res
 
 
+_RE_ART_TEXTO = re.compile(r"(?=\bArt\.? ?(\d{1,3})(?:[ºo°.\s-]|$))")
+
+
+def unidades_de_texto(texto: str) -> list[normas.Unidade]:
+    """Texto corrido (lei ou decreto baixado pela descoberta) -> unidades por artigo, para a extração
+    automática depois da aprovação da curadoria. Preâmbulo sem artigo fica de fora; texto sem nenhum
+    "Art." vira uma unidade só."""
+    partes = _RE_ART_TEXTO.split(texto)
+    # re.split com um grupo no lookahead: [antes, num1, bloco1, num2, bloco2, ...]
+    if len(partes) < 3:
+        return [normas.Unidade("1", texto.strip())] if texto.strip() else []
+    out = []
+    for num, bloco in zip(partes[1::2], partes[2::2], strict=True):
+        bloco = " ".join(bloco.split())
+        if bloco:
+            out.append(normas.Unidade(num, bloco))
+    return out
+
+
 def carregar_unidades(origem: str | Path, prefixos: list[str] | None = None) -> list[normas.Unidade]:
     origem = Path(origem)
     if origem.suffix.lower() == ".pdf":

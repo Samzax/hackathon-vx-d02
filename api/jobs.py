@@ -104,6 +104,9 @@ def descoberta(cfg: Config, *, desde: int | None = None, fontes: tuple[str, ...]
             if revisar and not resumo["triagem"].get("erro"):
                 resumo["revisao"] = d.triar(conn, rot, limite, paralelo=paralelo, novo_roteador=novo,
                                             texto=baixador.texto, revisar=True)
+        # o grafo de citações do catálogo: norma citada por quem está dentro e que ninguém buscou
+        # vira candidata relevante, com a proveniência (foi a falta disto que escondeu a NR-3)
+        resumo["lacunas_citadas"] = [lac["norma"] for lac in d.lacunas_citadas(conn)]
         resumo["fila"] = {r["status"]: r["n"] for r in conn.execute(
             "SELECT status, COUNT(*) AS n FROM norma_candidata GROUP BY status ORDER BY status")}
         conn.commit()

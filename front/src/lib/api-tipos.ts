@@ -715,7 +715,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota */
+        /** Curadoria Mitra: aprovar (a extração das obrigações sai sozinha) ou descartar, com nota */
         post: operations["decidir_api_v1_normas_candidatas__chave__decisao_post"];
         delete?: never;
         options?: never;

@@ -19,6 +19,15 @@
    "em": "2026-11-07 00:52:34"
   },
   {
+   "fonte": "mte",
+   "jurisdicao": "BR",
+   "desde": 2026,
+   "ate": 2026,
+   "lidas": 38,
+   "candidatas": 36,
+   "em": "2026-11-07 20:46:11"
+  },
+  {
    "fonte": "senado",
    "jurisdicao": "BR",
    "desde": 1967,
@@ -48,7 +57,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:1004/1993",
@@ -69,7 +78,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:58:14+00:00",
    "nota": "Revogada pela Decreto nº 1524 de 20 de Junho de 1995. Fonte: https://www2.camara.leg.br/legin/fed/decret/1993/decreto-1004-8-dezembro-1993-449424-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10116/2019",
@@ -90,7 +99,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10164/2019",
@@ -111,7 +120,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10180/2019",
@@ -132,7 +141,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10389/2020",
@@ -153,7 +162,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10577/2020",
@@ -174,7 +183,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:54:04+00:00",
    "nota": "Revogada pela Decreto nº 11120 de 5 de Julho de 2022. Fonte: https://www2.camara.leg.br/legin/fed/decret/2020/decreto-10577-14-dezembro-2020-790909-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10588/2020",
@@ -195,7 +204,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:54:10+00:00",
    "nota": "Revogada pela Decreto nº 11467 de 5 de Abril de 2023. Fonte: https://www2.camara.leg.br/legin/fed/decret/2020/decreto-10588-24-dezembro-2020-790949-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10675/2021",
@@ -216,7 +225,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10687/2021",
@@ -237,7 +246,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10965/2022",
@@ -258,7 +267,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:10966/2022",
@@ -279,7 +288,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T13:20:56+00:00",
    "nota": "Revogada pela Decreto nº 11.369 de 01/01/2023. Fonte: https://legis.senado.leg.br/norma/35488354",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11030/2022",
@@ -300,7 +309,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:53:22+00:00",
    "nota": "Revogada pela Decreto nº 11467 de 5 de Abril de 2023. Fonte: https://www2.camara.leg.br/legin/fed/decret/2022/decreto-11030-1-abril-2022-792471-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11120/2022",
@@ -321,7 +330,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11197/2022",
@@ -342,7 +351,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11310/2022",
@@ -363,7 +372,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11369/2023",
@@ -384,7 +393,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11467/2023",
@@ -405,7 +414,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T13:20:53+00:00",
    "nota": "Revogada pela Decreto nº 11.599 de 12/07/2023. Fonte: https://legis.senado.leg.br/norma/36950505",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11599/2023",
@@ -426,7 +435,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11659/2023",
@@ -447,7 +456,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11710/2023",
@@ -468,7 +477,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:11763/2023",
@@ -489,7 +498,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:12412/2025",
@@ -510,7 +519,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:12419/2025",
@@ -531,7 +540,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:12444/2025",
@@ -552,7 +561,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:12505/2025",
@@ -573,7 +582,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:12805/2025",
@@ -594,7 +603,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:12849/2026",
@@ -615,7 +624,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:13118/2026",
@@ -636,7 +645,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:2413/1997",
@@ -657,7 +666,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:57:41+00:00",
    "nota": "Revogada pela Decreto nº 11120 de 5 de Julho de 2022. Fonte: https://www2.camara.leg.br/legin/fed/decret/1997/decreto-2413-4-dezembro-1997-400728-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:3161/1999",
@@ -678,7 +687,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:57:33+00:00",
    "nota": "Revogada pela Decreto nº 4543 de 26 de Dezembro de 2002. Fonte: https://www2.camara.leg.br/legin/fed/decret/1999/decreto-3161-2-setembro-1999-344922-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:3358/2000",
@@ -699,7 +708,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:57:16+00:00",
    "nota": "Revogada pela Decreto nº 9406 de 12 de Junho de 2018. Fonte: https://www2.camara.leg.br/legin/fed/decret/2000/decreto-3358-2-fevereiro-2000-370851-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:3663/2000",
@@ -720,7 +729,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:57:21+00:00",
    "nota": "Revogada pela Decreto nº 4543 de 26 de Dezembro de 2002. Fonte: https://www2.camara.leg.br/legin/fed/decret/2000/decreto-3663-16-novembro-2000-366605-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:3739/2001",
@@ -741,7 +750,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:3787/2001",
@@ -762,7 +771,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:56:55+00:00",
    "nota": "Revogada pela Decreto nº 4543 de 26 de Dezembro de 2002. Fonte: https://www2.camara.leg.br/legin/fed/decret/2001/decreto-3787-11-abril-2001-358254-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:3866/2001",
@@ -783,7 +792,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:3874/2001",
@@ -804,7 +813,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:4338/2002",
@@ -825,7 +834,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:56:45+00:00",
    "nota": "Revogada pela Decreto nº 5473 de 21 de Junho de 2005. Fonte: https://www2.camara.leg.br/legin/fed/decret/2002/decreto-4338-19-agosto-2002-480000-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:5473/2005",
@@ -846,7 +855,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:56:34+00:00",
    "nota": "Revogada pela Decreto nº 10577 de 14 de Dezembro de 2020. Fonte: https://www2.camara.leg.br/legin/fed/decret/2005/decreto-5473-21-junho-2005-537409-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:5616/2005",
@@ -867,7 +876,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:56:39+00:00",
    "nota": "Revogada pela Decreto nº 7133 de 19 de Março de 2010. Fonte: https://www2.camara.leg.br/legin/fed/decret/2005/decreto-5616-13-dezembro-2005-539544-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:5935/2006",
@@ -888,7 +897,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:59945/1967",
@@ -909,7 +918,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:45+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-59945-9-janeiro-1967-400601-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:59948/1967",
@@ -930,7 +939,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:50+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-59948-9-janeiro-1967-400660-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:59954/1967",
@@ -951,7 +960,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:55+00:00",
    "nota": "Revogada pela Decreto nº 64636 de 3 de Junho de 1969. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-59954-9-janeiro-1967-400929-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:59978/1967",
@@ -972,7 +981,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:00+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-59978-10-janeiro-1967-401052-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:59985/1967",
@@ -993,7 +1002,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:05+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-59985-10-janeiro-1967-401068-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:59993/1967",
@@ -1014,7 +1023,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:10+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-59993-10-janeiro-1967-401086-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60002/1967",
@@ -1035,7 +1044,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:15+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60002-10-janeiro-1967-400621-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60003/1967",
@@ -1056,7 +1065,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:21+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60003-10-janeiro-1967-400622-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60008/1967",
@@ -1077,7 +1086,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:26+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60008-10-janeiro-1967-400627-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60012/1967",
@@ -1098,7 +1107,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:30+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60012-10-janeiro-1967-400631-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60013/1967",
@@ -1119,7 +1128,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:35+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60013-10-janeiro-1967-400632-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60018/1967",
@@ -1140,7 +1149,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:41+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60018-10-janeiro-1967-400637-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60026/1967",
@@ -1161,7 +1170,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:46+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60026-11-janeiro-1967-400650-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60031/1967",
@@ -1182,7 +1191,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:53+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60031-11-janeiro-1967-400658-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60032/1967",
@@ -1203,7 +1212,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:10:58+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60032-11-janeiro-1967-400661-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60078/1967",
@@ -1224,7 +1233,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:03+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60078-16-janeiro-1967-400997-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60191/1967",
@@ -1245,7 +1254,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:08+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60191-9-fevereiro-1967-401729-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60259/1967",
@@ -1266,7 +1275,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:14+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60259-23-fevereiro-1967-401044-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60291/1967",
@@ -1287,7 +1296,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:19+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60291-3-marco-1967-401128-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60292/1967",
@@ -1308,7 +1317,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:23+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60292-3-marco-1967-401129-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60426/1967",
@@ -1329,7 +1338,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:29+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60426-11-marco-1967-401199-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:60923/1967",
@@ -1350,7 +1359,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:34+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-60923-30-junho-1967-401752-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61442/1967",
@@ -1371,7 +1380,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:39+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-61442-4-outubro-1967-402486-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61470/1967",
@@ -1392,7 +1401,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:45+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-61470-5-outubro-1967-402619-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61506/1967",
@@ -1413,7 +1422,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:50+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-61506-10-outubro-1967-402662-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61695/1967",
@@ -1434,7 +1443,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:11:55+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-61695-13-novembro-1967-402974-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61747/1967",
@@ -1455,7 +1464,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:12:00+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-61747-23-novembro-1967-402795-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61759/1967",
@@ -1476,7 +1485,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:12:06+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-61759-23-novembro-1967-402839-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61828/1967",
@@ -1497,7 +1506,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61926/1967",
@@ -1518,7 +1527,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:12:17+00:00",
    "nota": "Revogada pela Decreto de 10 de Maio de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-61926-20-dezembro-1967-403141-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:61999/1967",
@@ -1539,7 +1548,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:12:21+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-61999-28-dezembro-1967-403212-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62032/1967",
@@ -1560,7 +1569,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:12:26+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62032-29-dezembro-1967-403246-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62033/1967",
@@ -1581,7 +1590,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62034/1967",
@@ -1602,7 +1611,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:12:38+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62034-29-dezembro-1967-403248-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62051/1968",
@@ -1623,7 +1632,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:07:41+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62051-5-janeiro-1968-403287-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62055/1968",
@@ -1644,7 +1653,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:07:46+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62055-5-janeiro-1968-403296-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62065/1968",
@@ -1665,7 +1674,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:07:50+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62065-5-janeiro-1968-403326-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62071/1968",
@@ -1686,7 +1695,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:07:56+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62071-5-janeiro-1968-403418-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62073/1968",
@@ -1707,7 +1716,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:08:02+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62073-5-janeiro-1968-403423-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62074/1968",
@@ -1728,7 +1737,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:08:06+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62074-5-janeiro-1968-403425-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62085/1968",
@@ -1749,7 +1758,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:08:11+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62085-8-janeiro-1968-403458-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62164/1968",
@@ -1770,7 +1779,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62352/1968",
@@ -1791,7 +1800,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:08:22+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62352-5-marco-1968-403538-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62542/1968",
@@ -1812,7 +1821,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:08:27+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62542-16-abril-1968-403744-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62621/1968",
@@ -1833,7 +1842,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62721/1968",
@@ -1854,7 +1863,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62733/1968",
@@ -1875,7 +1884,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:08:42+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62733-20-maio-1968-403880-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62934/1968",
@@ -1896,7 +1905,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:08:47+00:00",
    "nota": "Revogada pela Decreto nº 9406 de 12 de Junho de 2018. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62934-2-julho-1968-404797-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62935/1968",
@@ -1917,7 +1926,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:62967/1968",
@@ -1938,7 +1947,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:08:58+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-62967-10-julho-1968-404239-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63052/1968",
@@ -1959,7 +1968,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:03+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-63052-30-julho-1968-404161-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63134/1968",
@@ -1980,7 +1989,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63300/1968",
@@ -2001,7 +2010,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63303/1968",
@@ -2022,7 +2031,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:19+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-63303-27-setembro-1968-404575-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63304/1968",
@@ -2043,7 +2052,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:24+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-63304-27-setembro-1968-404578-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63317/1968",
@@ -2064,7 +2073,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:29+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-63317-27-setembro-1968-404605-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63436/1968",
@@ -2085,7 +2094,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:34+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-63436-17-outubro-1968-404663-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63562/1968",
@@ -2106,7 +2115,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:09:39+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-63562-6-novembro-1968-405233-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:63963/1969",
@@ -2127,7 +2136,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:54+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-63963-7-janeiro-1969-405518-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:64021/1969",
@@ -2148,7 +2157,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:59+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-64021-23-janeiro-1969-405350-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:64093/1969",
@@ -2169,7 +2178,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:07:05+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-64093-11-fevereiro-1969-405285-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:64590/1969",
@@ -2190,7 +2199,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:07:09+00:00",
    "nota": "Revogada pela Decreto nº 10810 de 27 de Setembro de 2021. Fonte: https://www2.camara.leg.br/legin/fed/decret/1960-1969/decreto-64590-27-maio-1969-405866-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:65202/1969",
@@ -2211,7 +2220,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:66058/1970",
@@ -2232,7 +2241,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:23+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-66058-13-janeiro-1970-407550-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:66404/1970",
@@ -2253,7 +2262,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:29+00:00",
    "nota": "Revogada pela Decreto nº 10810 de 27 de Setembro de 2021. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-66404-1-abril-1970-407773-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:66522/1970",
@@ -2274,7 +2283,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:34+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-66522-30-abril-1970-409270-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:66727/1970",
@@ -2295,7 +2304,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:38+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-66727-16-junho-1970-408460-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:68253/1971",
@@ -2316,7 +2325,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:02+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-68253-16-fevereiro-1971-409986-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:68672/1971",
@@ -2337,7 +2346,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:07+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-68672-24-maio-1971-410333-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:69885/1971",
@@ -2358,7 +2367,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:06:13+00:00",
    "nota": "Revogada pela Decreto de 5 de Setembro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-69885-31-dezembro-1971-419008-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:70537/1972",
@@ -2379,7 +2388,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:05:41+00:00",
    "nota": "Revogada pela Decreto de 10 de Maio de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-70537-16-maio-1972-418950-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:70736/1972",
@@ -2400,7 +2409,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:05:47+00:00",
    "nota": "Revogada pela Decreto de 10 de Maio de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-70736-20-junho-1972-419440-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:70974/1972",
@@ -2421,7 +2430,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:05:52+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-70974-14-agosto-1972-419180-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:71248/1972",
@@ -2442,7 +2451,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:05:57+00:00",
    "nota": "Revogada pela Decreto de 5 de Setembro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-71248-13-outubro-1972-419684-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:73503/1974",
@@ -2463,7 +2472,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:05:26+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-73503-17-janeiro-1974-422034-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:7351/2010",
@@ -2484,7 +2493,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:56:19+00:00",
    "nota": "Revogada pela Decreto nº 11252 de 9 de Novembro de 2022. Fonte: https://www2.camara.leg.br/legin/fed/decret/2010/decreto-7351-3-novembro-2010-609331-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:75189/1975",
@@ -2505,7 +2514,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:05:00+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-75189-6-janeiro-1975-423774-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:75424/1975",
@@ -2526,7 +2535,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:05:06+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-75424-27-fevereiro-1975-424468-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:75704/1975",
@@ -2547,7 +2556,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:05:11+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-75704-8-maio-1975-424239-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:76802/1975",
@@ -2568,7 +2577,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:76977/1976",
@@ -2589,7 +2598,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:04:14+00:00",
    "nota": "Revogada pela Decreto de 10 de Maio de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-76977-2-janeiro-1976-425528-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:77318/1976",
@@ -2610,7 +2619,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:04:19+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-77318-22-marco-1976-425894-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:77608/1976",
@@ -2631,7 +2640,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:77978/1976",
@@ -2652,7 +2661,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:04:29+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-77978-7-julho-1976-426907-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:78197/1976",
@@ -2673,7 +2682,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:04:34+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-78197-4-agosto-1976-427244-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:79333/1977",
@@ -2694,7 +2703,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:37+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-79333-3-marco-1977-428254-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:79365/1977",
@@ -2715,7 +2724,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:44+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-79365-9-marco-1977-428366-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:79611/1977",
@@ -2736,7 +2745,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:47+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-79611-28-abril-1977-428521-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:80266/1977",
@@ -2757,7 +2766,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:53+00:00",
    "nota": "Revogada pela Decreto nº 90857 de 24 de Janeiro de 1985. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-80266-31-agosto-1977-429244-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:80829/1977",
@@ -2778,7 +2787,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:58+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-80829-28-novembro-1977-429897-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:80944/1977",
@@ -2799,7 +2808,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:04:03+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-80944-6-dezembro-1977-430018-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:80945/1977",
@@ -2820,7 +2829,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:04:08+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-80945-6-dezembro-1977-430019-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:8138/2013",
@@ -2841,7 +2850,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:81418/1978",
@@ -2862,7 +2871,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:01+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-81418-3-marco-1978-430432-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:81441/1978",
@@ -2883,7 +2892,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:06+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-81441-13-marco-1978-430481-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:81624/1978",
@@ -2904,7 +2913,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:11+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-81624-4-maio-1978-430663-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:81648/1978",
@@ -2925,7 +2934,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:18+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-81648-11-maio-1978-430722-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:81889/1978",
@@ -2946,7 +2955,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:03:22+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-81889-5-julho-1978-430944-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:82439/1978",
@@ -2967,7 +2976,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:83398/1979",
@@ -2988,7 +2997,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:02:45+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-83398-2-maio-1979-432718-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:84144/1979",
@@ -3009,7 +3018,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:02:51+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1970-1979/decreto-84144-1-novembro-1979-433721-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:84675/1980",
@@ -3030,7 +3039,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:02:20+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-84675-30-abril-1980-434044-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:84997/1980",
@@ -3051,7 +3060,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:02:26+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-84997-5-agosto-1980-434548-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:85311/1980",
@@ -3072,7 +3081,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:02:30+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-85311-31-outubro-1980-434749-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:85503/1980",
@@ -3093,7 +3102,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:02:36+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-85503-15-dezembro-1980-435150-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:85915/1981",
@@ -3114,7 +3123,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:48+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-85915-15-abril-1981-435282-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:85951/1981",
@@ -3135,7 +3144,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:53+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-85951-29-abril-1981-435432-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:86515/1981",
@@ -3156,7 +3165,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:59+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-86515-29-outubro-1981-435988-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:86591/1981",
@@ -3177,7 +3186,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:02:04+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-86591-17-novembro-1981-436264-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:87140/1982",
@@ -3198,7 +3207,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:24+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-87140-30-abril-1982-437071-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:87530/1982",
@@ -3219,7 +3228,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:28+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-87530-30-agosto-1982-437010-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:87744/1982",
@@ -3240,7 +3249,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:34+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-87744-29-outubro-1982-437993-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:87961/1982",
@@ -3261,7 +3270,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:39+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-87961-21-dezembro-1982-437637-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:88138/1983",
@@ -3282,7 +3291,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:48+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-88138-2-marco-1983-438615-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:88268/1983",
@@ -3303,7 +3312,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:55+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-88268-30-abril-1983-438079-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:8876/2016",
@@ -3324,7 +3333,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:88814/1983",
@@ -3345,7 +3354,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:59+00:00",
    "nota": "Revogada pela Decreto nº 10810 de 27 de Setembro de 2021. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-88814-4-outubro-1983-438727-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:8893/2016",
@@ -3366,7 +3375,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:88931/1983",
@@ -3387,7 +3396,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:12+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-88931-31-outubro-1983-438952-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:89166/1983",
@@ -3408,7 +3417,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:01:14+00:00",
    "nota": "Revogada pela Decreto de 5 de Setembro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-89166-9-dezembro-1983-439235-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:89609/1984",
@@ -3429,7 +3438,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:28+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-89609-2-maio-1984-439788-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:90008/1984",
@@ -3450,7 +3459,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:33+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-90008-31-julho-1984-440228-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:90434/1984",
@@ -3471,7 +3480,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:39+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-90434-8-novembro-1984-440891-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:90857/1985",
@@ -3492,7 +3501,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:91051/1985",
@@ -3513,7 +3522,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:41+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-91051-6-marco-1985-441568-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:91215/1985",
@@ -3534,7 +3543,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:46+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-91215-30-abril-1985-441376-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:91454/1985",
@@ -3555,7 +3564,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:51+00:00",
    "nota": "Revogada pela Decreto nº 99428 de 31 de Julho de 1990. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-91454-22-julho-1985-441593-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:91585/1985",
@@ -3576,7 +3585,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:57+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-91585-30-agosto-1985-441663-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:91795/1985",
@@ -3597,7 +3606,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:02+00:00",
    "nota": "Revogada pela Decreto nº 9757 de 11 de Abril de 2019. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-91795-17-outubro-1985-441928-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:91862/1985",
@@ -3618,7 +3627,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:07+00:00",
    "nota": "Revogada pela Decreto nº 92589 de 25 de Abril de 1986. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-91862-1-novembro-1985-442034-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:92144/1985",
@@ -3639,7 +3648,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:13+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-92144-16-dezembro-1985-442233-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:92206/1985",
@@ -3660,7 +3669,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T03:00:18+00:00",
    "nota": "Revogada pela Decreto nº 92409 de 20 de Fevereiro de 1986. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-92206-24-dezembro-1985-442329-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:92282/1986",
@@ -3681,7 +3690,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:92410/1986",
@@ -3702,7 +3711,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:21+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-92410-20-fevereiro-1986-442726-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:9252/2017",
@@ -3723,7 +3732,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:93375/1986",
@@ -3744,7 +3753,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:25+00:00",
    "nota": "Revogada pela Decreto de 5 de Setembro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-93375-9-outubro-1986-443531-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:93848/1986",
@@ -3765,7 +3774,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:31+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-93848-22-dezembro-1986-445124-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:9406/2018",
@@ -3786,7 +3795,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:9407/2018",
@@ -3807,7 +3816,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:55:16+00:00",
    "nota": "Revogada pela Decreto nº 11659 de 23 de Agosto de 2023. Fonte: https://www2.camara.leg.br/legin/fed/decret/2018/decreto-9407-12-junho-2018-786852-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:94089/1987",
@@ -3828,7 +3837,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:58:59+00:00",
    "nota": "Revogada pela Decreto de 25 de Abril de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-94089-12-marco-1987-444452-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:94227/1987",
@@ -3849,7 +3858,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:04+00:00",
    "nota": "Revogada pela Decreto de 5 de Setembro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-94227-15-abril-1987-444766-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:95002/1987",
@@ -3870,7 +3879,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:59:09+00:00",
    "nota": "Revogada pela Decreto nº 10810 de 27 de Setembro de 2021. Fonte: https://www2.camara.leg.br/legin/fed/decret/1980-1987/decreto-95002-5-outubro-1987-445565-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:9587/2018",
@@ -3891,7 +3900,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:9691/2019",
@@ -3912,7 +3921,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:54:51+00:00",
    "nota": "Revogada pela Decreto nº 10473 de 24 de Agosto de 2020. Fonte: https://www2.camara.leg.br/legin/fed/decret/2019/decreto-9691-25-janeiro-2019-787633-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:9693/2019",
@@ -3933,7 +3942,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:97888/1989",
@@ -3954,7 +3963,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:58:44+00:00",
    "nota": "Revogada pela Decreto de 15 de Fevereiro de 1991. Fonte: https://www2.camara.leg.br/legin/fed/decret/1989/decreto-97888-29-junho-1989-448260-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:98812/1990",
@@ -3975,7 +3984,7 @@
    "decidida_por": "vigência (Câmara dos Deputados)",
    "decidida_em": "2026-11-07T02:58:24+00:00",
    "nota": "Revogada pela Decreto nº 9406 de 12 de Junho de 2018. Fonte: https://www2.camara.leg.br/legin/fed/decret/1990/decreto-98812-9-janeiro-1990-325348-norma-pe.html",
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:98962/1990",
@@ -3996,7 +4005,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEC:99176/1990",
@@ -4017,7 +4026,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:1096/1970",
@@ -4038,7 +4047,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:1168/1971",
@@ -4059,7 +4068,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:1287/1973",
@@ -4080,7 +4089,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:1696/1979",
@@ -4101,7 +4110,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:1779/1980",
@@ -4122,7 +4131,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:1864/1981",
@@ -4143,7 +4152,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:1865/1981",
@@ -4164,7 +4173,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:2183/1984",
@@ -4185,7 +4194,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:227/1967",
@@ -4206,7 +4215,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:318/1967",
@@ -4227,7 +4236,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:330/1967",
@@ -4248,7 +4257,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:723/1969",
@@ -4269,7 +4278,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:764/1969",
@@ -4290,7 +4299,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:765/1969",
@@ -4311,7 +4320,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:DEL:813/1969",
@@ -4332,7 +4341,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LCP:176/2020",
@@ -4353,7 +4362,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:10308/2001",
@@ -4374,7 +4383,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:12276/2010",
@@ -4395,7 +4404,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:12334/2010",
@@ -4416,7 +4425,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:12858/2013",
@@ -4437,7 +4446,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:13360/2016",
@@ -4458,7 +4467,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:13501/2017",
@@ -4479,7 +4488,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:13540/2017",
@@ -4500,7 +4509,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:13575/2017",
@@ -4521,7 +4530,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:13661/2018",
@@ -4542,7 +4551,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:13823/2019",
@@ -4563,7 +4572,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:13885/2019",
@@ -4584,7 +4593,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:13975/2020",
@@ -4605,7 +4614,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:14026/2020",
@@ -4626,7 +4635,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:14066/2020",
@@ -4647,7 +4656,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:14514/2022",
@@ -4668,7 +4677,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:14755/2023",
@@ -4689,7 +4698,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:14809/2024",
@@ -4710,7 +4719,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:14875/2024",
@@ -4731,7 +4740,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:15088/2025",
@@ -4752,7 +4761,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:15169/2025",
@@ -4773,7 +4782,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:15269/2025",
@@ -4794,7 +4803,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:15506/2026",
@@ -4815,7 +4824,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:5608/1970",
@@ -4836,7 +4845,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:5888/1973",
@@ -4857,7 +4866,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:6205/1975",
@@ -4878,7 +4887,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:6340/1976",
@@ -4899,7 +4908,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:6377/1976",
@@ -4920,7 +4929,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:6399/1976",
@@ -4941,7 +4950,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:6403/1976",
@@ -4962,7 +4971,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:6567/1978",
@@ -4983,7 +4992,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:7085/1982",
@@ -5004,7 +5013,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:7136/1983",
@@ -5025,7 +5034,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:7312/1985",
@@ -5046,7 +5055,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:7805/1989",
@@ -5067,7 +5076,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:7990/1989",
@@ -5088,7 +5097,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:8001/1990",
@@ -5109,7 +5118,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:8901/1994",
@@ -5130,7 +5139,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:8970/1994",
@@ -5151,7 +5160,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:8982/1995",
@@ -5172,7 +5181,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:9314/1996",
@@ -5193,7 +5202,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:9433/1997",
@@ -5214,7 +5223,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:9827/1999",
@@ -5235,7 +5244,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:LEI:9993/2000",
@@ -5256,7 +5265,763 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:1/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "1",
+   "ano": 0,
+   "titulo": "NR-1 — Disposições gerais e gerenciamento de riscos ocupacionais",
+   "ementa": "Disposições gerais e gerenciamento de riscos ocupacionais",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/nr-1",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Exige que o empreendedor implemente o gerenciamento de riscos ocupacionais (PGR), identificando perigos, avaliando e controlando riscos e mantendo medidas de prevenção e emergência nos ambientes de trabalho.\", \"motivo\": \"A NR-1 é norma geral de segurança e saúde no trabalho aplicável a todos os empregadores, inclusive aos que operam ativos de mineração.\", \"confianca\": 0.9, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00056625, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:10/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "10",
+   "ano": 0,
+   "titulo": "NR-10 — Segurança em instalações e serviços em eletricidade",
+   "ementa": "Segurança em instalações e serviços em eletricidade",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-10-nr-10",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Exige que o empreendedor mantenha instalações e serviços elétricos em condições seguras, elabore o Prontuário das Instalações Elétricas, adote medidas de controle de risco, forneça EPI e capacite/treine os trabalhadores autorizados.\", \"motivo\": \"A NR-10 impõe obrigações de segurança em instalações e serviços em eletricidade ao empregador, alcançando as unidades de mineração, seus equipamentos industriais e obras com canteiro próprio.\", \"confianca\": 0.85, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00038415, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:11/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "11",
+   "ano": 0,
+   "titulo": "NR-11 — Transporte, movimentação, armazenagem e manuseio de materiais",
+   "ementa": "Transporte, movimentação, armazenagem e manuseio de materiais",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-11-nr-11",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"obra\"], \"deveres\": \"Exige que o empreendedor adote medidas de segurança no transporte, movimentação, armazenagem e manuseio de materiais, incluindo capacitação, inspeção, manutenção de equipamentos e controle de riscos.\", \"motivo\": \"A NR-11 é norma de segurança do trabalho aplicável a atividades de movimentação e armazenagem de materiais em unidades de mineração e canteiros de obra, impondo deveres ao empregador.\", \"confianca\": 0.82, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00107625, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:12/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "12",
+   "ano": 0,
+   "titulo": "NR-12 — Segurança no trabalho em máquinas e equipamentos",
+   "ementa": "Segurança no trabalho em máquinas e equipamentos",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-12-nr-12",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"equipamento\"], \"deveres\": \"Impõe ao empregador adotar proteções, dispositivos de segurança, treinamento, inspeção e manutenção de máquinas e equipamentos, além de manter registros, para prevenir acidentes.\", \"motivo\": \"NR-12 é norma federal de segurança do trabalho aplicável a todas as atividades econômicas e alcança máquinas e equipamentos usados em unidades de mineração.\", \"confianca\": 0.95, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00178605, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:13/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "13",
+   "ano": 0,
+   "titulo": "NR-13 — Caldeiras, vasos de pressão e tubulações e tanques metálicos de armazenamento",
+   "ementa": "Caldeiras, vasos de pressão e tubulações e tanques metálicos de armazenamento",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-13-nr-13",
+   "situacao": "VIGENTE",
+   "temas": "[\"equipamento\"]",
+   "triagem": null,
+   "status": "catalogada",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:14/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "14",
+   "ano": 0,
+   "titulo": "NR-14 — Fornos",
+   "ementa": "Fornos",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-14-nr-14",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"equipamento\"], \"deveres\": \"Cumprir requisitos de segurança na construção, operação e manutenção de fornos, incluindo proteção, ventilação, controle de temperatura e capacitação dos trabalhadores.\", \"motivo\": \"A NR-14 estabelece obrigações de segurança para fornos em ambientes de trabalho, alcançando unidades de mineração e equipamentos industriais que os operem.\", \"confianca\": 0.85, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0004993500000000001, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:15/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "15",
+   "ano": 0,
+   "titulo": "NR-15 — Atividades e operações insalubres",
+   "ementa": "Atividades e operações insalubres",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-15-nr-15",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Cabe ao empregador identificar e avaliar atividades insalubres, controlar a exposição a agentes nocivos e adotar medidas de proteção, como limites de tolerância e EPIs, nos locais de trabalho.\", \"motivo\": \"A NR-15 é norma trabalhista de segurança e saúde aplicável às atividades da mineradora, impondo obrigações de controle de insalubridade nos ambientes de trabalho, inclusive em unidades, obras, barragens e operações com equipamentos.\", \"confianca\": 0.9, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00108675, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:16/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "16",
+   "ano": 0,
+   "titulo": "NR-16 — Atividades e operações perigosas",
+   "ementa": "Atividades e operações perigosas",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-16-nr-16",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Pagar adicional de periculosidade aos empregados expostos a atividades e operações perigosas (inflamáveis, explosivos, eletricidade, radiações e outras previstas nos anexos), conforme os critérios de caracterização da norma.\", \"motivo\": \"A NR-16 é norma trabalhista que impõe ao empregador o pagamento de adicional e o enquadramento de atividades perigosas, o que alcança mina, usina e outras unidades com inflamáveis, explosivos ou eletricidade, além de equipamentos e obras com essas condições; a ementa é genérica e sem indexação, então a aplicação concreta depende dos anexos.\", \"confianca\": 0.7, \"modelo\": \"opencode:claude-haiku-5-5\", \"custo_usd\": 0.00046919999999999997, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:17/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "17",
+   "ano": 0,
+   "titulo": "NR-17 — Ergonomia",
+   "ementa": "Ergonomia",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-17-nr-17",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"obra\", \"barragem\"], \"deveres\": \"Impõe ao empregador realizar análise ergonômica do trabalho e adaptar condições, mobiliário, equipamentos e organização do trabalho para prevenir riscos ergonômicos.\", \"motivo\": \"A NR-17 é norma geral de ergonomia aplicável a empregadores e locais de trabalho, alcançando as operações de mineração e obras.\", \"confianca\": 0.82, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0010673999999999998, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:18/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "18",
+   "ano": 0,
+   "titulo": "NR-18 — Segurança e saúde no trabalho na indústria da construção",
+   "ementa": "Segurança e saúde no trabalho na indústria da construção",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-18-nr-18",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": null,
+   "status": "catalogada",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:19/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "19",
+   "ano": 0,
+   "titulo": "NR-19 — Explosivos",
+   "ementa": "Explosivos",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-19-nr-19",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\"], \"deveres\": \"A norma exige que o empreendedor adote medidas de segurança, autorizações, registros e capacitação para armazenamento, manuseio, transporte e detonação de explosivos na mina.\", \"motivo\": \"A NR-19 disciplina atividades com explosivos, insumo usado em operações de mineração, impondo deveres de segurança ao empregador.\", \"confianca\": 0.9, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00131505, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:20/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "20",
+   "ano": 0,
+   "titulo": "NR-20 — Segurança e saúde no trabalho com inflamáveis e combustíveis",
+   "ementa": "Segurança e saúde no trabalho com inflamáveis e combustíveis",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-20-nr-20",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"equipamento\"], \"deveres\": \"O empreendedor deve identificar riscos, implantar prevenção e combate a incêndio, controlar fontes de ignição, manter planos de emergência, treinar trabalhadores e inspecionar instalações e equipamentos que envolvam inflamáveis e combustíveis.\", \"motivo\": \"A NR-20 impõe obrigações de segurança e saúde a empregadores que operam instalações e equipamentos com inflamáveis ou combustíveis, situação comum em unidades de mineração e seus tanques/equipamentos.\", \"confianca\": 0.86, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00042405, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:21/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "21",
+   "ano": 0,
+   "titulo": "NR-21 — Trabalhos a céu aberto",
+   "ementa": "Trabalhos a céu aberto",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-21-nr-21",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"obra\"], \"deveres\": \"Impõe ao empregador medidas de proteção aos trabalhadores em trabalhos a céu aberto, incluindo abrigo contra intempéries, água potável e proteção contra exposição solar.\", \"motivo\": \"A NR-21 é norma de segurança do trabalho aplicável a atividades a céu aberto, alcançando operações de mineração, barragens e obras com trabalhadores expostos.\", \"confianca\": 0.92, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0008246999999999999, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:22/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "22",
+   "ano": 0,
+   "titulo": "NR-22 — Segurança e saúde ocupacional na mineração",
+   "ementa": "Segurança e saúde ocupacional na mineração",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-22-nr-22",
+   "situacao": "VIGENTE",
+   "temas": "[\"unidade\"]",
+   "triagem": null,
+   "status": "catalogada",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:23/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "23",
+   "ano": 0,
+   "titulo": "NR-23 — Proteção contra incêndios",
+   "ementa": "Proteção contra incêndios",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-23-nr-23",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"obra\"], \"deveres\": \"Exige do empregador medidas de prevenção e combate a incêndio nos locais de trabalho, como extintores, saídas de emergência, alarmes, treinamento e inspeções.\", \"motivo\": \"A NR-23 é norma de segurança e saúde no trabalho que impõe obrigações de proteção contra incêndio nos locais de trabalho, alcançando unidades de mineração e canteiros de obra.\", \"confianca\": 0.82, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0004932, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:24/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "24",
+   "ano": 0,
+   "titulo": "NR-24 — Condições sanitárias e de conforto nos locais de trabalho",
+   "ementa": "Condições sanitárias e de conforto nos locais de trabalho",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-24-nr-24",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"obra\"], \"deveres\": \"Assegurar condições sanitárias e de conforto nos locais de trabalho, incluindo instalações sanitárias, vestiários, refeitórios, água potável e demais exigências de higiene.\", \"motivo\": \"A NR-24 é norma regulamentadora geral de higiene e conforto aplicável aos locais de trabalho operados pela mineradora, alcançando unidade, obra e frente de trabalho em barragem.\", \"confianca\": 0.82, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00088905, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:25/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "25",
+   "ano": 0,
+   "titulo": "NR-25 — Resíduos industriais",
+   "ementa": "Resíduos industriais",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-25-nr-25",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"barragem\"], \"deveres\": \"A norma cobra do empreendedor o gerenciamento, o tratamento e a destinação adequada dos resíduos industriais gerados na operação, incluindo áreas de disposição de resíduos quando aplicáveis.\", \"motivo\": \"A NR-25 impõe obrigações ao gerador de resíduos industriais, alcançando unidades de mineração e eventuais barragens usadas para disposição desses resíduos, sem tratar especificamente de equipamentos ou obras.\", \"confianca\": 0.74, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0011071499999999999, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:26/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "26",
+   "ano": 0,
+   "titulo": "NR-26 — Sinalização de segurança",
+   "ementa": "Sinalização de segurança",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-26-nr-26",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Adotar sinalização de segurança nos locais de trabalho, delimitando áreas, identificando equipamentos e canalizações e advertindo contra riscos.\", \"motivo\": \"A NR-26 é norma geral de segurança do trabalho que impõe ao empregador sinalizar locais e equipamentos, alcançando as áreas operadas pela mineradora.\", \"confianca\": 0.82, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0005890499999999999, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:28/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "28",
+   "ano": 0,
+   "titulo": "NR-28 — Fiscalização e penalidades",
+   "ementa": "Fiscalização e penalidades",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-28-nr-28",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Cumprir as normas regulamentadoras, permitir a inspeção do trabalho, prestar informações e atender às exigências dos agentes de fiscalização, sujeitando-se a penalidades.\", \"motivo\": \"A NR-28 disciplina a fiscalização e as penalidades trabalhistas, impondo ao empregador, inclusive minerador, deveres de colaboração e compliance.\", \"confianca\": 0.65, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.000987, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:29/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "29",
+   "ano": 0,
+   "titulo": "NR-29 — Norma regulamentadora de segurança e saúde no trabalho portuário",
+   "ementa": "Norma regulamentadora de segurança e saúde no trabalho portuário",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-29-nr-29",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": false, \"tipos_ativo\": [], \"deveres\": \"\", \"motivo\": \"A NR-29 trata de segurança e saúde no trabalho portuário, sem impor deveres ao empreendedor de mineração sobre barragens, unidades de mineração, equipamentos industriais ou obras de construção civil da carteira.\", \"confianca\": 0.85, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00035115, \"leu_texto\": false}",
+   "status": "irrelevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:3/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "3",
+   "ano": 0,
+   "titulo": "NR-3 — Embargo e interdição",
+   "ementa": "Embargo e interdição",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-3-nr-3",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": null,
+   "status": "catalogada",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:30/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "30",
+   "ano": 0,
+   "titulo": "NR-30 — Segurança e saúde no trabalho aquaviário",
+   "ementa": "Segurança e saúde no trabalho aquaviário",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-30-nr-30",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": false, \"tipos_ativo\": [], \"deveres\": \"\", \"motivo\": \"A NR-30 disciplina segurança e saúde no trabalho aquaviário, sem comando direto sobre a operação de barragem, unidade, equipamento industrial ou obra de mineração.\", \"confianca\": 0.8, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00115005, \"leu_texto\": false}",
+   "status": "irrelevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:31/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "31",
+   "ano": 0,
+   "titulo": "NR-31 — Segurança e saúde no trabalho na agricultura, pecuária silvicultura, exploração florestal e aquicultura",
+   "ementa": "Segurança e saúde no trabalho na agricultura, pecuária silvicultura, exploração florestal e aquicultura",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-31-nr-31",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": false, \"tipos_ativo\": [], \"deveres\": \"\", \"motivo\": \"A NR-31 trata de segurança e saúde no trabalho na agricultura, pecuária, silvicultura, exploração florestal e aquicultura, não alcançando os ativos de mineração listados.\", \"confianca\": 0.92, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00037544999999999994, \"leu_texto\": false}",
+   "status": "irrelevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:32/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "32",
+   "ano": 0,
+   "titulo": "NR-32 — Segurança e saúde no trabalho em serviços de saúde",
+   "ementa": "Segurança e saúde no trabalho em serviços de saúde",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-32-nr-32",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": false, \"tipos_ativo\": [], \"deveres\": \"\", \"motivo\": \"A NR-32 trata de segurança e saúde no trabalho em serviços de saúde, não alcançando a operação de barragem, unidade de mineração, equipamento industrial ou obra de mineração.\", \"confianca\": 0.9, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00026175, \"leu_texto\": false}",
+   "status": "irrelevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:33/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "33",
+   "ano": 0,
+   "titulo": "NR-33 — Segurança e saúde nos trabalhos em espaços confinados",
+   "ementa": "Segurança e saúde nos trabalhos em espaços confinados",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-33-nr-33",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Impõe ao empregador identificar, avaliar e controlar riscos em espaços confinados, emitir permissão de entrada, capacitar e supervisionar trabalhadores, monitorar a atmosfera e manter recursos de resgate.\", \"motivo\": \"A NR-33 é norma de segurança do trabalho que cria obrigações ao empregador em qualquer atividade com espaços confinados, alcançando operações de mineração, beneficiamento, manutenção de equipamentos e obras.\", \"confianca\": 0.88, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0013978500000000002, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:34/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "34",
+   "ano": 0,
+   "titulo": "NR-34 — Condições e meio ambiente de trabalho na indústria da construção, reparação e desmonte naval",
+   "ementa": "Condições e meio ambiente de trabalho na indústria da construção, reparação e desmonte naval",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-34-nr-34",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": false, \"tipos_ativo\": [], \"deveres\": \"\", \"motivo\": \"A NR-34 trata exclusivamente de condições de trabalho na indústria naval (construção, reparação e desmonte naval), não alcançando a operação de barragens, unidades de mineração, equipamentos industriais ou obras civis de mineradoras.\", \"confianca\": 0.92, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00029025, \"leu_texto\": false}",
+   "status": "irrelevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:35/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "35",
+   "ano": 0,
+   "titulo": "NR-35 — Trabalho em altura",
+   "ementa": "Trabalho em altura",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-35-nr-35",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": null,
+   "status": "catalogada",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:36/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "36",
+   "ano": 0,
+   "titulo": "NR-36 — Segurança e saúde no trabalho em empresas de abate e processamento de carnes e derivados",
+   "ementa": "Segurança e saúde no trabalho em empresas de abate e processamento de carnes e derivados",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-36-nr-36",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": false, \"tipos_ativo\": [], \"deveres\": \"\", \"motivo\": \"A NR-36 trata exclusivamente de segurança e saúde no trabalho em empresas de abate e processamento de carnes e derivados, setor distinto da mineração, não alcançando os ativos da carteira.\", \"confianca\": 0.95, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00017114999999999999, \"leu_texto\": false}",
+   "status": "irrelevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:37/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "37",
+   "ano": 0,
+   "titulo": "NR-37 — Segurança e saúde em plataformas de petróleo",
+   "ementa": "Segurança e saúde em plataformas de petróleo",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/inspecao-do-trabalho/seguranca-e-saude-no-trabalho/ctpp-nrs/norma-regulamentadora-no-37-nr-37",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": false, \"tipos_ativo\": [], \"deveres\": \"\", \"motivo\": \"A NR-37 trata de segurança e saúde em plataformas de petróleo, não alcançando barragens, unidades de mineração, equipamentos industriais ou obras da mineradora.\", \"confianca\": 0.96, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00020894999999999998, \"leu_texto\": false}",
+   "status": "irrelevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:38/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "38",
+   "ano": 0,
+   "titulo": "NR-38 — Segurança e saúde no trabalho nas atividades de limpeza urbana e manejo de resíduos sólidos",
+   "ementa": "Segurança e saúde no trabalho nas atividades de limpeza urbana e manejo de resíduos sólidos",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-38-nr-38",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": false, \"tipos_ativo\": [], \"deveres\": \"\", \"motivo\": \"A NR-38 trata de segurança e saúde no trabalho em limpeza urbana e manejo de resíduos sólidos, não impondo obrigações à operação dos ativos de mineração listados.\", \"confianca\": 0.9, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00035265, \"leu_texto\": false}",
+   "status": "irrelevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:4/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "4",
+   "ano": 0,
+   "titulo": "NR-4 — Serviços especializados em segurança e em medicina do trabalho",
+   "ementa": "Serviços especializados em segurança e em medicina do trabalho",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-4-nr-4",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"obra\"], \"deveres\": \"Exige que o empregador constitua e mantenha Serviços Especializados em Segurança e em Medicina do Trabalho (SESMT), dimensionados pelo grau de risco e número de empregados, com profissionais habilitados.\", \"motivo\": \"A NR-4 é norma de segurança e saúde ocupacional que impõe obrigações ao empregador, alcançando as unidades de mineração e os canteiros de obra da mineradora.\", \"confianca\": 0.78, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0010531499999999999, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:5/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "5",
+   "ano": 0,
+   "titulo": "NR-5 — Comissão interna de prevenção de acidentes e de assédio - cipa",
+   "ementa": "Comissão interna de prevenção de acidentes e de assédio - cipa",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-5-nr-5",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Constituir e manter CIPA por estabelecimento, dimensionada pelo grau de risco e número de empregados, com treinamento, reuniões e ações de prevenção de acidentes e assédio.\", \"motivo\": \"A NR-5 é norma geral de segurança e saúde do trabalho que impõe obrigações ao empregador nos seus estabelecimentos e frentes de trabalho, incluindo os ativos operados pela mineradora.\", \"confianca\": 0.85, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00168225, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:6/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "6",
+   "ano": 0,
+   "titulo": "NR-6 — Equipamento de proteção individual - epi",
+   "ementa": "Equipamento de proteção individual - epi",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-6-nr-6",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Fornecer gratuitamente EPI adequado ao risco, treinar os trabalhadores e exigir e fiscalizar seu uso nas atividades de mineração, obras e operação de equipamentos.\", \"motivo\": \"A NR-6 é norma de segurança do trabalho que impõe ao empregador/mineradora deveres sobre EPI em todos os ambientes e atividades laborais alcançados pela carteira.\", \"confianca\": 0.9, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00070395, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:7/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "7",
+   "ano": 0,
+   "titulo": "NR-7 — Programa de controle médico de saúde ocupacional",
+   "ementa": "Programa de controle médico de saúde ocupacional",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-7-nr-7",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Implementar e manter o Programa de Controle Médico de Saúde Ocupacional (PCMSO) para seus empregados, incluindo exames médicos admissionais, periódicos e demissionais.\", \"motivo\": \"Norma trabalhista geral que impõe obrigações de saúde ocupacional ao empregador, alcançando as atividades de mineração.\", \"confianca\": 0.9, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0007398, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:8/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "8",
+   "ano": 0,
+   "titulo": "NR-8 — Edificações",
+   "ementa": "Edificações",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-8-nr-8",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"unidade\", \"obra\"], \"deveres\": \"Exige que o empregador garanta que as edificações dos locais de trabalho atendam a requisitos de segurança, salubridade, ventilação, iluminação, instalações sanitárias e demais condições de conforto e segurança.\", \"motivo\": \"A NR-8 impõe obrigações ao empregador sobre edificações nos locais de trabalho, alcançando unidades de mineração e obras de construção civil executadas ou contratadas pela empresa.\", \"confianca\": 0.85, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.00045945, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
+  },
+  {
+   "chave": "BR:NR:9/0",
+   "jurisdicao": "BR",
+   "fonte": "mte",
+   "tipo": "NR",
+   "numero": "9",
+   "ano": 0,
+   "titulo": "NR-9 — Avaliação e controle das exposições ocupacionais a agentes físicos, químicos e biológicos",
+   "ementa": "Avaliação e controle das exposições ocupacionais a agentes físicos, químicos e biológicos",
+   "indexacao": "",
+   "data": null,
+   "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-9-nr-9",
+   "situacao": "VIGENTE",
+   "temas": "[]",
+   "triagem": "{\"relevante\": true, \"tipos_ativo\": [\"barragem\", \"unidade\", \"equipamento\", \"obra\"], \"deveres\": \"Exige que o empregador identifique perigos, avalie e controle as exposições ocupacionais a agentes físicos, químicos e biológicos, adotando medidas de prevenção e monitoramento.\", \"motivo\": \"A NR-9 é norma geral de saúde e segurança ocupacional aplicável às atividades e instalações da mineradora, impondo deveres sobre exposições dos trabalhadores.\", \"confianca\": 0.9, \"modelo\": \"opencode:deepseek-v4.1-flash@high\", \"custo_usd\": 0.0004494, \"leu_texto\": false}",
+   "status": "relevante",
+   "decidida_por": null,
+   "decidida_em": null,
+   "nota": null,
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:100/2022",
@@ -5277,7 +6042,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:103/2022",
@@ -5298,7 +6063,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:113/2022",
@@ -5319,7 +6084,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:115/2022",
@@ -5340,7 +6105,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:116/2022",
@@ -5361,7 +6126,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:120/2022",
@@ -5382,7 +6147,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:121/2022",
@@ -5403,7 +6168,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:123/2022",
@@ -5424,7 +6189,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:127/2022",
@@ -5445,7 +6210,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:130/2023",
@@ -5466,7 +6231,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:132/2023",
@@ -5487,7 +6252,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:141/2023",
@@ -5508,7 +6273,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:142/2023",
@@ -5529,7 +6294,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:144/2023",
@@ -5550,7 +6315,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:150/2024",
@@ -5571,7 +6336,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:155/2024",
@@ -5592,7 +6357,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:162/2024",
@@ -5613,7 +6378,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:171/2024",
@@ -5634,7 +6399,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:173/2024",
@@ -5655,7 +6420,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:175/2024",
@@ -5676,7 +6441,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:176/2024",
@@ -5697,7 +6462,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:183/2024",
@@ -5718,7 +6483,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:187/2024",
@@ -5739,7 +6504,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:188/2024",
@@ -5760,7 +6525,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:189/2024",
@@ -5781,7 +6546,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:190/2024",
@@ -5802,7 +6567,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:191/2024",
@@ -5823,7 +6588,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:194/2024",
@@ -5844,7 +6609,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:195/2025",
@@ -5865,7 +6630,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:196/2025",
@@ -5886,7 +6651,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:197/2025",
@@ -5907,7 +6672,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:201/2025",
@@ -5928,7 +6693,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:207/2025",
@@ -5949,7 +6714,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:209/2025",
@@ -5970,7 +6735,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:210/2025",
@@ -5991,7 +6756,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:211/2025",
@@ -6012,7 +6777,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:217/2025",
@@ -6033,7 +6798,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:218/2025",
@@ -6054,7 +6819,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:219/2025",
@@ -6075,7 +6840,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:22/2020",
@@ -6096,7 +6861,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:220/2025",
@@ -6117,7 +6882,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:222/2025",
@@ -6138,7 +6903,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:224/2025",
@@ -6159,7 +6924,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:225/2025",
@@ -6180,7 +6945,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:227/2025",
@@ -6201,7 +6966,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:229/2026",
@@ -6222,7 +6987,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:23/2020",
@@ -6243,7 +7008,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:230/2026",
@@ -6264,7 +7029,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:233/2026",
@@ -6285,7 +7050,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:235/2026",
@@ -6306,7 +7071,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:236/2026",
@@ -6327,7 +7092,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:237/2026",
@@ -6348,7 +7113,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:238/2026",
@@ -6369,7 +7134,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:239/2026",
@@ -6390,7 +7155,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:24/2020",
@@ -6411,7 +7176,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:241/2026",
@@ -6432,7 +7197,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:242/2026",
@@ -6453,7 +7218,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:245/2026",
@@ -6474,7 +7239,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:246/2026",
@@ -6495,7 +7260,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:247/2026",
@@ -6516,7 +7281,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:248/2026",
@@ -6537,7 +7302,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:249/2026",
@@ -6558,7 +7323,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:25/2020",
@@ -6579,7 +7344,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:250/2026",
@@ -6600,7 +7365,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:251/2026",
@@ -6621,7 +7386,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:42/2020",
@@ -6642,7 +7407,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:48/2020",
@@ -6663,7 +7428,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:57/2021",
@@ -6684,7 +7449,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:58/2021",
@@ -6705,7 +7470,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:61/2021",
@@ -6726,7 +7491,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:63/2021",
@@ -6747,7 +7512,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:64/2021",
@@ -6768,7 +7533,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:68/2021",
@@ -6789,7 +7554,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:69/2021",
@@ -6810,7 +7575,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:71/2021",
@@ -6831,7 +7596,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:72/2021",
@@ -6852,7 +7617,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:75/2021",
@@ -6873,7 +7638,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:81/2021",
@@ -6894,7 +7659,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:85/2021",
@@ -6915,7 +7680,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:86/2021",
@@ -6936,7 +7701,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:87/2021",
@@ -6957,7 +7722,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:90/2021",
@@ -6978,7 +7743,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:91/2021",
@@ -6999,7 +7764,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:93/2022",
@@ -7020,7 +7785,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:94/2022",
@@ -7041,7 +7806,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:95/2022",
@@ -7062,7 +7827,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:96/2022",
@@ -7083,7 +7848,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "BR:RES-ANM:98/2022",
@@ -7104,7 +7869,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:29453/1989",
@@ -7125,7 +7890,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:29742/1989",
@@ -7146,7 +7911,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:29907/1989",
@@ -7167,7 +7932,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:30332/1989",
@@ -7188,7 +7953,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:30852/1990",
@@ -7209,7 +7974,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:30934/1990",
@@ -7230,7 +7995,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:31216/1990",
@@ -7251,7 +8016,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:31453/1990",
@@ -7272,7 +8037,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:32010/1990",
@@ -7293,7 +8058,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:32462/1991",
@@ -7314,7 +8079,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:32569/1991",
@@ -7335,7 +8100,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:32795/1991",
@@ -7356,7 +8121,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:33442/1992",
@@ -7377,7 +8142,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:33453/1992",
@@ -7398,7 +8163,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:33549/1992",
@@ -7419,7 +8184,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:33622/1992",
@@ -7440,7 +8205,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:34401/1992",
@@ -7461,7 +8226,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:35418/1994",
@@ -7482,7 +8247,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:35533/1994",
@@ -7503,7 +8268,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:35588/1994",
@@ -7524,7 +8289,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:35647/1994",
@@ -7545,7 +8310,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:36043/1994",
@@ -7566,7 +8331,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:36701/1995",
@@ -7587,7 +8352,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:37508/1995",
@@ -7608,7 +8373,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:38744/1997",
@@ -7629,7 +8394,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:39399/1998",
@@ -7650,7 +8415,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:39951/1998",
@@ -7671,7 +8436,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:39952/1998",
@@ -7692,7 +8457,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:40527/1999",
@@ -7713,7 +8478,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:40540/1999",
@@ -7734,7 +8499,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:40928/2000",
@@ -7755,7 +8520,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:41433/2000",
@@ -7776,7 +8541,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:42280/2002",
@@ -7797,7 +8562,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:42596/2002",
@@ -7818,7 +8583,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:42910/2002",
@@ -7839,7 +8604,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:42991/2002",
@@ -7860,7 +8625,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:43159/2003",
@@ -7881,7 +8646,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:43257/2003",
@@ -7902,7 +8667,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:43490/2003",
@@ -7923,7 +8688,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:43713/2004",
@@ -7944,7 +8709,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:43854/2004",
@@ -7965,7 +8730,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:43905/2004",
@@ -7986,7 +8751,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:43910/2004",
@@ -8007,7 +8772,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:44059/2005",
@@ -8028,7 +8793,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:44065/2005",
@@ -8049,7 +8814,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:45417/2010",
@@ -8070,7 +8835,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:45437/2010",
@@ -8091,7 +8856,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:45558/2011",
@@ -8112,7 +8877,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:45723/2011",
@@ -8133,7 +8898,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:45936/2012",
@@ -8154,7 +8919,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:45958/2012",
@@ -8175,7 +8940,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:45959/2012",
@@ -8196,7 +8961,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:45990/2012",
@@ -8217,7 +8982,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46072/2012",
@@ -8238,7 +9003,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46240/2013",
@@ -8259,7 +9024,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46273/2013",
@@ -8280,7 +9045,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46337/2013",
@@ -8301,7 +9066,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46386/2013",
@@ -8322,7 +9087,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46394/2013",
@@ -8343,7 +9108,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46395/2013",
@@ -8364,7 +9129,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46428/2014",
@@ -8385,7 +9150,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46885/2015",
@@ -8406,7 +9171,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46887/2015",
@@ -8427,7 +9192,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46892/2015",
@@ -8448,7 +9213,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46902/2015",
@@ -8469,7 +9234,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46904/2015",
@@ -8490,7 +9255,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46918/2015",
@@ -8511,7 +9276,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46932/2016",
@@ -8532,7 +9297,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46937/2016",
@@ -8553,7 +9318,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46953/2016",
@@ -8574,7 +9339,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46973/2016",
@@ -8595,7 +9360,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:46993/2016",
@@ -8616,7 +9381,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47043/2016",
@@ -8637,7 +9402,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47062/2016",
@@ -8658,7 +9423,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47070/2016",
@@ -8679,7 +9444,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47138/2017",
@@ -8700,7 +9465,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47158/2017",
@@ -8721,7 +9486,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47206/2017",
@@ -8742,7 +9507,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47210/2017",
@@ -8763,7 +9528,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47211/2017",
@@ -8784,7 +9549,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47212/2017",
@@ -8805,7 +9570,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47213/2017",
@@ -8826,7 +9591,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47218/2017",
@@ -8847,7 +9612,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47224/2017",
@@ -8868,7 +9633,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47240/2017",
@@ -8889,7 +9654,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47252/2017",
@@ -8910,7 +9675,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47272/2017",
@@ -8931,7 +9696,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47274/2017",
@@ -8952,7 +9717,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47287/2017",
@@ -8973,7 +9738,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47312/2017",
@@ -8994,7 +9759,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47330/2017",
@@ -9015,7 +9780,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47369/2018",
@@ -9036,7 +9801,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47383/2018",
@@ -9057,7 +9822,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47386/2018",
@@ -9078,7 +9843,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47392/2018",
@@ -9099,7 +9864,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47406/2018",
@@ -9120,7 +9885,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47433/2018",
@@ -9141,7 +9906,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47474/2018",
@@ -9162,7 +9927,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47482/2018",
@@ -9183,7 +9948,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47489/2018",
@@ -9204,7 +9969,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47492/2018",
@@ -9225,7 +9990,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47508/2018",
@@ -9246,7 +10011,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47565/2018",
@@ -9267,7 +10032,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47569/2018",
@@ -9288,7 +10053,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47575/2018",
@@ -9309,7 +10074,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47583/2018",
@@ -9330,7 +10095,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47587/2018",
@@ -9351,7 +10116,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47706/2019",
@@ -9372,7 +10137,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47739/2019",
@@ -9393,7 +10158,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47749/2019",
@@ -9414,7 +10179,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47814/2019",
@@ -9435,7 +10200,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47815/2019",
@@ -9456,7 +10221,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47837/2020",
@@ -9477,7 +10242,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47866/2020",
@@ -9498,7 +10263,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:47872/2020",
@@ -9519,7 +10284,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48060/2020",
@@ -9540,7 +10305,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48078/2020",
@@ -9561,7 +10326,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48113/2020",
@@ -9582,7 +10347,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48133/2021",
@@ -9603,7 +10368,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48140/2021",
@@ -9624,7 +10389,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48149/2021",
@@ -9645,7 +10410,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48172/2021",
@@ -9666,7 +10431,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48183/2021",
@@ -9687,7 +10452,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48190/2021",
@@ -9708,7 +10473,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48243/2021",
@@ -9729,7 +10494,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48245/2021",
@@ -9750,7 +10515,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48263/2021",
@@ -9771,7 +10536,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48331/2021",
@@ -9792,7 +10557,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48335/2021",
@@ -9813,7 +10578,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48406/2022",
@@ -9834,7 +10599,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48433/2022",
@@ -9855,7 +10620,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48454/2022",
@@ -9876,7 +10641,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48457/2022",
@@ -9897,7 +10662,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48460/2022",
@@ -9918,7 +10683,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48516/2022",
@@ -9939,7 +10704,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48532/2022",
@@ -9960,7 +10725,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48541/2022",
@@ -9981,7 +10746,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48547/2022",
@@ -10002,7 +10767,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48548/2022",
@@ -10023,7 +10788,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48568/2023",
@@ -10044,7 +10809,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48571/2023",
@@ -10065,7 +10830,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48580/2023",
@@ -10086,7 +10851,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48640/2023",
@@ -10107,7 +10872,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48683/2023",
@@ -10128,7 +10893,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48695/2023",
@@ -10149,7 +10914,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48747/2023",
@@ -10170,7 +10935,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48749/2023",
@@ -10191,7 +10956,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48759/2024",
@@ -10212,7 +10977,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48769/2024",
@@ -10233,7 +10998,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48795/2024",
@@ -10254,7 +11019,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48796/2024",
@@ -10275,7 +11040,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48799/2024",
@@ -10296,7 +11061,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48842/2024",
@@ -10317,7 +11082,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48848/2024",
@@ -10338,7 +11103,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48881/2024",
@@ -10359,7 +11124,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48935/2024",
@@ -10380,7 +11145,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48976/2024",
@@ -10401,7 +11166,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:48977/2024",
@@ -10422,7 +11187,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49001/2025",
@@ -10443,7 +11208,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49006/2025",
@@ -10464,7 +11229,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49045/2025",
@@ -10485,7 +11250,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49068/2025",
@@ -10506,7 +11271,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49076/2025",
@@ -10527,7 +11292,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49111/2025",
@@ -10548,7 +11313,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49121/2025",
@@ -10569,7 +11334,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49181/2026",
@@ -10590,7 +11355,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49197/2026",
@@ -10611,7 +11376,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49201/2026",
@@ -10632,7 +11397,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49223/2026",
@@ -10653,7 +11418,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49245/2026",
@@ -10674,7 +11439,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49250/2026",
@@ -10695,7 +11460,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49288/2026",
@@ -10716,7 +11481,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:DEC:49298/2026",
@@ -10737,7 +11502,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:10102/1990",
@@ -10758,7 +11523,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:10316/1990",
@@ -10779,7 +11544,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:10415/1991",
@@ -10800,7 +11565,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:10466/1991",
@@ -10821,7 +11586,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:10488/1991",
@@ -10842,7 +11607,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:10595/1992",
@@ -10863,7 +11628,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:10627/1992",
@@ -10884,7 +11649,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:10793/1992",
@@ -10905,7 +11670,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:11432/1994",
@@ -10926,7 +11691,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:11870/1995",
@@ -10947,7 +11712,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:12085/1996",
@@ -10968,7 +11733,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:12188/1996",
@@ -10989,7 +11754,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:12488/1997",
@@ -11010,7 +11775,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:12584/1997",
@@ -11031,7 +11796,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:12684/1997",
@@ -11052,7 +11817,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:12812/1998",
@@ -11073,7 +11838,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:14583/2003",
@@ -11094,7 +11859,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:14986/2004",
@@ -11115,7 +11880,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:15012/2004",
@@ -11136,7 +11901,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:15017/2004",
@@ -11157,7 +11922,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:15082/2004",
@@ -11178,7 +11943,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:15258/2004",
@@ -11199,7 +11964,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:15261/2004",
@@ -11220,7 +11985,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:16197/2006",
@@ -11241,7 +12006,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:17039/2007",
@@ -11262,7 +12027,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:18023/2009",
@@ -11283,7 +12048,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:18267/2009",
@@ -11304,7 +12069,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:18365/2009",
@@ -11325,7 +12090,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:18404/2009",
@@ -11346,7 +12111,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:18712/2010",
@@ -11367,7 +12132,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:19976/2011",
@@ -11388,7 +12153,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:20009/2012",
@@ -11409,7 +12174,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:20414/2012",
@@ -11430,7 +12195,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:20540/2012",
@@ -11451,7 +12216,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:21016/2013",
@@ -11472,7 +12237,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:21059/2013",
@@ -11493,7 +12258,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:21079/2013",
@@ -11514,7 +12279,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:21114/2013",
@@ -11535,7 +12300,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:21972/2016",
@@ -11556,7 +12321,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:22073/2016",
@@ -11577,7 +12342,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:22257/2016",
@@ -11598,7 +12363,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:22289/2016",
@@ -11619,7 +12384,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:22291/2016",
@@ -11640,7 +12405,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:22381/2016",
@@ -11661,7 +12426,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:22549/2017",
@@ -11682,7 +12447,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:22781/2017",
@@ -11703,7 +12468,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:22796/2017",
@@ -11724,7 +12489,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:23090/2018",
@@ -11745,7 +12510,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:23289/2019",
@@ -11766,7 +12531,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:23291/2019",
@@ -11787,7 +12552,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:23558/2020",
@@ -11808,7 +12573,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:23795/2021",
@@ -11829,7 +12594,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:23830/2021",
@@ -11850,7 +12615,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:24444/2023",
@@ -11871,7 +12636,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:24483/2023",
@@ -11892,7 +12657,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:24765/2024",
@@ -11913,7 +12678,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:24927/2024",
@@ -11934,7 +12699,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:24939/2024",
@@ -11955,7 +12720,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:24944/2024",
@@ -11976,7 +12741,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:25184/2025",
@@ -11997,7 +12762,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:25378/2025",
@@ -12018,7 +12783,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:25482/2025",
@@ -12039,7 +12804,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:25507/2025",
@@ -12060,7 +12825,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:25613/2025",
@@ -12081,7 +12846,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:25626/2025",
@@ -12102,7 +12867,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:25715/2026",
@@ -12123,7 +12888,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:9758/1989",
@@ -12144,7 +12909,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:9934/1989",
@@ -12165,7 +12930,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   },
   {
    "chave": "MG:LEI:9944/1989",
@@ -12186,7 +12951,7 @@
    "decidida_por": null,
    "decidida_em": null,
    "nota": null,
-   "vista_em": "2026-11-07 00:52:34"
+   "vista_em": "2026-11-07 20:46:52"
   }
  ]
 }

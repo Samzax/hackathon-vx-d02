@@ -2215,7 +2215,7 @@
     "tags": [
      "descoberta"
     ],
-    "summary": "Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota",
+    "summary": "Curadoria Mitra: aprovar (a extração das obrigações sai sozinha) ou descartar, com nota",
     "operationId": "decidir_api_v1_normas_candidatas__chave__decisao_post",
     "parameters": [
      {

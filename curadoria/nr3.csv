@@ -1,0 +1,3 @@
+codigo,artigo,titulo_contem,agenda,titulo,responsavel,regra,aplica_se_a
+N3-01,3.5.5,salários,evento,Manter os salários dos trabalhadores durante a paralisação por embargo ou interdição,Departamento Pessoal,*,Obras sob embargo ou interdição
+N3-02,3.5.4,segurança,evento,Garantir segurança e saúde aos trabalhadores nas atividades de correção durante o embargo ou a interdição,Segurança do Trabalho,*,Obras sob embargo ou interdição

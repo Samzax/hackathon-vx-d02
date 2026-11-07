@@ -38,6 +38,10 @@ class BaixadorFixo(d.Baixador):
         self.pedidos.append(("anm", ano))
         return [c for c in d.ler_anm((FIX / "anm.html").read_text(encoding="utf-8")) if c.ano == ano]
 
+    def nrs(self, ano):
+        self.pedidos.append(("mte", ano))
+        return d.ler_nrs((FIX / "nrs.html").read_text(encoding="utf-8"))
+
 
 class IAFalsa:
     """Responde pela norma do pedido; camada 2 = esforço high, camada 3 = max."""
@@ -114,7 +118,7 @@ def test_anm_le_cada_resolucao_e_marca_a_revogada():
     ("Lei 12.334/2010 (PNSB)", "BR:LEI:12334/2010"), ("Lei MG 23.291/2019", "MG:LEI:23291/2019"),
     ("Decreto MG 48.078/2020 (PAE)", "MG:DEC:48078/2020"), ("Res. ANM 95/2022", "BR:RES-ANM:95/2022"),
     ("Decreto-Lei 227/1967", "BR:DEL:227/1967"), ("LC 140/2011", "BR:LCP:140/2011"),
-    ("NR-22", None), ("LO 000/2023 (fictícia)", None), (None, None),
+    ("NR-22", "BR:NR:22/0"), ("NR 3", "BR:NR:3/0"), ("LO 000/2023 (fictícia)", None), (None, None),
 ])
 def test_chave_da_norma_do_catalogo(norma, chave):
     assert d.chave_da_norma(norma) == chave
@@ -192,7 +196,7 @@ def test_decreto_que_so_cita_o_codigo_de_mineracao_entra_pela_citacao(buscada):
 
 def test_busca_registra_ate_onde_cada_fonte_foi_lida(buscada):
     buscas = {r["fonte"]: dict(r) for r in buscada.execute("SELECT * FROM descoberta_busca")}
-    assert set(buscas) == {"senado", "anm", "almg"}
+    assert set(buscas) == {"senado", "anm", "almg", "mte"}
     assert buscas["almg"]["jurisdicao"] == "MG" and buscas["almg"]["ate"] == 2026
     assert buscas["anm"]["desde"] == 2018           # a ANM existe desde 2018
 
@@ -401,6 +405,7 @@ def test_fila_da_demo_e_so_dado_publico_e_bem_formado():
         assert c["status"] in d.STATUS and c["jurisdicao"] in ("BR", "MG")
         assert c["chave"].split(":")[0] == c["jurisdicao"]
         assert c["url"].startswith(("https://legis.senado.leg.br/", "https://anmlegis.datalegis.net/",
+                                        "https://www.gov.br/",
                                     "https://www.almg.gov.br/"))
         if c["status"] in ("relevante", "irrelevante"):
             assert c["triagem"] and json.loads(c["triagem"])["motivo"]
@@ -495,3 +500,55 @@ def test_revisar_soma_o_custo_da_primeira_leitura(buscada):
     d.triar(buscada, rot, texto=lambda linha: "Art. 1º ...", revisar=True)
     total = d.candidata(buscada, "MG:DEC:48747/2023")["triagem"]["custo_usd"]
     assert primeira > 0 and total > primeira
+
+
+# --------------------------------------------- NRs, citações e lacunas (anti-NR-3, 7/11)
+
+
+def test_pagina_das_nrs_vira_candidata_com_revogada_marcada():
+    cs = {c.chave: c for c in d.ler_nrs((FIX / "nrs.html").read_text(encoding="utf-8"))}
+    assert cs["BR:NR:2/0"].situacao == "REVOGADA" and "(REVOGADA)" not in cs["BR:NR:2/0"].titulo
+    assert cs["BR:NR:22/0"].situacao == "VIGENTE" and cs["BR:NR:22/0"].fonte == "mte"
+    assert cs["BR:NR:13/0"].url and cs["BR:NR:13/0"].jurisdicao == "BR"
+
+
+def test_nr_catalogada_sai_da_fila_e_revogada_fica_fora(buscada):
+    """A busca com o conector mte: NR do catálogo (13, 22) vira 'catalogada'; a revogada nem entra."""
+    linhas = {r["chave"]: r["status"] for r in buscada.execute(
+        "SELECT chave, status FROM norma_candidata WHERE chave LIKE 'BR:NR:%'")}
+    assert linhas.get("BR:NR:13/0") == "catalogada" and linhas.get("BR:NR:22/0") == "catalogada"
+    assert "BR:NR:2/0" not in linhas
+
+
+def test_refs_no_texto_leem_lei_nr_e_clt():
+    refs = d.refs_no_texto("Observado o art. 161 da CLT, a NR-3 e a Lei nº 12.334, de 20 de setembro "
+                           "de 2010, bem como a Norma Regulamentadora nº 18.", "MG")
+    assert {"BR:DEL:5452/1943", "BR:NR:3/0", "BR:NR:18/0", "BR:LEI:12334/2010", "MG:LEI:12334/2010"} <= refs
+
+
+def test_lacunas_citadas_poe_na_fila_quem_o_catalogo_cita_e_ninguem_buscou(tmp_path):
+    raiz = tmp_path
+    (raiz / "cadastro").mkdir()
+    (raiz / "data" / "extraido").mkdir(parents=True)
+    (raiz / "cadastro" / "x.csv").write_text(
+        "id,tipo_ativo,norma,obrigacao,fonte,trecho\n"
+        'X-1,obra,NR-18,Cumprir,NR-18 18.1,"Aplica-se também o disposto na NR-33 e na Lei nº 14.133, '
+        'de 1º de abril de 2021."\n', encoding="utf-8")
+    conn = db.conectar(":memory:")
+    novas = {n["chave"]: n for n in d.lacunas_citadas(conn, raiz)}
+    assert set(novas) == {"BR:NR:33/0", "BR:LEI:14133/2021"}          # a NR-18 (origem) não se cita
+    assert novas["BR:NR:33/0"]["citada_por"] == ["NR-18"]
+    r = conn.execute("SELECT status, fonte FROM norma_candidata WHERE chave = 'BR:NR:33/0'").fetchone()
+    assert (r["status"], r["fonte"]) == ("relevante", "citacao")      # direto para a curadoria
+    # rodar de novo não duplica nem rebaixa decisão
+    d.decidir(conn, "BR:NR:33/0", "descartar", "ana")
+    assert d.lacunas_citadas(conn, raiz) == []
+    assert d.candidata(conn, "BR:NR:33/0")["status"] == "descartada"
+
+
+def test_lacunas_citadas_no_repo_nao_acusam_o_que_ja_esta_no_cadastro():
+    conn = db.conectar(":memory:")
+    novas = {n["chave"] for n in d.lacunas_citadas(conn)}
+    assert not {c for c in novas if c.split(":", 1)[1] in {"NR:18/0", "NR:35/0", "NR:13/0", "NR:22/0",
+                                                           "LEI:12334/2010", "RES-ANM:95/2022"}}
+    assert "BR:NR:1/0" in novas       # a NR-1 (GRO/PGR) é citada por NR-13, NR-18 e NR-22 e não está no catálogo

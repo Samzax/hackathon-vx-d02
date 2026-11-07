@@ -26,6 +26,7 @@ Uso:
   uv run python -m mitra.descoberta cobertura [EMPRESA]
   uv run python -m mitra.descoberta decidir CHAVE aprovar|descartar QUEM [NOTA]
   uv run python -m mitra.descoberta avaliar [--ia]  (recall contra tests/descoberta_recall.toml)
+  uv run python -m mitra.descoberta lacunas         (grafo de citações do catálogo -> fila da curadoria)
   uv run python -m mitra.descoberta exportar        (data/descoberta_demo.json, a fila da demo)
 """
 
@@ -56,15 +57,22 @@ USER_AGENT = "Mitra/0.1 (hackathon-vx-d02)"
 SENADO = "https://legis.senado.leg.br/dadosabertos/legislacao/lista"
 ALMG = "https://dadosabertos.almg.gov.br/arquivo/legislacao-mineira/download"
 ANMLEGIS = "https://anmlegis.datalegis.net/action/ActionDatalegis.php"
+NRS_VIGENTES = ("https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/"
+                "conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/"
+                "normas-regulamentadora/normas-regulamentadoras-vigentes/")
 
 # fonte -> (jurisdição, o que ela cobre, primeiro ano que tem)
+# O "mte" lista as NRs vigentes pela página oficial (não há dados abertos): é uma foto do presente,
+# então o "primeiro ano" é só o ano em que o conector nasceu — a busca lê a página uma vez por rodada.
 FONTES = {
     "senado": ("BR", "leis, leis complementares, decretos-leis e decretos federais", 1967),
     "anm": ("BR", "resoluções da ANM", 2018),
     "almg": ("MG", "leis, leis complementares e decretos de Minas Gerais", 1989),
+    "mte": ("BR", "Normas Regulamentadoras vigentes (página oficial do MTE)", 2026),
 }
 # fonte -> nome de tela ("Assembleia de Minas, 1989–2026, lida em ...")
-NOMES_FONTES = {"senado": "Senado Federal", "anm": "ANMlegis (ANM)", "almg": "Assembleia de Minas"}
+NOMES_FONTES = {"senado": "Senado Federal", "anm": "ANMlegis (ANM)", "almg": "Assembleia de Minas",
+                "mte": "MTE (NRs vigentes)"}
 
 
 def fontes_da_jurisdicao(jurisdicao: str) -> tuple[str, ...]:
@@ -133,7 +141,7 @@ def temas(caminho: Path = TEMAS) -> dict:
 
 
 def tipos_de_ativo(cfg: dict) -> dict[str, dict]:
-    return {k: v for k, v in cfg.items() if k not in ("lacunas", "descartar")}
+    return {k: v for k, v in cfg.items() if k not in ("lacunas", "descartar", "eventos")}
 
 
 def _padrao(termo: str) -> str:
@@ -197,12 +205,16 @@ _RE_NORMA = re.compile(
     r"^\s*(?P<tipo>lei complementar|lc|lei|decreto-lei|decreto|res\.|resolu[cç][aã]o)\s+"
     r"(?:(?P<orgao>anm|dc/anm)\s+|(?P<uf>[A-Z]{2})\s+)?(?:n[º°o.]*\s*)?(?P<num>[\d.]+)\s*/\s*(?P<ano>\d{4})",
     re.I)
+# "NR-18", "NR 18", "NR-18 (anexo...)" — NR não tem ano: a chave usa 0 ("BR:NR:18/0")
+_RE_NR = re.compile(r"^\s*NR[-\s]?(?P<num>\d{1,2})\b", re.I)
 _TIPOS_CATALOGO = {"lei complementar": "LCP", "lc": "LCP", "lei": "LEI", "decreto-lei": "DEL", "decreto": "DEC"}
 
 
 def chave_da_norma(norma: str | None) -> str | None:
-    """'Lei MG 23.291/2019' -> MG:LEI:23291/2019; 'Res. ANM 95/2022' -> BR:RES-ANM:95/2022.
-    NR, licença e o que não for lei, decreto ou resolução da ANM: None."""
+    """'Lei MG 23.291/2019' -> MG:LEI:23291/2019; 'Res. ANM 95/2022' -> BR:RES-ANM:95/2022;
+    'NR-18' -> BR:NR:18/0 (NR não tem ano). Licença e o resto: None."""
+    if m := _RE_NR.match(norma or ""):
+        return chave("BR", "NR", m.group("num"), 0)
     m = _RE_NORMA.match(norma or "")
     if not m:
         return None
@@ -321,6 +333,28 @@ def ler_anm(pagina: str) -> list[Candidata]:
     return out
 
 
+_RE_NR_PAGINA = re.compile(
+    r'<a[^>]+href="(?P<url>[^"]+)"[^>]*>\s*NR-(?P<num>\d{1,2})\s*-\s*(?P<titulo>[^<]{3,200})</a>', re.S)
+
+
+def ler_nrs(pagina: str) -> list[Candidata]:
+    """A página oficial das NRs vigentes: uma âncora por NR, com "(REVOGADA)" no título quando for o
+    caso. NR não tem ano, então a chave usa 0 (BR:NR:18/0). É um universo pequeno e curado: a camada 0
+    deixa todas passarem (ver `filtrar`) e a triagem por IA decide o alcance por tipo de ativo."""
+    out, vistas = [], set()
+    for m in _RE_NR_PAGINA.finditer(pagina):
+        if (k := chave("BR", "NR", m.group("num"), 0)) in vistas:
+            continue
+        vistas.add(k)
+        titulo = _texto_html(m.group("titulo"))
+        revogada = "REVOGADA" in titulo.upper()
+        assunto = re.sub(r"\s*\(\s*REVOGADA\s*\)\s*", "", titulo, flags=re.I).strip().capitalize()
+        out.append(Candidata(
+            k, "BR", "mte", "NR", str(int(m.group("num"))), 0, f"NR-{int(m.group('num'))} — {assunto}",
+            assunto, url=m.group("url"), situacao="REVOGADA" if revogada else "VIGENTE"))
+    return out
+
+
 class Baixador:
     """Busca nas fontes com cache em disco: ano passado não muda, o ano corrente é lido de novo.
     Um pedido por vez, com pausa: são serviços públicos."""
@@ -377,6 +411,15 @@ class Baixador:
             return "\n".join(paginas).encode("utf-8")
         return ler_anm(self._cache(f"anm_res_{ano}.html", ano, baixar).decode("utf-8"))
 
+    def nrs(self, ano: int) -> list[Candidata]:
+        """A página oficial das NRs vigentes (o MTE não tem dados abertos): relida a cada rodada."""
+        def baixar():
+            r = self.http.get(NRS_VIGENTES)
+            r.raise_for_status()
+            if b"NR-1" not in r.content:
+                raise ErroDescoberta("a página das NRs vigentes não veio com a lista")
+            return r.content
+        return ler_nrs(self._cache(f"nrs_vigentes_{ano}.html", ano, baixar).decode("utf-8", errors="replace"))
 
     def texto(self, linha: dict, limite: int = 9000) -> str | None:
         """O começo do texto oficial, do artigo 1º em diante, para a segunda leitura da triagem. A ALMG e o
@@ -472,7 +515,9 @@ def filtrar(cands: list[Candidata], cfg: dict, tipos: set[str]) -> tuple[list[Ca
     out, fora = [], {"revogadas": 0, "pela_regra": 0}
     for c in cands:
         c.temas = [t for t in temas_da(c, cfg) if t in tipos]
-        if not c.temas:
+        if not c.temas and c.fonte != "mte":
+            # NR é um universo pequeno e curado (38): entra sem casar termo, e a triagem decide o
+            # alcance. Foi a falta disso que deixou a NR-3 (Embargo e Interdição) invisível.
             continue
         if c.situacao and c.situacao != "VIGENTE":
             fora["revogadas"] += 1
@@ -513,11 +558,99 @@ def citadas(c: Candidata) -> set[str]:
     return out
 
 
+_ALIAS_NORMA = {"clt": "BR:DEL:5452/1943"}      # "art. 161 da CLT" -> Decreto-Lei 5.452/1943
+_RE_CITA_NR = re.compile(r"\bnr[-\s]?(\d{1,2})\b|\bnorma regulamentadora (?:n[o.]*\s*)?(\d{1,2})\b")
+
+
+def refs_no_texto(texto: str, jurisdicao: str = "BR") -> set[str]:
+    """Toda chave de norma que um texto cita: lei/decreto/resolução (com ano), NR (sem ano) e apelido
+    (CLT). É o `citadas` das ementas, generalizado para o grafo de citações do catálogo."""
+    t = normalizar(texto)
+    out = set()
+    for tipo, num, ano in _RE_CITA.findall(t):
+        tt = _TIPOS_CITADOS[tipo]
+        if tt == "RES-ANM":
+            out.add(chave("BR", tt, num, ano))
+        else:
+            out.update({chave(jurisdicao, tt, num, ano), chave("BR", tt, num, ano)})
+    for a, b in _RE_CITA_NR.findall(t):
+        out.add(chave("BR", "NR", a or b, 0))
+    for apelido, k in _ALIAS_NORMA.items():
+        if re.search(rf"\b{apelido}\b", t):
+            out.add(k)
+    return out
+
+
+def _nome_da_chave(k: str) -> str:
+    jur, tipo, resto = k.split(":", 2)
+    num, ano = resto.split("/")
+    if tipo == "NR":
+        return f"NR-{num}"
+    nomes = {"LEI": "Lei", "LCP": "Lei Complementar", "DEC": "Decreto", "DEL": "Decreto-Lei",
+             "RES-ANM": "Res. ANM"}
+    uf = "" if jur == "BR" else f" {jur}"
+    return f"{nomes.get(tipo, tipo)}{uf} {_milhar(num)}/{ano}"
+
+
+def lacunas_citadas(conn, raiz: Path | None = None) -> list[dict]:
+    """O grafo de citações do próprio catálogo: varre o cadastro (CSVs) e as extrações versionadas
+    (data/extraido/*.json) atrás de normas citadas que não estão nem no catálogo nem na fila, e grava
+    cada uma como candidata (fonte "citacao") já relevante, com a proveniência no título. Foi a falta
+    disto que escondeu a NR-3: citada por norma que está dentro, invisível para a fila."""
+    raiz = raiz or db.ROOT
+    citacoes: dict[str, set[str]] = {}          # chave citada -> {normas que citam}
+    def varrer(texto: str, origem: str) -> None:
+        jur = (chave_da_norma(origem) or "BR:").split(":")[0] or "BR"
+        chave_origem = chave_da_norma(origem)
+        for k in refs_no_texto(texto, jur):
+            if k != chave_origem:               # a norma citando a si mesma não é lacuna
+                citacoes.setdefault(k, set()).add(origem)
+    no_cadastro: set[str] = set()               # o catálogo como está no repo, não só no banco
+    arquivos = sorted((raiz / "cadastro").glob("*.csv"))
+    if (raiz / "seed_obligations.csv").exists():
+        arquivos.append(raiz / "seed_obligations.csv")      # a Res. 220: a norma vem no campo artigo
+    for arq in arquivos:
+        for linha in csv.DictReader(io.StringIO(arq.read_text(encoding="utf-8"))):
+            origem = (linha.get("norma") or linha.get("artigo") or arq.stem).strip()
+            if k := chave_da_norma(origem):
+                no_cadastro.add(k)
+            varrer(" ".join(filter(None, (linha.get("obrigacao"), linha.get("fonte"),
+                                          linha.get("trecho")))), origem)
+    for arq in sorted((raiz / "data" / "extraido").glob("*.json")):
+        try:
+            dados = json.loads(arq.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        varrer(json.dumps(dados, ensure_ascii=False), str(dados.get("norma") or arq.stem))
+    conhecidas = (no_cadastro | set(catalogo(conn))
+                  | {r["chave"] for r in conn.execute("SELECT chave FROM norma_candidata")})
+    conn.commit()
+    # a citação em texto de decreto MG vira as duas variantes (MG e BR): se qualquer uma é conhecida,
+    # nenhuma é lacuna (o par é a mesma norma, só com a jurisdição incerta)
+    conhecidas_sem_jur = {k.split(":", 1)[1] for k in conhecidas}
+    novas = []
+    for k in sorted(citacoes):
+        if k.split(":", 1)[1] in conhecidas_sem_jur:
+            continue
+        origens = sorted(citacoes[k])
+        jur, tipo, resto = k.split(":", 2)
+        num, ano = resto.split("/")
+        novas.append({"chave": k, "norma": _nome_da_chave(k), "citada_por": origens})
+        guardar(conn, [Candidata(k, jur, "citacao", tipo, num, int(ano), _nome_da_chave(k),
+                                 f"Citada por {', '.join(origens)}; ainda não catalogada nem buscada.")])
+    with conn:
+        conn.execute("UPDATE norma_candidata SET status = 'relevante' "
+                     "WHERE fonte = 'citacao' AND status = 'nova'")
+    return novas
+
+
 def _ler_fonte(baixador: Baixador, fonte: str, ano: int) -> list[Candidata]:
     if fonte == "senado":
         return [c for t in TIPOS_SENADO for c in baixador.senado(t, ano)]
     if fonte == "almg":
         return baixador.almg(ano)
+    if fonte == "mte":
+        return baixador.nrs(ano)
     return baixador.anm(ano)
 
 
@@ -543,6 +676,8 @@ def buscar(conn, baixador: Baixador, fontes: tuple[str, ...] = tuple(FONTES), de
         tipos_por_jur[jur] = tipos
         res = resultados[fonte] = ResultadoBusca(fonte)
         for ano in range(max(desde or primeiro, primeiro), ate + 1):
+            if fonte == "mte" and ano != ate:
+                continue        # a página das NRs é uma foto do presente: lê uma vez por rodada
             try:
                 lidas = _ler_fonte(baixador, fonte, ano)
             except Exception as e:      # uma fonte fora do ar não derruba as outras; fica registrado
@@ -1050,7 +1185,7 @@ def _imprimir_cobertura(itens: list[ItemCobertura]) -> None:
 def main(argv: list[str]) -> int:
     from .impacto import CACHE_IA
 
-    if not argv or argv[0] not in ("buscar", "triar", "cobertura", "decidir", "exportar", "avaliar"):
+    if not argv or argv[0] not in ("buscar", "triar", "cobertura", "decidir", "exportar", "avaliar", "lacunas"):
         print(__doc__)
         return 2
     conn = db.conectar(db.DB_PADRAO)
@@ -1082,6 +1217,12 @@ def main(argv: list[str]) -> int:
         print(json.dumps(r, ensure_ascii=False, indent=1))
         if r["camada0"]["falsos_negativos"] or (r["ia"] or {}).get("falsos_negativos"):
             return 1
+    elif cmd == "lacunas":
+        novas = lacunas_citadas(conn)
+        for lac in novas:
+            print(f"{lac['norma']}: citada por {', '.join(lac['citada_por'])}")
+        print(f"{len(novas)} lacunas citadas foram para a fila da curadoria" if novas
+              else "nenhuma lacuna: tudo que o catálogo cita está catalogado ou na fila")
     else:
         print(f"{exportar(conn)} candidatas em {DEMO}")
     return 0

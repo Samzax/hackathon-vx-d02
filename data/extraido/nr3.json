@@ -1,0 +1,11 @@
+{
+  "norma": "NR-3",
+  "tipo_ativo": "obra",
+  "custo_usd": 0.013634,
+  "modelos": [
+    "itens 3.1-3.5: bedrock:us.anthropic.claude-sonnet-5",
+    "itens 3.5.1-3.5.4: bedrock:us.anthropic.claude-sonnet-5"
+  ],
+  "blocos_sem_resposta": [],
+  "propostas": []
+}

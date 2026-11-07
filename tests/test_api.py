@@ -900,8 +900,10 @@ def test_cobertura_mostra_catalogo_fontes_lidas_lacunas_e_o_que_espera(cliente):
     assert caucao["cita_catalogo"] == ["Lei MG 23.291/2019"] and caucao["deveres"] and caucao["url"]
     assert mg["aprovadas"] == []
     br = itens[("BR", "equipamento")]
-    assert br["estado"] == "coberta" and br["catalogadas"] == ["NR-13"] and br["lacunas"]     # coberta, com as lacunas
-    assert {f["nome"] for f in br["fontes"]} == {"Senado Federal", "ANMlegis (ANM)"}
+    # com o conector das NRs (7/11), há NRs relevantes esperando a curadoria: não é mais "coberta"
+    assert br["estado"] == "curadoria_pendente" and br["catalogadas"] == ["NR-13"] and br["lacunas"]
+    assert any(n["chave"].startswith("BR:NR:") for n in br["em_curadoria"])
+    assert {f["nome"] for f in br["fontes"]} == {"Senado Federal", "ANMlegis (ANM)", "MTE (NRs vigentes)"}
 
 
 def test_cobertura_cliente_ve_so_a_dela_e_estado_sem_fonte_nunca_e_verificado(cliente, outra, cfg):
@@ -1017,7 +1019,7 @@ def test_job_da_descoberta_busca_tria_e_nao_mexe_no_que_a_curadoria_decidiu(clie
     ia = IAFalsa({}, IRRELEVANTE)
     resumo = jobs.descoberta(cfg, desde=2010, baixador=BaixadorFixo(tmp_path / "fontes"), paralelo=1,
                              roteador=Roteador(db.conectar(cfg.cache), provedores={"opencode": ia}), revisar=False)
-    assert {r["fonte"] for r in resumo["busca"]} == {"senado", "anm", "almg"} and not jobs.falhou(resumo)
+    assert {r["fonte"] for r in resumo["busca"]} == {"senado", "anm", "almg", "mte"} and not jobs.falhou(resumo)
     assert all(r["lidas"] for r in resumo["busca"]) and resumo["triagem"]["erro"] is None
     assert (resumo["triagem"]["triadas"], resumo["triagem"]["restam"]) == (1, 0) and "nova" not in resumo["fila"]
     assert [c[0] for c in ia.chamadas] == ["RESOLUÇÃO ANM Nº 127, DE 22 DE DEZEMBRO DE 2022"]   # só a nova vai à IA
@@ -1053,3 +1055,18 @@ def test_contrato_openapi_versionado_bate_com_a_api(cliente):
     atual = cliente.get(_url("/openapi.json")).json()
     salvo = json.loads((db.ROOT / "api" / "openapi.json").read_text(encoding="utf-8"))
     assert atual == salvo, "contrato desatualizado: rode uv run python -m api.contrato"
+
+
+def test_aprovar_dispara_a_extracao_automatica_em_segundo_plano(cliente, monkeypatch):
+    """A curadoria aprova e a extração sai sozinha (tarefa de fundo); descartar não dispara nada."""
+    from api.rotas import descoberta as rota_descoberta
+
+    chamadas: list[str] = []
+    monkeypatch.setattr(rota_descoberta, "_extrair_aprovada", lambda app, chave: chamadas.append(chave))
+    como(cliente, CURADORIA)
+    r = cliente.post(_url(f"/normas-candidatas/{CAUCAO}/decisao"), json={"decisao": "aprovar"})
+    assert r.status_code == 200 and chamadas == [CAUCAO]
+    outra = cliente.get(_url("/normas-candidatas"), params={"status": "relevante"}).json()["normas"][0]
+    r = cliente.post(_url(f"/normas-candidatas/{outra['chave']}/decisao"),
+                     json={"decisao": "descartar", "nota": "teste"})
+    assert r.status_code == 200 and chamadas == [CAUCAO]

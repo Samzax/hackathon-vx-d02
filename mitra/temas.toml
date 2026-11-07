@@ -59,7 +59,23 @@ ementa_contem = ["direito de lavrar", "concessao de lavra que menciona", "autori
 # cada cliente: a tela nunca diz "coberto" sobre o que não foi verificado.
 [lacunas]
 BR = [
-  "Normas Regulamentadoras do MTE (catalogadas à mão; sem lista em dados abertos)",
   "Resoluções do Conama, do Ibama e da ANA (sem conector)",
 ]
 MG = ["Deliberações Normativas do Copam e resoluções da Semad e da Feam (sem dados abertos)"]
+
+# Eventos regulatórios que a torre precisa saber tratar, por tipo de ativo: cada um aponta a norma
+# que o disciplina e o termo que acha a obrigação no catálogo (o mesmo que o gatilho de
+# mitra/evidencias.py usa). tests/test_eventos_cobertos.py confere: ou a obrigação existe no cadastro,
+# ou o evento declara `lacuna`. Foi a falta deste mapa que deixou a NR-3 invisível até 7/11/2026.
+[eventos.barragem.incidente_ou_anomalia]
+norma = "Res. ANM 95/2022 art. 27; Res. ANM 220/2025 art. 42"
+obrigacao = "ise"
+[eventos.barragem.registro_no_sigbm]
+norma = "Res. ANM 220/2025 art. 38 §4"
+obrigacao = "reportar no sigbm"
+[eventos.obra.acidente_fatal]
+norma = "NR-18, 18.16.23"
+obrigacao = "isolar"
+[eventos.obra.embargo_ou_interdicao]
+norma = "NR-3, 3.5.4 e 3.5.5"
+obrigacao = "embargo"

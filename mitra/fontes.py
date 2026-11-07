@@ -40,6 +40,11 @@ FONTES: dict[str, tuple[str, str]] = {
                                "https://www.almg.gov.br/legislacao-mineira/texto/DEC/48078/2020/"),
     "dec_mg_48140_2021.html": ("Decreto MG 48.140/2021 (regulamenta a Lei 23.291, texto atualizado)",
                                "https://www.almg.gov.br/legislacao-mineira/texto/DEC/48140/2021/"),
+    # a NR-3 não tem PDF "atualizada": o texto vigente é o anexo da Portaria SEPRT 1.068/2019
+    "portaria_seprt_1068_-aprova_nova_nr_03.pdf": (
+        "NR-3 (anexo da Portaria SEPRT 1.068/2019)",
+        _MTE + "/assuntos/inspecao-do-trabalho/seguranca-e-saude-no-trabalho/sst-portarias/2019/"
+               "portaria_seprt_1068_-aprova_nova_nr_03.pdf"),
     "nr-13-atualizada-2023-b.pdf": ("NR-13", _NRS + "nr-13-atualizada-2023-b.pdf"),
     "nr-22-atualizada-2026.pdf": ("NR-22", _NRS + "nr-22-atualizada-2026.pdf"),
     # vertical obras (fase B de 7/11/2026): condições de segurança na construção e trabalho em altura

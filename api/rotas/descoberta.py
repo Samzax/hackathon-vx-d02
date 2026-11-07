@@ -12,13 +12,14 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
 from mitra import db, descoberta
 
 from .. import auditoria
 from ..banco import conexao
+from ..observabilidade import log
 from ..seguranca import Escopo, curadoria, empresa_visivel, plataforma, regulatorio
 
 rota = APIRouter(tags=["descoberta"])
@@ -183,10 +184,55 @@ def candidata(chave: str, e: Escopo = Depends(plataforma), conn=Depends(conexao)
     return _norma(d, com_indexacao=True)
 
 
+def _extrair_aprovada(app, chave: str) -> None:
+    """Aprovada pela curadoria -> a extração das obrigações sai sozinha, em segundo plano: a IA propõe
+    (data/extraido/), o Python confere o trecho, e a pessoa continua escolhendo o que entra no cadastro.
+    Sem texto baixável (ex.: NR, que é PDF) ou sem provedor de IA, fica no caminho manual, com log."""
+    import json as _json
+    import re as _re
+
+    from mitra import extrator
+    from mitra.ia import Roteador, SemProvedor
+
+    from ..banco import emprestar
+
+    try:
+        with emprestar(app) as conn:
+            linha = descoberta.candidata(conn, chave)
+            if linha is None:
+                return
+            texto = descoberta.Baixador().texto(linha, limite=120_000)
+            if not texto:
+                log.info("extração automática sem texto baixável: fica manual",
+                         extra={"extra_json": {"chave": chave, "fonte": linha["fonte"]}})
+                return
+            tipos = (linha.get("triagem") or {}).get("tipos_ativo") or linha.get("temas") or ["unidade"]
+            cfg = app.state.cfg
+            roteador = Roteador(db.conectar(cfg.cache), timeout=420)
+            res = extrator.extrair(roteador, linha["titulo"], extrator.unidades_de_texto(texto), tipos[0])
+            destino = db.ROOT / "data" / "extraido" / (_re.sub(r"[^A-Za-z0-9]+", "_", chave).lower() + ".json")
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            from dataclasses import asdict
+            destino.write_text(_json.dumps(
+                {"norma": linha["titulo"], "tipo_ativo": tipos[0], "custo_usd": res.custo_usd,
+                 "modelos": res.modelos, "blocos_sem_resposta": res.blocos_sem_resposta,
+                 "propostas": [asdict(p) for p in res.propostas]},
+                ensure_ascii=False, indent=2), encoding="utf-8")
+            log.info("extração automática concluída", extra={"extra_json": {
+                "chave": chave, "aprovadas": len(res.aprovadas), "propostas": len(res.propostas),
+                "custo_usd": res.custo_usd, "arquivo": str(destino)}})
+    except SemProvedor as erro:
+        log.info("extração automática sem IA: fica manual",
+                 extra={"extra_json": {"chave": chave, "erro": str(erro)[:200]}})
+    except Exception as erro:       # tarefa de fundo: o erro fica no log, a fila mostra 'falta extrair'
+        log.warning("extração automática falhou",
+                    extra={"extra_json": {"chave": chave, "erro": str(erro)[:300]}})
+
+
 @rota.post("/normas-candidatas/{chave:path}/decisao", response_model=NormaCandidata,
-           summary="Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota")
-def decidir(chave: str, dados: DecisaoCandidata, request: Request, e: Escopo = Depends(curadoria),
-            conn=Depends(conexao)):
+           summary="Curadoria Mitra: aprovar (a extração das obrigações sai sozinha) ou descartar, com nota")
+def decidir(chave: str, dados: DecisaoCandidata, request: Request, tarefas: BackgroundTasks,
+            e: Escopo = Depends(curadoria), conn=Depends(conexao)):
     if descoberta.candidata(conn, chave) is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"norma {chave} não está na fila")
     try:
@@ -195,4 +241,6 @@ def decidir(chave: str, dados: DecisaoCandidata, request: Request, e: Escopo = D
         auditoria.registrar(conn, request, "descoberta.decidir", chave, dados.model_dump(), resultado="recusado")
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from None
     auditoria.registrar(conn, request, "descoberta.decidir", chave, dados.model_dump())
+    if dados.decisao == "aprovar":
+        tarefas.add_task(_extrair_aprovada, request.app, chave)
     return _norma(d, com_indexacao=True)

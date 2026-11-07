@@ -72,3 +72,13 @@ def _postgres_no_lugar_do_sqlite(monkeypatch):
         c.execute("SET lock_timeout = '30s'")
         for e in criados:
             c.execute(f'DROP SCHEMA IF EXISTS "{e}" CASCADE')
+
+
+@pytest.fixture(autouse=True)
+def _sem_extracao_automatica(monkeypatch):
+    """Aprovar uma candidata dispara a extração em segundo plano (IA de verdade): nos testes vira
+    no-op, para a suíte não depender de rede nem encher data/extraido/. O teste da fiação
+    (test_aprovar_dispara_a_extracao_automatica) troca o no-op por um gravador."""
+    from api.rotas import descoberta as rota_descoberta
+
+    monkeypatch.setattr(rota_descoberta, "_extrair_aprovada", lambda app, chave: None)
