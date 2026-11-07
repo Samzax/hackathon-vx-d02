@@ -173,9 +173,12 @@ dialog::backdrop {
 }
 
 /* A lateral permanece escura nos dois temas, como no produto Mitra. */
-[class*="bg-lateral"] .text-texto { color: #ffffff; }
+[class*="bg-lateral"] .text-texto:not(select):not(option):not(input):not(textarea) { color: #ffffff; }
+[class*="bg-lateral"] select.text-texto, [class*="bg-lateral"] input.text-texto, [class*="bg-lateral"] textarea.text-texto { color: var(--texto); }
 [class*="bg-lateral"] .text-texto-2 { color: #cfe3e8; }
 [class*="bg-lateral"] .text-texto-3 { color: #9fb3bc; }
+[class*="bg-lateral"] .text-marca { color: var(--marca); }
+[class*="bg-lateral"] a:hover { color: var(--marca) !important; }
 [class*="bg-lateral"] .border-borda { border-color: rgb(207 227 232 / 18%); }
 [class*="bg-lateral"] .bg-fundo { background-color: rgb(255 255 255 / 6%); }
 [class*="bg-lateral"] .bg-fundo-3:hover { background-color: rgb(255 255 255 / 8%); }

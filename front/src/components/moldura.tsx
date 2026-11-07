@@ -133,7 +133,7 @@ function Navegacao({ onNavegar }: { onNavegar?: () => void }) {
                     aria-current={ativo ? "page" : undefined}
                     className={cx(
                       "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm",
-                      ativo ? "bg-marca-suave font-semibold text-marca" : "text-texto-2 hover:bg-fundo-3 hover:text-texto",
+                      ativo ? "bg-marca-suave font-semibold text-marca" : "text-texto-2 hover:bg-fundo-3",
                     )}
                   >
                     {i.icone}
@@ -187,7 +187,7 @@ function Controles() {
     const [aberto, setAberto] = useState(false);
     return (
       <div className="relative">
-        <button type="button" className="flex h-9 w-full items-center justify-between rounded-md border border-[#1d6975] bg-[#134552] px-2.5 text-left text-sm text-white shadow-sm"
+        <button type="button" className="flex h-9 w-full items-center justify-between rounded-md border border-[#1d6975] bg-[#134552] px-2.5 text-left text-sm text-white shadow-sm hover:bg-[#195866] hover:text-[#0e7c86]"
           aria-haspopup="listbox" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
           <span className="truncate">{t.eu.visao}</span><ChevronDown className={cx("size-4 shrink-0 transition-transform", aberto && "rotate-180")} />
         </button>
@@ -195,7 +195,7 @@ function Controles() {
           <ul role="listbox" aria-label="Quem está olhando" className="absolute left-0 right-0 z-50 mt-1 max-h-56 overflow-auto rounded-md border border-[#1d6975] bg-[#134552] p-1 text-sm text-white shadow-xl">
             {t.eu.visoes.map((visao) => (
               <li key={visao} role="option" aria-selected={visao === t.eu.visao}>
-                <button type="button" className={cx("w-full rounded px-2 py-2 text-left hover:bg-[#195866]", visao === t.eu.visao && "bg-[#0e7c86] font-semibold")}
+                <button type="button" className={cx("w-full rounded px-2 py-2 text-left hover:bg-[#195866] hover:text-[#0e7c86]", visao === t.eu.visao && "bg-[#0e7c86] font-semibold")}
                   onClick={() => { setAberto(false); trocarVisao.mutate(visao); }}>
                   {visao}
                 </button>
