@@ -32,21 +32,24 @@ import re
 import sys
 import time
 import unicodedata
+import warnings
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 
 from . import db
 from .impacto import _limpo
 
 CACHE = db.ROOT / "data" / "raw" / "fontes" / "vigencia"
 LEXML = "https://www.lexml.gov.br/urn/"
-INTERVALO = {"www.lexml.gov.br": 5.0, "www2.camara.leg.br": 1.0}   # segundos entre pedidos ao mesmo host
+INTERVALO = {"www.lexml.gov.br": 5.0, "www2.camara.leg.br": 1.0, "legis.senado.leg.br": 1.0}   # segundos entre pedidos ao mesmo host
 AGENTE = "RegulaIA/0.1 (pesquisa regulatoria)"
 FONTE = "Câmara dos Deputados, Legislação Informatizada"
+FONTE_SENADO = "Senado Federal, dados abertos (detalhe da norma)"
+SENADO_DETALHE = "https://legis.senado.leg.br/dadosabertos/legislacao/{id}"
 
 # tipo da chave da descoberta -> tipo na URN do LexML (só os que a Câmara tem)
 URN_TIPO = {"LEI": "lei", "LCP": "lei.complementar", "DEL": "decreto.lei", "DEC": "decreto"}
@@ -98,6 +101,12 @@ def _https_camara(url: str) -> str:
     return re.sub(r"^https?://www2\.camara\.(gov|leg)\.br", "https://www2.camara.leg.br", url)
 
 
+def senado_no_lexml(pagina: str) -> str | None:
+    """Da página do resolvedor de URN, o código da norma no Senado (para o detalhe nos dados abertos)."""
+    m = re.search(r"legis\.senado\.leg\.br/norma/(\d+)", pagina)
+    return m.group(1) if m else None
+
+
 def ficha_no_lexml(pagina: str) -> str | None:
     """Da página do resolvedor de URN, o link para a ficha da norma na Câmara."""
     for a in BeautifulSoup(pagina, "html.parser").find_all("a", href=True):
@@ -141,6 +150,7 @@ class Ficha:
     ficha_url: str | None = None
     texto_url: str | None = None          # texto atualizado (consolidado)
     original_url: str | None = None       # publicação original
+    fonte: str = FONTE
 
     @property
     def revogada_por(self) -> list[Relacao]:
@@ -149,6 +159,7 @@ class Ficha:
 
 _RE_NORMA = re.compile(r"^(?P<tipo>.+?) n[º°o]\.? ?(?P<num>[\d.]+),? de (?P<dia>\d{1,2})[º°o]? de (?P<mes>[^\s]+) de "
                        r"(?P<ano>\d{4})", re.I)
+_RE_NORMA_SENADO = re.compile(r"^(?P<tipo>.+?) n[º°o]\.? ?(?P<num>[\d.]+) de (?P<dia>\d{2})/(?P<mes>\d{2})/(?P<ano>\d{4})")
 _RE_REL = re.compile(r"^(?P<norma>.+?)\s+-\s+\((?P<rel>[^()]+)\)\.?\s*(?P<disp>.*?)\.?$", re.S)
 _RE_ART = re.compile(r"\bart(?:igo)?s?\.?\s*(\d+)\s*[º°o]?\s*(-\s*[A-Z]\b)?", re.I)
 
@@ -164,6 +175,10 @@ def artigos(texto: str) -> list[str]:
 
 
 def _chave_relacionada(norma: str) -> tuple[str | None, str | None]:
+    if s := _RE_NORMA_SENADO.match(norma):
+        tipo = TIPO_CAMARA.get(_sem_acento(s.group("tipo")))
+        numero, ano = s.group("num").replace(".", ""), s.group("ano")
+        return (f"BR:{tipo}:{numero}/{ano}" if tipo else None), f"{ano}-{s.group('mes')}-{s.group('dia')}"
     m = _RE_NORMA.match(norma)
     if not m:
         return None, None
@@ -213,6 +228,45 @@ def ler_ficha(pagina: str, url: str | None = None, chave_norma: str = "") -> Fic
     return Ficha(chave=chave_norma, titulo=_texto(dados.find("h1")), ementa=ementa, situacao=situacao,
                  revogada=_sem_acento(situacao).startswith("revogad"), relacoes=relacoes, ficha_url=url,
                  texto_url=texto_url and _https_camara(texto_url), original_url=original_url and _https_camara(original_url))
+
+
+def _relacao_senado(comentario: str) -> str:
+    c = _sem_acento(comentario)
+    if "revogacao" in c:
+        return "Revogação Parcial" if "parcial" in c or "no todo" not in c and "permanente da norma" not in c else "Revogação"
+    for chave, rotulo in (("alteracao", "Alteração"), ("acrescimo", "Acréscimo"), ("regulamentacao", "Regulamentação"),
+                          ("correlata", "Legislação Correlata"), ("prorrogacao", "Prorrogação")):
+        if chave in c:
+            return rotulo
+    return comentario.strip()
+
+
+def ler_senado_detalhe(xml: str, chave_norma: str = "", url: str | None = None) -> Ficha:
+    """O detalhe de uma norma nos dados abertos do Senado: situação ("R" = revogada) e as normas posteriores
+    que agiram sobre ela (vides), com os dispositivos. Usado quando o LexML não liga a norma à Câmara
+    (decretos e leis recentes). Não traz texto consolidado."""
+    with warnings.catch_warnings():     # o html.parser lê bem este XML simples; o aviso é só conselho
+        warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
+        soup = BeautifulSoup(xml, "html.parser")
+    doc = soup.find("documento")
+    if doc is None:
+        raise ErroVigencia(f"{url or chave_norma}: não é um detalhe de norma do Senado")
+    situacao_cod = _texto(doc.find("situacao")).upper()
+    relacoes = []
+    for vide in doc.find_all("vide"):
+        nome = _texto(vide.find("nomenormaposterior"))
+        chave_rel, data = _chave_relacionada(nome)
+        disp = "; ".join(_texto(i.find("dispositivo")) for i in vide.find_all("item"))
+        cod = _texto(vide.find("codnormaposterior"))
+        relacoes.append(Relacao(norma=nome, chave=chave_rel, data=data,
+                                relacao=_relacao_senado(_texto(vide.find("comentario"))), dispositivos=disp,
+                                artigos=artigos(disp), url=f"https://legis.senado.leg.br/norma/{cod}" if cod else None))
+    relacoes.sort(key=lambda r: r.data or "", reverse=True)
+    revogada = situacao_cod == "R" or any(r.relacao == "Revogação" for r in relacoes)
+    ident = doc.find("identificacao")
+    return Ficha(chave=chave_norma, titulo=_texto(ident.find("normanome")) if ident else "",
+                 ementa=_texto(doc.find("ementa")), situacao="Revogada" if revogada else "Não consta revogação",
+                 revogada=revogada, relacoes=relacoes, ficha_url=url, fonte=FONTE_SENADO)
 
 
 def paragrafos_do_texto(pagina: str) -> list[str]:
@@ -278,9 +332,12 @@ class Baixador:
     def ficha(self, chave_norma: str) -> Ficha:
         pagina = self.get(LEXML + urn(chave_norma))
         url = ficha_no_lexml(pagina)
-        if url is None:
-            raise ErroVigencia(f"{chave_norma}: o LexML não tem a ficha da Câmara para esta norma")
-        return ler_ficha(self.get(url), url, chave_norma)
+        if url is not None:
+            return ler_ficha(self.get(url), url, chave_norma)
+        if sid := senado_no_lexml(pagina):
+            return ler_senado_detalhe(self.get(SENADO_DETALHE.format(id=sid)),
+                                      chave_norma, f"https://legis.senado.leg.br/norma/{sid}")
+        raise ErroVigencia(f"{chave_norma}: o LexML não liga esta norma nem à Câmara nem ao Senado")
 
     def texto(self, ficha: Ficha) -> str | None:
         return self.get(ficha.texto_url) if ficha.texto_url else None
@@ -300,7 +357,7 @@ def guardar(conn, f: Ficha) -> None:
         "INSERT INTO norma_vigencia (chave, titulo, ementa, situacao, revogada, relacoes, ficha_url, texto_url,"
         " original_url, fonte, lida_em) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (f.chave, f.titulo, f.ementa, f.situacao, 1 if f.revogada else 0, rel, f.ficha_url, f.texto_url,
-         f.original_url, FONTE, _agora()))
+         f.original_url, f.fonte, _agora()))
 
 
 def lida(conn, chave_norma: str) -> Ficha | None:
@@ -309,7 +366,8 @@ def lida(conn, chave_norma: str) -> Ficha | None:
         return None
     return Ficha(chave=r["chave"], titulo=r["titulo"], ementa=r["ementa"] or "", situacao=r["situacao"] or "",
                  revogada=bool(r["revogada"]), relacoes=[Relacao(**x) for x in json.loads(r["relacoes"] or "[]")],
-                 ficha_url=r["ficha_url"], texto_url=r["texto_url"], original_url=r["original_url"])
+                 ficha_url=r["ficha_url"], texto_url=r["texto_url"], original_url=r["original_url"],
+                 fonte=r["fonte"] or FONTE)
 
 
 def consultar(conn, baixador: Baixador, chave_norma: str) -> Ficha:

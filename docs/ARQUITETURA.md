@@ -86,8 +86,19 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
 - **Descarte duvidoso relê pelo texto.** A triagem é pela ementa, e ementa engana: "Institui a Política
   Estadual dos Atingidos por Barragens" parece só organização do Estado, e a IA descartou a Lei MG
   23.795/2021. Descarte com confiança abaixo de 0,85 baixa o texto oficial (do artigo 1º em diante) e
-  pergunta de novo, pedindo o artigo que cobra o empreendedor. Onde a fonte bloqueia robô (Planalto),
-  fica a decisão pela ementa e a curadoria pode reabrir.
+  pergunta de novo, pedindo o artigo que cobra o empreendedor. A lei federal vem do texto atualizado da
+  Câmara (o Planalto bloqueia robô); onde não há texto, fica a decisão pela ementa e a curadoria pode reabrir.
+- **Vigência e alterações das federais** (`regulaia/vigencia.py`). O Senado não diz na listagem se a norma
+  está em vigor. O resolvedor de URN do LexML (liberado no robots.txt, 5 s entre pedidos; a busca do LexML
+  tem desafio anti-robô e não é usada) leva à ficha da norma na Câmara: situação, quem alterou ou revogou
+  e em quais artigos, e o texto consolidado. Quando a Câmara não tem a ficha (decretos recentes), vale o
+  detalhe da norma nos dados abertos do Senado (situação "R" e as normas posteriores). Na fila real, 246
+  das 248 candidatas federais foram lidas e 140 estavam revogadas (18 delas a IA tinha marcado relevante):
+  saem como descartadas, com a norma revogadora e o link na nota. Aprovada e revogada fica para a curadoria.
+- **O catálogo é conferido contra o texto de hoje.** `vigencia catalogo` lista as alterações de cada norma
+  federal do catálogo com as obrigações que citam os artigos alterados, e confere cada trecho citado no
+  texto atualizado: os 23 da Lei 12.334 continuam lá depois da Lei 15.355/2026 (que mudou os art. 3º e 15,
+  fora do catálogo). Trecho que sumiu do texto vai para a curadoria.
 - **Na dúvida, a IA marca relevante com confiança baixa.** O que ela descarta não chega a ninguém; o que
   ela marca, a curadoria lê. A curadoria também pode reabrir uma descartada.
 - **Quem altera norma do catálogo vem marcado.** Uma resolução que altera a Res. 95 pode já estar no texto

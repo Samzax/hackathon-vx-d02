@@ -219,3 +219,37 @@ def test_baixador_respeita_o_intervalo_do_lexml(tmp_path, monkeypatch):
     b.get(v.LEXML + "urn:b")
     b.get(v.LEXML + "urn:a")                  # do cache: não espera nem pede
     assert len(dormiu) == 1 and 4 < dormiu[0] <= 5
+
+
+# ------------------------------------------------------------------- o Senado, quando a Câmara não tem a ficha
+
+SENADO_10966 = v.SENADO_DETALHE.format(id="35488354")
+
+
+def test_detalhe_do_senado_diz_revogado_e_por_quem():
+    f = v.ler_senado_detalhe(_ler("senado_dec_10966.xml"), "BR:DEC:10966/2022", "https://legis.senado.leg.br/norma/35488354")
+    assert f.revogada and f.situacao == "Revogada" and f.fonte == v.FONTE_SENADO
+    assert [(r.chave, r.data, r.relacao) for r in f.revogada_por] == [("BR:DEC:11369/2023", "2023-01-01", "Revogação")]
+    assert f.texto_url is None
+    assert f.ementa.startswith("Institui o Programa de Apoio ao Desenvolvimento da Mineração Artesanal")
+
+
+def test_detalhe_do_senado_da_lei_12334_bate_com_a_camara():
+    f = v.ler_senado_detalhe(_ler("senado_lei_12334.xml"), "BR:LEI:12334/2010")
+    assert not f.revogada
+    assert (f.relacoes[0].chave, f.relacoes[0].relacao, f.relacoes[0].artigos) == ("BR:LEI:15355/2026", "Alteração", ["3", "15"])
+    assert {r.relacao for r in f.relacoes} >= {"Alteração", "Regulamentação"}
+    assert "2-A" in next(r for r in f.relacoes if r.chave == "BR:LEI:14066/2020").artigos
+
+
+def test_sem_ficha_na_camara_o_lexml_leva_ao_senado(serra):
+    paginas = {v.LEXML + "urn:lex:br:federal:decreto:2022;10966": "lexml_dec_10966.html",
+               SENADO_10966: "senado_dec_10966.xml"}
+    assert v.ficha_no_lexml(_ler("lexml_dec_10966.html")) is None
+    assert v.senado_no_lexml(_ler("lexml_dec_10966.html")) == "35488354"
+    _candidata(serra, "BR:DEC:10966/2022", "relevante", "Decreto 10.966/2022")
+    res = v.marcar_candidatas(serra, BaixadorFixo(paginas))
+    assert (res.lidas, res.descartadas, res.erros) == (1, 1, {})
+    r = serra.execute("SELECT nota FROM norma_candidata WHERE chave = 'BR:DEC:10966/2022'").fetchone()
+    assert "Decreto nº 11.369 de 01/01/2023" in r["nota"] and "legis.senado.leg.br/norma/35488354" in r["nota"]
+    assert v.lida(serra, "BR:DEC:10966/2022").fonte == v.FONTE_SENADO

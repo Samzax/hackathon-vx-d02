@@ -71,7 +71,7 @@ Cada obrigação tem três campos que a máquina lê:
 - **agenda:** quando vence (ex.: `quinzenal+15d`, `anos:3`, `unica`);
 - **trecho:** o texto literal da norma.
 
-Os 123 trechos das normas oficiais são conferidos por teste (`tests/test_trechos.py`) contra os textos baixados das fontes oficiais (ANMlegis, gov.br/trabalho-e-emprego, Planalto e Assembleia de Minas). A lista das fontes está em `regulaia/fontes.py`. A licença é fictícia e não tem texto para conferir.
+Os 123 trechos das normas oficiais são conferidos por teste (`tests/test_trechos.py`) contra os textos baixados das fontes oficiais (ANMlegis, gov.br/trabalho-e-emprego, Câmara dos Deputados e Assembleia de Minas). A lista das fontes está em `regulaia/fontes.py`. A licença é fictícia e não tem texto para conferir.
 
 O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto (`regulaia/extrator.py`), uma pessoa escolhe e ajusta (`curadoria/*.csv`) e o script gera o CSV final (`regulaia/curadoria.py`). Repetir o processo dá o mesmo resultado.
 
@@ -82,7 +82,7 @@ O catálogo é da plataforma, e o radar do DOU pega a norma nova. A descoberta (
 1. **Perfil:** dos ativos de todas as clientes sai o que cobrir, por jurisdição e tipo de ativo (barragem em MG, unidade no Brasil, vaso de pressão no Brasil...).
 2. **Fontes oficiais com dados abertos**, ano a ano: o Senado (leis e decretos federais desde 1967), o ANMlegis (resoluções da ANM, com a revogada marcada) e a Assembleia de Minas (a legislação mineira desde 1989, com a situação de vigência).
 3. **Camada 0, sem IA:** fica a norma vigente que cita os termos de um tipo de ativo da carteira ([regulaia/temas.toml](regulaia/temas.toml)); crédito orçamentário, homenagem e concessão de lavra a uma empresa saem pela regra. Uma segunda passada traz a norma que regulamenta ou altera uma candidata pela citação na ementa: é assim que entra o Decreto 9.406/2018, que regulamenta o Código de Mineração sem nenhuma palavra de mineração na ementa.
-4. **Triagem pela IA**, pela ementa: a norma cobra algo de quem opera o ativo? De qual tipo? Descarte com confiança abaixo de 0,85 é relido pelo texto oficial (ALMG e ANMlegis; o Planalto bloqueia robô). A ementa de "Institui a Política Estadual dos Atingidos por Barragens" parece só organização do Estado; o dever da mineradora está no corpo da lei.
+4. **Triagem pela IA**, pela ementa: a norma cobra algo de quem opera o ativo? De qual tipo? Descarte com confiança abaixo de 0,85 é relido pelo texto oficial (ALMG e ANMlegis; a lei federal, pelo texto atualizado da Câmara). A ementa de "Institui a Política Estadual dos Atingidos por Barragens" parece só organização do Estado; o dever da mineradora está no corpo da lei.
 5. **Curadoria RegulaIA** aprova (segue para o extrator e a curadoria do catálogo) ou descarta, com nome e nota.
 6. **Cobertura por cliente:** o que está no catálogo, o que espera triagem ou curadoria, até quando cada fonte foi lida e as lacunas conhecidas. Estado sem fonte automática aparece como "cobertura não verificada", nunca como coberto. O LexML, que indexa todos os estados, bloqueia acesso automático com verificação anti-robô e não é usado.
 
@@ -174,7 +174,7 @@ npm run e2e                             # Playwright (depois do build): sobe a A
 ```
 
 Num clone novo, `uv run pytest` passa com alguns testes pulados. Eles precisam de arquivos que ficam fora do Git:
-- os textos oficiais das normas: baixe com `uv run python -m regulaia.fontes` (o Planalto derruba conexão que não vem de navegador: se a Lei 12.334 falhar, o comando diz a URL para abrir no navegador e onde salvar);
+- os textos oficiais das normas: baixe com `uv run python -m regulaia.fontes` (a Lei 12.334 vem do texto atualizado da Câmara: o Planalto derruba conexão que não vem de navegador);
 - o ZIP do DOU de agosto;
 - a IA de verdade: `RUN_IA=1`.
 
