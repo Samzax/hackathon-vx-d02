@@ -102,7 +102,7 @@ def com_licenca(empresa):
 def test_proposta_sem_trecho_na_licenca_nao_entra(com_licenca):
     conn, eid, lid = com_licenca
     ia = IAFalsa(RESPOSTA)
-    le = licencas.ler(conn, Roteador(conn, provedores={"opencode": ia}), eid, TEXTO_LICENCA)
+    le = licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, TEXTO_LICENCA)
     assert len(le.propostas) == 5 and len(le.aprovadas) == 3
     por_titulo = {p.titulo: p for p in le.propostas}
     assert por_titulo["Plantar 10 mil mudas por ano"].reprovada == "o trecho citado não existe no texto da licença"
@@ -130,7 +130,7 @@ def test_dado_pessoal_nunca_vai_para_a_ia(com_licenca):
     cpf = "123.456.789" + "-09"
     texto = TEXTO_LICENCA + f"\nResponsável técnico: Ana Souza, CPF {cpf}, CREA MG-123456.\n"
     ia = IAFalsa(RESPOSTA)
-    licencas.ler(conn, Roteador(conn, provedores={"opencode": ia}), eid, texto)
+    licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, texto)
     [enviado] = ia.chamadas
     assert cpf not in enviado and pessoal.MARCADOR in enviado
     assert "Ana Souza" in enviado                        # o nome fica: o que sai é o CPF
@@ -140,14 +140,14 @@ def test_pagina_do_trecho_vem_das_paginas_do_pdf(com_licenca):
     conn, eid, _ = com_licenca
     paginas = ["capa sem condicionante", TEXTO_LICENCA]
     ia = IAFalsa(RESPOSTA)
-    le = licencas.ler(conn, Roteador(conn, provedores={"opencode": ia}), eid, TEXTO_LICENCA, paginas)
+    le = licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, TEXTO_LICENCA, paginas)
     assert all(p.pagina == 2 for p in le.aprovadas)
 
 
 def test_pdf_sem_texto_nao_vai_para_a_ia(com_licenca):
     conn, eid, _ = com_licenca
     ia = IAFalsa(RESPOSTA)
-    le = licencas.ler(conn, Roteador(conn, provedores={"opencode": ia}), eid, "duas palavras")
+    le = licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, "duas palavras")
     assert not le.propostas and "escaneado" in le.problemas[0] and ia.chamadas == []
 
 
@@ -192,7 +192,7 @@ def test_licenca_de_outra_cliente_nao_existe_para_esta(com_licenca):
 
 def _propostas(conn, eid, lid):
     ia = IAFalsa(RESPOSTA)
-    le = licencas.ler(conn, Roteador(conn, provedores={"opencode": ia}), eid, TEXTO_LICENCA)
+    le = licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, TEXTO_LICENCA)
     licencas.propor(conn, eid, lid, le, POR)
     return licencas.condicionantes(conn, eid, status=licencas.PENDENTE)
 

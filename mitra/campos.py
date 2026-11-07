@@ -17,8 +17,8 @@ _NIVEIS = ["alto", "medio", "baixo"]
 
 # campo: (nome de tela, tipo, opções, tipos de ativo)
 CAMPOS: dict[str, tuple[str, str, list[str] | None, tuple[str, ...]]] = {
-    "uf": ("UF", TEXTO, None, ("barragem", "unidade")),
-    "municipio": ("Município", TEXTO, None, ("barragem", "unidade")),
+    "uf": ("UF", TEXTO, None, ("barragem", "unidade", "obra")),
+    "municipio": ("Município", TEXTO, None, ("barragem", "unidade", "obra")),
     "minerio": ("Minério", TEXTO, None, ("barragem",)),
     "sigbm_codigo": ("Código no SIGBM", TEXTO, None, ("barragem",)),
     "altura_m": ("Altura (m)", NUMERO, None, ("barragem",)),
@@ -57,13 +57,20 @@ CAMPOS: dict[str, tuple[str, str, list[str] | None, tuple[str, ...]]] = {
     "subsolo": ("Em subsolo", BOOL, None, ("equipamento",)),
     "orgao": ("Órgão emissor", TEXTO, None, ("licenca",)),
     "validade": ("Validade", DATA, None, ("licenca",)),
+    # obra (vertical 2, fase A): o suficiente para as regras da NR-18/NR-35 citarem
+    "categoria_obra": ("Tipo de obra", OPCOES, ["edificacao", "infraestrutura", "industrial", "demolicao",
+                                                "outra"], ("obra",)),
+    "fase_obra": ("Fase da obra", OPCOES, ["projeto", "execucao", "paralisada", "concluida"], ("obra",)),
+    "trabalhadores": ("Trabalhadores no canteiro", NUMERO, None, ("obra",)),
+    "trabalho_altura": ("Trabalho em altura (acima de 2 m)", BOOL, None, ("obra",)),
 }
 
 VALORES = {"etapa_unica": "etapa única", "linha_de_centro": "linha de centro", "medio": "médio",
            "em_descaracterizacao": "em descaracterização", "em_construcao": "em construção",
            "ceu_aberto": "céu aberto", "subterranea": "subterrânea", "vaso_pressao": "vaso de pressão",
            "transportador_continuo": "transportador contínuo", "equipamento_guindar": "equipamento de guindar",
-           "tubulacao": "tubulação", "maquina": "máquina", "veiculo": "veículo"}
+           "tubulacao": "tubulação", "maquina": "máquina", "veiculo": "veículo",
+           "edificacao": "edificação", "demolicao": "demolição", "execucao": "execução"}
 
 _SIM = {"sim", "s", "verdadeiro", "true", "1", "x"}
 _NAO = {"nao", "não", "n", "falso", "false", "0"}

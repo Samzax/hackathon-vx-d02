@@ -21,7 +21,7 @@ import { useEmpresa, useTorre } from "@/lib/torre";
 type Licenca = Esquemas["Licenca"];
 type Leitura = Esquemas["api__rotas__licencas__Leitura"];
 
-const TIPOS = ["LP", "LI", "LO", "LAC", "outorga", "autorizacao"] as const;
+const TIPOS = ["LP", "LI", "LO", "LAC", "outorga", "autorizacao", "alvara"] as const;
 const RENOVAR_PADRAO = 120;
 
 const ABAS = [

@@ -1,0 +1,158 @@
+# Gabarito de recall da descoberta (rotulado à mão em 7/11/2026, ementas reais das fontes; os
+# sintéticos exercitam as regras de descarte da camada 0). Roda com:
+#   uv run python -m mitra.descoberta avaliar [--ia]
+# candidata = a camada 0 (termos/regras, sem IA) deve deixar passar — falso negativo aqui é norma
+# que ninguém veria, a meta é recall 1,0. relevante = a triagem IA deve marcar relevante.
+# citacao = entra pela passada 2 (a ementa cita norma conhecida), não pelos termos.
+
+[[norma]]
+chave = "BR:LEI:12334/2010"
+jurisdicao = "BR"
+fonte = "senado"
+titulo = "Lei nº 12.334 de 20/09/2010"
+ementa = "Estabelece a Política Nacional de Segurança de Barragens destinadas à acumulação de água para quaisquer usos, à disposição final ou temporária de rejeitos e à acumulação de resíduos industriais, cria o Sistema Nacional de Informações sobre Segurança de Barragens e altera a redação do art. 35 da Lei nº 9.433, de 8 de janeiro de 1997, e do art. 4º da Lei nº 9.984, de 17 de julho de 2000."
+indexacao = "LEI-12334-2010-09-20"
+candidata = true
+relevante = true
+
+[[norma]]
+chave = "BR:LEI:14066/2020"
+jurisdicao = "BR"
+fonte = "senado"
+titulo = "Lei nº 14.066 de 30/09/2020"
+ementa = "Altera a Lei nº 12.334, de 20 de setembro de 2010, que estabelece a Política Nacional de Segurança de Barragens (PNSB), a Lei nº 7.797, de 10 de julho de 1989, que cria o Fundo Nacional do Meio Ambiente (FNMA), a Lei nº 9.433, de 8 de janeiro de 1997, que institui a Política Nacional de Recursos Hídricos, e o Decreto-Lei nº 227, de 28 de fevereiro de 1967 (Código de Mineração)."
+indexacao = "LEI-14066-2020-09-30"
+candidata = true
+relevante = true
+
+[[norma]]
+chave = "MG:LEI:23291/2019"
+jurisdicao = "MG"
+fonte = "almg"
+titulo = "Lei MG 23.291/2019"
+ementa = "Institui a política estadual de segurança de barragens."
+indexacao = "Meio Ambiente Mineração Barragem de Rejeitos. Barragem Hídrica. /Tema/Mineração/Barragem de Rejeitos /Tema/Administração Pública/Função do Estado/Gestão Pública/Política Pública /Tema/Meio Ambiente/Degradação Ambiental/Desastre Ambiental/Rompimento de Barragem"
+candidata = true
+relevante = true
+
+[[norma]]
+chave = "MG:DEC:48078/2020"
+jurisdicao = "MG"
+fonte = "almg"
+titulo = "Decreto MG 48.078/2020"
+ementa = "Regulamenta os procedimentos para análise e aprovação do Plano de Ação de Emergência – PAE, estabelecido no art. 9º da Lei nº 23.291, de 25 de fevereiro de 2019, que instituiu a Política Estadual de Segurança de Barragens."
+indexacao = "Meio Ambiente. Mineração. Barragem de Rejeitos. Barragem Hídrica. /Tema/Meio Ambiente/Gestão Ambiental/Licenciamento Ambiental /Tema/Mineração/Barragem de Rejeitos /Tema/Saneamento Básico/Abastecimento de Água/Barragem Hídrica /Tema/Segurança Pública/Defesa Civil/Plano de Ação de Emergência (PAE) /Tema/Meio Ambiente/Degradação Ambiental/Desastre Ambiental/Rompimento de Barragem Regulamenta os procedimentos para análise e aprovação do Plano de Ação de Emergência - PAE - estabelecido na Política Estadual de Segurança de Barragens. O PAE tem como objetivos garantir a segurança das pessoas, preservar o meio ambiente e proteger o patrimônio cultural. O PAE deve abranger diversos aspectos, como a instalação de sistemas de alerta, medidas para resgate de pessoas e animais, mitigação de impactos ambientais, garantia de abastecimento de água potável e preservação do patrimônio cultural. O processo de apresentação, análise e aprovação do PAE está vinculado aos procedimentos de licenciamento ambiental de instalação e operação de barragens. Estabelece também a competência de cada órgão na análise do PAE, a periodicidade de revisão do plano, as situações de emergência e os procedimentos a serem adotados em cada caso. Além disso, destaca a importância da transparência, participação social e controle nas ações preventivas e emergenciais, com a obrigação de divulgação do PAE em meio digital e físico."
+candidata = true
+relevante = true
+
+[[norma]]
+chave = "MG:DEC:48140/2021"
+jurisdicao = "MG"
+fonte = "almg"
+titulo = "Decreto MG 48.140/2021"
+ementa = "Regulamenta dispositivos da Lei nº 23.291, de 25 de fevereiro de 2019, que institui a Política Estadual de Segurança de Barragens, estabelece medidas para aplicação do art. 29 da Lei nº 21.972, de 21 de janeiro de 2016, e dá outras providências."
+indexacao = "Meio Ambiente. Mineração. Barragem de Rejeitos. Barragem Hídrica. /Tema/Mineração /Tema/Mineração/Barragem de Rejeitos /Tema/Saneamento Básico/Abastecimento de Água/Barragem Hídrica /Tema/Meio Ambiente/Degradação Ambiental/Desastre Ambiental/Rompimento de Barragem Art. 1º: Regulamentação, Lei Estadual, Criação, Política Estadual, Objeto, Mineração, Obrigatoriedade, Empresa Privada, Procedimento, Construção, Fiscalização, Segurança, Barragem, Articulação, Política Nacional, Lei Federal. Fixação, Medida Administrativa, Aplicação, Dispositivos, Lei Estadual, Referência, Controle, Licença Ambiental, Exigência, Empreendedor, Elaboração, Implementação, Plano de Ação de Emergência (PAE), Plano, Comunicação, Situação de Risco. Art. 2º-9º: Critérios, Procedimento, Medida, Construção, Barragem, Classificação, Situação de Risco, Rompimento, Degradação Ambiental, Competência, Sistema Estadual de Meio Ambiente e Recursos Hídricos (SISEMA), Observação, Norma, Conselho Estadual de Política Ambiental (COPAM). Art. 10-15: Critérios, Credenciamento, Profissional, Auditor, Objetivo, Auditoria Ambiental, Segurança, Barragem, Competência, Fundação Estadual do Meio Ambiente (FEAM). Art. 16-27: Critérios, Descaracterização, Obra de Engenharia, Intervenção, Barragem, Responsabilidade, Empreendedor, Segurança, Competência, Fiscalização, Fundação Estadual do Meio Ambiente (FEAM), Secretaria de Estado de Meio Ambiente e Desenvolvimento Sustentável (SEMAD). Art. 28-30: Critérios, Registro, Nível, Reservatório, Volume, Armazenagem, Barragem de Rejeitos, Responsabilidade, Empreendedor, Segurança, Competência, Fiscalização, Fundação Estadual do Meio Ambiente (FEAM). Art. 31-36: Alteração, Dispositivos, Decreto Estadual, Norma, Licença Ambiental, Referência, Infração, Previsão, Penalidade, Hipótese, Descumprimento, Legislação, Critérios, Aplicação, Acréscimo, Valor, Multa, Anexo, Especificação. Art. 37: Obrigatoriedade, Fundação Estadual do Meio Ambiente (FEAM), Avaliação, Efeito, Decreto Estadual, Proposta, Alteração, Regulamentação."
+candidata = true
+relevante = true
+
+[[norma]]
+chave = "BR:RES-ANM:220/2025"
+jurisdicao = "BR"
+fonte = "anm"
+titulo = "RESOLUÇÃO ANM Nº 220, DE 16 DE OUTUBRO DE 2025"
+ementa = "Estabelece a disciplina aplicável às barragens de mineração. Nota: Esta Resolução entra em vigor em 22 de abril de 2027 quanto aos arts. 76 e 77 e em 2 de agosto de 2027 quanto aos demais artigos."
+indexacao = ""
+candidata = true
+relevante = true
+
+[[norma]]
+chave = "BR:RES-ANM:245/2026"
+jurisdicao = "BR"
+fonte = "anm"
+titulo = "RESOLUÇÃO ANM Nº 245, DE 31 DE JULHO DE 2026"
+ementa = "Altera o art. 87 da Resolução ANM nº 220, de 16 de outubro de 2025, para estabelecer o prazo de entrada em vigor do § 1º do art. 7º."
+indexacao = ""
+candidata = true
+relevante = true
+citacao = true
+
+[[norma]]
+chave = "BR:DEC:9406/2018"
+jurisdicao = "BR"
+fonte = "senado"
+titulo = "Decreto nº 9.406 de 12/06/2018"
+ementa = "Regulamenta o Decreto-Lei nº 227, de 28 de fevereiro de 1967, a Lei nº 6.567, de 24 de setembro de 1978, a Lei nº 7.805, de 18 de julho de 1989, e a Lei nº 13.575, de 26 de dezembro de 2017."
+indexacao = "DEC-9406-2018-06-12"
+candidata = true
+relevante = true
+citacao = true
+
+[[norma]]
+chave = "BR:DEL:227/1967"
+jurisdicao = "BR"
+fonte = "senado"
+titulo = "Decreto-Lei nº 227 de 28/02/1967"
+ementa = "Dá nova redação ao Decreto-Lei nº 1.985 (Código de Minas) de 29 de janeiro de 1940."
+indexacao = "DEL-227-1967-02-28 , Código de Minas (1967) (CM) , Código de Mineração (1967) (CM)"
+candidata = true
+relevante = true
+
+[[norma]]
+chave = "BR:DEC:10389/2020"
+jurisdicao = "BR"
+fonte = "senado"
+titulo = "Decreto nº 10.389 de 05/06/2020"
+ementa = "Dispõe sobre a qualificação dos projetos minerários em áreas para pesquisa ou lavra de recursos minerais colocadas em disponibilidade pela Agência Nacional de Mineração no exercício de 2020 no âmbito do Programa de Parcerias de Investimentos da Presidência da República."
+indexacao = "DEC-10389-2020-06-05"
+candidata = true
+relevante = false
+
+[[norma]]
+chave = "BR:DEC:11120/2022"
+jurisdicao = "BR"
+fonte = "senado"
+titulo = "Decreto nº 11.120 de 05/07/2022"
+ementa = "Permite as operações de comércio exterior de minerais e minérios de lítio e de seus derivados."
+indexacao = "DEC-11120-2022-07-05"
+candidata = true
+relevante = false
+
+[[norma]]
+chave = "BR:DEC:11369/2023"
+jurisdicao = "BR"
+fonte = "senado"
+titulo = "Decreto nº 11.369 de 01/01/2023"
+ementa = "Revoga o Decreto nº 10.966, de 11 de fevereiro de 2022, que institui o Programa de Apoio ao Desenvolvimento da Mineração Artesanal e em Pequena Escala e a Comissão Interministerial para o Desenvolvimento da Mineração Artesanal e em Pequena Escala."
+indexacao = "DEC-11369-2023-01-01"
+candidata = true
+relevante = false
+
+[[norma]]
+chave = "BR:DEC:90001/2024"
+jurisdicao = "BR"
+fonte = "sintetica"
+titulo = "Decreto nº 90.001 de 01/01/2024 (sintético)"
+ementa = "Concede a Mineração Exemplo Ltda. o direito de lavrar minério de ferro no Município de Exemplo, Estado de Minas Gerais."
+indexacao = ""
+candidata = false
+relevante = false
+
+[[norma]]
+chave = "MG:LEI:90002/2024"
+jurisdicao = "MG"
+fonte = "sintetica"
+titulo = "Lei MG 90.002/2024 (sintética)"
+ementa = "Declara de utilidade pública a Fundação Mineração e Vida, com sede no Município de Itabira."
+indexacao = ""
+candidata = false
+relevante = false
+
+[[norma]]
+chave = "BR:LEI:90003/2024"
+jurisdicao = "BR"
+fonte = "sintetica"
+titulo = "Lei nº 90.003 de 01/01/2024 (sintética)"
+ementa = "Abre crédito extraordinário em favor do Ministério de Minas e Energia para recuperação de barragens públicas."
+indexacao = ""
+candidata = false
+relevante = false

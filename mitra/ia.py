@@ -4,7 +4,9 @@ Fala três formatos de API, o que cobre Anthropic, DeepSeek, OpenCode Go e Amazo
   - openai:    POST {base}/chat/completions
   - anthropic: POST {base}/messages
   - bedrock:   API Converse do Bedrock (boto3), credencial pelo perfil AWS, sem chave no .env
-Quem atende cada camada está em modelos.toml. As chaves vêm do .env.
+Quem atende cada camada (e cada tarefa) está em modelos.toml. As chaves vêm do .env.
+Tarefa sensível (leva texto de cliente) só sai, em chamada nova, para os provedores de
+[sensibilidade]; o cache vale para qualquer modelo, porque resposta já paga não leva nada novo.
 """
 
 from __future__ import annotations
@@ -224,6 +226,18 @@ class Roteador:
             if m["provedor"] in self.provedores
         ]
 
+    def _ordem(self, tarefa: str, camada: int) -> list[Modelo]:
+        """Os modelos preferidos da tarefa ([tarefas.<nome>].modelos) e depois os da camada."""
+        pref = [Modelo(m["provedor"], m["modelo"], m.get("esforco"))
+                for m in (self.cfg.get("tarefas", {}).get(tarefa, {})).get("modelos", [])]
+        base = [Modelo(m["provedor"], m["modelo"], m.get("esforco"))
+                for m in self.cfg["camadas"][str(camada)]["modelos"]]
+        return pref + [m for m in base if m not in pref]
+
+    def sensivel(self, tarefa: str) -> bool:
+        """Tarefa que leva texto de cliente. O que não está declarado em [tarefas] é sensível."""
+        return bool(self.cfg.get("tarefas", {}).get(tarefa, {}).get("sensivel", True))
+
     def custo(self, modelo: str, tin: int, tout: int) -> float:
         preco_in, preco_out = self.cfg["precos"].get(modelo, (0.0, 0.0))
         return (tin * preco_in + tout * preco_out) / 1_000_000
@@ -253,16 +267,23 @@ class Roteador:
 
     def pedir_json(self, tarefa: str, camada: int, sistema: str, usuario: str,
                    versao_prompt: str, max_tokens: int = 4000) -> Resposta:
-        # 1) cache de qualquer modelo da camada, mesmo sem chave: a demo roda sem internet
-        todos = [Modelo(m["provedor"], m["modelo"], m.get("esforco"))
-                 for m in self.cfg["camadas"][str(camada)]["modelos"]]
+        # 1) cache de qualquer modelo da tarefa e da camada, mesmo sem chave: a demo roda sem internet
+        # (a sensibilidade não filtra o cache: resposta já paga não leva nada novo a provedor nenhum)
+        todos = self._ordem(tarefa, camada)
         for modelo in todos:
             chave = self._chave(tarefa, modelo, versao_prompt, sistema, usuario)
             if (row := self._do_cache(chave)) is not None:
                 return Resposta(json.loads(row["resposta"]), modelo, row["tokens_in"],
                                 row["tokens_out"], row["custo_usd"], do_cache=True)
-        # 2) chamada de verdade, na ordem da camada, só nos provedores com chave
-        modelos = self.candidatos(camada)
+        # 2) chamada de verdade, na ordem da tarefa e da camada, só nos provedores com chave;
+        # tarefa sensível (texto de cliente) só sai para os provedores de [sensibilidade]
+        modelos = [m for m in todos if m.provedor in self.provedores]
+        if self.sensivel(tarefa):
+            confiaveis = tuple(self.cfg.get("sensibilidade", {}).get("provedores", ("anthropic", "bedrock")))
+            modelos = [m for m in modelos if m.provedor in confiaveis]
+            if not modelos:
+                raise SemProvedor(f"a tarefa {tarefa!r} é sensível e nenhum provedor de confiança "
+                                  f"({', '.join(confiaveis)}) tem chave no .env")
         if not modelos:
             raise SemProvedor(f"nenhum provedor da camada {camada} tem chave no .env")
         if self.teto_dia_usd is not None and self.gasto_hoje() >= self.teto_dia_usd:

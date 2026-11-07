@@ -62,7 +62,7 @@ O_QUE_FALTA = {
     OPERACAO: "revise o resumo e entre em operação",
 }
 
-TIPOS_LICENCA = ("LP", "LI", "LO", "LAC", "outorga", "autorizacao")
+TIPOS_LICENCA = ("LP", "LI", "LO", "LAC", "outorga", "autorizacao", "alvara")
 RENOVACAO_PADRAO = 120      # dias antes do vencimento, salvo o que a própria licença disser
 
 
@@ -234,7 +234,7 @@ def _unidade_valida(conn, empresa_id: int, unidade: str | None) -> str | None:
 
 # ------------------------------------------------------------------ etapa 2: ativos
 
-TIPOS_ATIVO = ("barragem", "unidade", "equipamento", "licenca")
+TIPOS_ATIVO = ("barragem", "unidade", "equipamento", "licenca", "obra")
 
 
 def criar_ativo(conn, empresa_id: int, *, tipo: str, codigo: str, nome: str, por: str,

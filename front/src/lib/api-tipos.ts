@@ -2645,7 +2645,7 @@ export interface components {
             id: number;
             /**
              * Tipo
-             * @description LP, LI, LO, LAC, outorga ou autorizacao
+             * @description LP, LI, LO, LAC, outorga, autorizacao ou alvara
              */
             tipo: string;
             /** Numero */
@@ -3295,7 +3295,7 @@ export interface components {
         NovoAtivo: {
             /**
              * Tipo
-             * @description barragem, unidade, equipamento ou licenca
+             * @description barragem, unidade, equipamento, licenca ou obra
              */
             tipo: string;
             /**

@@ -32,7 +32,7 @@ LIMITE_BYTES = 20 * 1024 * 1024
 
 class Licenca(BaseModel):
     id: int
-    tipo: str = Field(description="LP, LI, LO, LAC, outorga ou autorizacao")
+    tipo: str = Field(description="LP, LI, LO, LAC, outorga, autorizacao ou alvara")
     numero: str
     orgao: str | None
     emitida_em: str | None
@@ -48,7 +48,7 @@ class Licenca(BaseModel):
 
 
 class Nova(BaseModel):
-    tipo: str = Field(pattern="^(LP|LI|LO|LAC|outorga|autorizacao)$")
+    tipo: str = Field(pattern="^(LP|LI|LO|LAC|outorga|autorizacao|alvara)$")
     numero: str = Field(min_length=1, max_length=60)
     orgao: str | None = Field(None, max_length=200)
     emitida_em: str | None = Field(None, description="AAAA-MM-DD")

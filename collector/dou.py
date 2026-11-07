@@ -24,7 +24,31 @@ SAUDE = "Ministério da Saúde"
 
 # Tipos de ato que podem criar ou mudar obrigações gerais.
 # Despachos e retificações costumam ser atos individuais (um processo, uma empresa).
-NORMATIVE_TYPES = ("Resolução", "Portaria", "Instrução Normativa", "Deliberação")
+NORMATIVE_TYPES = ("Resolução", "Portaria", "Instrução Normativa", "Deliberação",
+                   "Lei", "Decreto", "Medida Provisória")
+
+# Camada 0 do radar: órgãos cujos atos normativos interessam à carteira (trecho da hierarquia do DOU
+# -> rótulo do motivo). Era só a ANM; ampliado em 7/11/2026 porque portaria do MTE que altera NR, lei
+# federal que altera a 12.334 e ato da ANA passavam no DOU e eram descartados sem ninguém ver.
+# Ato de órgão fora da lista ainda entra se a ementa citar termos de um tipo de ativo da carteira
+# (mitra/temas.toml); o casamento fica em quem chama (api/jobs.py), para este módulo não depender do mitra.
+ORGAOS_RADAR = {
+    ANM: "ANM",
+    "Ministério do Trabalho e Emprego": "MTE (NRs, portarias de SST)",
+    "Ministério do Meio Ambiente": "meio ambiente (MMA, Ibama, ICMBio, Conama)",
+    "Agência Nacional de Águas": "ANA",
+    "Atos do Poder Legislativo": "lei federal",
+    "Atos do Poder Executivo": "decreto ou medida provisória federal",
+}
+
+
+def orgao_de_interesse(hierarquia: str) -> str | None:
+    """O motivo de o ato interessar pelo órgão, ou None. `hierarquia` é a artCategory do XML
+    (ex.: "Ministério de Minas e Energia/Agência Nacional de Mineração/...")."""
+    for marca, rotulo in ORGAOS_RADAR.items():
+        if marca in hierarquia:
+            return rotulo
+    return None
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "cache"

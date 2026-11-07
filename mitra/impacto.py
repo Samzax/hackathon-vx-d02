@@ -26,7 +26,11 @@ CAMPOS_DATA = ("prazo", "vigencia_desde", "vigencia_ate")
 CONFIANCA_MINIMA = 0.7
 CACHE_IA = db.ROOT / "data" / "cache_ia.db"
 
-SISTEMA = """Você é analista de conformidade regulatória de barragens de mineração no Brasil.
+# A vertical entra no prompt por template. Com o domínio padrão, o texto é byte a byte o de sempre:
+# a chave do cache de IA é o hash do prompt, e o que já foi pago não invalida.
+DOMINIO_PADRAO = "barragens de mineração"
+
+SISTEMA_MODELO = """Você é analista de conformidade regulatória de {dominio} no Brasil.
 Recebe um ATO publicado no Diário Oficial e uma lista de OBRIGAÇÕES do cadastro de uma empresa.
 Diga quais campos de quais obrigações o ato altera.
 
@@ -51,6 +55,15 @@ Responda só com um objeto JSON, sem texto fora dele:
   "motivo": "uma ou duas frases sobre o que o ato faz e por que muda ou não muda o cadastro",
   "confianca": 0.0
 }"""
+
+
+def sistema(dominio: str = DOMINIO_PADRAO) -> str:
+    """O prompt do analisador para uma vertical ("obras civis", "equipamentos industriais"...).
+    O .replace (e não .format) deixa as chaves do exemplo JSON em paz."""
+    return SISTEMA_MODELO.replace("{dominio}", dominio)
+
+
+SISTEMA = sistema()
 
 
 # --------------------------------------------------------------- conferência
@@ -146,9 +159,11 @@ def _ler(dados: dict, ato_texto: str, cadastro: dict[str, dict]) -> tuple[list[M
     return mudancas, str(dados.get("motivo", "")), confianca
 
 
-def analisar(conn, roteador: Roteador, identificacao: str, ato_texto: str, empresa: str | None = None) -> Analise:
+def analisar(conn, roteador: Roteador, identificacao: str, ato_texto: str, empresa: str | None = None,
+             dominio: str = DOMINIO_PADRAO) -> Analise:
     """Sem `empresa`: o catálogo inteiro (radar da plataforma). Com `empresa` (o "teste com um ato"
-    de uma cliente): só as normas públicas e as obrigações próprias dela, nada de outra cliente."""
+    de uma cliente): só as normas públicas e as obrigações próprias dela, nada de outra cliente.
+    `dominio` é a vertical do prompt; o padrão mantém o prompt (e o cache) de sempre."""
     if empresa is None:
         rows = conn.execute("SELECT codigo FROM obrigacao ORDER BY codigo")
     else:
@@ -166,9 +181,10 @@ def analisar(conn, roteador: Roteador, identificacao: str, ato_texto: str, empre
 
     cadastro = {c.codigo: db.versao(conn, c.codigo, empresa=escopo) for c in cands}
     usuario = _mensagem(identificacao, ato_texto, cadastro)
+    sistema_txt = SISTEMA if dominio == DOMINIO_PADRAO else sistema(dominio)
     for camada in (2, 3):
         try:
-            r = roteador.pedir_json("impacto", camada, SISTEMA, usuario, VERSAO_PROMPT, max_tokens=8000)
+            r = roteador.pedir_json("impacto", camada, sistema_txt, usuario, VERSAO_PROMPT, max_tokens=8000)
         except SemProvedor as e:
             analise.modelos.append(f"camada {camada}: {e}")
             continue

@@ -4,6 +4,34 @@
 # Camada 2: modelo barato, atende quase tudo.
 # Camada 3: só quando a camada 2 devolve baixa confiança ou o Python reprova a resposta.
 
+# Roteamento por tarefa (decisão de 7/11/2026). Tarefa sensível leva texto de cliente (licença,
+# documento da operação): em chamada NOVA, só sai para os provedores de confiança abaixo. O cache vale
+# para qualquer modelo: resposta já paga não leva nada novo a ninguém. Tarefa que não estiver listada
+# é tratada como sensível. `modelos` numa tarefa é a ordem preferida, antes da lista da camada.
+[sensibilidade]
+provedores = ["anthropic", "bedrock"]
+
+[tarefas.impacto]
+sensivel = false        # ato do DOU e obrigações do catálogo público
+
+[tarefas.descoberta]
+sensivel = false        # ementa e texto de norma publicada
+
+[tarefas.extrator]
+sensivel = false        # texto de norma pública
+# A extração do catálogo roda no Sonnet (qualidade primeiro); o passo seguinte é medir o Haiku 5.5
+# no mesmo gabarito (diff contra data/extraido/) e então decidir se o DeepSeek assume o dado público.
+modelos = [
+  { provedor = "bedrock",   modelo = "us.anthropic.claude-sonnet-5" },
+  { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
+]
+
+[tarefas.evidencia]
+sensivel = true         # documento da operação da cliente
+
+[tarefas.condicionantes]
+sensivel = true         # licença da cliente (o CPF já vira marcador antes, mesmo assim)
+
 [camadas.2]
 modelos = [
   { provedor = "deepseek",  modelo = "deepseek-chat" },

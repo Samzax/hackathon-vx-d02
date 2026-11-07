@@ -173,6 +173,7 @@ def test_teto_diario_de_ia_corta_chamada_paga_mas_nao_o_cache():
     falso = Falso({"high": {"ok": 1}})
     rot = Roteador(conn, env={"MITRA_TETO_DIA_USD": "0.0001"}, provedores={"opencode": falso})
     rot.cfg["camadas"]["2"]["modelos"] = [{"provedor": "opencode", "modelo": "x", "esforco": "high"}]
+    rot.cfg.setdefault("tarefas", {})["t"] = {"sensivel": False}       # o teste é do teto, não da sensibilidade
     rot.cfg["precos"]["x"] = (1.0, 1.0)            # 1000 + 200 tokens = US$ 0,0012
     assert rot.pedir_json("t", 2, "s", "u1", "v1").dados == {"ok": 1}
     assert rot.gasto_hoje() > rot.teto_dia_usd

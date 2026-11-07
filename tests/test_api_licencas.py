@@ -66,7 +66,7 @@ def ia(monkeypatch):
     original = modulo.Roteador.__init__
 
     def init(self, conn=None, config=modulo.CONFIG, env=None, provedores=None, timeout=180.0):
-        original(self, conn, config, env or {}, {"opencode": falsa}, timeout)
+        original(self, conn, config, env or {}, {"anthropic": falsa}, timeout)
 
     monkeypatch.setattr(modulo.Roteador, "__init__", init)
     return falsa

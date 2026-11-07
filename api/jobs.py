@@ -1,10 +1,13 @@
 """Jobs que rodam fora da requisição (na AWS: task do Fargate disparada pelo EventBridge).
 
     python -m api.jobs radar [arquivo.zip]   # radar do DOU: triagem -> IA nas candidatas -> fila de decisão
+        # camada 0 do radar: atos normativos dos órgãos de interesse (ANM, MTE, meio ambiente, ANA,
+        # leis e decretos federais) e, de qualquer órgão, os que citam termos da carteira (temas.toml)
     python -m api.jobs descoberta [--desde ANO] [--fontes senado,anm,almg] [--limite N] [--paralelo N]
-                                  [--sem-triagem]
+                                  [--sem-triagem] [--sem-revisao]
         # descoberta de normas: lê as fontes oficiais (Senado, ANMlegis, Assembleia de Minas) e passa
-        # pela IA as candidatas novas; o que for relevante vai para a fila da curadoria Mitra
+        # pela IA as candidatas novas; o que for relevante vai para a fila da curadoria Mitra. No fim,
+        # os descartes duvidosos (confiança baixa, só pela ementa) são relidos pelo texto oficial
 
 Radar: o arquivo é o XML mensal do DOU (dados abertos da Imprensa Nacional); sem argumento, a amostra
 de agosto/2026 que está no repositório. Cada ato vira registro único (idempotente): rodar de novo não
@@ -29,15 +32,41 @@ from .config import Config
 from .observabilidade import configurar_logs, log
 
 
+def motivo_interesse(ato, cfg_temas: dict) -> str | None:
+    """Camada 0 do radar, sem IA: ato normativo de um órgão de interesse (collector.dou.ORGAOS_RADAR),
+    ou de qualquer órgão quando a identificação/ementa cita termos de um tipo de ativo da carteira.
+    Era só a ANM; ampliado em 7/11/2026 (portaria do MTE que altera NR passava sem ninguém ver).
+    As regras de descarte da descoberta (crédito, homenagem, concessão a uma empresa) valem aqui também."""
+    from types import SimpleNamespace
+
+    from collector.dou import orgao_de_interesse
+
+    from mitra import descoberta as desc
+
+    if not ato.is_normative:
+        return None
+    if desc.descartada_pela_regra(SimpleNamespace(ementa=ato.ementa), cfg_temas):
+        return None
+    if motivo := orgao_de_interesse(ato.category):
+        return motivo
+    tipos = desc.tipos_no_texto(f"{ato.identifica} {ato.ementa}", cfg_temas)
+    return "termos: " + ", ".join(tipos) if tipos else None
+
+
 def radar(zip_dou: Path, cfg: Config) -> dict:
+    from collections import Counter
+
     from collector.xml_dou import load_month
+
+    from mitra import descoberta as desc
 
     conn = db.conectar(cfg.banco)
     rot = Roteador(db.conectar(cfg.cache))
     atos = load_month(zip_dou)
-    anm = [a for a in atos if a.is_anm and a.is_normative]
+    cfg_temas = desc.temas()
+    interesse = [(a, m) for a in atos if (m := motivo_interesse(a, cfg_temas))]
     propostas = 0
-    for a in anm:
+    for a, _ in interesse:
         an = impacto.analisar(conn, rot, a.identifica, a.text)
         ato_id = db.registrar_ato(conn, "dou", a.id_materia, a.identifica, ementa=a.ementa,
                                   publicado_em=a.pub_date.isoformat(), texto=a.text)
@@ -45,15 +74,21 @@ def radar(zip_dou: Path, cfg: Config) -> dict:
             propostas += len(impacto.aplicar(conn, an, ato_id))
         except db.ErroCadastro as e:        # já havia proposta pendente desse ato: rodar de novo não duplica
             log.info("radar: proposta já existe", extra={"extra_json": {"ato": a.identifica, "motivo": str(e)}})
-    resumo = {"atos": len(atos), "anm_normativos": len(anm), "propostas": propostas, "custo_usd": rot.custo_total()}
+    resumo = {"atos": len(atos), "de_interesse": len(interesse),
+              "anm_normativos": sum(1 for a, _ in interesse if a.is_anm),
+              "por_motivo": dict(Counter(m for _, m in interesse)),
+              "propostas": propostas, "custo_usd": rot.custo_total()}
     log.info("radar concluído", extra={"extra_json": resumo})
     return resumo
 
 
 def descoberta(cfg: Config, *, desde: int | None = None, fontes: tuple[str, ...] | None = None,
                limite: int | None = None, triar: bool = True, paralelo: int = 4,
-               baixador=None, roteador: Roteador | None = None) -> dict:
-    """Busca nas fontes e triagem pela IA. `baixador` e `roteador` trocam a internet e a IA (testes)."""
+               baixador=None, roteador: Roteador | None = None, revisar: bool = True) -> dict:
+    """Busca nas fontes e triagem pela IA. `baixador` e `roteador` trocam a internet e a IA (testes).
+
+    Depois das novas, `revisar` passa de novo os descartes duvidosos (confiança baixa, decididos só
+    pela ementa) com o começo do texto oficial: é a rede contra o falso negativo silencioso da triagem."""
     from mitra import descoberta as d
 
     conn = db.conectar(cfg.banco)
@@ -66,6 +101,9 @@ def descoberta(cfg: Config, *, desde: int | None = None, fontes: tuple[str, ...]
             # um Roteador (e uma conexão de cache) por linha de execução; com Bedrock, a triagem é uma por vez
             novo = None if roteador is not None else (lambda: Roteador(db.conectar(cfg.cache)))
             resumo["triagem"] = d.triar(conn, rot, limite, paralelo=paralelo, novo_roteador=novo, texto=baixador.texto)
+            if revisar and not resumo["triagem"].get("erro"):
+                resumo["revisao"] = d.triar(conn, rot, limite, paralelo=paralelo, novo_roteador=novo,
+                                            texto=baixador.texto, revisar=True)
         resumo["fila"] = {r["status"]: r["n"] for r in conn.execute(
             "SELECT status, COUNT(*) AS n FROM norma_candidata GROUP BY status ORDER BY status")}
         conn.commit()
@@ -102,7 +140,8 @@ def main(argv: list[str]) -> int:
         return 2
     resumo = descoberta(Config(), desde=int(desde) if desde else None,
                         fontes=tuple(fontes.split(",")) if fontes else None, limite=int(limite) if limite else None,
-                        triar="--sem-triagem" not in resto, paralelo=int(paralelo) if paralelo else 4)
+                        triar="--sem-triagem" not in resto, paralelo=int(paralelo) if paralelo else 4,
+                        revisar="--sem-revisao" not in resto)
     print(json.dumps(resumo, ensure_ascii=False))
     return 1 if falhou(resumo) else 0
 

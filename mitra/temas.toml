@@ -26,6 +26,15 @@ termos = [
 descricao = "equipamento industrial sujeito a inspeção de segurança (vaso de pressão, caldeira, tubulação, tanque)"
 termos = ["vaso de pressao", "vasos de pressao", "caldeira*", "tubulacoes", "tanques metalicos"]
 
+# Vertical 2 (obras em geral), fase A de 7/11/2026: o tipo existe no cadastro e na descoberta; o
+# catálogo (NR-18, NR-35, ART) entra pela fase B. Sem ativo do tipo na carteira, nada é buscado.
+[obra]
+descricao = "obra de construção civil (edificação, infraestrutura ou obra industrial) com canteiro próprio, executada ou contratada pela empresa"
+termos = [
+  "construcao civil", "canteiro*", "edificac*", "demolic*", "andaime*", "trabalho em altura",
+  "escavac*", "obra de construcao", "obras de construcao", "nr-18", "nr-35",
+]
+
 # Camada 0 também descarta, pelo começo da ementa, o que nunca cobra nada de quem opera o ativo:
 # crédito orçamentário, utilidade pública de entidade, nome de próprio público, homenagem, data
 # comemorativa, estatuto, curso, nomeação. Sem acento e sem diferença de maiúscula.

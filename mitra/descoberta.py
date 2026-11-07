@@ -25,6 +25,7 @@ Uso:
       (paralelo: padrão 4, com Bedrock 1; revisar: relê pelo texto os descartes duvidosos)
   uv run python -m mitra.descoberta cobertura [EMPRESA]
   uv run python -m mitra.descoberta decidir CHAVE aprovar|descartar QUEM [NOTA]
+  uv run python -m mitra.descoberta avaliar [--ia]  (recall contra tests/descoberta_recall.toml)
   uv run python -m mitra.descoberta exportar        (data/descoberta_demo.json, a fila da demo)
 """
 
@@ -64,6 +65,11 @@ FONTES = {
 }
 # fonte -> nome de tela ("Assembleia de Minas, 1989–2026, lida em ...")
 NOMES_FONTES = {"senado": "Senado Federal", "anm": "ANMlegis (ANM)", "almg": "Assembleia de Minas"}
+
+
+def fontes_da_jurisdicao(jurisdicao: str) -> tuple[str, ...]:
+    """Os conectores que cobrem a jurisdição ("MG" -> almg; "PR" -> nada, é lacuna declarada)."""
+    return tuple(f for f, (jur, _, _) in FONTES.items() if jur == jurisdicao)
 UFS = {
     "AC": "Acre", "AL": "Alagoas", "AP": "Amapá", "AM": "Amazonas", "BA": "Bahia", "CE": "Ceará",
     "DF": "Distrito Federal", "ES": "Espírito Santo", "GO": "Goiás", "MA": "Maranhão", "MT": "Mato Grosso",
@@ -136,11 +142,18 @@ def _padrao(termo: str) -> str:
     return r"\b" + (re.escape(t[:-1]) if t.endswith("*") else re.escape(t) + r"\b")
 
 
+def tipos_no_texto(texto: str, cfg: dict | None = None) -> list[str]:
+    """Tipos de ativo cujos termos (temas.toml) aparecem no texto: a camada 0 da descoberta e o
+    paraquedas do radar do DOU para ato de órgão fora da lista de interesse."""
+    cfg = cfg or temas()
+    t = normalizar(texto)
+    return [tipo for tipo, v in tipos_de_ativo(cfg).items()
+            if any(re.search(_padrao(termo), t) for termo in v["termos"])]
+
+
 def temas_da(c: Candidata, cfg: dict) -> list[str]:
     """Tipos de ativo cujos termos aparecem na ementa ou na indexação (camada 0, sem IA)."""
-    texto = normalizar(f"{c.ementa} {c.indexacao}")
-    return [tipo for tipo, t in tipos_de_ativo(cfg).items()
-            if any(re.search(_padrao(termo), texto) for termo in t["termos"])]
+    return tipos_no_texto(f"{c.ementa} {c.indexacao}", cfg)
 
 
 def descartada_pela_regra(c: Candidata, cfg: dict) -> bool:
@@ -918,6 +931,58 @@ ROTULOS_STATUS = {
 }
 
 
+# ------------------------------------------------------------------- recall
+
+
+GABARITO = db.ROOT / "tests" / "descoberta_recall.toml"
+
+
+def avaliar(gabarito: Path = GABARITO, roteador: Roteador | None = None, cfg: dict | None = None,
+            texto=None) -> dict:
+    """Mede o falso negativo contra um gabarito de normas conhecidas, rotuladas à mão.
+
+    Camada 0 (sem IA): toda norma com `candidata = true` tem de virar candidata — falso negativo aqui
+    é norma que o sistema nunca mostraria a ninguém, então a meta é recall 1,0. Com `roteador`, mede
+    também a triagem pela IA (`relevante`); aí falso positivo só custa curadoria, falso negativo é
+    descarte silencioso. O gabarito cobre a passada 1 (termos); a passada 2 (citação) tem teste próprio."""
+    cfg = cfg or temas()
+    casos = tomllib.loads(gabarito.read_text(encoding="utf-8"))["norma"]
+    tipos = set(tipos_de_ativo(cfg))
+    c0 = {"casos": 0, "falsos_negativos": [], "passaram_sem_rotulo": []}
+    ia = {"casos": 0, "falsos_negativos": [], "falsos_positivos": [], "custo_usd": 0.0} if roteador else None
+    for caso in casos:
+        c = Candidata(caso["chave"], caso["jurisdicao"], caso.get("fonte", "gabarito"), "GAB", "0",
+                      int(caso["chave"].rsplit("/", 1)[1]), caso["titulo"], caso.get("ementa", ""),
+                      indexacao=caso.get("indexacao", ""), situacao="VIGENTE")
+        if caso.get("citacao"):
+            # a norma entra pela passada 2: a ementa cita uma norma conhecida (ex.: Res. ANM 245/2026,
+            # "Altera o art. 87 da Resolução ANM nº 220..."); aqui se confere a extração da citação
+            dentro = bool(citadas(c))
+        else:
+            dentro, _ = filtrar([c], cfg, tipos)
+        c0["casos"] += 1
+        if caso["candidata"] and not dentro:
+            c0["falsos_negativos"].append(caso["chave"])
+        elif dentro and not caso["candidata"]:
+            c0["passaram_sem_rotulo"].append(caso["chave"])    # a mais: a IA descarta, não é erro grave
+        if roteador is not None and caso["candidata"] and dentro:
+            linha = {"chave": c.chave, "jurisdicao": c.jurisdicao, "fonte": c.fonte, "titulo": c.titulo,
+                     "ementa": c.ementa, "indexacao": c.indexacao, "url": caso.get("url")}
+            t = triar_uma(roteador, linha, cfg, texto)
+            ia["casos"] += 1
+            ia["custo_usd"] += t.custo_usd
+            if caso["relevante"] and not t.relevante:
+                ia["falsos_negativos"].append(f"{caso['chave']}: {t.motivo[:120]}")
+            elif t.relevante and not caso["relevante"]:
+                ia["falsos_positivos"].append(f"{caso['chave']}: {t.motivo[:120]}")
+    positivos = sum(1 for caso in casos if caso["candidata"])
+    c0["recall"] = round(1 - len(c0["falsos_negativos"]) / positivos, 3) if positivos else 1.0
+    if ia is not None and ia["casos"]:
+        ia["recall"] = round(1 - len(ia["falsos_negativos"]) / max(
+            1, sum(1 for caso in casos if caso["candidata"] and caso["relevante"])), 3)
+    return {"camada0": c0, "ia": ia}
+
+
 # ------------------------------------------------------------------- demo
 
 
@@ -985,7 +1050,7 @@ def _imprimir_cobertura(itens: list[ItemCobertura]) -> None:
 def main(argv: list[str]) -> int:
     from .impacto import CACHE_IA
 
-    if not argv or argv[0] not in ("buscar", "triar", "cobertura", "decidir", "exportar"):
+    if not argv or argv[0] not in ("buscar", "triar", "cobertura", "decidir", "exportar", "avaliar"):
         print(__doc__)
         return 2
     conn = db.conectar(db.DB_PADRAO)
@@ -1011,6 +1076,12 @@ def main(argv: list[str]) -> int:
             return 2
         d = decidir(conn, resto[0], resto[1], resto[2], " ".join(resto[3:]) or None)
         print(f"{d['chave']}: {d['status']}")
+    elif cmd == "avaliar":
+        rot = Roteador(db.conectar(CACHE_IA)) if "--ia" in resto else None
+        r = avaliar(roteador=rot, texto=Baixador().texto if rot else None)
+        print(json.dumps(r, ensure_ascii=False, indent=1))
+        if r["camada0"]["falsos_negativos"] or (r["ia"] or {}).get("falsos_negativos"):
+            return 1
     else:
         print(f"{exportar(conn)} candidatas em {DEMO}")
     return 0

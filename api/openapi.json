@@ -2866,7 +2866,7 @@
       "required": false,
       "schema": {
        "type": "string",
-       "pattern": "^(barragem|unidade|equipamento|licenca)$",
+       "pattern": "^(barragem|unidade|equipamento|licenca|obra)$",
        "default": "barragem",
        "title": "Tipo"
       }
@@ -7379,7 +7379,7 @@
      "tipo": {
       "type": "string",
       "title": "Tipo",
-      "description": "LP, LI, LO, LAC, outorga ou autorizacao"
+      "description": "LP, LI, LO, LAC, outorga, autorizacao ou alvara"
      },
      "numero": {
       "type": "string",
@@ -8847,7 +8847,7 @@
      },
      "tipo_ativo": {
       "type": "string",
-      "pattern": "^(barragem|unidade|equipamento|licenca)$",
+      "pattern": "^(barragem|unidade|equipamento|licenca|obra)$",
       "title": "Tipo Ativo",
       "default": "barragem"
      },
@@ -9121,7 +9121,7 @@
      "tipo": {
       "type": "string",
       "title": "Tipo",
-      "description": "barragem, unidade, equipamento ou licenca"
+      "description": "barragem, unidade, equipamento, licenca ou obra"
      },
      "codigo": {
       "type": "string",

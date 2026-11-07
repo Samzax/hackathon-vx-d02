@@ -56,7 +56,7 @@ class NormaInterna(BaseModel):
 
 class NovaNormaInterna(BaseModel):
     titulo: str = Field(min_length=3, max_length=300, examples=["Inspeção interna mensal da pilha"])
-    tipo_ativo: str = Field("barragem", pattern="^(barragem|unidade|equipamento|licenca)$")
+    tipo_ativo: str = Field("barragem", pattern="^(barragem|unidade|equipamento|licenca|obra)$")
     area: str = Field("documentacao")
     agenda: str = Field("evento", description="a agenda da torre (mensal+10d, anos:3, evento...)")
     periodicidade: str | None = Field(None, examples=["Mensal"])

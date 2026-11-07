@@ -16,18 +16,60 @@ from __future__ import annotations
 
 from datetime import date
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, Request, UploadFile, status
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from mitra import db, instanciacao as dominio, sigbm, usuarios
+from mitra import db, descoberta, instanciacao as dominio, sigbm, usuarios
 
 from .. import auditoria
 from ..banco import conexao
+from ..observabilidade import log
 from ..seguranca import Escopo, curadoria, da_empresa, empresa_visivel, regulatorio
 
 rota = APIRouter(tags=["instanciação"])
 LIMITE_PLANILHA = 5 * 1024 * 1024
+
+
+# ------------------------------------------------------------ cobertura de UF nova
+
+
+def _jurisdicoes(conn, empresa_id: int) -> set[str]:
+    """As UFs que os ativos da empresa pedem (o BR é de todo mundo e já é lido toda semana)."""
+    return {n.jurisdicao for n in descoberta.perfil(conn, empresa_id)} - {"BR"}
+
+
+def _descobrir(app, fontes: tuple[str, ...]) -> None:
+    from .. import jobs
+
+    try:
+        jobs.descoberta(app.state.cfg, fontes=fontes)
+    except Exception as erro:       # tarefa de fundo: fica no log, e a cobertura mostra "fonte não lida"
+        log.warning("descoberta da instanciação falhou",
+                    extra={"extra_json": {"fontes": list(fontes), "erro": str(erro)[:300]}})
+
+
+def _cobrir_ufs_novas(request: Request, conn, empresa_id: int, antes: set[str], por: str,
+                      tarefas: BackgroundTasks) -> None:
+    """Ativo de uma UF que a carteira da empresa ainda não tinha: com conector nunca lido, a busca da
+    descoberta sai agora, em segundo plano (não espera o domingo); sem conector, fica registrado que o
+    estoque daquele estado vai para a fila da curadoria — a cobertura já mostra "sem fonte automática",
+    e legislação municipal e alvarás entram pelo cadastro da empresa (consultoria), não por fonte."""
+    novas = _jurisdicoes(conn, empresa_id) - antes
+    if not novas:
+        return
+    ja_lidas = {r["fonte"] for r in conn.execute("SELECT fonte FROM descoberta_busca")}
+    conn.commit()
+    for uf in sorted(novas):
+        conectores = descoberta.fontes_da_jurisdicao(uf)
+        pendentes = tuple(f for f in conectores if f not in ja_lidas)
+        if pendentes:
+            dominio.registrar(conn, empresa_id, dominio.COBERTURA,
+                              f"descoberta disparada para {uf} ({', '.join(pendentes)})", por)
+            tarefas.add_task(_descobrir, request.app, pendentes)
+        elif not conectores:
+            dominio.registrar(conn, empresa_id, dominio.COBERTURA,
+                              f"{uf} sem fonte automática: o estoque vai para a fila da curadoria", por)
 
 
 # ------------------------------------------------------------------ modelos
@@ -88,7 +130,7 @@ class Unidade(BaseModel):
 
 
 class NovoAtivo(BaseModel):
-    tipo: str = Field(description="barragem, unidade, equipamento ou licenca")
+    tipo: str = Field(description="barragem, unidade, equipamento, licenca ou obra")
     codigo: str = Field(min_length=1, max_length=40, examples=["B1"])
     nome: str = Field(min_length=1, max_length=200)
     unidade: str | None = Field(None, description="a operação a que pertence (crie a unidade antes)")
@@ -232,9 +274,10 @@ def do_sigbm(cnpj: str = Query(description="CNPJ formatado ou só os dígitos", 
 
 @rota.post("/empresas/{empresa_id}/instanciacao/sigbm", status_code=201, response_model=Estado,
            summary="Trazer do SIGBM as barragens escolhidas (curadoria da plataforma)")
-def importar_do_sigbm(empresa_id: int, dados: EscolhaSigbm, request: Request,
+def importar_do_sigbm(empresa_id: int, dados: EscolhaSigbm, request: Request, tarefas: BackgroundTasks,
                       e: Escopo = Depends(curadoria), conn=Depends(conexao)):
     i = _instanciada(conn, e, empresa_id)
+    ufs_antes = _jurisdicoes(conn, empresa_id)
     if not i["cnpj"]:
         raise _erro(dominio.ErroInstanciacao("a empresa não tem CNPJ: não há o que buscar no SIGBM"))
     achadas = sigbm.buscar(i["cnpj"], limite=1)
@@ -258,6 +301,7 @@ def importar_do_sigbm(empresa_id: int, dados: EscolhaSigbm, request: Request,
             raise _erro(erro) from None
         entraram.append(codigo)
     auditoria.registrar(conn, request, "instanciacao_sigbm", i["nome"], {"barragens": entraram})
+    _cobrir_ufs_novas(request, conn, empresa_id, ufs_antes, e.assinante, tarefas)
     return _estado(conn, empresa_id)
 
 
@@ -294,9 +338,10 @@ def criar_unidade(empresa_id: int, dados: NovaUnidade, request: Request,
 
 @rota.post("/empresas/{empresa_id}/instanciacao/ativos", status_code=201, response_model=AtivoCriado,
            summary="Cadastrar um ativo por formulário (a própria empresa)")
-def criar_ativo(empresa_id: int, dados: NovoAtivo, request: Request, e: Escopo = Depends(da_empresa),
-                conn=Depends(conexao)):
+def criar_ativo(empresa_id: int, dados: NovoAtivo, request: Request, tarefas: BackgroundTasks,
+                e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     _instanciada(conn, e, empresa_id)
+    ufs_antes = _jurisdicoes(conn, empresa_id)
     try:
         aid = dominio.criar_ativo(conn, empresa_id, tipo=dados.tipo, codigo=dados.codigo, nome=dados.nome,
                                   por=e.assinante, atributos=dados.atributos, unidade=dados.unidade,
@@ -307,11 +352,12 @@ def criar_ativo(empresa_id: int, dados: NovoAtivo, request: Request, e: Escopo =
         raise _erro(erro) from None
     auditoria.registrar(conn, request, "ativo_criado", dados.codigo,
                         {"tipo": dados.tipo, "nome": dados.nome, "unidade": dados.unidade})
+    _cobrir_ufs_novas(request, conn, empresa_id, ufs_antes, e.assinante, tarefas)
     return AtivoCriado(ativo_id=aid, codigo=dados.codigo)
 
 
 @rota.get("/instanciacoes/modelo.csv", summary="O modelo de planilha para cadastrar ativos em lote")
-def modelo(tipo: str = Query("barragem", pattern="^(barragem|unidade|equipamento|licenca)$"),
+def modelo(tipo: str = Query("barragem", pattern="^(barragem|unidade|equipamento|licenca|obra)$"),
            e: Escopo = Depends(regulatorio)):
     return Response(dominio.modelo_csv(tipo), media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": f'attachment; filename="modelo_{tipo}.csv"'})
@@ -319,10 +365,12 @@ def modelo(tipo: str = Query("barragem", pattern="^(barragem|unidade|equipamento
 
 @rota.post("/empresas/{empresa_id}/instanciacao/planilha", response_model=Planilha,
            summary="Conferir e importar a planilha de ativos (a própria empresa): tudo ou nada")
-async def planilha(empresa_id: int, request: Request, arquivo: UploadFile = File(...),
+async def planilha(empresa_id: int, request: Request, tarefas: BackgroundTasks,
+                   arquivo: UploadFile = File(...),
                    conferir: bool = Query(False, description="só conferir, sem gravar nada"),
                    e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     _instanciada(conn, e, empresa_id)
+    ufs_antes = _jurisdicoes(conn, empresa_id)
     dados = await arquivo.read(LIMITE_PLANILHA + 1)
     if len(dados) > LIMITE_PLANILHA:
         raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "planilha maior que 5 MB")
@@ -334,6 +382,8 @@ async def planilha(empresa_id: int, request: Request, arquivo: UploadFile = File
     if not conferir:
         auditoria.registrar(conn, request, "ativos_planilha", arquivo.filename or "planilha.csv",
                             {"linhas": len(linhas), "erros": erros})
+        if not erros and linhas:
+            _cobrir_ufs_novas(request, conn, empresa_id, ufs_antes, e.assinante, tarefas)
     return Planilha(linhas=[LinhaPlanilha(**vars(linha)) for linha in linhas],
                     importados=0 if (erros or conferir) else len(linhas), erros=erros)
 

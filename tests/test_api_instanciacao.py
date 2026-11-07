@@ -305,3 +305,57 @@ def test_trocar_a_propria_senha_pede_a_atual(cliente, nova):
     assert r.status_code == 422
     trilha = cliente.get(_url("/auditoria")).json()
     assert any(t["acao"] == "senha_propria" and t["resultado"] == "recusado" for t in trilha)
+
+
+# --------------------------------------------------- cobertura ao entrar UF nova (7/11)
+
+
+def test_uf_sem_conector_vira_registro_de_lacuna_e_obra_e_tipo_valido(cliente, nova, cfg):
+    """Entrou ativo do Paraná (e é uma obra): não há conector para o PR, então fica registrado que o
+    estoque vai para a fila da curadoria — e a cobertura já mostra 'sem fonte automática'. Alvarás e
+    legislação municipal entram pelo cadastro (consultoria), nunca por fonte automática."""
+    from mitra import instanciacao as dominio
+
+    eid = nova["empresa_id"]
+    _conta(cfg, "diretoria@nova.demo", "diretoria")
+    como(cliente, "diretoria@nova.demo")
+    r = cliente.post(_url(f"/empresas/{eid}/unidades"), json={"nome": "Obra Paraná", "uf": "PR"})
+    assert r.status_code == 201, r.text
+    r = cliente.post(_url(f"/empresas/{eid}/instanciacao/ativos"), json={
+        "tipo": "obra", "codigo": "OB1", "nome": "Obra Nova", "unidade": "Obra Paraná",
+        "atributos": {"uf": "pr", "municipio": "Curitiba", "fase_obra": "execucao",
+                      "trabalho_altura": "sim"}})
+    assert r.status_code == 201, r.text
+    conn = db.conectar(cfg.banco)
+    try:
+        eventos = dominio.eventos(conn, eid, "cobertura")
+    finally:
+        conn.close()
+    assert any("PR sem fonte automática" in e["acao"] for e in eventos), eventos
+
+
+def test_uf_nova_com_conector_nunca_lido_dispara_a_busca(cfg):
+    """Primeira cliente com ativo em MG antes de qualquer busca: a descoberta da ALMG sai na hora,
+    em segundo plano, e fica registrada na instanciação (não espera o domingo)."""
+    from types import SimpleNamespace
+
+    from fastapi import BackgroundTasks
+
+    from api.rotas.instanciacao import _cobrir_ufs_novas
+    from mitra import instanciacao as dominio
+
+    conn = db.conectar(cfg.banco)
+    try:
+        conn.execute("DELETE FROM descoberta_busca")
+        conn.commit()
+        eid = conn.execute("SELECT id FROM empresa ORDER BY id").fetchone()["id"]
+        tarefas = BackgroundTasks()
+        _cobrir_ufs_novas(SimpleNamespace(app="app-falso"), conn, eid, set(), "teste", tarefas)
+        assert len(tarefas.tasks) == 1 and tarefas.tasks[0].args == ("app-falso", ("almg",))
+        assert any("descoberta disparada para MG" in e["acao"] for e in dominio.eventos(conn, eid, "cobertura"))
+        # UF já vista não dispara de novo
+        tarefas2 = BackgroundTasks()
+        _cobrir_ufs_novas(SimpleNamespace(app="app-falso"), conn, eid, {"MG"}, "teste", tarefas2)
+        assert not tarefas2.tasks
+    finally:
+        conn.close()
