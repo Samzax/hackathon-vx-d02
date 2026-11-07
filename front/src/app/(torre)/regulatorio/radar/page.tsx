@@ -17,15 +17,15 @@ const GUARDA = "mitra_analise_teste";
 
 function Funil({ f }: { f: Esquemas["Funil"] }) {
   const passos = [
-    { valor: numero(f.atos), rotulo: `Atos no DOU (${f.mes})` },
-    { valor: numero(f.anm), rotulo: "Da ANM" },
-    { valor: numero(f.normativos), rotulo: "Normativos da ANM → IA" },
-    { valor: numero(f.mudam), rotulo: "Mudam o cadastro" },
+    { valor: numero(f.atos), rotulo: `Atos no DOU (${f.mes})`, dica: "Total de atos publicados no Diário Oficial da União no mês" },
+    { valor: numero(f.anm), rotulo: "Da ANM", dica: "Atos específicos da Agência Nacional de Mineração" },
+    { valor: numero(f.normativos), rotulo: "Normativos da ANM → IA", dica: "Normativos encaminhados para análise de inteligência artificial" },
+    { valor: numero(f.mudam), rotulo: "Mudam o cadastro", dica: "Atos que alteram o cadastro de obrigações da empresa" },
   ];
   return (
     <>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="funil">
-        {passos.map((p) => <Numero key={p.rotulo} valor={p.valor} rotulo={p.rotulo} />)}
+        {passos.map((p) => <Numero key={p.rotulo} valor={p.valor} rotulo={p.rotulo} dica={p.dica} />)}
       </div>
       <p className="mt-2 text-xs text-texto-2">
         Filtro por órgão e tipo de ato é regra, sem custo. Só os normativos chegam à IA, e só com as obrigações que a triagem

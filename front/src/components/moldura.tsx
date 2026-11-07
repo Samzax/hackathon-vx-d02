@@ -20,8 +20,8 @@ import { Aviso, Botao, Entrada, Etiqueta, Selecao, cx, mensagem } from "./ui";
 
 const PAPEL: Record<string, string> = { admin: "TI", diretoria: "Diretoria", regulatorio: "Regulatório", gestor: "Gestor de área" };
 
-type Item = { href: string; rotulo: string; icone: React.ReactNode; contador?: number; tom?: "perigo" | "marca" };
-type Grupo = { titulo: string; itens: Item[] };
+type Item = { href: string; rotulo: string; icone: React.ReactNode; contador?: number; tom?: "perigo" | "marca"; dica?: string };
+type Grupo = { titulo: string; itens: Item[]; dica?: string };
 
 function useGrupos(): Grupo[] {
   const t = useTorre();
@@ -31,38 +31,38 @@ function useGrupos(): Grupo[] {
   const condicionantes = useCondicionantes("pendente");
   if (t.ti) {
     return [{ titulo: "Administração", itens: [
-      { href: "/usuarios/", rotulo: "Usuários e acessos", icone: <Users className="size-4" /> },
-      { href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> },
-    ] }];
+      { href: "/usuarios/", rotulo: "Usuários e acessos", icone: <Users className="size-4" />, dica: "Gerencie usuários e permissões de acesso" },
+      { href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" />, dica: "Registro de todas as ações realizadas no sistema" },
+    ], dica: "Configurações administrativas do sistema" }];
   }
   const atrasadas = painel.data?.contagem.atrasada ?? 0;
   const grupos: Grupo[] = [
     { titulo: "Operação", itens: [
-      { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" />, contador: atrasadas || undefined, tom: "perigo" },
-      { href: "/ativos/", rotulo: "Ativos", icone: t.empresa?.setor === "saude" ? <ListChecks className="size-4" /> : <Map className="size-4" /> },
-      { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" /> },
-      { href: "/pergunte/", rotulo: "Pergunte à torre", icone: <MessageSquareText className="size-4" /> },
-    ] },
+      { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" />, contador: atrasadas || undefined, tom: "perigo", dica: "Obrigações que precisam de entrega ou atenção imediata" },
+      { href: "/ativos/", rotulo: "Ativos", icone: t.empresa?.setor === "saude" ? <ListChecks className="size-4" /> : <Map className="size-4" />, dica: "Barragens, equipamentos e instalações monitoradas" },
+      { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" />, dica: "Todas as entregas e registros já realizadas" },
+      { href: "/pergunte/", rotulo: "Pergunte à torre", icone: <MessageSquareText className="size-4" />, dica: "Faça perguntas e receba respostas sobre regulamentações" },
+    ], dica: "Módulos operacionais do dia a dia" },
     { titulo: "Regulatório", itens: [
-      { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca" },
-      { href: "/regulatorio/radar/", rotulo: "Radar do DOU", icone: <IconeRadar className="size-4" /> },
-      { href: "/regulatorio/transicao/", rotulo: "Transição e linha do tempo", icone: <CalendarRange className="size-4" /> },
-      { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" /> },
+      { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca", dica: "Mudanças normativas que afetam suas obrigações" },
+      { href: "/regulatorio/radar/", rotulo: "Radar do DOU", icone: <IconeRadar className="size-4" />, dica: "Monitoramento das publicações no Diário Oficial da União" },
+      { href: "/regulatorio/transicao/", rotulo: "Transição e linha do tempo", icone: <CalendarRange className="size-4" />, dica: "Cronologia e prazos de transição entre normas" },
+      { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" />, dica: "Normas que se aplicam à sua empresa e ativos" },
       ...(t.plataforma ? [{ href: "/regulatorio/normas-candidatas/", rotulo: "Normas candidatas", icone: <FileSearch className="size-4" />,
-        contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const }] : []),
-    ] },
+        contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const, dica: "Normas em análise para inclusão no monitoramento" }] : []),
+    ], dica: "Módulos de conformidade normativa e regulatória" },
     { titulo: "Empresa", itens: [
-      { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" /> },
+      { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" />, dica: "Configuração dos parâmetros e regras da sua empresa" },
       { href: "/licencas/", rotulo: "Licenças e condicionantes", icone: <FileBadge className="size-4" />,
-        contador: condicionantes.data?.length || undefined, tom: "marca" },
-      { href: "/responsaveis/", rotulo: "Responsáveis e unidades", icone: <IdCard className="size-4" /> },
-    ] },
+        contador: condicionantes.data?.length || undefined, tom: "marca", dica: "Licenças de operação e condicionantes de segurança" },
+      { href: "/responsaveis/", rotulo: "Responsáveis e unidades", icone: <IdCard className="size-4" />, dica: "Cadastro dos responsáveis técnicos e unidades operacionais" },
+    ], dica: "Cadastro e configuração da empresa e responsáveis" },
     { titulo: "Sobre", itens: [
-      { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" /> },
-      { href: "/sobre/como-funciona/", rotulo: "Como funciona", icone: <Workflow className="size-4" /> },
-    ] },
+      { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" />, dica: "Informações sobre o mercado e regulamentações do setor" },
+      { href: "/sobre/como-funciona/", rotulo: "Como funciona", icone: <Workflow className="size-4" />, dica: "Explicação sobre o funcionamento da torre de controle" },
+    ], dica: "Informações e documentação sobre o sistema" },
   ];
-  if (t.veTudo) grupos.push({ titulo: "Administração", itens: [{ href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> }] });
+  if (t.veTudo) grupos.push({ titulo: "Administração", itens: [{ href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" />, dica: "Registro de todas as ações realizadas no sistema" }], dica: "Configurações administrativas do sistema" });
   return grupos;
 }
 
