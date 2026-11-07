@@ -20,6 +20,7 @@ ACT_URL = "https://www.in.gov.br/web/dou/-/{url_title}"
 # do1 é a edição regular; as outras são edições extras e suplementos.
 SECTIONS = ("do1", "do1a", "do1e", "do1esp")
 ANM = "Agência Nacional de Mineração"
+SAUDE = "Ministério da Saúde"
 
 # Tipos de ato que podem criar ou mudar obrigações gerais.
 # Despachos e retificações costumam ser atos individuais (um processo, uma empresa).
@@ -48,6 +49,10 @@ class ListedAct:
     @property
     def is_anm(self) -> bool:
         return ANM in self.hierarchy
+
+    @property
+    def is_saude(self) -> bool:
+        return SAUDE in self.hierarchy or "Agência Nacional de Vigilância Sanitária" in self.hierarchy
 
     @property
     def is_normative(self) -> bool:

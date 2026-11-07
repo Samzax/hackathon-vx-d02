@@ -34,6 +34,7 @@ class Empresa(BaseModel):
     id: int
     nome: str
     ficticia: bool
+    setor: str = "mineracao"
     monitorado_desde: str | None = None
     origem: str | None = None
 

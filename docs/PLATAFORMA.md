@@ -196,7 +196,7 @@ para outra sessão continuar daqui.
     de rede viraram frase legível.
 
 - **Base da instanciação**: domínio e esquema.
-  - **Migração 0005** (`migrations/versions/0005_instanciacao.sql`): tabelas `instanciacao`,
+  - **Migração 0006** (`migrations/versions/0006_instanciacao.sql`): tabelas `instanciacao`,
     `instanciacao_evento`, `unidade`, `licenca`, `condicionante`, `responsavel_tecnico`, `prazo_interno`,
     `responsavel_padrao`; colunas `ativo.unidade`, `usuario.trocar_senha` e `usuario.unidades` (escopo por
     unidade). **O código da obrigação deixou de ser UNIQUE global**: índice único sobre

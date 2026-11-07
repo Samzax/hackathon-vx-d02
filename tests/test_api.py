@@ -511,9 +511,12 @@ def test_conta_de_teste_olha_como_a_curadoria_e_o_token_de_servico_ve_todas(clie
     assert _ids(cliente) == [outra["serra"]]
     r = cliente.put(_url("/auth/visao"), json={"visao": "Curadoria Mitra (plataforma)"})
     assert r.status_code == 200 and r.json()["plataforma"] and r.json()["empresa"] is None
-    assert set(_ids(cliente)) == {outra["serra"], outra["id"]}
     h = {"Authorization": "Bearer token-de-teste-do-agente"}
-    assert {e["id"] for e in cliente.get(_url("/empresas"), headers=h).json()} == {outra["serra"], outra["id"]}
+    empresas = cliente.get(_url("/empresas"), headers=h).json()
+    ids = {e["id"] for e in empresas}
+    assert {outra["serra"], outra["id"]} <= ids
+    assert any(e["setor"] == "saude" for e in empresas)
+    assert set(_ids(cliente)) == ids
 
 
 def test_conta_sem_empresa_nao_entra(cliente, cfg):
@@ -657,8 +660,13 @@ def test_resumo_areas_e_campos_do_cadastro(cliente, cfg):
     emp = _empresa(cliente)
     r = cliente.get(_url(f"/empresas/{emp}/resumo")).json()
     conn = db.conectar(cfg.banco)
-    n_ob, n_normas = conn.execute("SELECT COUNT(*), COUNT(DISTINCT norma) FROM obrigacao").fetchone()
-    n_ev = conn.execute("SELECT COUNT(*) FROM evidencia").fetchone()[0]
+    nome = conn.execute("SELECT nome FROM empresa WHERE id = ?", (emp,)).fetchone()[0]
+    n_ob, n_normas = conn.execute(
+        "SELECT COUNT(*), COUNT(DISTINCT norma) FROM obrigacao WHERE empresa IS NULL OR empresa = ?", (nome,)
+    ).fetchone()
+    n_ev = conn.execute(
+        "SELECT COUNT(*) FROM evidencia WHERE ativo_id IN (SELECT id FROM ativo WHERE empresa_id = ?)", (emp,)
+    ).fetchone()[0]
     conn.close()
     assert (r["ativos"], r["obrigacoes"], r["normas"], r["evidencias"]) == (8, n_ob, n_normas, n_ev) and n_ev
     a = cliente.get(_url(f"/empresas/{emp}/areas")).json()

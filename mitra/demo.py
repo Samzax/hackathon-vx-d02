@@ -25,11 +25,16 @@ SEED = ROOT / "seed_obligations.csv"
 CADASTRO = ROOT / "cadastro"
 SERRA_AZUL = ROOT / "data" / "serra_azul.json"
 HISTORICO = ROOT / "data" / "historico_serra_azul.json"
+CADASTRO_SAUDE = CADASTRO / "saude.csv"
+VIDA_PLENA = ROOT / "data" / "vida_plena.json"
+HISTORICO_VIDA_PLENA = ROOT / "data" / "historico_vida_plena.json"
 
 
 def carregar_cadastro(conn) -> int:
     n = db.carregar_obrigacoes_csv(conn, SEED, norma="Res. ANM 220/2025")
     for csv in sorted(CADASTRO.glob("*.csv")):
+        if csv == CADASTRO_SAUDE:
+            continue                 # o protótipo de saúde é carregado só por montar_saude()
         n += db.carregar_obrigacoes_csv(conn, csv)
     return n
 
@@ -47,6 +52,25 @@ def montar(conn, com_historico: bool = True) -> dict[str, int]:
             )
     if com_historico and HISTORICO.exists():
         gerar_historico(conn, ids, json.loads(HISTORICO.read_text(encoding="utf-8")))
+    return ids
+
+
+def montar_saude(conn, com_historico: bool = True) -> dict[str, int]:
+    """Adiciona a empresa fictícia de saúde sem alterar a demo de mineração usada pelos testes."""
+    dados = json.loads(VIDA_PLENA.read_text(encoding="utf-8"))
+    emp = db.criar_empresa(conn, dados["empresa"], ficticia=dados["ficticia"], setor=dados["setor"])
+    # Nesta demonstração as obrigações pertencem à empresa fictícia. Assim, o radar nacional de
+    # mineração não leva normas de saúde à IA, e o isolamento multiempresa trazido pela plataforma
+    # continua valendo. Um catálogo público de saúde entrará quando houver o funil setorial próprio.
+    db.carregar_obrigacoes_csv(conn, CADASTRO_SAUDE, empresa=dados["empresa"])
+    ids = {}
+    with conn:
+        for a in dados["ativos"]:
+            ids[a["codigo"]] = db.criar_ativo(
+                conn, emp, a["tipo"], a["codigo"], a["nome"], a["atributos"], a["responsavel"]
+            )
+    if com_historico and HISTORICO_VIDA_PLENA.exists():
+        gerar_historico(conn, ids, json.loads(HISTORICO_VIDA_PLENA.read_text(encoding="utf-8")))
     return ids
 
 
@@ -159,6 +183,7 @@ def _preparar(conn, caminho, dou: Path, cache: Path | None) -> tuple:
     with db.sem_sincronizar(conn):
         db.limpar(conn)     # no Windows o arquivo pode estar aberto pela interface
         ids = montar(conn)
+        montar_saude(conn)
         usuarios.semear(conn)       # contas ficam fora do limpar(): só entram as que faltam
         descoberta.semear(conn)     # a fila de normas candidatas também (trabalho da curadoria, não da cliente)
         for a in load_month(dou):

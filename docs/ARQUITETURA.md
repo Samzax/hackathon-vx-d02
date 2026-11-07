@@ -118,11 +118,12 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
 
 ## Leitor de evidência
 
-Quem opera manda o PDF e a torre dá baixa na obrigação certa (`mitra/evidencias.py`). São 22 tipos de documento:
+Quem opera manda o PDF e a torre dá baixa na obrigação certa (`mitra/evidencias.py`). São 26 tipos de documento:
 - barragem: FIR, EIR, RISR, DCE, RPSB, DCO, RCO, ISE, RCIE e recibo do EIE, simulado, treinamento e seminário do PAEBM, PGRBM;
 - vaso NR-13: exame externo e interno;
 - mina: treinamento da brigada e simulação de emergência da NR-22;
-- licença: efluentes, águas, ruído, PRAD e relatório de condicionantes.
+- licença: efluentes, águas, ruído, PRAD e relatório de condicionantes;
+- saúde (setor vida_plena): Plano de Segurança do Paciente, PGRSS e capacitação em riscos biológicos.
 
 Ficam de fora só as obrigações únicas comprovadas por plano ou requerimento, como a adequação da ZAS e a renovação da licença.
 

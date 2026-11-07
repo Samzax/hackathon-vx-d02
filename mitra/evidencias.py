@@ -47,6 +47,9 @@ DOCUMENTOS = {
     "ruido e vibracao": ("Ruído e vibração", "ruido"),
     "recuperacao de areas degradadas": ("PRAD", "prad"),
     "cumprimento das condicionantes": ("Relatório de condicionantes", "cumprimento das condicionantes"),
+    "plano de seguranca do paciente": ("Plano de Segurança do Paciente", "plano de seguranca do paciente"),
+    "plano de gerenciamento de residuos": ("PGRSS", "plano de gerenciamento de residuos"),
+    "capacitacao em riscos biologicos": ("Capacitação em riscos biológicos", "capacitacao trabalhadores expostos"),
 }
 
 SISTEMA = """Você lê documentos de conformidade de uma mineradora (fichas de inspeção, relatórios,

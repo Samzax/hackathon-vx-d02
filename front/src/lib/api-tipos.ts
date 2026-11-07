@@ -2068,6 +2068,11 @@ export interface components {
             nome: string;
             /** Ficticia */
             ficticia: boolean;
+            /**
+             * Setor
+             * @default mineracao
+             */
+            setor: string;
             /** Monitorado Desde */
             monitorado_desde?: string | null;
             /** Origem */

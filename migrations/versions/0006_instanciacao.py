@@ -1,20 +1,20 @@
 """Instanciação de empresa: etapas, unidades, licenças e condicionantes, responsáveis técnicos
 (CPF cifrado), prazo interno, escopo por unidade e o código da obrigação único por empresa.
 
-Revision ID: 0005
-Revises: 0004
+Revision ID: 0006
+Revises: 0005
 """
 
 from pathlib import Path
 
 from alembic import op
 
-revision = "0005"
-down_revision = "0004"
+revision = "0006"
+down_revision = "0005"
 branch_labels = None
 depends_on = None
 
-SQL = Path(__file__).with_name("0005_instanciacao.sql")
+SQL = Path(__file__).with_name("0006_instanciacao.sql")
 
 
 def upgrade() -> None:

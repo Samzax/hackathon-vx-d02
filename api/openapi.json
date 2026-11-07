@@ -6099,6 +6099,11 @@
       "type": "boolean",
       "title": "Ficticia"
      },
+     "setor": {
+      "type": "string",
+      "title": "Setor",
+      "default": "mineracao"
+     },
      "monitorado_desde": {
       "anyOf": [
        {

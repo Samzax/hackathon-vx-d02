@@ -121,7 +121,7 @@ A sessão anterior parou no limite semanal antes do primeiro commit. Esta roda n
 Bedrock da conta do evento (Fable 5, perfil `vx`, us-east-1).
 
 **Estado que ficou no checkout, sem commit e sem teste** (rascunho da sessão anterior; confira antes de
-aproveitar, refaça o que não estiver bom): `mitra/campos.py` (novo), `migrations/versions/0005_instanciacao.py`
+aproveitar, refaça o que não estiver bom): `mitra/campos.py` (novo), `migrations/versions/0006_instanciacao.py`
 e `.sql` (novos), e mudanças em `mitra/schema.sql`, `mitra/schema_pg.sql`, `mitra/db.py`,
 `mitra/banco.py` e `api/cadastro.py`.
 
@@ -176,5 +176,5 @@ Chamada (cada worker em segundo plano, com a saída num arquivo de log fora do r
   ruff e a suíte, e só então faz o commit. Worktree aproveitada ou descartada, você remove
   (`git worktree remove`). Quem faz commit é sempre você.
 
-**Migração 0005**: quando estiver com commit, empurrada e com o CI verde, escreva isso na seção
+**Migração 0006**: quando estiver com commit, empurrada e com o CI verde, escreva isso na seção
 "Instanciação" de `docs/PLATAFORMA.md` (a sessão AWS espera para refazer a imagem e o deploy).

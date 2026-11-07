@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS empresa (
     nome              TEXT COLLATE "C" NOT NULL UNIQUE,
     ficticia          INTEGER NOT NULL DEFAULT 1 CHECK (ficticia IN (0, 1)),
     monitorado_desde  TEXT COLLATE "C",
-    origem            TEXT COLLATE "C"
+    origem            TEXT COLLATE "C",
+    setor             TEXT COLLATE "C" NOT NULL DEFAULT 'mineracao'
 );
 
 CREATE TABLE IF NOT EXISTS ativo (

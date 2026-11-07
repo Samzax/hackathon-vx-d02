@@ -29,7 +29,7 @@ def http(tmp_path):
 @pytest.fixture
 def ferramentas(http):
     """As funções das ferramentas, chamadas como o MCP chama (pelo nome, com argumentos)."""
-    mcp = criar_servidor(Torre(http))
+    mcp = criar_servidor(Torre(http, empresa="Mineradora Serra Azul"))
 
     def chamar(nome: str, **args):
         r = asyncio.run(mcp.call_tool(nome, args))
@@ -73,7 +73,7 @@ def test_nenhuma_ferramenta_escreve_na_torre(http, ferramentas, tmp_path):
     contar = lambda: {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in tabelas}  # noqa: E731
     cadastro = lambda: [r["atributos"] for r in conn.execute("SELECT atributos FROM ativo ORDER BY id")]  # noqa: E731
     antes = (contar(), cadastro())
-    nomes = [t.name for t in asyncio.run(criar_servidor(Torre(http)).list_tools())]
+    nomes = [t.name for t in asyncio.run(criar_servidor(Torre(http, empresa="Mineradora Serra Azul")).list_tools())]
     for nome in nomes:
         ferramentas(nome, **args.get(nome, {}))
     assert (contar(), cadastro()) == antes
@@ -177,7 +177,7 @@ def test_empresa_fixa_prende_o_escopo(http):
 
 
 def test_ativo_inexistente_e_token_errado_viram_erro_legivel(http):
-    t = Torre(http)
+    t = Torre(http, empresa="Mineradora Serra Azul")
     with pytest.raises(ErroTorre, match="Ativo 'B9'"):
         t.ativo(t.empresa_id(None), "B9")
     http.headers["Authorization"] = "Bearer outro"
@@ -187,7 +187,7 @@ def test_ativo_inexistente_e_token_errado_viram_erro_legivel(http):
 
 def test_erro_de_validacao_vira_frase_nao_repr(http):
     """O 422 do FastAPI chega como lista de dicts: o agente traduz para 'campo: mensagem'."""
-    t = Torre(http)
+    t = Torre(http, empresa="Mineradora Serra Azul")
     with pytest.raises(ErroTorre, match="hoje") as e:
         t.get(f"/empresas/{t.empresa_id(None)}/painel", hoje="07/11/2026")
     assert "[{" not in str(e.value)
@@ -198,7 +198,7 @@ def test_erro_da_torre_e_erro_de_ferramenta(http):
     from mcp.server.mcpserver.exceptions import ToolError
 
     with pytest.raises(ToolError, match="B9"):
-        asyncio.run(criar_servidor(Torre(http)).call_tool("ficha_do_ativo", {"ativo": "B9"}))
+        asyncio.run(criar_servidor(Torre(http, empresa="Mineradora Serra Azul")).call_tool("ficha_do_ativo", {"ativo": "B9"}))
 
 
 def _empresa_instanciada(tmp_path, nome: str) -> int:
@@ -213,13 +213,18 @@ def _empresa_instanciada(tmp_path, nome: str) -> int:
     return eid
 
 
-def test_instanciacao_conta_as_etapas_e_os_dados_que_faltam(ferramentas, tmp_path):
-    """'Em que pé está a instanciação?': as 8 etapas, o que falta em cada uma e o cadastro a completar."""
+def test_instanciacao_conta_as_etapas_e_os_dados_que_faltam(http, tmp_path):
+    """'Em que pé está a instanciação?': as 8 etapas, o que falta em cada uma e o cadastro a completar.
+    Agente sem escopo (plataforma): a empresa instanciada não é a Serra Azul da fixture."""
     from mitra import instanciacao as dominio
 
     nome = "Mineradora Instanciada (fictícia)"
     _empresa_instanciada(tmp_path, nome)
-    i = ferramentas("instanciacao", empresa=nome)
+    mcp = criar_servidor(Torre(http))
+    r = asyncio.run(mcp.call_tool("instanciacao", {"empresa": nome}))
+    assert not r.is_error, r.content
+    i = r.structured_content["result"] if r.structured_content and "result" in r.structured_content \
+        else json.loads(r.content[0].text)
     assert i["empresa"] == nome and i["em_operacao"] is False and i["monitorado_desde"] is None
     etapas = {e["titulo"]: e for e in i["etapas"]}
     assert set(etapas) == set(dominio.TITULOS.values()) and len(i["etapas"]) == len(dominio.ETAPAS)

@@ -39,7 +39,7 @@ function useGrupos(): Grupo[] {
   const grupos: Grupo[] = [
     { titulo: "Operação", itens: [
       { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" />, contador: atrasadas || undefined, tom: "perigo" },
-      { href: "/ativos/", rotulo: "Ativos", icone: <Map className="size-4" /> },
+      { href: "/ativos/", rotulo: "Ativos", icone: t.empresa?.setor === "saude" ? <ListChecks className="size-4" /> : <Map className="size-4" /> },
       { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" /> },
       { href: "/pergunte/", rotulo: "Pergunte à torre", icone: <MessageSquareText className="size-4" /> },
     ] },
@@ -106,7 +106,7 @@ export function useTema() {
 export function Logo({ className }: { className?: string }) {
   const { tema } = useTema();
   // eslint-disable-next-line @next/next/no-img-element -- SVG da marca, sem otimização no export estático
-  return <img src={tema === "escuro" ? "/logo_escuro.svg" : "/logo_claro.svg"} alt="Mitra" width={150} height={30} className={className} />;
+  return <img src={tema === "escuro" ? "/logo_escuro.svg" : "/logo_claro.svg"} alt="Mitra" width={150} height={32} className={className} />;
 }
 
 // ------------------------------------------------------------------ menu
@@ -171,6 +171,14 @@ function Controles() {
   });
   const trocarVisao = useMutation({ mutationFn: t.trocarVisao, onError: (e) => avisar(mensagem(e), "erro") });
   const ia = radar.data?.ia;
+  const saude = t.empresa?.setor === "saude";
+  const viagens = saude
+    ? [{ rotulo: "Demo", dia: t.hojeDemo, dica: `${dataBR(t.hojeDemo)}: o dia da demo` }]
+    : [
+        { rotulo: "Demo", dia: t.hojeDemo, dica: `${dataBR(t.hojeDemo)}: o dia da demo` },
+        { rotulo: "Res. 220", dia: RES_220, dica: `${dataBR(RES_220)}: troca de norma` },
+        { rotulo: "ZAS", dia: ZAS, dica: `${dataBR(ZAS)}: dia seguinte ao prazo da ZAS (ANM e NR-22)` },
+      ];
 
   return (
     <div className="space-y-3 text-sm">
@@ -197,12 +205,12 @@ function Controles() {
         <label className="block">
           <span className="mb-1 block text-[13px] font-medium text-texto-2">Empresa</span>
           <Selecao value={t.empresa?.id ?? ""} onChange={(e) => t.setEmpresaId(Number(e.target.value))} aria-label="Empresa">
-            {t.empresas.map((e) => <option key={e.id} value={e.id}>{e.nome}{e.ficticia ? " · fictícia" : ""}</option>)}
+            {t.empresas.map((e) => <option key={e.id} value={e.id}>{e.nome}{e.setor === "saude" ? " · saúde" : ""}{e.ficticia ? " · fictícia" : ""}</option>)}
           </Selecao>
         </label>
       )}
 
-      {t.plataforma && t.veTudo && (
+      {t.plataforma && t.veTudo && !saude && (
         <Botao className="w-full" icone={<Plus className="size-4" />} onClick={() => setImportar(true)}>
           Mineradora do SIGBM
         </Botao>
@@ -214,13 +222,9 @@ function Controles() {
             <span className="mb-1 block text-[13px] font-medium text-texto-2">Hoje</span>
             <Entrada type="date" value={t.hoje} onChange={(e) => e.target.value && t.setHoje(e.target.value)} aria-label="Hoje" />
           </label>
-          <p className="mb-1 mt-2 text-xs text-texto-3">Viagem no tempo</p>
-          <div className="grid grid-cols-3 gap-1">
-            {[
-              { rotulo: "Demo", dia: t.hojeDemo, dica: `${dataBR(t.hojeDemo)}: o dia da demo` },
-              { rotulo: "Res. 220", dia: RES_220, dica: `${dataBR(RES_220)}: troca de norma` },
-              { rotulo: "ZAS", dia: ZAS, dica: `${dataBR(ZAS)}: dia seguinte ao prazo da ZAS (ANM e NR-22)` },
-            ].map((v) => (
+          <p className="mb-1 mt-2 text-xs text-texto-3">{saude ? "Data de referência" : "Viagem no tempo"}</p>
+          <div className={cx("grid gap-1", saude ? "grid-cols-1" : "grid-cols-3")}>
+            {viagens.map((v) => (
               <button
                 key={v.rotulo}
                 type="button"
@@ -271,7 +275,7 @@ function Controles() {
         </>}
       >
         <p className="text-sm text-texto-2">
-          Apaga as entregas, decisões, comentários e empresas importadas, e volta a Mineradora Serra Azul ao estado inicial.
+          Apaga as entregas, decisões, comentários e empresas importadas, e volta as empresas fictícias ao estado inicial.
           As contas de acesso ficam.
         </p>
       </Dialogo>
@@ -283,7 +287,7 @@ function Cabecalho() {
   const t = useTorre();
   const ativos = useAtivos();
   if (t.ti) return null;
-  const viajando = t.hoje > t.hojeDemo && !t.empresa?.monitorado_desde;
+  const viajando = t.empresa?.setor !== "saude" && t.hoje > t.hojeDemo && !t.empresa?.monitorado_desde;
   return (
     <div className="mb-6">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-borda pb-3">

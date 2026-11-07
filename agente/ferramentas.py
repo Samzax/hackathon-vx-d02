@@ -68,8 +68,9 @@ def ferramentas(torre: Torre) -> list[Callable]:
     """As ferramentas ligadas a uma `Torre` (a docstring de cada uma é a descrição que o modelo lê)."""
 
     def empresas() -> list[dict]:
-        """Empresas que este agente enxerga (id, nome, se é fictícia, de onde veio)."""
-        return [{"id": e["id"], "nome": e["nome"], "ficticia": e.get("ficticia"), "origem": e.get("origem")}
+        """Empresas que este agente enxerga (id, nome, setor, se é fictícia, de onde veio)."""
+        return [{"id": e["id"], "nome": e["nome"], "setor": e.get("setor"), "ficticia": e.get("ficticia"),
+                 "origem": e.get("origem")}
                 for e in torre.empresas()]
 
     def instanciacao(empresa: Empresa = None) -> dict:
