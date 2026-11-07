@@ -398,7 +398,7 @@ class Baixador:
         if self.vigencia is None:
             self.vigencia = vigencia.Baixador()
         try:
-            pagina = self.vigencia.texto(self.vigencia.ficha(linha["chave"]))
+            pagina = self.vigencia.texto(self.vigencia.ficha(linha["chave"], linha.get("url")))
         except vigencia.ErroVigencia:
             return None
         if not pagina:

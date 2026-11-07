@@ -92,8 +92,9 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
   está em vigor. O resolvedor de URN do LexML (liberado no robots.txt, 5 s entre pedidos; a busca do LexML
   tem desafio anti-robô e não é usada) leva à ficha da norma na Câmara: situação, quem alterou ou revogou
   e em quais artigos, e o texto consolidado. Quando a Câmara não tem a ficha (decretos recentes), vale o
-  detalhe da norma nos dados abertos do Senado (situação "R" e as normas posteriores). Na fila real, 246
-  das 248 candidatas federais foram lidas e 140 estavam revogadas (18 delas a IA tinha marcado relevante):
+  detalhe da norma nos dados abertos do Senado (situação "R" e as normas posteriores); quando nem o LexML
+  liga a norma, vale o endereço do Senado que a própria candidata trouxe da descoberta. Na fila real, as
+  248 candidatas federais foram lidas (229 pela Câmara, 19 pelo Senado) e 140 estavam revogadas (18 delas a IA tinha marcado relevante):
   saem como descartadas, com a norma revogadora e o link na nota. Aprovada e revogada fica para a curadoria.
 - **O catálogo é conferido contra o texto de hoje.** `vigencia catalogo` lista as alterações de cada norma
   federal do catálogo com as obrigações que citam os artigos alterados, e confere cada trecho citado no

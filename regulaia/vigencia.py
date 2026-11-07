@@ -329,12 +329,14 @@ class Baixador:
         arq.write_text(texto, encoding="utf-8")
         return texto
 
-    def ficha(self, chave_norma: str) -> Ficha:
+    def ficha(self, chave_norma: str, link: str | None = None) -> Ficha:
+        """`link` é o endereço que a própria candidata trouxe da fonte: se for do Senado, vale quando o
+        LexML ainda não liga a norma (acontece com decreto recente)."""
         pagina = self.get(LEXML + urn(chave_norma))
         url = ficha_no_lexml(pagina)
         if url is not None:
             return ler_ficha(self.get(url), url, chave_norma)
-        if sid := senado_no_lexml(pagina):
+        if sid := senado_no_lexml(pagina) or senado_no_lexml(link or ""):
             return ler_senado_detalhe(self.get(SENADO_DETALHE.format(id=sid)),
                                       chave_norma, f"https://legis.senado.leg.br/norma/{sid}")
         raise ErroVigencia(f"{chave_norma}: o LexML não liga esta norma nem à Câmara nem ao Senado")
@@ -376,8 +378,8 @@ def lida(conn, chave_norma: str) -> Ficha | None:
                  fonte=r["fonte"] or FONTE)
 
 
-def consultar(conn, baixador: Baixador, chave_norma: str) -> Ficha:
-    f = baixador.ficha(chave_norma)
+def consultar(conn, baixador: Baixador, chave_norma: str, link: str | None = None) -> Ficha:
+    f = baixador.ficha(chave_norma, link)
     with conn:
         guardar(conn, f)
     return f
@@ -474,13 +476,17 @@ class ResultadoCandidatas:
     erros: dict[str, str] = field(default_factory=dict)
 
 
+def _quem(f: Ficha) -> str:
+    return "Senado Federal" if f.fonte == FONTE_SENADO else "Câmara dos Deputados"
+
+
 def marcar_candidatas(conn, baixador: Baixador, limite: int | None = None,
                       status: tuple[str, ...] = ("relevante", "aprovada", "nova")) -> ResultadoCandidatas:
     """Vigência das candidatas federais. Revogada e ainda não decidida sai da fila como descartada, com a
     fonte na nota; aprovada e revogada fica como está e entra no resultado, para a curadoria rever."""
     marcas = ",".join("?" * len(status))
     rows = conn.execute(
-        f"SELECT chave, status FROM norma_candidata WHERE jurisdicao = 'BR' AND status IN ({marcas})"
+        f"SELECT chave, status, url FROM norma_candidata WHERE jurisdicao = 'BR' AND status IN ({marcas})"
         " AND chave NOT IN (SELECT chave FROM norma_vigencia) ORDER BY ano DESC, chave", status).fetchall()
     res = ResultadoCandidatas()
     for r in rows:
@@ -489,7 +495,7 @@ def marcar_candidatas(conn, baixador: Baixador, limite: int | None = None,
         if not suportada(r["chave"]):
             continue
         try:
-            f = consultar(conn, baixador, r["chave"])
+            f = consultar(conn, baixador, r["chave"], r["url"])
         except Exception as e:
             res.erros[r["chave"]] = str(e)
             continue
@@ -506,7 +512,7 @@ def marcar_candidatas(conn, baixador: Baixador, limite: int | None = None,
                 conn.execute(
                     "UPDATE norma_candidata SET status = 'descartada', decidida_por = ?, decidida_em = ?, nota = ?"
                     " WHERE chave = ?",
-                    ("vigência (Câmara dos Deputados)", _agora(), f"Revogada pela {por}. Fonte: {f.ficha_url}",
+                    (f"vigência ({_quem(f)})", _agora(), f"Revogada pela {por}. Fonte: {f.ficha_url}",
                      r["chave"]))
                 res.descartadas += 1
     return res

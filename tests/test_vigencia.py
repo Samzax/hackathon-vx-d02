@@ -253,6 +253,22 @@ def test_sem_ficha_na_camara_o_lexml_leva_ao_senado(serra):
     r = serra.execute("SELECT nota FROM norma_candidata WHERE chave = 'BR:DEC:10966/2022'").fetchone()
     assert "Decreto nº 11.369 de 01/01/2023" in r["nota"] and "legis.senado.leg.br/norma/35488354" in r["nota"]
     assert v.lida(serra, "BR:DEC:10966/2022").fonte == v.FONTE_SENADO
+    d_ = serra.execute("SELECT decidida_por FROM norma_candidata WHERE chave = 'BR:DEC:10966/2022'").fetchone()
+    assert d_["decidida_por"] == "vigência (Senado Federal)"
+
+
+def test_lexml_sem_link_vale_o_endereco_do_senado_da_propria_candidata(serra):
+    """Decreto recente que o LexML ainda não liga a fonte nenhuma: o endereço que a candidata trouxe do
+    Senado na descoberta leva ao detalhe da norma."""
+    paginas = {v.LEXML + "urn:lex:br:federal:decreto:2022;10966": "<html><body>Documento sem links</body></html>",
+               SENADO_10966: "senado_dec_10966.xml"}
+    _candidata(serra, "BR:DEC:10966/2022", "relevante", "Decreto 10.966/2022")
+    res = v.marcar_candidatas(serra, BaixadorFixo(paginas))
+    assert list(res.erros) == ["BR:DEC:10966/2022"]       # sem o endereço da candidata, não há para onde ir
+    serra.execute("UPDATE norma_candidata SET url = 'https://legis.senado.leg.br/norma/35488354'")
+    res = v.marcar_candidatas(serra, BaixadorFixo(paginas))
+    assert (res.lidas, res.descartadas, res.erros) == (1, 1, {})
+    assert v.lida(serra, "BR:DEC:10966/2022").fonte == v.FONTE_SENADO
 
 
 # ------------------------------------------------------------------- a segunda leitura da triagem
