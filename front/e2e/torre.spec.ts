@@ -218,11 +218,12 @@ test("cliente vê a cobertura, não abre a fila da curadoria, e UF sem fonte nun
   await expect(pa).toContainText("Ativos: B4");
   await expect(pa.getByTestId("fontes")).toContainText("Nenhuma fonte automática para esta jurisdição.");
 
-  // coberta é verde, mas com as lacunas conhecidas ao lado
+  // com o conector das NRs (7/11), há NRs relevantes esperando a curadoria: amarelo, não verde —
+  // e a lacuna das "NRs catalogadas à mão" saiu (viraram fonte); ficam Conama/Ibama/ANA
   const equip = page.getByTestId("cobertura-BR-equipamento");
-  await expect(equip).toHaveAttribute("data-tom", "verde");
+  await expect(equip).toHaveAttribute("data-tom", "amarelo");
   await expect(equip.getByTestId("catalogadas")).toContainText("NR-13");
-  await expect(equip.getByTestId("lacunas")).toContainText("Normas Regulamentadoras do MTE");
+  await expect(equip.getByTestId("lacunas")).toContainText("Conama");
   await expect(page.getByTestId("cobertura-MG-barragem").getByText("Ativos: B1, B2, B3", { exact: true })).toBeVisible();
   await expect(page.getByTestId("cobertura-MG-barragem")).not.toContainText("Abrir na fila da curadoria");
 });
