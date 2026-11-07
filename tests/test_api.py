@@ -369,6 +369,25 @@ def test_condicionante_da_licenca_de_uma_nao_vale_para_a_licenca_da_outra(client
     assert cliente.get(_url("/obrigacoes/OB-01/historico")).status_code == 200    # norma pública: todas veem
 
 
+def test_codigo_de_obrigacao_inexistente_ou_alheio_nao_estoura_nem_grava(cliente, outra, cfg):
+    """Código que não existe (antes: 500) e código de obrigação própria de outra cliente (antes: 200,
+    gravando atribuição e evento apontando para a obrigação alheia) respondem 404 e não gravam nada."""
+    como(cliente, "diretoria@morroalto.demo")
+    b3 = outra["ativos"]["B3"]
+    for codigo in ("NADA-99", "LO-01"):     # inexistente e condicionante da licença da Serra Azul
+        rs = [
+            cliente.post(_url("/atribuicoes"), json={"ativo_id": b3, "codigo": codigo, "responsavel": "Geo"}),
+            cliente.post(_url("/comentarios"), json={"ativo_id": b3, "codigo": codigo, "texto": "oi"}),
+            cliente.request("DELETE", _url("/entregas"),
+                            params={"ativo_id": b3, "codigo": codigo, "periodo": "2026-10"}),
+        ]
+        assert [r.status_code for r in rs] == [404] * len(rs), codigo
+    conn = db.conectar(cfg.banco)
+    assert conn.execute("SELECT COUNT(*) FROM responsavel_obrigacao WHERE ativo_id = ?", (b3,)).fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM evento WHERE ativo_id = ?", (b3,)).fetchone()[0] == 0
+    conn.close()
+
+
 def test_fir_da_b3_lida_pela_serra_azul_cai_na_b3_da_serra_azul(cliente, outra, cfg):
     como(cliente, "diretoria@serraazul.demo")
     pdf = evidencias.exemplo("FIR_B3_2026-10-1Q.pdf")
@@ -617,6 +636,32 @@ def test_resumo_areas_e_campos_do_cadastro(cliente, cfg):
     campos = {c["campo"]: c for c in cliente.get(_url("/cadastro/campos")).json()}
     assert campos["trabalhadores_zas"]["tipo"] == "booleano" and "Autossalvamento" in campos["trabalhadores_zas"]["pergunta"]
     assert {"valor": "etapa_unica", "rotulo": "etapa única"} in campos["metodo_construtivo"]["opcoes"]
+
+
+def test_cadastro_recusa_tipo_errado_e_a_torre_sobrevive(cliente):
+    """Valor que não é do tipo do campo nunca entra (antes entrava, e aí todo painel da empresa
+    respondia 500 com RegraInvalida). Valor válido entra convertido; campo fora do catálogo é texto livre."""
+    como(cliente, "diretoria@serraazul.demo")
+    emp = _empresa(cliente)
+    b1 = next(a for a in cliente.get(_url(f"/empresas/{emp}/ativos")).json() if a["codigo"] == "B1")
+    r = cliente.patch(_url(f"/ativos/{b1['id']}/atributos"), json={"atributos": {"dpa2": "alto"}})
+    assert r.status_code == 422 and "não é número" in r.json()["detail"]
+    r = cliente.patch(_url(f"/ativos/{b1['id']}/atributos"), json={"atributos": {"classe": "caldeira"}})
+    assert r.status_code == 422 and "não é campo do cadastro de barragem" in r.json()["detail"]
+    assert cliente.get(_url(f"/empresas/{emp}/painel")).status_code == 200
+    r = cliente.patch(_url(f"/ativos/{b1['id']}/atributos"),
+                      json={"atributos": {"dpa2": "9", "trabalhadores_zas": "sim", "nota_interna": "pilha ao lado"}})
+    assert r.status_code == 200, r.text
+    novo = r.json()
+    assert novo["dpa2"] == 9 and novo["trabalhadores_zas"] is True and novo["nota_interna"] == "pilha ao lado"
+    assert cliente.get(_url(f"/empresas/{emp}/painel")).status_code == 200
+
+
+def test_auditoria_recusa_limite_fora_da_faixa(cliente):
+    entrar(cliente, "diretoria@serraazul.demo")
+    assert cliente.get(_url("/auditoria"), params={"limite": -1}).status_code == 422
+    assert cliente.get(_url("/auditoria"), params={"limite": 5000}).status_code == 422
+    assert cliente.get(_url("/auditoria"), params={"limite": 1}).status_code == 200
 
 
 def test_entrega_com_comprovante_mostra_o_periodo_antes_e_o_arquivo_depois(cliente):

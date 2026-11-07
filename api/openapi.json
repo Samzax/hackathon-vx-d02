@@ -2553,6 +2553,8 @@
       "required": false,
       "schema": {
        "type": "integer",
+       "maximum": 1000,
+       "minimum": 1,
        "default": 200,
        "title": "Limite"
       }

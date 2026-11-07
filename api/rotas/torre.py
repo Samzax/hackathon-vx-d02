@@ -324,6 +324,14 @@ def _ativo(conn, ativo_id: int, e: Escopo) -> dict:
     return ativo
 
 
+def _obrigacao_visivel(conn, e: Escopo, codigo: str) -> None:
+    """O código existe e é de norma pública ou da própria empresa; o de outra cliente é 404, como se
+    não existisse (e nada se grava apontando para obrigação alheia)."""
+    r = conn.execute("SELECT empresa FROM obrigacao WHERE codigo = ?", (codigo,)).fetchone()
+    if r is None or not e.ve_obrigacao(r["empresa"]):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"obrigação {codigo} não existe")
+
+
 def _trechos(conn) -> dict[str, str | None]:
     """O trecho literal da versão vigente de cada obrigação, numa consulta só."""
     return {r["codigo"]: r["trecho"] for r in conn.execute(
@@ -710,6 +718,7 @@ def entregar(dados: Entrega, request: Request, e: Escopo = Depends(da_empresa), 
 def desfazer(ativo_id: int, codigo: str, periodo: str, request: Request, e: Escopo = Depends(da_empresa),
              conn=Depends(conexao)):
     a = _ativo(conn, ativo_id, e)
+    _obrigacao_visivel(conn, e, codigo)
     if not db.desfazer_entrega(conn, a["id"], codigo, periodo, por=e.assinante):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "não havia entrega desse período")
     auditoria.registrar(conn, request, "entrega_desfeita", f"{a['codigo']}/{codigo}", {"periodo": periodo})
@@ -719,6 +728,7 @@ def desfazer(ativo_id: int, codigo: str, periodo: str, request: Request, e: Esco
 @rota.post("/atribuicoes", response_model=Ok, summary="Passar uma obrigação para outra área")
 def atribuir(dados: Atribuicao, request: Request, e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     a = _ativo(conn, dados.ativo_id, e)
+    _obrigacao_visivel(conn, e, dados.codigo)
     db.atribuir(conn, a["id"], dados.codigo, dados.responsavel.strip(), por=e.assinante)
     auditoria.registrar(conn, request, "atribuicao", f"{a['codigo']}/{dados.codigo}", {"para": dados.responsavel})
     return Ok(ok=True)
@@ -727,6 +737,8 @@ def atribuir(dados: Atribuicao, request: Request, e: Escopo = Depends(da_empresa
 @rota.post("/comentarios", status_code=201, response_model=Ok, summary="Comentar uma obrigação ou o ativo")
 def comentar(dados: Comentario, request: Request, e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     a = _ativo(conn, dados.ativo_id, e)
+    if dados.codigo:
+        _obrigacao_visivel(conn, e, dados.codigo)
     db.registrar_evento(conn, a["id"], dados.codigo, "comentario", dados.texto, e.assinante)
     auditoria.registrar(conn, request, "comentario", f"{a['codigo']}/{dados.codigo or '-'}")
     return Ok(ok=True)
@@ -736,8 +748,12 @@ def comentar(dados: Comentario, request: Request, e: Escopo = Depends(da_empresa
 def atributos(ativo_id: int, dados: Atributos, request: Request, e: Escopo = Depends(da_empresa),
               conn=Depends(conexao)) -> dict:
     a = _ativo(conn, ativo_id, e)
-    novo = db.atualizar_atributos(conn, a["id"], dados.atributos, por=e.assinante)
-    auditoria.registrar(conn, request, "cadastro", a["codigo"], dados.atributos)
+    try:        # valor que não é do tipo do campo volta com o erro: nunca entra e quebra as regras
+        novos = cadastro.conferir(a["tipo"], dados.atributos, livres=True)
+    except cadastro.ValorInvalido as erro:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from None
+    novo = db.atualizar_atributos(conn, a["id"], novos, por=e.assinante)
+    auditoria.registrar(conn, request, "cadastro", a["codigo"], novos)
     return novo
 
 

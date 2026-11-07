@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
 from regulaia import db, demo, sigbm, usuarios
@@ -176,10 +176,10 @@ def senha(usuario_id: int, dados: Senha, request: Request, e: Escopo = Depends(t
 
 @rota.get("/auditoria", response_model=list[Linha],
           summary="Trilha de auditoria da própria empresa (Diretoria, Regulatório e TI)")
-def trilha(limite: int = 200, e: Escopo = Depends(escopo), conn=Depends(conexao)):
+def trilha(limite: int = Query(200, ge=1, le=1000), e: Escopo = Depends(escopo), conn=Depends(conexao)):
     if not (e.ve_tudo or e.admin):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "a auditoria é da Diretoria, do Regulatório e da TI")
-    return auditoria.listar(conn, min(limite, 1000), empresa=e.empresa, todas=e.plataforma)
+    return auditoria.listar(conn, limite, empresa=e.empresa, todas=e.plataforma)
 
 
 @rota.get("/sigbm/busca", response_model=Busca, summary="Buscar mineradora no SIGBM público (CNPJ ou nome)")
