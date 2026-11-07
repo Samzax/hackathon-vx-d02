@@ -412,9 +412,15 @@ def obrigacao_de_renovacao(conn, empresa_id: int, licenca_id: int, por: str) -> 
     vence = date.fromisoformat(lic["validade"])
     pedir_ate = vence - timedelta(days=int(lic["renovar_dias"] or RENOVACAO_PADRAO))
     codigo = _proximo_codigo(conn, empresa_id, empresa, lic["tipo"])
+    # a renovação cobra de quem a licença cobre: o ativo dela, a unidade, ou a licença como ativo
+    if lic["ativo_codigo"]:
+        tipo_ativo = _tipo_do_ativo(conn, empresa_id, lic["ativo_codigo"])
+    else:
+        tipo_ativo = "unidade" if lic["unidade"] else "licenca"
     with conn:
         ob = conn.execute("INSERT INTO obrigacao (codigo, tipo_ativo, norma, area, empresa) "
-                          "VALUES (?, 'licenca', ?, 'ambiental', ?)", (codigo, norma, empresa)).lastrowid
+                          "VALUES (?, ?, ?, 'ambiental', ?)",
+                          (codigo, tipo_ativo, norma, empresa)).lastrowid
         conn.execute(
             "INSERT INTO obrigacao_versao (obrigacao_id, versao, titulo, artigo, aplica_se_a, regra, "
             "periodicidade, agenda, prazo, vigencia_desde, vigencia_ate, responsavel, evidencia, fonte, "

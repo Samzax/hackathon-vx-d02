@@ -53,11 +53,23 @@ class Escopo:
     empresa_id: int | None = None    # cliente: a única empresa que vê; None na plataforma
     empresa: str | None = None       # o nome dela (é por ele que conta e obrigação própria se ligam)
     plataforma: bool = False         # equipe da RegulaIA ou token de serviço: vê todas as empresas
+    unidades: tuple[str, ...] = ()   # conta restrita a estas operações; vazio: toda a empresa
 
     @property
     def ve_tudo(self) -> bool:
         """Vê todos os ativos da empresa (na plataforma, de todas)."""
         return self.papel in usuarios.VE_TUDO
+
+    @property
+    def restrita(self) -> bool:
+        """Conta presa a uma ou mais unidades (operações): vê só o que é delas. Diretoria e Regulatório
+        da empresa continuam vendo tudo, mesmo que alguém grave unidades na conta."""
+        return bool(self.unidades) and not self.ve_tudo
+
+    @property
+    def escopo_unidades(self) -> set[str] | None:
+        """O conjunto de unidades para filtrar o domínio, ou None (sem restrição)."""
+        return set(self.unidades) if self.restrita else None
 
     @property
     def admin(self) -> bool:
@@ -82,9 +94,15 @@ class Escopo:
         return self.plataforma if dona is None else (not self.plataforma and dona == self.empresa)
 
     def ve_ativo(self, ativo: dict) -> bool:
+        """Conta restrita a unidades: só os ativos daquelas operações (a unidade é o escopo, e substitui
+        o filtro por área). Senão, o de sempre: quem vê tudo vê tudo; gestor vê os da área dele."""
+        if self.restrita:
+            return ativo.get("unidade") in self.unidades
         return self.ve_tudo or (self.area is not None and ativo.get("responsavel") == self.area)
 
     def ve_linha(self, linha, dono_do_ativo: str | None) -> bool:
+        if self.restrita:       # as linhas já vêm filtradas por unidade (torre.painel recebe o escopo)
+            return True
         return self.ve_tudo or (self.area is not None and self.area in (linha.responsavel, dono_do_ativo))
 
 
@@ -168,7 +186,9 @@ def escopo_da_conta(conn, u: dict, visao: str | None = None) -> Escopo:
             return Escopo(u, usuarios.ADMIN, None, visao, visao, **na_empresa)
         return Escopo(u, usuarios.GESTOR, visao, visao, visao, **na_empresa)
     if u["papel"] == usuarios.GESTOR:
-        return Escopo(u, u["papel"], u["area"], u["area"] or "", u["nome"], **na_empresa)
+        unidades = tuple(usuarios.unidades_da_conta(u))
+        rotulo = (f"{u['area']} · {', '.join(unidades)}" if unidades else (u["area"] or ""))
+        return Escopo(u, u["papel"], u["area"], rotulo, u["nome"], unidades=unidades, **na_empresa)
     rotulo = {usuarios.DIRETORIA: VISAO_DIRETORIA, usuarios.REGULATORIO: "Regulatório (todos os ativos)",
               usuarios.ADMIN: VISAO_TI}[u["papel"]]
     return Escopo(u, u["papel"], None, rotulo, u["nome"], **na_empresa)

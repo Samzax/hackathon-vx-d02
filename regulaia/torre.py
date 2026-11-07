@@ -128,8 +128,13 @@ def _maiuscula(texto: str) -> str:
     return texto[:1].upper() + texto[1:]
 
 
-def _empresa_ativos(conn, empresa_id: int, tipo: str | None = None) -> list[dict]:
-    return [a for a in db.ativos(conn, empresa_id) if tipo is None or a["tipo"] == tipo]
+def _empresa_ativos(conn, empresa_id: int, tipo: str | None = None,
+                    unidades: set[str] | None = None) -> list[dict]:
+    """Os ativos da empresa. `unidades`: só os das operações daquele conjunto (conta restrita a unidades;
+    ativo sem unidade fica de fora, porque ninguém disse que é dela)."""
+    return [a for a in db.ativos(conn, empresa_id)
+            if (tipo is None or a["tipo"] == tipo)
+            and (unidades is None or a.get("unidade") in unidades)]
 
 
 _SEM_META = {"norma": None, "area": None, "tipo_ativo": None}
@@ -167,7 +172,8 @@ def _herdadas(conn, ativo_id: int, codigo: str, titulo: str) -> tuple[list[str],
     return melhor
 
 
-def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = None) -> list[Linha]:
+def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = None,
+           unidades: set[str] | None = None) -> list[Linha]:
     """Status de cada obrigação que vale hoje, por ativo. `desde` é o início do monitoramento.
 
     Empresa importada do SIGBM tem o próprio `monitorado_desde`, que vale no lugar de `desde`; e
@@ -181,7 +187,7 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
     metas = _metas(conn)
     abertos = db.acionamentos_abertos(conn, hoje.isoformat())
     donos = db.responsaveis(conn)
-    for a in _empresa_ativos(conn, empresa_id):
+    for a in _empresa_ativos(conn, empresa_id, unidades=unidades):
         if ativo and a["codigo"] != ativo:
             continue
         for o in db.obrigacoes_do_ativo(conn, a["id"], em=hoje.isoformat()):
@@ -285,13 +291,13 @@ def _valor(v, campo: str | None = None) -> str:
 
 
 def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | None = None,
-            janela: int = 30) -> str:
+            janela: int = 30, unidades: set[str] | None = None) -> str:
     """Boletim em Markdown para um gestor (ou a diretoria): o que está atrasado, o que vence
     nos próximos `janela` dias, o que falta no cadastro e as mudanças aguardando aprovação.
     É o que iria por e-mail toda segunda; aqui só é gerado, nunca enviado."""
-    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id)
+    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id, unidades=unidades)
               if responsavel is None or a["responsavel"] == responsavel}
-    linhas = [l for l in painel(conn, empresa_id, hoje, desde)
+    linhas = [l for l in painel(conn, empresa_id, hoje, desde, unidades=unidades)
               if l.ativo in ativos or (responsavel and l.responsavel == responsavel)]
     atrasadas = [l for l in linhas if l.status == agenda.ATRASADA]
     faltando = [l for l in linhas if l.status == DADO_FALTANDO]
@@ -360,15 +366,15 @@ def _ics_dobra(linha: str) -> list[str]:
 
 
 def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | None = None,
-               dias: int = 400) -> str:
+               dias: int = 400, unidades: set[str] | None = None) -> str:
     """Arquivo .ics com o próximo vencimento de cada obrigação (e as que começam a valer) dentro
     de `dias`, para importar no Outlook ou Google Agenda. Os UIDs são estáveis: importar de novo
     na semana seguinte atualiza em vez de duplicar. Só gera o arquivo; não envia nada."""
-    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id)
+    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id, unidades=unidades)
               if responsavel is None or a["responsavel"] == responsavel}
     limite = date.fromordinal(hoje.toordinal() + dias).isoformat()
     eventos = []
-    for l in painel(conn, empresa_id, hoje, desde):
+    for l in painel(conn, empresa_id, hoje, desde, unidades=unidades):
         meu = l.ativo in ativos or (responsavel and l.responsavel == responsavel)
         if meu and l.vence and l.vence <= limite and l.status != agenda.CUMPRIDA:
             marca = "ATRASADA · " if l.status == agenda.ATRASADA else ""
@@ -376,7 +382,7 @@ def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str 
                             f"{marca}{l.ativo} · {l.titulo}",
                             dispositivo(l.norma, l.artigo) + (f". {_maiuscula(l.nota)}" if l.nota else ""),
                             agenda.dias_de_aviso(l.agenda)))
-    for f in futuras(conn, empresa_id, hoje):
+    for f in futuras(conn, empresa_id, hoje, unidades=unidades):
         if f.ativo in ativos and f.dia <= limite and not f.proposta:
             eventos.append((f.dia, f"{f.ativo}-{f.codigo}-inicio",
                             f"Começa a valer: {f.ativo} · {f.titulo}", dispositivo(f.norma, f.artigo),
@@ -410,12 +416,12 @@ class Troca:
     empresa_id: int | None = None   # o código do ativo só é único dentro da empresa
 
 
-def transicao(conn, empresa_id: int, dia: date) -> list[Troca]:
+def transicao(conn, empresa_id: int, dia: date, unidades: set[str] | None = None) -> list[Troca]:
     """Para cada ativo: o que vale na véspera e não no dia, e o contrário."""
     vespera = date.fromordinal(dia.toordinal() - 1).isoformat()
     out = []
     metas = _metas(conn)
-    for a in _empresa_ativos(conn, empresa_id):
+    for a in _empresa_ativos(conn, empresa_id, unidades=unidades):
         antes = {o.codigo: o.vigente for o in db.obrigacoes_do_ativo(conn, a["id"], em=vespera)
                  if db.vale_em(o.vigente, vespera)}
         depois = {o.codigo: o.vigente for o in db.obrigacoes_do_ativo(conn, a["id"], em=dia.isoformat())
@@ -438,11 +444,11 @@ class Futura:
     proposta: bool        # True: data vem de uma mudança ainda não aprovada
 
 
-def futuras(conn, empresa_id: int, hoje: date) -> list[Futura]:
+def futuras(conn, empresa_id: int, hoje: date, unidades: set[str] | None = None) -> list[Futura]:
     """Linha do tempo: obrigações que passam a valer depois de hoje, por ativo."""
     out = []
     metas = _metas(conn)
-    for a in _empresa_ativos(conn, empresa_id):
+    for a in _empresa_ativos(conn, empresa_id, unidades=unidades):
         for o in db.obrigacoes_do_ativo(conn, a["id"]):
             meta = metas.get(o.codigo, _SEM_META)
             for v, proposta in ((o.vigente, False), (o.pendente, True)):
@@ -540,12 +546,13 @@ def pares(troca: Troca, conn=None, dia: date | None = None, novas_do_dia: list[d
     return sorted(grupos.values(), key=lambda p: ordem.index(p.tema))
 
 
-def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: str | None = None) -> str:
+def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: str | None = None,
+                    unidades: set[str] | None = None) -> str:
     """Plano de transição em Markdown: por ativo, o que continua, o que é novo e o que acaba
     na troca de norma de `dia`. É o documento que a empresa montaria lendo as duas resoluções."""
-    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id)
+    ativos = {a["codigo"]: a for a in _empresa_ativos(conn, empresa_id, unidades=unidades)
               if responsavel is None or a["responsavel"] == responsavel}
-    trocas = [t for t in transicao(conn, empresa_id, dia) if t.ativo in ativos]
+    trocas = [t for t in transicao(conn, empresa_id, dia, unidades) if t.ativo in ativos]
     faltam = (dia - hoje).days
     out = [f"# Plano de transição — {responsavel or 'Diretoria'}", "",
            f"Troca de norma em {dia:%d/%m/%Y} (faltam {faltam} dias). Gerado em {hoje:%d/%m/%Y}.", ""]
@@ -590,7 +597,7 @@ class Mudanca:
     empresa: str | None = None    # obrigação própria desta empresa; None: norma pública
 
 
-def mudancas(conn, empresa_id: int) -> list[Mudanca]:
+def mudancas(conn, empresa_id: int, unidades: set[str] | None = None) -> list[Mudanca]:
     """Versões pendentes que interessam à empresa: as de norma pública e as das obrigações próprias
     dela (a condicionante de licença de outra empresa nunca aparece aqui)."""
     rows = conn.execute(

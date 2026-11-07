@@ -240,7 +240,7 @@ def mudancas(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(con
     radar = {torre.nome_ato(r["ato"]): r for r in _analises()}
     normas = {r["codigo"]: r["norma"] for r in conn.execute("SELECT codigo, norma FROM obrigacao")}
     out = []
-    for m in torre.mudancas(conn, empresa_id):
+    for m in torre.mudancas(conn, empresa_id, unidades=e.escopo_unidades):
         if not (e.ve_tudo or set(m.ativos) & visiveis):
             continue
         d = asdict(m)

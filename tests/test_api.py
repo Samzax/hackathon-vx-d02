@@ -55,18 +55,19 @@ def _url(caminho: str) -> str:
     return PREFIXO + caminho
 
 
-def entrar(c: TestClient, email: str | None = None) -> dict:
-    r = c.post(_url("/auth/demo")) if email is None else c.post(_url("/auth/login"), json={"email": email, "senha": SENHA})
+def entrar(c: TestClient, email: str | None = None, senha: str = SENHA) -> dict:
+    r = c.post(_url("/auth/demo")) if email is None else c.post(_url("/auth/login"),
+                                                                json={"email": email, "senha": senha})
     assert r.status_code == 200, r.text
     c.headers["X-CSRF-Token"] = c.cookies["regulaia_csrf"]
     return r.json()
 
 
-def como(c: TestClient, email: str | None = None) -> dict:
+def como(c: TestClient, email: str | None = None, senha: str = SENHA) -> dict:
     """Sai da sessão atual e entra com outra conta (sem e-mail: a conta de teste da demo)."""
     c.cookies.clear()
     c.headers.pop("X-CSRF-Token", None)
-    return entrar(c, email)
+    return entrar(c, email, senha)
 
 
 def _empresa(c) -> int:

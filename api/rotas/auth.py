@@ -39,6 +39,8 @@ class Eu(BaseModel):
     plataforma: bool = Field(description="age como a equipe da RegulaIA (curadoria das normas públicas)")
     so_leitura: bool = Field(description="nos dados operacionais das clientes (entrega, comprovante, evidência, "
                                          "comentário, atribuição, cadastro e responsável do ativo) a sessão só lê")
+    unidades: list[str] = Field([], description="as unidades (operações) a que a conta está presa; vazio: toda a empresa")
+    trocar_senha: bool = Field(False, description="senha provisória: a pessoa troca por PUT /auth/senha antes de usar a torre")
     visao: str
     visoes: list[str] = Field(description="visões que a conta pode escolher (só a conta de teste tem mais de uma)")
     hoje: str = Field(description="o hoje da torre (na demo, 7/11/2026): o padrão de toda consulta sem `hoje`")
@@ -52,7 +54,9 @@ def _eu(conn, e: Escopo, csrf: str | None = None) -> Eu:
         visoes = [VISAO_DIRETORIA, *areas_da_empresa(conn, empresa_da_conta(conn, u)), VISAO_TI, VISAO_CURADORIA]
     return Eu(id=u["id"], email=u["email"], nome=u["nome"], papel=u["papel"], papel_efetivo=e.papel,
               area=u.get("area"), teste=bool(u["teste"]), empresa=e.empresa, plataforma=e.plataforma,
-              so_leitura=e.so_leitura, visao=e.visao, visoes=visoes, hoje=hoje_padrao().isoformat(), csrf=csrf)
+              so_leitura=e.so_leitura, unidades=list(e.unidades),
+              trocar_senha=usuarios.precisa_trocar_senha(u), visao=e.visao, visoes=visoes,
+              hoje=hoje_padrao().isoformat(), csrf=csrf)
 
 
 def _entrar(conn, request: Request, resposta: Response, u: dict) -> Eu:
@@ -98,6 +102,32 @@ def logout(request: Request, resposta: Response, conn=Depends(conexao)):
 @rota.get("/me", response_model=Eu, summary="Quem está na sessão, de qual empresa e com qual visão")
 def eu(e: Escopo = Depends(escopo), conn=Depends(conexao)):
     return _eu(conn, e)
+
+
+class NovaSenha(BaseModel):
+    senha_atual: str = Field(max_length=200, description="a senha de agora (a provisória, no primeiro acesso)")
+    nova: str = Field(min_length=usuarios.SENHA_MINIMA, max_length=200)
+
+
+@rota.put("/senha", response_model=Eu, summary="Trocar a própria senha (obrigatório quando é provisória)")
+def trocar_senha(dados: NovaSenha, request: Request, e: Escopo = Depends(escopo), conn=Depends(conexao)):
+    """A pessoa troca a própria senha. A primeira conta de uma cliente nasce com senha provisória, e a
+    troca aqui limpa a marca `trocar_senha`. Senha nova derruba as outras sessões da conta."""
+    u = e.usuario
+    if usuarios.autenticar(conn, u["email"], dados.senha_atual) is None:
+        auditoria.registrar(conn, request, "senha_propria", u["email"], resultado="recusado")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "a senha atual não confere")
+    if dados.nova == dados.senha_atual:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "a senha nova tem de ser diferente da atual")
+    try:
+        usuarios.definir_senha(conn, u["id"], dados.nova)
+    except usuarios.ErroConta as erro:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from None
+    with conn:      # as outras sessões caem; esta continua, para a pessoa seguir de onde estava
+        conn.execute("DELETE FROM sessao WHERE usuario_id = ? AND token_hash <> ?",
+                     (u["id"], getattr(request.state, "sessao", "")))
+    auditoria.registrar(conn, request, "senha_propria", u["email"])
+    return eu(escopo(request, conn), conn)
 
 
 @rota.put("/visao", response_model=Eu, summary="Trocar de visão (só a conta de teste)")

@@ -369,8 +369,11 @@ def _linha(l: torre.Linha, trechos: dict[str, str | None] | None = None) -> Linh
 
 
 def _visiveis(conn, e: Escopo, empresa_id: int, hoje: date, desde: date, ativo: str | None = None):
+    """As linhas do painel que a sessão vê. Conta restrita a unidades recebe o painel já filtrado por
+    elas (o domínio faz o corte), e aí a área não estreita mais nada."""
     donos = {a["codigo"]: a["responsavel"] for a in db.ativos(conn, empresa_id)}
-    return [l for l in torre.painel(conn, empresa_id, hoje, desde, ativo=ativo) if e.ve_linha(l, donos.get(l.ativo))]
+    linhas = torre.painel(conn, empresa_id, hoje, desde, ativo=ativo, unidades=e.escopo_unidades)
+    return [l for l in linhas if e.ve_linha(l, donos.get(l.ativo))]
 
 
 def _ativos_visiveis(conn, e: Escopo, empresa_id: int) -> list[dict]:
@@ -609,7 +612,7 @@ def transicao(empresa_id: int, dia: date = date(2027, 8, 2), e: Escopo = Depends
     visiveis = {a["codigo"]: a for a in db.ativos(conn, empresa_id) if e.ve_ativo(a)}
     out = []
     novas = torre._comecam_em(conn, dia, empresa_id)
-    for t in torre.transicao(conn, empresa_id, dia):
+    for t in torre.transicao(conn, empresa_id, dia, unidades=e.escopo_unidades):
         if t.ativo not in visiveis:
             continue
         a = visiveis[t.ativo]
@@ -626,7 +629,8 @@ def plano_transicao(empresa_id: int, formato: str = Query("md", pattern="^(md|pd
                     hoje: date | None = None, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     empresa_visivel(conn, e, empresa_id)
     para = None if e.ve_tudo else e.area
-    md = torre.plano_transicao(conn, empresa_id, dia, hoje or hoje_padrao(), responsavel=para)
+    md = torre.plano_transicao(conn, empresa_id, dia, hoje or hoje_padrao(), responsavel=para,
+                               unidades=e.escopo_unidades)
     if formato == "pdf":
         return Response(pdf.de_markdown(md, f"Plano de transição · {para or 'Diretoria'}"), media_type="application/pdf",
                         headers={"Content-Disposition": 'attachment; filename="plano_transicao.pdf"'})
@@ -640,7 +644,8 @@ def linha_do_tempo(empresa_id: int, hoje: date | None = None, e: Escopo = Depend
     empresa_visivel(conn, e, empresa_id)
     visiveis = {a["codigo"] for a in db.ativos(conn, empresa_id) if e.ve_ativo(a)}
     return [Futura(**asdict(f), dispositivo=torre.dispositivo(f.norma, f.artigo))
-            for f in torre.futuras(conn, empresa_id, hoje or hoje_padrao()) if f.ativo in visiveis]
+            for f in torre.futuras(conn, empresa_id, hoje or hoje_padrao(), unidades=e.escopo_unidades)
+            if f.ativo in visiveis]
 
 
 @rota.get("/empresas/{empresa_id}/vigencias", response_model=list[Faixa],
@@ -669,7 +674,8 @@ def boletim(empresa_id: int, formato: str = Query("md", pattern="^(md|pdf)$"), r
     emp = empresa_visivel(conn, e, empresa_id)
     if not e.ve_tudo:
         responsavel = e.area
-    md = torre.boletim(conn, empresa_id, hoje or hoje_padrao(), desde_padrao(emp), responsavel=responsavel)
+    md = torre.boletim(conn, empresa_id, hoje or hoje_padrao(), desde_padrao(emp), responsavel=responsavel,
+                       unidades=e.escopo_unidades)
     if formato == "pdf":
         return Response(pdf.de_markdown(md, f"Boletim · {responsavel or 'Diretoria'}"), media_type="application/pdf",
                         headers={"Content-Disposition": 'attachment; filename="boletim.pdf"'})
@@ -682,7 +688,8 @@ def calendario_ics(empresa_id: int, responsavel: str | None = None, hoje: date |
     emp = empresa_visivel(conn, e, empresa_id)
     if not e.ve_tudo:
         responsavel = e.area
-    ics = torre.calendario(conn, empresa_id, hoje or hoje_padrao(), desde_padrao(emp), responsavel=responsavel)
+    ics = torre.calendario(conn, empresa_id, hoje or hoje_padrao(), desde_padrao(emp), responsavel=responsavel,
+                           unidades=e.escopo_unidades)
     return Response(ics, media_type="text/calendar; charset=utf-8",
                     headers={"Content-Disposition": 'attachment; filename="regulaia.ics"'})
 

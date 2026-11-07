@@ -222,18 +222,41 @@ para outra sessão continuar daqui.
   - Testes: `tests/test_instanciacao.py` (18, inclui "duas clientes com a sua própria LO-01"),
     `tests/test_licencas.py` (16), `tests/test_pessoal.py` (7).
 
+- **API das etapas** (`api/rotas/instanciacao.py`, commit `2fb7d9f`): criar a instanciação e listar (só a
+  curadoria), o estado das etapas, as barragens do CNPJ no SIGBM e a escolha de quais entram, unidades,
+  ativo por formulário, o modelo CSV, a planilha (com `?conferir=1` que não grava) e entrar em operação.
+  A curadoria leva a cliente para dentro, mas **nos dados operacionais só lê**: quem cadastra é a empresa,
+  e entrar em operação é da Diretoria ou do Regulatório dela. 13 testes em `tests/test_api_instanciacao.py`.
+- **Licenças e condicionantes** (`api/rotas/licencas.py`): enviar o PDF (a empresa), ler (a IA propõe com
+  trecho literal e o Python confere; o que ela inventa não entra nem como proposta), listar as
+  condicionantes e **decidir — só o Regulatório ou a Diretoria da dona** (a plataforma recebe 403, o
+  gestor também), e a validade virando obrigação de renovação. 25 testes
+  (`tests/test_licencas.py`, `tests/test_api_licencas.py`).
+- **Responsáveis técnicos e dado pessoal** (`regulaia/responsaveis.py`, `api/rotas/responsaveis.py`):
+  CPF cifrado por campo, lista sempre mascarada, `GET /responsaveis/{id}/cpf` só do Regulatório, da
+  Diretoria e da TI da própria empresa e **com a visualização na auditoria**; a plataforma não vê CPF.
+  ART vencendo vira obrigação; consentimento do empreendedor pessoa física registrado; LGPD por
+  `GET`/`DELETE /empresas/{id}/dados-pessoais` (TI da empresa, auditado). Sem `REGULAIA_CHAVE_DADOS` a
+  API sobe e guardar CPF responde 503 com o motivo.
+- **Escopo por unidade** (seção 4): `usuario.unidades` (JSON), `Escopo.restrita`/`escopo_unidades`, e o
+  filtro descendo ao domínio (`torre.painel`, `boletim`, `calendario`, `transicao`, `futuras`,
+  `plano_transicao`, `mudancas`). Conta restrita a uma unidade não vê, não entrega, não comenta e não
+  corrige nada da outra; Diretoria e Regulatório da empresa continuam vendo tudo (gravar unidades nessas
+  contas é recusado). 10 testes em `tests/test_api_responsaveis.py`.
+- **Front**: página "Instanciação" (`front/src/app/(torre)/instanciacao/page.tsx` e
+  `components/etapas.tsx`), com as etapas, o que falta, os dados que faltam e as unidades; entrada no menu.
+
 ### Falta
-- API e front de cada etapa (seção 6 da tarefa): rotas com papéis, escopo e auditoria; assistente "Nova
-  empresa", página "Instanciação", envio da licença e aprovação das condicionantes, responsáveis técnicos,
-  unidades e acessos; contrato e `api-tipos.ts` regerados; e2e.
-- Responsáveis técnicos (gravação com CPF cifrado, "ver CPF" auditado, LGPD exportar/apagar) — o módulo de
-  criptografia (`regulaia/pessoal.py`) já está pronto e testado.
-- Escopo por unidade valendo em todas as rotas, no boletim, no calendário e no agente; testes de
-  isolamento como os de empresa.
-- Personalização: prazo interno, normas internas sem licença, responsável padrão por área (tabelas já
-  criadas na 0005).
+- Front: assistente "Nova empresa" (plataforma), envio da licença e aprovação das condicionantes com o
+  trecho e a página do PDF, responsáveis técnicos (CPF mascarado com botão "ver" auditado), unidades e
+  acessos; e2e do fluxo inteiro.
+- Personalização (seção 5): prazo interno, normas internas sem licença, responsável padrão por área
+  (as tabelas já estão na 0005, falta o domínio, a API e o front).
+- Etapa 7 (contas e acessos): a primeira conta da cliente com senha provisória trocada no primeiro acesso
+  (a coluna `usuario.trocar_senha` existe; falta a rota e a troca no login).
 - Ferramenta MCP `instanciacao(empresa)` — vai em `agente/ferramentas.py` (depois do merge do "Pergunte à
   torre", as ferramentas moram lá e o `servidor.py` só embrulha).
+- README e `docs/ARQUITETURA.md` (seção 7 da tarefa).
 
 ## Para a infra
 

@@ -256,3 +256,52 @@ def test_sigbm_sem_cnpj_nao_tem_o_que_buscar(cliente):
     assert r.status_code == 422 and "não tem CNPJ" in r.json()["detail"]
     assert cliente.get(_url("/instanciacoes/sigbm"),
                    params={"cnpj": "00000000000000"}).status_code == 404
+
+
+# ------------------------------------------------------------------ etapa 7: a primeira conta
+
+
+def test_primeira_conta_da_cliente_nasce_com_senha_provisoria(cliente, nova):
+    """A curadoria cria só a primeira conta (TI da empresa), com senha provisória; a pessoa troca no
+    primeiro acesso e daí em diante é a TI dela que cria as demais."""
+    eid = nova["empresa_id"]
+    r = cliente.post(_url(f"/empresas/{eid}/instanciacao/primeira-conta"), json={
+        "email": "ti@nova.example", "nome": "TI da Nova", "senha_provisoria": "provisoria-123"})
+    assert r.status_code == 201, r.text
+    assert r.json()["papel"] == "admin" and r.json()["trocar_senha"] is True
+    etapas = {x["etapa"]: x for x in cliente.get(_url(f"/empresas/{eid}/instanciacao")).json()["etapas"]}
+    assert etapas["contas"]["estado"] == "em_andamento"      # provisória: ainda não está pronta
+    assert etapas["contas"]["numeros"] == {"contas": 1, "provisorias": 1, "ti": 1}
+    # a segunda conta não é da curadoria
+    r = cliente.post(_url(f"/empresas/{eid}/instanciacao/primeira-conta"), json={
+        "email": "outra@nova.example", "nome": "Outra", "senha_provisoria": "provisoria-123"})
+    assert r.status_code == 409 and "já tem conta" in r.json()["detail"]
+    # a pessoa entra, a torre avisa que a senha é provisória, e ela troca
+    eu = entrar(cliente, "ti@nova.example", senha="provisoria-123")
+    assert eu["trocar_senha"] is True and eu["empresa"] == NOVA
+    r = cliente.put(_url("/auth/senha"), json={"senha_atual": "provisoria-123", "nova": "minha-senha-boa"})
+    assert r.status_code == 200, r.text
+    assert r.json()["trocar_senha"] is False
+    # a TI vê contas e auditoria da própria empresa, não a torre
+    assert "senha_propria" in {t["acao"] for t in cliente.get(_url("/auditoria")).json()}
+    assert cliente.get(_url(f"/empresas/{eid}/instanciacao")).status_code == 403
+    como(cliente, CURADORIA)        # com a senha trocada, a etapa das contas fica pronta
+    etapas = {x["etapa"]: x for x in cliente.get(_url(f"/empresas/{eid}/instanciacao")).json()["etapas"]}
+    assert etapas["contas"]["estado"] == "pronta" and etapas["contas"]["numeros"]["provisorias"] == 0
+    # a criação da primeira conta é ação da plataforma: fica na trilha dela
+    assert "primeira_conta" in {t["acao"] for t in cliente.get(_url("/auditoria")).json()}
+
+
+def test_trocar_a_propria_senha_pede_a_atual(cliente, nova):
+    eid = nova["empresa_id"]
+    cliente.post(_url(f"/empresas/{eid}/instanciacao/primeira-conta"), json={
+        "email": "ti@nova.example", "nome": "TI da Nova", "senha_provisoria": "provisoria-123"})
+    entrar(cliente, "ti@nova.example", senha="provisoria-123")
+    r = cliente.put(_url("/auth/senha"), json={"senha_atual": "errada-123", "nova": "outra-senha-boa"})
+    assert r.status_code == 403 and "não confere" in r.json()["detail"]
+    r = cliente.put(_url("/auth/senha"), json={"senha_atual": "provisoria-123", "nova": "provisoria-123"})
+    assert r.status_code == 422 and "diferente da atual" in r.json()["detail"]
+    r = cliente.put(_url("/auth/senha"), json={"senha_atual": "provisoria-123", "nova": "curta"})
+    assert r.status_code == 422
+    trilha = cliente.get(_url("/auditoria")).json()
+    assert any(t["acao"] == "senha_propria" and t["resultado"] == "recusado" for t in trilha)

@@ -19,6 +19,12 @@ class ErroTorre(Exception):
     chat), e o modelo explica ao usuário."""
 
 
+class NaoEncontrado(ErroTorre):
+    """404 da API: não existe, ou está fora do escopo deste agente. Uma ferramenta que sabe o motivo
+    (ex.: empresa que não passou pela instanciação) captura isto e explica melhor, sem depender do
+    texto da mensagem."""
+
+
 def _detalhe(r: httpx.Response) -> str:
     """O `detail` da API numa frase. O 422 de validação vem como lista de dicts: vira 'campo: mensagem',
     não a repr de Python, para o modelo entender o que corrigir."""
@@ -56,7 +62,7 @@ class Torre:
 
     def _resposta(self, r: httpx.Response) -> Any:
         if r.status_code == 404:
-            raise ErroTorre("Não encontrado: não existe, ou está fora do escopo deste agente.")
+            raise NaoEncontrado("Não encontrado: não existe, ou está fora do escopo deste agente.")
         if r.status_code >= 400:
             raise ErroTorre(f"A torre recusou ({r.status_code}): {_detalhe(r)}")
         tipo = r.headers.get("content-type", "")

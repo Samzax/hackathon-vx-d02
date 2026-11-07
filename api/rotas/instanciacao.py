@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Upl
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from regulaia import db, instanciacao as dominio, sigbm
+from regulaia import db, instanciacao as dominio, sigbm, usuarios
 
 from .. import auditoria
 from ..banco import conexao
@@ -348,6 +348,50 @@ def dados_faltando(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depen
     visiveis = {a["codigo"] for a in db.ativos(conn, empresa_id) if e.ve_ativo(a)} if not e.ve_tudo else None
     return [DadoFaltando(**vars(d)) for d in dominio.dados_que_faltam(conn, empresa_id)
             if visiveis is None or d.ativo in visiveis]
+
+
+# ------------------------------------------------------------------ etapa 7: a primeira conta
+
+
+class PrimeiraConta(BaseModel):
+    email: str = Field(max_length=320, examples=["ti@mineradora.example"])
+    nome: str = Field(min_length=2, max_length=200)
+    senha_provisoria: str = Field(min_length=usuarios.SENHA_MINIMA, max_length=200, description=(
+        "a pessoa troca no primeiro acesso (PUT /auth/senha); a torre não libera antes"))
+
+
+class ContaCriada(BaseModel):
+    usuario_id: int
+    email: str
+    papel: str
+    trocar_senha: bool = Field(description="a senha é provisória: a pessoa troca no primeiro acesso")
+
+
+@rota.post("/empresas/{empresa_id}/instanciacao/primeira-conta", status_code=201, response_model=ContaCriada,
+           summary="A primeira conta da cliente (TI da empresa), com senha provisória (curadoria)")
+def primeira_conta(empresa_id: int, dados: PrimeiraConta, request: Request,
+                   e: Escopo = Depends(curadoria), conn=Depends(conexao)):
+    """Só a primeira: daí em diante é a TI da própria empresa que cria as demais contas (e escolhe o
+    escopo por unidade de cada uma). Se a empresa já tem conta, a curadoria não cria outra."""
+    i = _instanciada(conn, e, empresa_id)
+    ja = conn.execute("SELECT COUNT(*) FROM usuario WHERE empresa = ?", (i["nome"],)).fetchone()[0]
+    if ja:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            f"a {i['nome']} já tem conta: as demais são criadas pela TI dela")
+    try:
+        uid = usuarios.criar(conn, dados.email, dados.nome, usuarios.ADMIN,
+                             senha=dados.senha_provisoria, por=e.assinante, empresa=i["nome"],
+                             trocar_senha=True)
+    except usuarios.ErroConta as erro:
+        auditoria.registrar(conn, request, "primeira_conta", dados.email, {"empresa": i["nome"]},
+                            resultado="recusado")
+        raise _erro(erro) from None
+    dominio.registrar(conn, empresa_id, dominio.CONTAS, f"primeira conta: {dados.email}", e.assinante,
+                      {"papel": usuarios.ADMIN})
+    auditoria.registrar(conn, request, "primeira_conta", dados.email,
+                        {"empresa": i["nome"], "papel": usuarios.ADMIN, "senha": "provisória"})
+    return ContaCriada(usuario_id=uid, email=dados.email.strip().lower(), papel=usuarios.ADMIN,
+                       trocar_senha=True)
 
 
 # ------------------------------------------------------------------ etapa 8: entrar em operação

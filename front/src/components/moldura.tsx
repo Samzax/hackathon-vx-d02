@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  BookCheck, CalendarRange, ChartColumn, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu,
+  BookCheck, CalendarRange, ChartColumn, ClipboardList, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu,
   MessageSquareText, Moon, Plus,
   Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
@@ -49,6 +49,9 @@ function useGrupos(): Grupo[] {
       { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" /> },
       ...(t.plataforma ? [{ href: "/regulatorio/normas-candidatas/", rotulo: "Normas candidatas", icone: <FileSearch className="size-4" />,
         contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const }] : []),
+    ] },
+    { titulo: "Empresa", itens: [
+      { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" /> },
     ] },
     { titulo: "Sobre", itens: [
       { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" /> },

@@ -72,6 +72,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Trocar a própria senha (obrigatório quando é provisória)
+         * @description A pessoa troca a própria senha. A primeira conta de uma cliente nasce com senha provisória, e a
+         *     troca aqui limpa a marca `trocar_senha`. Senha nova derruba as outras sessões da conta.
+         */
+        put: operations["trocar_senha_api_v1_auth_senha_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/visao": {
         parameters: {
             query?: never;
@@ -959,6 +980,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/empresas/{empresa_id}/instanciacao/primeira-conta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A primeira conta da cliente (TI da empresa), com senha provisória (curadoria)
+         * @description Só a primeira: daí em diante é a TI da própria empresa que cria as demais contas (e escolhe o
+         *     escopo por unidade de cada uma). Se a empresa já tem conta, a curadoria não cria outra.
+         */
+        post: operations["primeira_conta_api_v1_empresas__empresa_id__instanciacao_primeira_conta_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/empresas/{empresa_id}/instanciacao/operacao": {
         parameters: {
             query?: never;
@@ -971,6 +1013,179 @@ export interface paths {
         /** Entrar em operação: a torre passa a cobrar (a própria empresa; aceita pendência) */
         post: operations["entrar_em_operacao_api_v1_empresas__empresa_id__instanciacao_operacao_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/licencas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** As licenças da empresa, com a contagem de condicionantes por status */
+        get: operations["listar_api_v1_empresas__empresa_id__licencas_get"];
+        put?: never;
+        /** Enviar o PDF da licença (a própria empresa): o texto fica para conferir os trechos */
+        post: operations["enviar_api_v1_empresas__empresa_id__licencas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/licencas/{licenca_id}/leitura": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ler a licença: a IA propõe as condicionantes e o Python confere o trecho literal */
+        post: operations["ler_api_v1_licencas__licenca_id__leitura_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/condicionantes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** As condicionantes da empresa (propostas, aprovadas e rejeitadas) */
+        get: operations["condicionantes_api_v1_empresas__empresa_id__condicionantes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/condicionantes/{condicionante_id}/decisao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Aprovar (vira obrigação da empresa) ou rejeitar: só o Regulatório ou a Diretoria dela */
+        post: operations["decidir_api_v1_condicionantes__condicionante_id__decisao_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/licencas/{licenca_id}/renovacao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A validade da licença vira obrigação: pedir a renovação com a antecedência dela */
+        post: operations["renovacao_api_v1_licencas__licenca_id__renovacao_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/responsaveis/papeis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Os papéis que um responsável pode ter */
+        get: operations["papeis_api_v1_responsaveis_papeis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/responsaveis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Responsáveis técnicos da empresa, sempre com o CPF mascarado */
+        get: operations["listar_api_v1_empresas__empresa_id__responsaveis_get"];
+        put?: never;
+        /** Cadastrar um responsável técnico (a própria empresa); o CPF entra cifrado */
+        post: operations["criar_api_v1_empresas__empresa_id__responsaveis_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/responsaveis/{responsavel_id}/cpf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver o CPF inteiro (Regulatório e TI da própria empresa). Fica na auditoria */
+        get: operations["ver_cpf_api_v1_responsaveis__responsavel_id__cpf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/responsaveis/{responsavel_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remover um responsável (a própria empresa) */
+        delete: operations["apagar_api_v1_responsaveis__responsavel_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/dados-pessoais": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** LGPD: exportar os dados pessoais da empresa (TI da própria empresa). Fica na auditoria */
+        get: operations["exportar_api_v1_empresas__empresa_id__dados_pessoais_get"];
+        put?: never;
+        post?: never;
+        /** LGPD: apagar os dados pessoais da empresa (TI da própria empresa). Fica na auditoria */
+        delete: operations["apagar_dados_pessoais_api_v1_empresas__empresa_id__dados_pessoais_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1246,6 +1461,11 @@ export interface components {
             /** Mudancas */
             mudancas: components["schemas"]["MudancaRadar"][];
         };
+        /** Apagados */
+        Apagados: {
+            /** Removidos */
+            removidos: number;
+        };
         /** Areas */
         Areas: {
             /**
@@ -1360,6 +1580,11 @@ export interface components {
             /** Arquivo */
             arquivo: string;
         };
+        /** Body_enviar_api_v1_empresas__empresa_id__licencas_post */
+        Body_enviar_api_v1_empresas__empresa_id__licencas_post: {
+            /** Arquivo */
+            arquivo: string;
+        };
         /** Body_ler_api_v1_evidencias_leitura_post */
         Body_ler_api_v1_evidencias_leitura_post: {
             /** Arquivo */
@@ -1454,6 +1679,75 @@ export interface components {
             /** Sha256 */
             sha256: string;
         };
+        /** Condicionante */
+        Condicionante: {
+            /** Id */
+            id: number;
+            /** Licenca Id */
+            licenca_id: number;
+            /**
+             * Licenca
+             * @description a licença de onde ela veio
+             * @example LO 123/2026
+             */
+            licenca: string;
+            /** Titulo */
+            titulo: string;
+            /** Prazo */
+            prazo: string | null;
+            /** Periodicidade */
+            periodicidade: string | null;
+            /**
+             * Agenda
+             * @description a agenda que a torre usa (ver regulaia/agenda.py)
+             */
+            agenda: string | null;
+            /** Evidencia */
+            evidencia: string | null;
+            /**
+             * Aplica A
+             * @description empresa, unidade ou ativo
+             */
+            aplica_a: string | null;
+            /** Alvo */
+            alvo: string | null;
+            /**
+             * Trecho
+             * @description o texto literal da licença, conferido palavra por palavra
+             */
+            trecho: string;
+            /**
+             * Pagina
+             * @description em que página do PDF está o trecho
+             */
+            pagina: number | null;
+            /**
+             * Status
+             * @description pendente, aprovada ou rejeitada
+             */
+            status: string;
+            /**
+             * Codigo
+             * @description a obrigação criada na aprovação
+             */
+            codigo: string | null;
+            /** Proposta Em */
+            proposta_em: string;
+            /** Decidida Por */
+            decidida_por: string | null;
+            /** Decidida Em */
+            decidida_em: string | null;
+            /**
+             * Decide
+             * @description se quem pede pode aprovar ou rejeitar
+             */
+            decide: boolean;
+            /**
+             * Quem Decide
+             * @example Regulatório ou Diretoria da Mineradora Serra Azul
+             */
+            quem_decide: string;
+        };
         /** ConferenciaResposta */
         ConferenciaResposta: {
             /** Ok */
@@ -1490,6 +1784,20 @@ export interface components {
              * @description só a TI da plataforma escolhe: o nome da empresa cliente da conta; vazio cria conta da plataforma. A TI de uma cliente cria sempre na própria empresa.
              */
             empresa?: string | null;
+        };
+        /** ContaCriada */
+        ContaCriada: {
+            /** Usuario Id */
+            usuario_id: number;
+            /** Email */
+            email: string;
+            /** Papel */
+            papel: string;
+            /**
+             * Trocar Senha
+             * @description a senha é provisória: a pessoa troca no primeiro acesso
+             */
+            trocar_senha: boolean;
         };
         /**
          * ContaVista
@@ -1542,6 +1850,24 @@ export interface components {
              */
             empresas: string[];
         };
+        /** Cpf */
+        Cpf: {
+            /**
+             * Cpf
+             * @description o CPF inteiro; esta visualização ficou na auditoria
+             */
+            cpf: string;
+        };
+        /** Criado */
+        Criado: {
+            /** Responsavel Id */
+            responsavel_id: number;
+            /**
+             * Obrigacao Art
+             * @description a obrigação de renovar a ART, se havia vigência
+             */
+            obrigacao_art: string | null;
+        };
         /** CustoIA */
         CustoIA: {
             /** Tarefa */
@@ -1572,17 +1898,27 @@ export interface components {
              */
             obrigacoes: string[];
         };
-        /** Decisao */
-        Decisao: {
-            /** Aprovar */
-            aprovar: boolean;
+        /** DadosPessoais */
+        DadosPessoais: {
+            /** Empresa */
+            empresa: string;
             /**
-             * Correcoes
-             * @description campos corrigidos por quem aprova antes de aprovar ({campo: valor})
+             * Pessoas
+             * @description o que a plataforma guarda de pessoa, com o CPF em claro
              */
-            correcoes?: {
-                [key: string]: string | null;
-            } | null;
+            pessoas: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** Decidida */
+        Decidida: {
+            /** Status */
+            status: string;
+            /**
+             * Codigo
+             * @description o código da obrigação criada, quando aprovada
+             */
+            codigo: string | null;
         };
         /** DecisaoCandidata */
         DecisaoCandidata: {
@@ -1846,6 +2182,18 @@ export interface components {
              * @description nos dados operacionais das clientes (entrega, comprovante, evidência, comentário, atribuição, cadastro e responsável do ativo) a sessão só lê
              */
             so_leitura: boolean;
+            /**
+             * Unidades
+             * @description as unidades (operações) a que a conta está presa; vazio: toda a empresa
+             * @default []
+             */
+            unidades: string[];
+            /**
+             * Trocar Senha
+             * @description senha provisória: a pessoa troca por PUT /auth/senha antes de usar a torre
+             * @default false
+             */
+            trocar_senha: boolean;
             /** Visao */
             visao: string;
             /**
@@ -2170,7 +2518,7 @@ export interface components {
             nome: string;
         };
         /** Leitura */
-        Leitura: {
+        "Leitura-Input": {
             /** Ativo */
             ativo?: string | null;
             /** Empresa Id */
@@ -2217,6 +2565,51 @@ export interface components {
              * @default []
              */
             acionar: string[];
+        };
+        /** Licenca */
+        Licenca: {
+            /** Id */
+            id: number;
+            /**
+             * Tipo
+             * @description LP, LI, LO, LAC, outorga ou autorizacao
+             */
+            tipo: string;
+            /** Numero */
+            numero: string;
+            /** Orgao */
+            orgao: string | null;
+            /** Emitida Em */
+            emitida_em: string | null;
+            /**
+             * Validade
+             * @description AAAA-MM-DD; vira obrigação de renovação
+             */
+            validade: string | null;
+            /**
+             * Renovar Dias
+             * @description quantos dias antes do vencimento pedir a renovação
+             */
+            renovar_dias: number;
+            /** Unidade */
+            unidade: string | null;
+            /** Ativo Codigo */
+            ativo_codigo: string | null;
+            /** Arquivo */
+            arquivo: string | null;
+            /** Sha256 */
+            sha256: string | null;
+            /** Enviada Por */
+            enviada_por: string;
+            /** Enviada Em */
+            enviada_em: string;
+            /**
+             * Condicionantes
+             * @description quantas condicionantes em cada status
+             */
+            condicionantes: {
+                [key: string]: number;
+            };
         };
         /** Linha */
         Linha: {
@@ -2662,6 +3055,16 @@ export interface components {
              */
             ficticia: boolean;
         };
+        /** NovaSenha */
+        NovaSenha: {
+            /**
+             * Senha Atual
+             * @description a senha de agora (a provisória, no primeiro acesso)
+             */
+            senha_atual: string;
+            /** Nova */
+            nova: string;
+        };
         /** NovaUnidade */
         NovaUnidade: {
             /**
@@ -2673,6 +3076,48 @@ export interface components {
             uf?: string | null;
             /** Municipio */
             municipio?: string | null;
+        };
+        /** Novo */
+        Novo: {
+            /** Papel */
+            papel: string;
+            /** Nome */
+            nome: string;
+            /**
+             * Cpf
+             * @description guardado cifrado; a API nunca devolve inteiro na lista
+             */
+            cpf?: string | null;
+            /** Registro */
+            registro?: string | null;
+            /** Art Numero */
+            art_numero?: string | null;
+            /**
+             * Art Vigencia Ate
+             * @description AAAA-MM-DD
+             */
+            art_vigencia_ate?: string | null;
+            /**
+             * Unidade
+             * @description a unidade por que responde
+             */
+            unidade?: string | null;
+            /**
+             * Ativo Codigo
+             * @description ou o ativo
+             */
+            ativo_codigo?: string | null;
+            /**
+             * Ficticio
+             * @description dado de demonstração
+             * @default false
+             */
+            ficticio: boolean;
+            /**
+             * Consentimento Para
+             * @description empreendedor pessoa física: para que a pessoa consentiu em informar os próprios dados
+             */
+            consentimento_para?: string | null;
         };
         /** NovoAtivo */
         NovoAtivo: {
@@ -2783,6 +3228,16 @@ export interface components {
             /** Linhas */
             linhas: components["schemas"]["LinhaPainel"][];
         };
+        /** Papeis */
+        Papeis: {
+            /**
+             * Papeis
+             * @description {papel: nome para mostrar}
+             */
+            papeis: {
+                [key: string]: string;
+            };
+        };
         /** PedidoPergunta */
         PedidoPergunta: {
             /** Pergunta */
@@ -2812,6 +3267,21 @@ export interface components {
             /** Erros */
             erros: number;
         };
+        /** PrimeiraConta */
+        PrimeiraConta: {
+            /**
+             * Email
+             * @example ti@mineradora.example
+             */
+            email: string;
+            /** Nome */
+            nome: string;
+            /**
+             * Senha Provisoria
+             * @description a pessoa troca no primeiro acesso (PUT /auth/senha); a torre não libera antes
+             */
+            senha_provisoria: string;
+        };
         /** Proposta */
         Proposta: {
             /** Ato Id */
@@ -2837,16 +3307,80 @@ export interface components {
         };
         /** Registro */
         Registro: {
-            leitura: components["schemas"]["Leitura"];
+            leitura: components["schemas"]["Leitura-Input"];
             /** Arquivo */
             arquivo: string;
             /** Guardado Em */
             guardado_em?: string | null;
         };
+        /** Renovacao */
+        Renovacao: {
+            /**
+             * Codigo
+             * @description a obrigação de renovar; vazio se a licença não tem validade
+             */
+            codigo: string | null;
+        };
+        /** Reprovada */
+        Reprovada: {
+            /** Titulo */
+            titulo: string;
+            /**
+             * Motivo
+             * @description por que o Python não aceitou a proposta da IA
+             */
+            motivo: string;
+        };
         /** Responsavel */
-        Responsavel: {
+        "Responsavel-Input": {
             /** Area */
             area: string | null;
+        };
+        /** Responsavel */
+        "Responsavel-Output": {
+            /** Id */
+            id: number;
+            /**
+             * Papel
+             * @description responsavel_tecnico, coordenador_paebm, responsavel_ambiental...
+             */
+            papel: string;
+            /** Papel Rotulo */
+            papel_rotulo: string;
+            /** Nome */
+            nome: string;
+            /**
+             * Cpf Mascarado
+             * @description o CPF como a API devolve por padrão; nunca o inteiro
+             * @example ***.456.789-**
+             */
+            cpf_mascarado: string;
+            /**
+             * Registro
+             * @description registro no conselho
+             * @example CREA MG-123456
+             */
+            registro: string | null;
+            /** Art Numero */
+            art_numero: string | null;
+            /**
+             * Art Vigencia Ate
+             * @description ART vencendo vira obrigação
+             */
+            art_vigencia_ate: string | null;
+            /** Unidade */
+            unidade: string | null;
+            /** Ativo Codigo */
+            ativo_codigo: string | null;
+            /**
+             * Ficticio
+             * @description dado de demonstração (na demo, só CPF fictício)
+             */
+            ficticio: boolean;
+            /** Criado Por */
+            criado_por: string;
+            /** Criado Em */
+            criado_em: string;
         };
         /** RespostaPergunta */
         RespostaPergunta: {
@@ -2881,7 +3415,7 @@ export interface components {
         };
         /** ResultadoLeitura */
         ResultadoLeitura: {
-            leitura: components["schemas"]["Leitura"];
+            leitura: components["schemas"]["api__rotas__evidencias__Leitura"];
             /** Completa */
             completa: boolean;
             /** Arquivo */
@@ -3142,11 +3676,119 @@ export interface components {
             /** Id */
             id: number;
         };
+        /** Leitura */
+        api__rotas__evidencias__Leitura: {
+            /** Ativo */
+            ativo?: string | null;
+            /** Empresa Id */
+            empresa_id?: number | null;
+            /** Documento */
+            documento?: string | null;
+            /** Obrigacao */
+            obrigacao?: string | null;
+            /** Data */
+            data?: string | null;
+            /** Periodo */
+            periodo?: string | null;
+            /** Pontuacao Maxima */
+            pontuacao_maxima?: number | null;
+            /**
+             * Estado Conservacao
+             * @default {}
+             */
+            estado_conservacao: {
+                [key: string]: number;
+            };
+            /**
+             * Metodo
+             * @default regra
+             */
+            metodo: string;
+            /**
+             * Problemas
+             * @default []
+             */
+            problemas: string[];
+            /**
+             * Avisos
+             * @default []
+             */
+            avisos: string[];
+            /**
+             * Gatilhos
+             * @default []
+             */
+            gatilhos: string[];
+            /**
+             * Acionar
+             * @default []
+             */
+            acionar: string[];
+        };
         /** Criada */
         api__rotas__instanciacao__Criada: {
             /** Empresa Id */
             empresa_id: number;
             estado: components["schemas"]["Estado"];
+        };
+        /** Decisao */
+        api__rotas__licencas__Decisao: {
+            /** Aprovar */
+            aprovar: boolean;
+            /**
+             * Correcoes
+             * @description o que quem aprova corrigiu antes (titulo, prazo, periodicidade, agenda, evidencia, aplica_a, alvo)
+             */
+            correcoes?: {
+                [key: string]: string | null;
+            } | null;
+            /** Nota */
+            nota?: string | null;
+        };
+        /** Leitura */
+        api__rotas__licencas__Leitura: {
+            /** Licenca Id */
+            licenca_id: number;
+            /**
+             * Propostas
+             * @description as que passaram na conferência e ficaram pendentes
+             */
+            propostas: components["schemas"]["Condicionante"][];
+            /**
+             * Reprovadas
+             * @description o que a IA propôs e o Python recusou (não entra)
+             */
+            reprovadas: components["schemas"]["Reprovada"][];
+            /**
+             * Validade Lida
+             * @description a validade que a IA achou no texto, para conferir
+             */
+            validade_lida: string | null;
+            /** Numero Lido */
+            numero_lido: string | null;
+            /** Orgao Lido */
+            orgao_lido: string | null;
+            /** Modelo */
+            modelo: string | null;
+            /** Custo Usd */
+            custo_usd: number;
+            /**
+             * Problemas
+             * @default []
+             */
+            problemas: string[];
+        };
+        /** Decisao */
+        api__rotas__regulatorio__Decisao: {
+            /** Aprovar */
+            aprovar: boolean;
+            /**
+             * Correcoes
+             * @description campos corrigidos por quem aprova antes de aprovar ({campo: valor})
+             */
+            correcoes?: {
+                [key: string]: string | null;
+            } | null;
         };
     };
     responses: never;
@@ -3244,6 +3886,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Eu"];
+                };
+            };
+        };
+    };
+    trocar_senha_api_v1_auth_senha_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NovaSenha"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Eu"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -4106,7 +4781,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Responsavel"];
+                "application/json": components["schemas"]["Responsavel-Input"];
             };
         };
         responses: {
@@ -4203,7 +4878,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Decisao"];
+                "application/json": components["schemas"]["api__rotas__regulatorio__Decisao"];
             };
         };
         responses: {
@@ -4987,6 +5662,41 @@ export interface operations {
             };
         };
     };
+    primeira_conta_api_v1_empresas__empresa_id__instanciacao_primeira_conta_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrimeiraConta"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContaCriada"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     entrar_em_operacao_api_v1_empresas__empresa_id__instanciacao_operacao_post: {
         parameters: {
             query?: never;
@@ -5009,6 +5719,432 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EmOperacao"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_v1_empresas__empresa_id__licencas_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Licenca"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enviar_api_v1_empresas__empresa_id__licencas_post: {
+        parameters: {
+            query: {
+                tipo: string;
+                numero: string;
+                orgao?: string | null;
+                emitida_em?: string | null;
+                validade?: string | null;
+                renovar_dias?: number;
+                unidade?: string | null;
+                ativo_codigo?: string | null;
+            };
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_enviar_api_v1_empresas__empresa_id__licencas_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Licenca"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ler_api_v1_licencas__licenca_id__leitura_post: {
+        parameters: {
+            query: {
+                empresa_id: number;
+            };
+            header?: never;
+            path: {
+                licenca_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["api__rotas__licencas__Leitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    condicionantes_api_v1_empresas__empresa_id__condicionantes_get: {
+        parameters: {
+            query?: {
+                status_?: string | null;
+                licenca_id?: number | null;
+            };
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Condicionante"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decidir_api_v1_condicionantes__condicionante_id__decisao_post: {
+        parameters: {
+            query: {
+                empresa_id: number;
+            };
+            header?: never;
+            path: {
+                condicionante_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["api__rotas__licencas__Decisao"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Decidida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    renovacao_api_v1_licencas__licenca_id__renovacao_post: {
+        parameters: {
+            query: {
+                empresa_id: number;
+            };
+            header?: never;
+            path: {
+                licenca_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Renovacao"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    papeis_api_v1_responsaveis_papeis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Papeis"];
+                };
+            };
+        };
+    };
+    listar_api_v1_empresas__empresa_id__responsaveis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Responsavel-Output"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_api_v1_empresas__empresa_id__responsaveis_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Novo"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Criado"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ver_cpf_api_v1_responsaveis__responsavel_id__cpf_get: {
+        parameters: {
+            query: {
+                empresa_id: number;
+            };
+            header?: never;
+            path: {
+                responsavel_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Cpf"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apagar_api_v1_responsaveis__responsavel_id__delete: {
+        parameters: {
+            query: {
+                empresa_id: number;
+            };
+            header?: never;
+            path: {
+                responsavel_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ok"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    exportar_api_v1_empresas__empresa_id__dados_pessoais_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DadosPessoais"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apagar_dados_pessoais_api_v1_empresas__empresa_id__dados_pessoais_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Apagados"];
                 };
             };
             /** @description Validation Error */

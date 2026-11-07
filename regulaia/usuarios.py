@@ -88,10 +88,28 @@ def _validar(papel: str, area: str | None, senha: str | None) -> None:
         raise ErroConta(f"a senha precisa de pelo menos {SENHA_MINIMA} caracteres")
 
 
+def unidades_da_conta(usuario: dict) -> list[str]:
+    """As unidades (operações) a que a conta está restrita. Vazio: sem restrição por unidade — a conta
+    vê o que o papel e a área dela deixam ver, em toda a empresa."""
+    bruto = usuario.get("unidades") or "[]"
+    if isinstance(bruto, (list, tuple)):
+        lista = list(bruto)
+    else:
+        try:
+            lista = json.loads(bruto)
+        except (TypeError, ValueError):
+            return []
+    return [str(x).strip() for x in lista if str(x).strip()] if isinstance(lista, list) else []
+
+
 def criar(conn, email: str, nome: str, papel: str, *, area: str | None = None, senha: str | None = None,
           teste: bool = False, por: str | None = None, empresa: str | None = None,
-          plataforma: bool = False) -> int:
-    """Conta nova. Sem senha, só entra pelo botão da demo (vale para conta de teste)."""
+          plataforma: bool = False, unidades: list[str] | None = None,
+          trocar_senha: bool = False) -> int:
+    """Conta nova. Sem senha, só entra pelo botão da demo (vale para conta de teste).
+
+    `unidades`: restringe a conta a essas operações (vazio: toda a empresa). `trocar_senha`: senha
+    provisória, que a pessoa troca no primeiro acesso (a primeira conta de uma cliente nova)."""
     e, nome = _email(email), (nome or "").strip()
     if not nome:
         raise ErroConta("a conta precisa de um nome")
@@ -100,12 +118,16 @@ def criar(conn, email: str, nome: str, papel: str, *, area: str | None = None, s
         raise ErroConta("conta normal precisa de senha")
     if conn.execute("SELECT 1 FROM usuario WHERE email = ?", (e,)).fetchone():
         raise ErroConta(f"já existe uma conta com o e-mail {e}")
+    escopo = [u.strip() for u in (unidades or []) if u and u.strip()]
+    if escopo and papel in VE_TUDO:
+        raise ErroConta(f"{PAPEIS[papel]} vê toda a empresa: escopo por unidade é de gestor")
     with conn:
         cur = conn.execute(
-            "INSERT INTO usuario (email, nome, papel, area, senha, teste, criado_por, empresa, plataforma) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO usuario (email, nome, papel, area, senha, teste, criado_por, empresa, plataforma, "
+            "unidades, trocar_senha) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (e, nome, papel, (area or "").strip() or None, hash_senha(senha) if senha else None, int(teste), por,
-             (empresa or "").strip() or None, int(plataforma)))
+             (empresa or "").strip() or None, int(plataforma),
+             json.dumps(escopo, ensure_ascii=False), int(trocar_senha)))
     return cur.lastrowid
 
 
@@ -134,8 +156,10 @@ def _admins_ativos(conn, exceto: int | None = None, empresa: str | None = None) 
 
 
 def editar(conn, usuario_id: int, *, nome: str | None = None, papel: str | None = None, area: str | None = None,
-           teste: bool | None = None, ativa: bool | None = None) -> dict:
-    """Muda o que vier preenchido. Não deixa a empresa sem nenhuma conta de TI ativa."""
+           teste: bool | None = None, ativa: bool | None = None,
+           unidades: list[str] | None = None) -> dict:
+    """Muda o que vier preenchido. Não deixa a empresa sem nenhuma conta de TI ativa.
+    `unidades`: o escopo por unidade da conta (lista vazia tira a restrição)."""
     r = conn.execute("SELECT * FROM usuario WHERE id = ?", (usuario_id,)).fetchone()
     if r is None:
         raise ErroConta(f"conta {usuario_id} não existe")
@@ -152,19 +176,30 @@ def editar(conn, usuario_id: int, *, nome: str | None = None, papel: str | None 
         raise ErroConta("esta é a única conta de TI ativa: crie outra antes de mudar ou desativar esta")
     if not novo["senha"] and not novo["teste"]:
         raise ErroConta("conta sem senha só pode ser de teste: defina uma senha antes")
+    escopo = unidades_da_conta(novo) if unidades is None else [u.strip() for u in unidades if u and u.strip()]
+    if escopo and novo["papel"] in VE_TUDO:
+        raise ErroConta(f"{PAPEIS[novo['papel']]} vê toda a empresa: escopo por unidade é de gestor")
     with conn:
-        conn.execute("UPDATE usuario SET nome = ?, papel = ?, area = ?, teste = ?, ativa = ? WHERE id = ?",
+        conn.execute("UPDATE usuario SET nome = ?, papel = ?, area = ?, teste = ?, ativa = ?, unidades = ? "
+                     "WHERE id = ?",
                      (novo["nome"].strip(), novo["papel"], novo["area"], int(novo["teste"]), int(novo["ativa"]),
-                      usuario_id))
+                      json.dumps(escopo, ensure_ascii=False), usuario_id))
     return _sem_senha_dict(conn.execute("SELECT * FROM usuario WHERE id = ?", (usuario_id,)).fetchone())
 
 
-def definir_senha(conn, usuario_id: int, senha: str) -> None:
+def definir_senha(conn, usuario_id: int, senha: str, provisoria: bool = False) -> None:
+    """Troca a senha. `provisoria`: a pessoa terá de trocá-la no primeiro acesso (é assim que a primeira
+    conta de uma cliente nova nasce); senha definida pela própria pessoa limpa essa marca."""
     _validar(GESTOR, "x", senha)
     with conn:
-        n = conn.execute("UPDATE usuario SET senha = ? WHERE id = ?", (hash_senha(senha), usuario_id)).rowcount
+        n = conn.execute("UPDATE usuario SET senha = ?, trocar_senha = ? WHERE id = ?",
+                         (hash_senha(senha), int(provisoria), usuario_id)).rowcount
     if not n:
         raise ErroConta(f"conta {usuario_id} não existe")
+
+
+def precisa_trocar_senha(usuario: dict) -> bool:
+    return bool(usuario.get("trocar_senha"))
 
 
 def autenticar(conn, email: str, senha: str) -> dict | None:
