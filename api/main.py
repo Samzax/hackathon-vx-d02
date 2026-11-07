@@ -8,7 +8,7 @@ falam só com esta API. O domínio continua em `mitra/`, igual para SQLite e Pos
 
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from mitra import banco as banco_mitra
 from mitra import db, demo, usuarios
 
 from .banco import abrir_pool, conexao
@@ -27,9 +28,37 @@ from .rotas import (admin, auth, descoberta, evidencias, instanciacao, licencas,
 VERSAO = "1.0.0"
 PREFIXO = "/api/v1"
 
+# pg_advisory_lock: um processo por vez prepara o banco. A API sobe com --workers 2 (e pode rodar em
+# várias tasks); sem a trava, dois workers viam "a conta não existe" ao mesmo tempo, os dois inseriam e o
+# segundo derrubava o container (UniqueViolation em usuario_email_key no deploy de 7/11/2026).
+# Chave diferente da do Alembic (724100245): a migração termina antes do uvicorn subir.
+TRAVA_PREPARO = 724100246
+
+
+@contextmanager
+def _um_processo_por_vez(cfg: Config):
+    """No Postgres, segura a trava do preparo numa conexão própria até o fim do bloco. SQLite: nada
+    (um arquivo local, um processo)."""
+    if not cfg.postgres:
+        yield
+        return
+    import psycopg
+
+    with psycopg.connect(banco_mitra.url_psycopg(cfg.banco), autocommit=True) as trava:
+        trava.execute("SELECT pg_advisory_lock(%s)", (TRAVA_PREPARO,))
+        try:
+            yield
+        finally:
+            trava.execute("SELECT pg_advisory_unlock(%s)", (TRAVA_PREPARO,))
+
 
 def _preparar_banco(cfg: Config) -> None:
-    """Primeiro start: esquema aplicado e, se o banco estiver vazio, a demo montada."""
+    """Primeiro start: esquema aplicado e, se o banco estiver vazio, a demo montada. Um processo por vez."""
+    with _um_processo_por_vez(cfg):
+        _preparar_banco_sem_trava(cfg)
+
+
+def _preparar_banco_sem_trava(cfg: Config) -> None:
     conn = db.conectar(cfg.banco)
     try:
         vazio = conn.execute("SELECT COUNT(*) FROM empresa").fetchone()[0] == 0
