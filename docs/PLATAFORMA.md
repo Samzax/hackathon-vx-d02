@@ -175,6 +175,47 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
       ter cada uma a sua "LO-01". Quando entrar a segunda cliente com licença própria, prefixar o código
       ou trocar o UNIQUE por (empresa, codigo).
 
+## Instanciação (tarefa em curso: [TAREFA_INSTANCIACAO.md](TAREFA_INSTANCIACAO.md))
+
+Levar uma cliente nova do zero até a torre funcionando. Estado por parte, atualizado a cada commit,
+para outra sessão continuar daqui.
+
+### Pronto
+- **Revisão de código da base** ([REVISAO_CODIGO.md](REVISAO_CODIGO.md)), antes de construir em cima:
+  11 achados conferidos no código (segunda opinião de workers do DeepSeek pelo Hermes, um por área),
+  cada correção com teste que falhava antes.
+  - `f95b34d` — `PATCH /ativos/{id}/atributos` aceitava valor de tipo errado e derrubava com 500 todo
+    painel/ficha/boletim da empresa; código de obrigação inexistente (500) ou de outra cliente (gravava
+    referência alheia) em `/atribuicoes`, `/comentarios` e `DELETE /entregas`; `limite` da auditoria sem
+    faixa. Os campos do cadastro viraram domínio: **`regulaia/campos.py`** (`converter`/`conferir`), que a
+    instanciação usa para validar formulário e planilha linha a linha.
+  - `0b9d75c` — agente MCP: `pendencias(ativo=…)` respondia "nada pendente" para ativo atrasado (mandava
+    id onde a rota filtra código); agente preso por `REGULAIA_EMPRESA` vazava obrigação própria de outra
+    cliente (histórico e análise de ato) — `GET /obrigacoes/{codigo}/historico` e `POST /radar/analise`
+    ganharam `empresa_id`; `analisar_ato` perdeu o `readOnlyHint` (chama IA: custo); erros de validação e
+    de rede viraram frase legível.
+
+### Em andamento
+- Correções da API da revisão: período de entrega inventado derrubando o painel, gestor delegado vendo o
+  histórico das outras áreas do ativo, conta de demo sem senha em produção, `ano`/`max_length` sem faixa.
+
+### Falta
+- Domínio `regulaia/instanciacao.py`: as 8 etapas com estado (`pendente`, `em_andamento`, `pronta`), quem
+  fez e quando; migração **0005** (tabelas `instanciacao`, `instanciacao_evento`, `unidade`, coluna
+  `ativo.unidade`, `usuario.trocar_senha`) — **ainda sem commit**, e com ela o UNIQUE de
+  `obrigacao.codigo` por (empresa, código).
+- Licenças e condicionantes (PDF → propostas com trecho conferido, aprovação pelo Regulatório da própria
+  empresa), responsáveis técnicos com **CPF criptografado** (`REGULAIA_CHAVE_DADOS`, ver "Para a infra"),
+  escopo por unidade, personalização (prazo interno, normas internas), API, front e e2e.
+
+## Para a infra
+
+Variáveis de ambiente novas desta tarefa; quem cuida da infra liga em produção.
+
+| Variável | Para que serve | De onde vem em produção |
+|---|---|---|
+| `REGULAIA_CHAVE_DADOS` | Chave da criptografia por campo do dado pessoal (CPF dos responsáveis técnicos). Qualquer texto vale: a chave Fernet é derivada por SHA-256 (o Secrets Manager do evento entrega texto alfanumérico de 64 caracteres). **Sem ela a API sobe, mas guardar CPF dá erro claro** — nada de chave padrão no código. | Secrets Manager (segredo novo, gerado na pilha; nunca no Git) |
+
 ## CI (run 42281176074, commit ae998d9)
 
 - lint, imagem: ok.

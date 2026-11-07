@@ -82,6 +82,88 @@ def test_banco_so_aceita_a_api_e_o_radar(modelo):
     assert len(no_banco) == 2 and all("SourceSecurityGroupId" in r["Properties"] for r in no_banco)
 
 
+def test_descoberta_roda_toda_semana_pelo_eventbridge(modelo):
+    modelo.has_resource_properties("AWS::Events::Rule", {"ScheduleExpression": "cron(0 6 ? * SUN *)"})
+    comandos = [" ".join(c.get("Command", [])) for d in modelo.find_resources("AWS::ECS::TaskDefinition").values()
+                for c in d["Properties"]["ContainerDefinitions"]]
+    assert any("api.jobs descoberta" in c for c in comandos)
+
+
+def test_ia_desligada_por_padrao_e_chave_de_dados_no_secrets_manager(modelo):
+    for d in modelo.find_resources("AWS::ECS::TaskDefinition").values():
+        for c in d["Properties"]["ContainerDefinitions"]:
+            env = {e["Name"]: e["Value"] for e in c.get("Environment", [])}
+            assert env["REGULAIA_BEDROCK"] == ""
+            assert {"REGULAIA_CHAVE_DADOS", "REGULAIA_SENHA_DEMO"} <= {s["Name"] for s in c.get("Secrets", [])}
+
+
+def test_bedrock_liberado_nas_outras_regioes_do_perfil_de_inferencia(modelo):
+    recursos = set()
+    for p in modelo.find_resources("AWS::IAM::Policy").values():
+        for s in p["Properties"]["PolicyDocument"]["Statement"]:
+            if s.get("Sid") == "IAViaBedrock":
+                r = s["Resource"]
+                recursos |= {x if isinstance(x, str) else str(x) for x in (r if isinstance(r, list) else [r])}
+    assert "arn:aws:bedrock:*::foundation-model/*" in recursos
+
+
+def test_ia_ligada_com_contexto():
+    app = cdk.App()
+    pilha = RegulaIA(app, "TesteIA", ia=True, imagem=ecs.ContainerImage.from_registry("public.ecr.aws/docker/library/python:3.13-slim"),
+                     env=cdk.Environment(account="123456789012", region="us-east-1"))
+    defs = assertions.Template.from_stack(pilha).find_resources("AWS::ECS::TaskDefinition")
+    envs = [{e["Name"]: e["Value"] for e in c.get("Environment", [])}
+            for d in defs.values() for c in d["Properties"]["ContainerDefinitions"]]
+    assert all(e["REGULAIA_BEDROCK"] == "1" for e in envs)
+
+
+def test_imagem_do_ecr_pela_tag():
+    app = cdk.App()
+    pilha = RegulaIA(app, "TesteEcr", imagem_tag="abc123", env=cdk.Environment(account="123456789012", region="us-east-1"))
+    texto = str(assertions.Template.from_stack(pilha).to_json())
+    assert "regulaia-api" in texto and "abc123" in texto
+
+
+def test_build_na_aws_privilegiado_e_publica_no_ecr():
+    from build_stack import RegulaIABuild
+
+    app = cdk.App()
+    t = assertions.Template.from_stack(RegulaIABuild(app, "TesteBuild", env=cdk.Environment(
+        account="123456789012", region="us-east-1")))
+    t.has_resource_properties("AWS::ECR::Repository", {"RepositoryName": "regulaia-api"})
+    t.has_resource_properties("AWS::CodeBuild::Project", {"Environment": assertions.Match.object_like(
+        {"PrivilegedMode": True})})
+    t.has_resource_properties("AWS::S3::Bucket", {"PublicAccessBlockConfiguration": assertions.Match.object_like(
+        {"BlockPublicAcls": True})})
+
+
+def test_https_pelo_cloudfront_sem_cache_na_api(modelo):
+    modelo.has_resource_properties("AWS::CloudFront::Distribution", {"DistributionConfig": assertions.Match.object_like({
+        "DefaultCacheBehavior": assertions.Match.object_like({
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": assertions.Match.array_with(["POST", "DELETE"]),
+            "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",         # CachingDisabled
+        })})})
+    for d in modelo.find_resources("AWS::ECS::TaskDefinition").values():
+        for c in d["Properties"]["ContainerDefinitions"]:
+            assert {e["Name"]: e["Value"] for e in c.get("Environment", [])}["REGULAIA_COOKIE_SEGURO"] == "1"
+
+
+def test_alb_so_aceita_o_cloudfront(modelo):
+    for sg in modelo.find_resources("AWS::EC2::SecurityGroup").values():
+        for regra in sg["Properties"].get("SecurityGroupIngress", []):
+            assert regra.get("CidrIp") != "0.0.0.0/0", regra
+    assert "pl-3b927c52" in str(modelo.to_json())
+
+
+def test_com_certificado_proprio_o_cloudfront_sai():
+    app = cdk.App()
+    pilha = RegulaIA(app, "TesteCert", certificado_arn="arn:aws:acm:us-east-1:123456789012:certificate/abc",
+                     imagem=ecs.ContainerImage.from_registry("public.ecr.aws/docker/library/python:3.13-slim"),
+                     env=cdk.Environment(account="123456789012", region="us-east-1"))
+    assertions.Template.from_stack(pilha).resource_count_is("AWS::CloudFront::Distribution", 0)
+
+
 def test_descricoes_que_o_cloudformation_aceita(modelo):
     """O CloudFormation recusa acento na descrição do security group (o deploy quebraria no meio)."""
     import re

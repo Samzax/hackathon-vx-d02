@@ -1123,6 +1123,11 @@ export interface components {
             identificacao?: string | null;
             /** Texto */
             texto: string;
+            /**
+             * Empresa Id
+             * @description analisa no escopo desta empresa (normas públicas e obrigações próprias dela). É o que o agente preso a uma empresa manda; sem ele, a plataforma analisa contra o catálogo inteiro e a cliente contra o dela. Empresa de outra cliente: 404.
+             */
+            empresa_id?: number | null;
         };
         /** AtoExemplo */
         AtoExemplo: {
@@ -3039,7 +3044,10 @@ export interface operations {
     };
     historico_api_v1_obrigacoes__codigo__historico_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description restringe ao escopo desta empresa (normas públicas e as dela): é o que o agente preso a uma empresa manda, para a obrigação própria de outra cliente responder 404 também na plataforma */
+                empresa_id?: number | null;
+            };
             header?: never;
             path: {
                 codigo: string;

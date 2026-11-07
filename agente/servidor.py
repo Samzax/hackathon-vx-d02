@@ -25,8 +25,9 @@ from .cliente import ErroTorre, Torre
 from .ferramentas import CHAMA_IA, INSTRUCOES, PENDENTES, ferramentas
 
 LEITURA = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
-# analisar_ato manda o texto para a IA (fora da torre), mas não grava nada
-LEITURA_COM_IA = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True)
+# analisar_ato não escreve na torre, mas chama a IA (gasta dinheiro e grava a resposta no cache):
+# readOnlyHint=False para o cliente MCP pedir confirmação em vez de executar como leitura
+CHAMA_A_IA = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=True)
 
 
 def _erro_de_ferramenta(fn: Callable) -> Callable:
@@ -45,7 +46,7 @@ def criar_servidor(torre: Torre) -> MCPServer:
                     instructions=INSTRUCOES, version="1.0.0")
     for fn in ferramentas(torre):
         mcp.add_tool(_erro_de_ferramenta(fn), name=fn.__name__,
-                     annotations=LEITURA_COM_IA if fn.__name__ in CHAMA_IA else LEITURA)
+                     annotations=CHAMA_A_IA if fn.__name__ in CHAMA_IA else LEITURA)
     return mcp
 
 

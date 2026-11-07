@@ -104,6 +104,10 @@ class Ato(BaseModel):
     identificacao: str | None = Field(None, examples=["RESOLUÇÃO ANM Nº 245, DE 31 DE JULHO DE 2026"],
                                       description="vazio: a primeira linha do texto, até o ano")
     texto: str = Field(min_length=20, max_length=200_000)
+    empresa_id: int | None = Field(None, description=(
+        "analisa no escopo desta empresa (normas públicas e obrigações próprias dela). É o que o agente "
+        "preso a uma empresa manda; sem ele, a plataforma analisa contra o catálogo inteiro e a cliente "
+        "contra o dela. Empresa de outra cliente: 404."))
 
 
 class Funil(BaseModel):
@@ -320,8 +324,13 @@ def exemplo(e: Escopo = Depends(regulatorio)):
 
 def _analisar(conn, rot: Roteador, dados: Ato, e: Escopo) -> impacto.Analise:
     ident = (dados.identificacao or "").strip() or torre.titulo_do_ato(dados.texto)
-    try:    # a cliente só analisa contra as normas públicas e as obrigações dela
-        return impacto.analisar(conn, rot, ident, dados.texto, empresa=None if e.plataforma else e.empresa)
+    # a cliente só analisa contra as normas públicas e as obrigações dela; com `empresa_id`, a plataforma
+    # (o agente preso a uma cliente) também: condicionante de outra empresa nunca aparece na análise
+    empresa = None if e.plataforma else e.empresa
+    if dados.empresa_id is not None:
+        empresa = empresa_visivel(conn, e, dados.empresa_id)["nome"]
+    try:
+        return impacto.analisar(conn, rot, ident, dados.texto, empresa=empresa)
     except Exception as erro:       # sem chave e sem cache, ou provedor fora do ar
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"análise indisponível: {erro}") from None
 

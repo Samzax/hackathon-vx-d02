@@ -218,7 +218,10 @@ def rotulo_humano(periodo: str) -> str:
     if m := re.fullmatch(r"(\d{4})-S([12])", periodo):
         return f"{m.group(2)}º semestre/{m.group(1)}"
     if re.fullmatch(r"\d{4}-\d\d-\d\d", periodo):
-        return date.fromisoformat(periodo).strftime("%d/%m/%Y")
+        try:
+            return date.fromisoformat(periodo).strftime("%d/%m/%Y")
+        except ValueError:      # "2026-13-01" gravado antes da validação da API não derruba a tela
+            return periodo
     if periodo == "primeira":
         return "primeira execução (nenhuma registrada)"
     if periodo == "unico":

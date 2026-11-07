@@ -369,6 +369,25 @@ def test_condicionante_da_licenca_de_uma_nao_vale_para_a_licenca_da_outra(client
     assert cliente.get(_url("/obrigacoes/OB-01/historico")).status_code == 200    # norma pública: todas veem
 
 
+def test_codigo_de_obrigacao_inexistente_ou_alheio_nao_estoura_nem_grava(cliente, outra, cfg):
+    """Código que não existe (antes: 500) e código de obrigação própria de outra cliente (antes: 200,
+    gravando atribuição e evento apontando para a obrigação alheia) respondem 404 e não gravam nada."""
+    como(cliente, "diretoria@morroalto.demo")
+    b3 = outra["ativos"]["B3"]
+    for codigo in ("NADA-99", "LO-01"):     # inexistente e condicionante da licença da Serra Azul
+        rs = [
+            cliente.post(_url("/atribuicoes"), json={"ativo_id": b3, "codigo": codigo, "responsavel": "Geo"}),
+            cliente.post(_url("/comentarios"), json={"ativo_id": b3, "codigo": codigo, "texto": "oi"}),
+            cliente.request("DELETE", _url("/entregas"),
+                            params={"ativo_id": b3, "codigo": codigo, "periodo": "2026-10"}),
+        ]
+        assert [r.status_code for r in rs] == [404] * len(rs), codigo
+    conn = db.conectar(cfg.banco)
+    assert conn.execute("SELECT COUNT(*) FROM responsavel_obrigacao WHERE ativo_id = ?", (b3,)).fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM evento WHERE ativo_id = ?", (b3,)).fetchone()[0] == 0
+    conn.close()
+
+
 def test_fir_da_b3_lida_pela_serra_azul_cai_na_b3_da_serra_azul(cliente, outra, cfg):
     como(cliente, "diretoria@serraazul.demo")
     pdf = evidencias.exemplo("FIR_B3_2026-10-1Q.pdf")
@@ -386,6 +405,35 @@ def test_fir_da_b3_lida_pela_serra_azul_cai_na_b3_da_serra_azul(cliente, outra, 
     dono = conn.execute("SELECT ativo_id FROM evidencia WHERE id = ?", (r.json()["evidencia_id"],)).fetchone()[0]
     assert dono == outra["serra_ativos"]["B3"]
     assert db.evidencias_do_ativo(conn, outra["ativos"]["B3"]) == []
+
+
+ATO_AGUAS = """PORTARIA FICTÍCIA Nº 9, DE 1º DE NOVEMBRO DE 2026
+(texto inventado para teste) Dispõe sobre o monitoramento da qualidade das águas superficiais e o laudo
+de laboratório acreditado nas licenças de operação de empreendimentos minerários."""
+
+
+def test_analise_de_ato_no_escopo_de_uma_empresa_nao_ve_a_condicionante_da_outra(cliente, outra):
+    """O corpo aceita empresa_id: é o que o agente preso a uma cliente manda. A condicionante LO-01 da
+    Serra Azul entra na análise da plataforma, mas nunca na análise no escopo da Morro Alto."""
+    como(cliente, CURADORIA)
+    toda = cliente.post(_url("/radar/analise"), json={"texto": ATO_AGUAS}).json()
+    assert "LO-01" in [c["codigo"] for c in toda["candidatas"]]
+    escopo = cliente.post(_url("/radar/analise"), json={"texto": ATO_AGUAS, "empresa_id": outra["id"]}).json()
+    assert "LO-01" not in [c["codigo"] for c in escopo["candidatas"]]
+    como(cliente, "diretoria@morroalto.demo")       # cliente não escolhe o escopo de outra: 404
+    r = cliente.post(_url("/radar/analise"), json={"texto": ATO_AGUAS, "empresa_id": outra["serra"]})
+    assert r.status_code == 404
+
+
+def test_historico_com_empresa_id_esconde_a_obrigacao_propria_de_outra(cliente, outra):
+    como(cliente, CURADORIA)
+    assert cliente.get(_url("/obrigacoes/LO-01/historico")).status_code == 200
+    assert cliente.get(_url("/obrigacoes/LO-01/historico"),
+                       params={"empresa_id": outra["serra"]}).status_code == 200
+    assert cliente.get(_url("/obrigacoes/LO-01/historico"),
+                       params={"empresa_id": outra["id"]}).status_code == 404
+    assert cliente.get(_url("/obrigacoes/OB-01/historico"),      # norma pública vale em qualquer escopo
+                       params={"empresa_id": outra["id"]}).status_code == 200
 
 
 def test_norma_publica_decide_a_curadoria_e_obrigacao_propria_decide_a_dona(cliente, outra, cfg):
@@ -617,6 +665,100 @@ def test_resumo_areas_e_campos_do_cadastro(cliente, cfg):
     campos = {c["campo"]: c for c in cliente.get(_url("/cadastro/campos")).json()}
     assert campos["trabalhadores_zas"]["tipo"] == "booleano" and "Autossalvamento" in campos["trabalhadores_zas"]["pergunta"]
     assert {"valor": "etapa_unica", "rotulo": "etapa única"} in campos["metodo_construtivo"]["opcoes"]
+
+
+def test_cadastro_recusa_tipo_errado_e_a_torre_sobrevive(cliente):
+    """Valor que não é do tipo do campo nunca entra (antes entrava, e aí todo painel da empresa
+    respondia 500 com RegraInvalida). Valor válido entra convertido; campo fora do catálogo é texto livre."""
+    como(cliente, "diretoria@serraazul.demo")
+    emp = _empresa(cliente)
+    b1 = next(a for a in cliente.get(_url(f"/empresas/{emp}/ativos")).json() if a["codigo"] == "B1")
+    r = cliente.patch(_url(f"/ativos/{b1['id']}/atributos"), json={"atributos": {"dpa2": "alto"}})
+    assert r.status_code == 422 and "não é número" in r.json()["detail"]
+    r = cliente.patch(_url(f"/ativos/{b1['id']}/atributos"), json={"atributos": {"classe": "caldeira"}})
+    assert r.status_code == 422 and "não é campo do cadastro de barragem" in r.json()["detail"]
+    assert cliente.get(_url(f"/empresas/{emp}/painel")).status_code == 200
+    r = cliente.patch(_url(f"/ativos/{b1['id']}/atributos"),
+                      json={"atributos": {"dpa2": "9", "trabalhadores_zas": "sim", "nota_interna": "pilha ao lado"}})
+    assert r.status_code == 200, r.text
+    novo = r.json()
+    assert novo["dpa2"] == 9 and novo["trabalhadores_zas"] is True and novo["nota_interna"] == "pilha ao lado"
+    assert cliente.get(_url(f"/empresas/{emp}/painel")).status_code == 200
+
+
+def test_entrega_com_periodo_inventado_e_recusada_e_o_painel_sobrevive(cliente):
+    """'2026-13-01' gravado derrubava o painel inteiro da empresa (rotulo_humano estoura no mês 13)."""
+    como(cliente, "diretoria@serraazul.demo")
+    emp = _empresa(cliente)
+    linhas = cliente.get(_url(f"/empresas/{emp}/painel")).json()["linhas"]
+    fir = next(l for l in linhas if l["codigo"] == "R95-01" and l["ativo"] == "B3")
+    corpo = {"ativo_id": fir["ativo_id"], "codigo": "R95-01", "periodo": "2026-13-01"}
+    r = cliente.post(_url("/entregas"), json=corpo)
+    assert r.status_code == 422 and "2026-13-01" in r.json()["detail"]
+    assert cliente.get(_url(f"/empresas/{emp}/painel")).status_code == 200
+    # um período que de fato falta continua aceito
+    r = cliente.post(_url("/entregas"), json={**corpo, "periodo": fir["faltando"][0]})
+    assert r.status_code == 201, r.text
+
+
+def test_gestor_delegado_nao_ve_o_historico_das_outras_areas_do_ativo(cliente):
+    """Uma obrigação delegada dá ao gestor o ativo na tela, mas não as evidências e os comentários
+    das obrigações das outras áreas."""
+    como(cliente, "diretoria@serraazul.demo")
+    emp = _empresa(cliente)
+    linhas = cliente.get(_url(f"/empresas/{emp}/painel")).json()["linhas"]
+    b1 = next(l for l in linhas if l["ativo"] == "B1")["ativo_id"]
+    cliente.post(_url("/comentarios"), json={"ativo_id": b1, "codigo": "R95-02", "texto": "da geotecnia"})
+    r = cliente.post(_url("/atribuicoes"), json={"ativo_id": b1, "codigo": "R95-01", "responsavel": "Manutenção da Usina"})
+    assert r.status_code == 200
+    como(cliente, "usina@serraazul.demo")
+    ficha = cliente.get(_url(f"/ativos/{b1}")).json()
+    assert {l["codigo"] for l in ficha["linhas"]} == {"R95-01"}
+    assert all(x["codigo"] == "R95-01" for x in ficha["evidencias"])
+    assert all(x["codigo"] == "R95-01" for x in ficha["eventos"])       # o comentário da R95-02 não
+    assert cliente.get(_url(f"/ativos/{b1}/obrigacoes/R95-01/historico")).status_code == 200
+    assert cliente.get(_url(f"/ativos/{b1}/obrigacoes/R95-02/historico")).status_code == 403
+    # e o resumo dele não conta o catálogo da empresa inteira
+    r = cliente.get(_url(f"/empresas/{emp}/resumo")).json()
+    todas = como(cliente, "diretoria@serraazul.demo") and cliente.get(_url(f"/empresas/{emp}/resumo")).json()
+    assert r["obrigacoes"] < todas["obrigacoes"]
+
+
+def test_login_gigante_e_recusado_antes_de_ir_para_a_auditoria(cliente):
+    r = cliente.post(_url("/auth/login"), json={"email": "x" * 2000 + "@x", "senha": "x"})
+    assert r.status_code == 422
+
+
+def test_calendario_com_ano_fora_da_faixa_e_422(cliente):
+    entrar(cliente)
+    emp = _empresa(cliente)
+    assert cliente.get(_url(f"/empresas/{emp}/calendario"), params={"ano": 0, "mes": 1}).status_code == 422
+    assert cliente.get(_url(f"/empresas/{emp}/calendario"), params={"ano": 99999, "mes": 1}).status_code == 422
+
+
+def test_recriar_demo_fica_na_auditoria(cliente):
+    entrar(cliente)
+    assert cliente.post(_url("/demo/recriar")).json() == {"ok": True}
+    como(cliente, CURADORIA)
+    trilha = cliente.get(_url("/auditoria")).json()
+    assert any(t["acao"] == "demo_recriada" for t in trilha)
+
+
+def test_sem_demo_nao_ha_conta_sem_senha(tmp_path):
+    """REGULAIA_MONTAR_DEMO=false (produção): /auth/demo não existe e só entram contas com senha."""
+    cfg = Config(banco=str(tmp_path / "prod.db"), banco_cache=str(tmp_path / "cache.db"),
+                 armazenamento=str(tmp_path / "uploads"), montar_demo=False)
+    with TestClient(criar_app(cfg)) as c:
+        assert c.post(_url("/auth/demo")).status_code == 404
+        r = c.post(_url("/auth/login"), json={"email": "curadoria@regulaia.demo", "senha": SENHA})
+        assert r.status_code == 200 and r.json()["plataforma"]
+
+
+def test_auditoria_recusa_limite_fora_da_faixa(cliente):
+    entrar(cliente, "diretoria@serraazul.demo")
+    assert cliente.get(_url("/auditoria"), params={"limite": -1}).status_code == 422
+    assert cliente.get(_url("/auditoria"), params={"limite": 5000}).status_code == 422
+    assert cliente.get(_url("/auditoria"), params={"limite": 1}).status_code == 200
 
 
 def test_entrega_com_comprovante_mostra_o_periodo_antes_e_o_arquivo_depois(cliente):
