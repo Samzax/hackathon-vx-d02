@@ -9,7 +9,12 @@
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" },
-        "StringLike": { "token.actions.githubusercontent.com:sub": "repo:Samzax/hackathon-vx-d02:ref:refs/heads/main" }
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": [
+            "repo:Samzax/hackathon-vx-d02:ref:refs/heads/main",
+            "repo:Samzax@108634046/hackathon-vx-d02@1446592745:ref:refs/heads/main"
+          ]
+        }
       }
     }
   ]
