@@ -16,17 +16,17 @@ if shutil.which("node") is None:
 
 from aws_cdk import assertions, aws_ecs as ecs  # noqa: E402
 
-from regulaia import db  # noqa: E402
+from mitra import db  # noqa: E402
 
 sys.path.insert(0, str(db.ROOT / "infra"))
-from regulaia_stack import RegulaIA  # noqa: E402
+from mitra_stack import Mitra  # noqa: E402
 
 
 @pytest.fixture(scope="module")
 def modelo() -> assertions.Template:
     app = cdk.App()
     # imagem pública no lugar do build da imagem: o teste confere a pilha, não o Docker
-    pilha = RegulaIA(app, "Teste", imagem=ecs.ContainerImage.from_registry("public.ecr.aws/docker/library/python:3.13-slim"),
+    pilha = Mitra(app, "Teste", imagem=ecs.ContainerImage.from_registry("public.ecr.aws/docker/library/python:3.13-slim"),
                      env=cdk.Environment(account="123456789012", region="us-east-1"))
     return assertions.Template.from_stack(pilha)
 
@@ -58,8 +58,8 @@ def test_segredos_vem_do_secrets_manager_e_nao_do_ambiente(modelo):
         for c in d["Properties"]["ContainerDefinitions"]:
             nomes_env = {e["Name"] for e in c.get("Environment", [])}
             nomes_seg = {s["Name"] for s in c.get("Secrets", [])}
-            assert {"DB_SENHA", "REGULAIA_TOKEN_SERVICO"} <= nomes_seg
-            assert not nomes_env & {"DB_SENHA", "REGULAIA_TOKEN_SERVICO", "REGULAIA_DATABASE_URL"}
+            assert {"DB_SENHA", "MITRA_TOKEN_SERVICO"} <= nomes_seg
+            assert not nomes_env & {"DB_SENHA", "MITRA_TOKEN_SERVICO", "MITRA_DATABASE_URL"}
 
 
 def test_radar_roda_todo_dia_pelo_eventbridge(modelo):
@@ -93,8 +93,8 @@ def test_ia_desligada_por_padrao_e_chave_de_dados_no_secrets_manager(modelo):
     for d in modelo.find_resources("AWS::ECS::TaskDefinition").values():
         for c in d["Properties"]["ContainerDefinitions"]:
             env = {e["Name"]: e["Value"] for e in c.get("Environment", [])}
-            assert env["REGULAIA_BEDROCK"] == ""
-            assert {"REGULAIA_CHAVE_DADOS", "REGULAIA_SENHA_DEMO"} <= {s["Name"] for s in c.get("Secrets", [])}
+            assert env["MITRA_BEDROCK"] == ""
+            assert {"MITRA_CHAVE_DADOS", "MITRA_SENHA_DEMO"} <= {s["Name"] for s in c.get("Secrets", [])}
 
 
 def test_bedrock_liberado_nas_outras_regioes_do_perfil_de_inferencia(modelo):
@@ -109,26 +109,26 @@ def test_bedrock_liberado_nas_outras_regioes_do_perfil_de_inferencia(modelo):
 
 def test_ia_ligada_com_contexto():
     app = cdk.App()
-    pilha = RegulaIA(app, "TesteIA", ia=True, imagem=ecs.ContainerImage.from_registry("public.ecr.aws/docker/library/python:3.13-slim"),
+    pilha = Mitra(app, "TesteIA", ia=True, imagem=ecs.ContainerImage.from_registry("public.ecr.aws/docker/library/python:3.13-slim"),
                      env=cdk.Environment(account="123456789012", region="us-east-1"))
     defs = assertions.Template.from_stack(pilha).find_resources("AWS::ECS::TaskDefinition")
     envs = [{e["Name"]: e["Value"] for e in c.get("Environment", [])}
             for d in defs.values() for c in d["Properties"]["ContainerDefinitions"]]
-    assert all(e["REGULAIA_BEDROCK"] == "1" for e in envs)
+    assert all(e["MITRA_BEDROCK"] == "1" for e in envs)
 
 
 def test_imagem_do_ecr_pela_tag():
     app = cdk.App()
-    pilha = RegulaIA(app, "TesteEcr", imagem_tag="abc123", env=cdk.Environment(account="123456789012", region="us-east-1"))
+    pilha = Mitra(app, "TesteEcr", imagem_tag="abc123", env=cdk.Environment(account="123456789012", region="us-east-1"))
     texto = str(assertions.Template.from_stack(pilha).to_json())
     assert "regulaia-api" in texto and "abc123" in texto
 
 
 def test_build_na_aws_privilegiado_e_publica_no_ecr():
-    from build_stack import RegulaIABuild
+    from build_stack import MitraBuild
 
     app = cdk.App()
-    t = assertions.Template.from_stack(RegulaIABuild(app, "TesteBuild", env=cdk.Environment(
+    t = assertions.Template.from_stack(MitraBuild(app, "TesteBuild", env=cdk.Environment(
         account="123456789012", region="us-east-1")))
     t.has_resource_properties("AWS::ECR::Repository", {"RepositoryName": "regulaia-api"})
     t.has_resource_properties("AWS::CodeBuild::Project", {"Environment": assertions.Match.object_like(
@@ -146,7 +146,7 @@ def test_https_pelo_cloudfront_sem_cache_na_api(modelo):
         })})})
     for d in modelo.find_resources("AWS::ECS::TaskDefinition").values():
         for c in d["Properties"]["ContainerDefinitions"]:
-            assert {e["Name"]: e["Value"] for e in c.get("Environment", [])}["REGULAIA_COOKIE_SEGURO"] == "1"
+            assert {e["Name"]: e["Value"] for e in c.get("Environment", [])}["MITRA_COOKIE_SEGURO"] == "1"
 
 
 def test_alb_so_aceita_o_cloudfront(modelo):
@@ -158,7 +158,7 @@ def test_alb_so_aceita_o_cloudfront(modelo):
 
 def test_com_certificado_proprio_o_cloudfront_sai():
     app = cdk.App()
-    pilha = RegulaIA(app, "TesteCert", certificado_arn="arn:aws:acm:us-east-1:123456789012:certificate/abc",
+    pilha = Mitra(app, "TesteCert", certificado_arn="arn:aws:acm:us-east-1:123456789012:certificate/abc",
                      imagem=ecs.ContainerImage.from_registry("public.ecr.aws/docker/library/python:3.13-slim"),
                      env=cdk.Environment(account="123456789012", region="us-east-1"))
     assertions.Template.from_stack(pilha).resource_count_is("AWS::CloudFront::Distribution", 0)

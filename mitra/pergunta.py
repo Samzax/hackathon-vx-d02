@@ -10,7 +10,7 @@ Provedores (`[pergunta]` em modelos.toml, o primeiro com chave vale): Bedrock pe
 a API da Anthropic e os de formato OpenAI (DeepSeek, OpenCode Go), todos com uso de ferramentas.
 
 Avaliação com o modelo de verdade (perguntas em `tests/pergunta_avaliacao.toml`):
-    REGULAIA_BEDROCK=1 AWS_PROFILE=vx uv run python -m regulaia.pergunta avaliar [--gravar]
+    MITRA_BEDROCK=1 AWS_PROFILE=vx uv run python -m mitra.pergunta avaliar [--gravar]
 """
 
 from __future__ import annotations
@@ -268,7 +268,7 @@ class _OpenAI:
 
 
 def provedores_da_config(env: dict, cfg: dict, http: httpx.Client | None = None) -> dict:
-    """Os provedores com chave no ambiente (Bedrock: REGULAIA_BEDROCK=1 e a credencial AWS do ambiente)."""
+    """Os provedores com chave no ambiente (Bedrock: MITRA_BEDROCK=1 e a credencial AWS do ambiente)."""
     out = {}
     http = http or httpx.Client(timeout=120)
     for nome, c in cfg["provedores"].items():
@@ -482,7 +482,7 @@ def perguntar(pergunta: str, ferramentas: list[Ferramenta], *, historico: list[t
 
 def registrar_custo(roteador: Roteador, r: Resposta) -> None:
     """O custo entra na mesma conta do dia que as outras chamadas de IA (`analise_ia`): é ela que o teto
-    diário (REGULAIA_TETO_DIA_USD) soma."""
+    diário (MITRA_TETO_DIA_USD) soma."""
     provedor, _, nome = r.modelo.partition(":")
     roteador._guardar(f"pergunta-{uuid.uuid4().hex}", "pergunta", Modelo(provedor, nome),
                       {"ferramentas": [u.ferramenta for u in r.ferramentas], "conferencia_ok": r.conferencia.ok},
@@ -556,7 +556,7 @@ def _main(argv: list[str]) -> int:   # pragma: no cover - roda com o modelo de v
 
     from . import demo
 
-    ap = argparse.ArgumentParser(prog="python -m regulaia.pergunta")
+    ap = argparse.ArgumentParser(prog="python -m mitra.pergunta")
     ap.add_argument("acao", choices=["avaliar"])
     ap.add_argument("--caso", action="append", help="só estes ids")
     ap.add_argument("--gravar", action="store_true", help="grava as respostas do modelo para o teste do CI")
@@ -564,7 +564,7 @@ def _main(argv: list[str]) -> int:   # pragma: no cover - roda com o modelo de v
 
     load_dotenv(Path(__file__).resolve().parent.parent / ".env")
     env = dict(os.environ)
-    pasta = Path(tempfile.mkdtemp(prefix="regulaia-pergunta-"))
+    pasta = Path(tempfile.mkdtemp(prefix="mitra-pergunta-"))
     banco = pasta / "demo.db"
     # a demo monta só com o cache de IA do repositório: sem provedor ligado, nenhuma chamada paga aqui
     ligados = {c["chave"]: os.environ.pop(c["chave"], None) for c in _config(CONFIG)["provedores"].values()}
@@ -603,7 +603,7 @@ def _main(argv: list[str]) -> int:   # pragma: no cover - roda com o modelo de v
 def escrever_relatorio(arquivo: Path, notas: list[Nota]) -> None:
     passou = sum(n.passou for n in notas)
     linhas = ["# Avaliação do Pergunte à torre", "",
-              f"Gerado por `python -m regulaia.pergunta avaliar` contra a demo (Mineradora Serra Azul), com o "
+              f"Gerado por `python -m mitra.pergunta avaliar` contra a demo (Mineradora Serra Azul), com o "
               f"modelo de verdade. **{passou} de {len(notas)} casos passaram**; custo total "
               f"US$ {sum(n.custo_usd for n in notas):.4f}; a mais lenta levou "
               f"{max((n.segundos for n in notas), default=0):.1f} s (o prazo é {PRAZO_S:.0f} s).", "",

@@ -29,7 +29,7 @@ flowchart LR
 
 ## A torre: agenda e status
 
-Cada obrigação tem uma `agenda` curta que a máquina lê (`regulaia/agenda.py`):
+Cada obrigação tem uma `agenda` curta que a máquina lê (`mitra/agenda.py`):
 
 | Agenda | Exemplo | Uso |
 |---|---|---|
@@ -52,7 +52,7 @@ O campo `vigencia_desde`/`vigencia_ate` faz a troca de norma sozinha. As 21 obri
 ```
 norma (ANMlegis ou PDF) -> unidades (artigos / itens) -> blocos de ~9 mil caracteres
    -> IA propõe obrigações em JSON -> Python confere -> data/extraido/*.json
-   -> pessoa escolhe e ajusta (curadoria/*.csv) -> regulaia.curadoria -> cadastro/*.csv
+   -> pessoa escolhe e ajusta (curadoria/*.csv) -> mitra.curadoria -> cadastro/*.csv
 ```
 
 - **O Python confere cada proposta da IA.** O trecho citado tem de estar no texto do bloco e o dispositivo citado tem de pertencer ao bloco. A regra de aplicabilidade tem de ser válida e só usar atributos que existem no cadastro daquele tipo de ativo. A proposta que falha fica marcada como reprovada, com o motivo.
@@ -71,7 +71,7 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
       termos do tipo de ativo (temas.toml), revogada fora, regra fora (crédito, homenagem, concessão
       de lavra a uma empresa), e a norma que regulamenta ou altera uma candidata ou uma do catálogo
    -> triagem pela IA, pela ementa: cobra algo de quem opera o ativo? de qual tipo?
-   -> curadoria RegulaIA aprova ou descarta, com nome e nota -> extrator -> curadoria -> catálogo
+   -> curadoria Mitra aprova ou descarta, com nome e nota -> extrator -> curadoria -> catálogo
    -> cobertura por cliente: o que está no catálogo, o que espera, até quando cada fonte foi lida
 ```
 
@@ -88,7 +88,7 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
   23.795/2021. Descarte com confiança abaixo de 0,85 baixa o texto oficial (do artigo 1º em diante) e
   pergunta de novo, pedindo o artigo que cobra o empreendedor. A lei federal vem do texto atualizado da
   Câmara (o Planalto bloqueia robô); onde não há texto, fica a decisão pela ementa e a curadoria pode reabrir.
-- **Vigência e alterações das federais** (`regulaia/vigencia.py`). O Senado não diz na listagem se a norma
+- **Vigência e alterações das federais** (`mitra/vigencia.py`). O Senado não diz na listagem se a norma
   está em vigor. O resolvedor de URN do LexML (liberado no robots.txt, 5 s entre pedidos; a busca do LexML
   tem desafio anti-robô e não é usada) leva à ficha da norma na Câmara: situação, quem alterou ou revogou
   e em quais artigos, e o texto consolidado. Quando a Câmara não tem a ficha (decretos recentes), vale o
@@ -118,7 +118,7 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
 
 ## Leitor de evidência
 
-Quem opera manda o PDF e a torre dá baixa na obrigação certa (`regulaia/evidencias.py`). São 23 tipos de documento:
+Quem opera manda o PDF e a torre dá baixa na obrigação certa (`mitra/evidencias.py`). São 22 tipos de documento:
 - barragem: FIR, EIR, RISR, DCE, RPSB, DCO, RCO, ISE, RCIE e recibo do EIE, simulado, treinamento e seminário do PAEBM, PGRBM;
 - vaso NR-13: exame externo e interno;
 - mina: treinamento da brigada e simulação de emergência da NR-22;
@@ -137,7 +137,7 @@ Ficam de fora só as obrigações únicas comprovadas por plano ou requerimento,
    Registrar a FIR com anomalia **abre** a obrigação de ISE daquele ativo (tabela `acionamento`). A obrigação tem prazo de 24 horas. Ela fica na torre, e depois no boletim, como atrasada até o relatório da ISE ser registrado, que a encerra. Sem isso, o alerta sumiria da tela junto com o documento. Pela Res. 220, EC = 5 abre duas obrigações: o registro no SIGBM em 24 h (art. 38 §4, encerrado pelo recibo do EIE) e a ISE (art. 42, encerrada pelo relatório).
 6. **Entrega fora do prazo.** O período comprovado é sempre o da execução (a inspeção). Se o documento traz a data de envio (o recibo do EIR, por exemplo) e ela passou do prazo, a leitura avisa sem bloquear, e o aviso fica gravado na evidência.
 
-Documentos de exemplo, todos fictícios, em `data/exemplos/`. São gerados de forma determinística por `uv run python -m regulaia.exemplos`:
+Documentos de exemplo, todos fictícios, em `data/exemplos/`. São gerados de forma determinística por `uv run python -m mitra.exemplos`:
 
 | Arquivo | O que mostra |
 |---|---|
@@ -151,7 +151,7 @@ Documentos de exemplo, todos fictícios, em `data/exemplos/`. São gerados de fo
 | `Boletim_efluentes_2026-09.pdf` | Efluentes de setembro: cita a licença e a unidade, vai para a licença |
 | `FIR_B3_2026-10-1Q_escaneada.pdf` | A mesma FIR da B3, escaneada (página é imagem, sem texto): mostra o caminho do OCR |
 
-PDF escaneado: a página sem texto vai para o OCR, se estiver ligado (`REGULAIA_OCR=textract`, Amazon Textract, uma chamada por página, ver `regulaia/ocr.py`). O texto do OCR passa pelas mesmas regras e a torre avisa para conferir antes de registrar. Sem OCR ligado, a torre diz que o PDF é escaneado e pede a versão digital; não tenta adivinhar.
+PDF escaneado: a página sem texto vai para o OCR, se estiver ligado (`MITRA_OCR=textract`, Amazon Textract, uma chamada por página, ver `mitra/ocr.py`). O texto do OCR passa pelas mesmas regras e a torre avisa para conferir antes de registrar. Sem OCR ligado, a torre diz que o PDF é escaneado e pede a versão digital; não tenta adivinhar.
 
 ## Saídas para quem não abre a torre
 
@@ -172,6 +172,74 @@ Os dois são só gerados para download. Mandar por e-mail fica para a versão co
 
 **Minas cobra mais que a União.** A Lei MG 23.291/2019 exige auditoria técnica de segurança por equipe independente credenciada todo ano para barragem de alto potencial de dano ambiental, com relatório e DCE até 1º de setembro (art. 17), e põe o relatório e o PAE para ciência e assinatura do conselho de administração (art. 18). A classificação estadual não está no SIGBM: numa mineradora importada de MG, ela aparece como dado faltando, e a auditoria não é presumida.
 
+## Instanciação: da base padrão à torre de uma empresa
+
+A **base padrão** vale para todo cliente: o catálogo de normas públicas, o SIGBM público, a descoberta e
+a vigência. O que falta em cada cliente é a **base personalizada**, e é isso que a instanciação monta,
+em oito etapas (`mitra/instanciacao.py`), cada uma com estado tirado **dos dados** — não de um
+percentual digitado por alguém:
+
+| Etapa | O que entra | Pronta quando |
+|---|---|---|
+| cadastro | CNPJ, razão social, UFs | a empresa foi criada |
+| ativos | barragens do SIGBM escolhidas, minas, usinas, pilhas, equipamentos, licenças; cada uma numa **unidade** | há pelo menos um ativo |
+| dados | o que as regras do catálogo pedem e ninguém informou | nada falta (e é tarefa, não bloqueio) |
+| cobertura | `descoberta.cobertura` roda assim que há ativos | há ativos |
+| licenças | PDF → condicionantes propostas → a dona aprova | nenhuma proposta pendente |
+| responsáveis | responsável técnico e coordenador do PAEBM, com CPF cifrado | toda unidade ou ativo tem responsável |
+| contas | a primeira conta (TI da cliente, senha provisória) e as demais, por ela | há TI ativa e a senha provisória foi trocada |
+| operação | `monitorado_desde`: a torre passa a cobrar | entrou em operação (pode entrar com pendência) |
+
+Duas decisões que moldam o resto:
+
+- **A plataforma leva a cliente para dentro, mas não opera por ela.** A curadoria cria a empresa, escolhe
+  as barragens do SIGBM e cria a primeira conta; cadastrar ativo, aprovar condicionante, informar
+  responsável e entrar em operação é da própria empresa. Nos dados operacionais a plataforma só lê.
+- **Nada é presumido.** Planilha com uma linha errada não entra pela metade: cada linha volta com o número
+  e o erro dela, e a importação é tudo ou nada. Valor que não é do tipo do campo é recusado com o motivo
+  (`mitra/campos.py`), em vez de entrar e quebrar as regras depois.
+
+### Condicionantes de licença: a mesma regra do catálogo
+
+O PDF da licença passa pelo mesmo caminho de uma norma: a IA propõe as condicionantes **com o trecho
+literal**, e o Python confere que o trecho está, palavra por palavra, no texto do PDF
+(`mitra/licencas.py`). **Sem trecho conferido, não entra nem como proposta.** O que a IA inventa
+morre antes de chegar a uma tela. As propostas ficam pendentes e quem aprova é o Regulatório ou a
+Diretoria **da própria empresa** — obrigação dela, decisão dela —, podendo corrigir prazo, periodicidade,
+agenda e evidência antes. Aprovada, vira obrigação própria vigente com o trecho preso a ela, e a validade
+da licença vira obrigação de renovação com a antecedência que a licença pedir.
+
+Como duas clientes podem ter cada uma a sua "LO-01", o código da obrigação é **único por empresa** e não
+global: índice sobre `(COALESCE(empresa, ''), codigo)`, e toda busca por código leva a empresa. Sem
+empresa, código repetido em duas donas é erro — a torre não escolhe uma por acaso.
+
+### Dado pessoal: CPF cifrado por campo
+
+O CPF do responsável técnico é o único dado pessoal da plataforma (o resto é dado de pessoa jurídica,
+público no SIGBM). Ele é guardado **cifrado por campo** (Fernet; `mitra/pessoal.py`), com a chave em
+`MITRA_CHAVE_DADOS` — que em produção vem do Secrets Manager como texto comum, e a chave Fernet é
+derivada por SHA-256. **Sem a variável a API sobe, mas guardar CPF dá erro claro**: chave padrão no código
+faria a cifra de enfeite.
+
+A API devolve mascarado (`***.456.789-**`) para qualquer papel. Ver o CPF inteiro é do Regulatório, da
+Diretoria e da TI **da própria empresa**, e **cada visualização vai para a auditoria** (quem viu, de quem,
+quando). A equipe da Mitra não vê CPF de cliente. O texto que vai para a IA passa por `pessoal.sem_cpf`,
+que troca cada CPF por um marcador, e a LGPD tem rota para exportar e apagar (TI da empresa, auditadas).
+
+### Escopo por unidade
+
+Uma conta pode ser presa a uma ou mais unidades (`usuario.unidades`). O corte não fica só na tela: desce
+ao domínio (`torre.painel`, `boletim`, `calendario`, `transicao`, `futuras`, `plano_transicao`,
+`mudancas`), então a conta da Mina A não vê, não entrega, não comenta e não corrige nada da Mina B — nem
+pelo `.ics`, nem pela planilha, nem pelo agente. Diretoria e Regulatório da empresa continuam vendo tudo.
+
+### Personalização: a meta da empresa não mexe na norma
+
+A empresa pode adiantar o prazo de uma obrigação ("entregar 15 dias antes do legal"). O prazo legal
+continua o da norma; o interno é meta, guardada à parte (`prazo_interno`), e a torre mostra os dois e
+cobra pelo interno. Também cadastra **normas internas** (obrigação própria sem licença, código `INT-xx`)
+e um **responsável padrão por área**, que a obrigação nova já herda.
+
 ## Banco de dados: SQLite
 
 | Critério | SQLite agora | Produção |
@@ -180,13 +248,13 @@ Os dois são só gerados para download. Mandar por e-mail fica para a versão co
 | Agilidade | Zero infraestrutura, roda igual em toda máquina | |
 | Custo | Zero | |
 
-Todo acesso passa por `regulaia/db.py`. Trocar de banco mexe só nesse arquivo.
+Todo acesso passa por `mitra/db.py`. Trocar de banco mexe só nesse arquivo.
 
 Ficou de fora o DynamoDB, que o primeiro rascunho sugeria. Os dados são relacionais (empresa → ativo → obrigação → versão → evidência → ato), e o DynamoDB complica esse tipo de consulta.
 
 **Obrigações nunca são sobrescritas.** Cada mudança cria uma versão nova, ligada ao ato que a causou e ao trecho citado. Ela fica `pendente` até uma pessoa aprovar. Isso dá a comparação antes/depois, a resposta para "por que esse prazo é esse?" e o histórico de quem decidiu.
 
-O cadastro inicial está em `seed_obligations.csv`, legível e revisável no GitHub. A coluna `regra` diz a quais ativos cada obrigação se aplica, com `e` e `ou` ("dpa = alto ou dpa2 >= 4", art. 20 §3). A sintaxe está em `regulaia/regras.py`. Um atributo que falta no ativo só aparece como "dado faltando" quando a decisão depende dele.
+O cadastro inicial está em `seed_obligations.csv`, legível e revisável no GitHub. A coluna `regra` diz a quais ativos cada obrigação se aplica, com `e` e `ou` ("dpa = alto ou dpa2 >= 4", art. 20 §3). A sintaxe está em `mitra/regras.py`. Um atributo que falta no ativo só aparece como "dado faltando" quando a decisão depende dele.
 
 ### O cadastro da Res. 220 conferido contra o texto oficial
 
@@ -233,7 +301,7 @@ Mais duas proteções:
 
 As regras resolvem 99,97% do volume. A IA só vê o que sobrou, e cada resposta fica em cache.
 
-**A demo roda sem chave e sem internet.** As respostas de IA da demo (análises de impacto e extração das normas) estão em `data/cache_ia_demo.json`, no Git, com o custo original de cada chamada. Num clone novo, `demo.preparar` carrega esse arquivo no cache local antes de rodar o radar. Sem ele, a aba "Mudanças" ficaria vazia e não daria erro (há teste para isso). Para atualizar o arquivo: `uv run python -m regulaia.demo --exportar-cache`.
+**A demo roda sem chave e sem internet.** As respostas de IA da demo (análises de impacto e extração das normas) estão em `data/cache_ia_demo.json`, no Git, com o custo original de cada chamada. Num clone novo, `demo.preparar` carrega esse arquivo no cache local antes de rodar o radar. Sem ele, a aba "Mudanças" ficaria vazia e não daria erro (há teste para isso). Para atualizar o arquivo: `uv run python -m mitra.demo --exportar-cache`.
 
 ## Provedores de IA: troca por configuração
 
@@ -247,7 +315,7 @@ O código fala com uma interface única. Qual provedor e qual modelo atende cada
 
 A OpenCode Go mistura dois formatos de API: alguns modelos usam o da OpenAI (`/chat/completions`, ex.: DeepSeek) e outros o da Anthropic (`/messages`, ex.: Haiku, Qwen). O código fala os dois, o que também cobre a Anthropic e a DeepSeek diretas. O Bedrock entra por um adaptador próprio, a API Converse do boto3 (`ClienteBedrock`), que serve para Claude, DeepSeek e Nova do mesmo jeito. Ele está testado com um cliente falso; a primeira chamada de verdade é no evento, com a conta da organização (ver "Arquitetura na AWS" no README).
 
-**Conta do cliente (traga sua chave).** O provedor e a chave são configuração, não código. Uma empresa pode rodar a RegulaIA com a própria conta (Bedrock na AWS dela, Anthropic, DeepSeek), e os documentos dela não passam pela nossa conta. Para mineradoras, isso responde à pergunta "para onde vão meus dados?".
+**Conta do cliente (traga sua chave).** O provedor e a chave são configuração, não código. Uma empresa pode rodar a Mitra com a própria conta (Bedrock na AWS dela, Anthropic, DeepSeek), e os documentos dela não passam pela nossa conta. Para mineradoras, isso responde à pergunta "para onde vão meus dados?".
 
 Os prompts não podem depender de um modelo específico. A saída é sempre JSON validado pelo Python, então trocar de modelo muda o custo e a qualidade, não o funcionamento.
 
@@ -255,14 +323,14 @@ Sobre o `AGENTS.md`: ele é uma convenção para agentes de programação (Codex
 
 ## Pergunte à torre: o chat que só fala do que a torre tem
 
-O chat é um laço de uso de ferramentas (`regulaia/pergunta.py`): o modelo pede consultas, o Python as executa e devolve o resultado, até o modelo responder. As decisões:
+O chat é um laço de uso de ferramentas (`mitra/pergunta.py`): o modelo pede consultas, o Python as executa e devolve o resultado, até o modelo responder. As decisões:
 
 - **As ferramentas são as do agente MCP** (`agente/ferramentas.py`), sem depender do pacote `mcp`. Um só lugar define o que o Claude pode consultar, no Claude Desktop e no front. A análise de ato fica de fora do chat: ela chama outra IA.
 - **As ferramentas passam pela API, não pelo banco.** A rota chama a própria API em processo, com o cookie ou o token de quem pergunta. Assim, escopo da área, papel e empresa valem igual à tela, sem uma segunda implementação das regras de acesso. Durante o laço, a rota não segura conexão do pool: cada consulta pega e devolve a sua.
 - **Conferência pelo Python, não pela palavra do modelo.** Trecho entre aspas (a partir de 25 caracteres), data (AAAA-MM-DD e DD/MM/AAAA) e código (OB-01, R95-08, B3, LO-02) precisam estar no que as ferramentas devolveram, nos argumentos que o modelo consultou ou na própria pergunta. O que não estiver volta para o modelo uma vez, com a lista do que não bateu; o que sobrar aparece marcado para quem lê. Resposta que para no limite de tokens também volta, com o pedido de uma mais curta, em vez de chegar cortada no meio da frase.
 - **Custo.** O Bedrock guarda em cache o prompt fixo (instruções e descrição das ferramentas) e a conversa até ali: leitura de cache sai a 10% do preço de entrada. O prompt manda não repetir consulta. Uma pergunta custa de US$ 0,004 a 0,05 no Sonnet 5; o custo vai para a tabela `analise_ia`, a mesma que o teto diário soma.
 - **Prazo.** Na AWS o CloudFront espera a origem por 60 s. A pergunta tem 45 s: passou disso, a rota responde 504 com uma sugestão ("pergunte de um ativo, uma norma") e o gasto já feito entra no teto.
-- **Avaliação.** `tests/pergunta_avaliacao.toml` tem 10 perguntas com critério objetivo (o que a resposta precisa conter, o que não pode, que ferramenta precisa ter usado, conferência sem nada fora). `python -m regulaia.pergunta avaliar --gravar` roda contra o modelo de verdade, escreve `docs/AVALIACAO_PERGUNTA.md` e grava cada passo do modelo; o CI repete essas gravações sem chave, então mudança de ferramenta ou de prompt que quebre um caso aparece no teste.
+- **Avaliação.** `tests/pergunta_avaliacao.toml` tem 10 perguntas com critério objetivo (o que a resposta precisa conter, o que não pode, que ferramenta precisa ter usado, conferência sem nada fora). `python -m mitra.pergunta avaliar --gravar` roda contra o modelo de verdade, escreve `docs/AVALIACAO_PERGUNTA.md` e grava cada passo do modelo; o CI repete essas gravações sem chave, então mudança de ferramenta ou de prompt que quebre um caso aparece no teste.
 
 ## Fontes de dados
 

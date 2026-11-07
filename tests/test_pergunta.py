@@ -13,8 +13,8 @@ from agente.cliente import Torre
 from agente.ferramentas import CHAMA_IA, ferramentas
 from api.main import criar_app
 from api.rotas import pergunta as rota_pergunta
-from regulaia import pergunta as pg
-from regulaia.ia import SemProvedor
+from mitra import pergunta as pg
+from mitra.ia import SemProvedor
 from tests.test_api import _url, cfg, como, entrar  # noqa: F401  (cfg é fixture)
 
 SERRA = "Mineradora Serra Azul"
@@ -209,7 +209,7 @@ CASOS = [c for c in pg.casos() if (pg.GRAVACOES / f"{c['id']}.json").exists()]
 
 @pytest.mark.parametrize("caso", CASOS, ids=[c["id"] for c in CASOS])
 def test_avaliacao_com_as_respostas_gravadas(caso, fs):
-    """O modelo de verdade respondeu estas perguntas (`python -m regulaia.pergunta avaliar --gravar`); aqui
+    """O modelo de verdade respondeu estas perguntas (`python -m mitra.pergunta avaliar --gravar`); aqui
     as respostas dele voltam na ordem, as ferramentas rodam de verdade contra a demo, e os critérios do
     caso e a conferência precisam passar. Se a demo mudar e a resposta gravada ficar errada, este teste
     avisa: regrave."""
@@ -289,7 +289,7 @@ def test_teto_do_dia_e_ia_desligada(cliente, cfg, monkeypatch):  # noqa: F811
     assert cliente.get(_url("/pergunta/estado")).json()["ligada"] is False
     assert cliente.post(_url("/pergunta"), json={"pergunta": "Oi"}).status_code == 503
     _gravadas(cliente, [_passo("Ok.")])
-    monkeypatch.setenv("REGULAIA_TETO_DIA_USD", "0.000001")
+    monkeypatch.setenv("MITRA_TETO_DIA_USD", "0.000001")
     cache = sqlite3.connect(cfg.cache)
     with cache:
         cache.execute("INSERT INTO analise_ia (chave, tarefa, provedor, modelo, resposta, tokens_in, tokens_out, "

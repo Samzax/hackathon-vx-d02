@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from regulaia import db, instanciacao as inst, usuarios
+from mitra import db, instanciacao as inst, usuarios
 
-POR = "Curadoria RegulaIA"
+POR = "Curadoria Mitra"
 NOME = "Mineradora Nova (fictícia)"
 
 
@@ -166,7 +166,7 @@ def test_planilha_sem_as_colunas_do_modelo_diz_o_que_fazer(conn, nova):
 
 def test_dados_que_faltam_sao_lista_de_tarefas_com_as_obrigacoes(conn):
     """A barragem importada do SIGBM não traz o que as regras pedem: a torre mostra, não presume."""
-    from regulaia import demo
+    from mitra import demo
 
     demo.montar(conn)
     eid = db.empresas(conn)[0]["id"]

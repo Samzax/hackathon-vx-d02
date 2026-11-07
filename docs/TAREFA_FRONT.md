@@ -15,7 +15,7 @@ principal, falando só com a API.
   quando a pasta existir), então o cookie de sessão e o CSRF funcionam sem CORS. Em dev, Next na
   3000 e API na 8000 (CORS já liberado para `http://localhost:3000` com credenciais).
 - **Tipos:** gerados do `api/openapi.json` com `openapi-typescript` (script `npm run tipos`); cliente
-  fetch com `credentials: "include"` e o cabeçalho `X-CSRF-Token` (cookie `regulaia_csrf`) em toda escrita.
+  fetch com `credentials: "include"` e o cabeçalho `X-CSRF-Token` (cookie `mitra_csrf`) em toda escrita.
 - **Visual:** marca própria (`assets/marca.svg`, `assets/logo_claro.svg`, `assets/logo_escuro.svg`),
   claro e escuro, português, responsivo (desktop primeiro, mas usável no celular). Cores de status
   iguais às da torre: atrasada vermelho, dado faltando lilás, vence em breve amarelo, em dia verde,
@@ -23,7 +23,7 @@ principal, falando só com a API.
 - **Telas** (seguem as abas do README):
   - Entrar: botão "Entrar na demo" (POST /auth/demo) e e-mail/senha.
   - Moldura: menu lateral por papel, seletor "Quem está olhando" para a conta de teste
-    (PUT /auth/visao, inclui "Curadoria RegulaIA (plataforma)"), seletor de empresa para a
+    (PUT /auth/visao, inclui "Curadoria Mitra (plataforma)"), seletor de empresa para a
     plataforma, data "hoje" com os atalhos de viagem no tempo (Demo 07/11/2026, Res. 220
     02/08/2027, ZAS 27/12/2029) passados como `hoje` nas consultas.
   - Caixa de entrada: os 5 números (cada um filtra), pendências com o botão que resolve

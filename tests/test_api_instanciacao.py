@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 from api.config import Config
 from api.main import criar_app
-from regulaia import db, usuarios
+from mitra import db, usuarios
 from tests.test_api import CURADORIA, SENHA, _banco_da_demo, _url, como, entrar
 
 NOVA = "Mineradora Nova (fictícia)"

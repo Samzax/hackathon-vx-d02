@@ -58,8 +58,8 @@ function NovaConta({ c }: { c: Contas }) {
         onChange={(e) => setF({ ...f, senha: e.target.value })} dica={`Pelo menos ${SENHA_MINIMA} caracteres. Vazio: a pessoa não entra até a TI definir uma.`} />
       {t.plataforma && (
         <CampoSelecao rotulo="Empresa" value={f.empresa} onChange={(e) => setF({ ...f, empresa: e.target.value })}
-          dica="Vazio cria uma conta da plataforma (equipe da RegulaIA).">
-          <option value="">— plataforma RegulaIA</option>
+          dica="Vazio cria uma conta da plataforma (equipe da Mitra).">
+          <option value="">— plataforma Mitra</option>
           {c.empresas.map((e) => <option key={e} value={e}>{e}</option>)}
         </CampoSelecao>
       )}
@@ -152,7 +152,7 @@ export default function Usuarios() {
                 <td className="px-3 py-2 text-texto-2">{u.email}</td>
                 <td className="px-3 py-2">{c.papeis[u.papel] ?? u.papel}</td>
                 <td className="px-3 py-2 text-texto-2">{u.area ?? "—"}</td>
-                <td className="px-3 py-2 text-texto-2">{u.plataforma ? "plataforma RegulaIA" : u.empresa ?? "—"}</td>
+                <td className="px-3 py-2 text-texto-2">{u.plataforma ? "plataforma Mitra" : u.empresa ?? "—"}</td>
                 <td className="px-3 py-2">{u.ativa ? <Etiqueta tom="ok">ativa</Etiqueta> : <Etiqueta tom="neutro">desativada</Etiqueta>}{!u.tem_senha && <span className="ml-1.5 text-xs text-texto-3">sem senha</span>}</td>
                 <td className="num px-3 py-2 text-texto-2">{u.ultimo_acesso ? emBrasilia(u.ultimo_acesso) : "nunca"}</td>
               </tr>

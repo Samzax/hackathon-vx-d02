@@ -4,7 +4,7 @@ from io import BytesIO
 import pytest
 from pypdf import PdfReader
 
-from regulaia import db, demo, pdf, torre
+from mitra import db, demo, pdf, torre
 
 HOJE, DESDE = date(2026, 11, 7), date(2026, 5, 1)
 
@@ -68,7 +68,7 @@ def test_analise_de_mercado_vira_pdf(tmp_path):
 
     raiz = Path(__file__).resolve().parent.parent
     saida = tmp_path / "analise.pdf"
-    subprocess.run([sys.executable, "-m", "regulaia.pdf", str(raiz / "docs" / "ANALISE_MERCADO.md"), str(saida),
+    subprocess.run([sys.executable, "-m", "mitra.pdf", str(raiz / "docs" / "ANALISE_MERCADO.md"), str(saida),
                     "Análise de mercado"], cwd=raiz, check=True, capture_output=True)
     paginas, texto = _texto(saida.read_bytes())
     assert paginas >= 4 and "Análise de mercado e viabilidade" in texto and "Fontes" in texto

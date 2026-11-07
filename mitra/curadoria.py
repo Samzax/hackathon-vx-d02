@@ -13,7 +13,7 @@ Colunas das escolhas:
 Comuns a todas as linhas, na linha de comando: norma, tipo_ativo, vigencia_desde, vigencia_ate.
 
 Uso:
-  uv run python -m regulaia.curadoria data/extraido/res95_2022.json curadoria/res95_2022.csv \
+  uv run python -m mitra.curadoria data/extraido/res95_2022.json curadoria/res95_2022.csv \
       cadastro/res95_2022.csv "Res. ANM 95/2022" barragem 2022-02-07 2027-08-01
 """
 

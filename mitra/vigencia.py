@@ -20,9 +20,9 @@ O que sai daqui:
   (descartada, com a fonte na nota), aprovada e revogada fica, para a curadoria ver.
 - `texto_atualizado`: o texto consolidado, para a segunda leitura da triagem nas normas federais.
 
-    uv run python -m regulaia.vigencia catalogo
-    uv run python -m regulaia.vigencia candidatas [--limite N]
-    uv run python -m regulaia.vigencia norma BR:LEI:12334/2010
+    uv run python -m mitra.vigencia catalogo
+    uv run python -m mitra.vigencia candidatas [--limite N]
+    uv run python -m mitra.vigencia norma BR:LEI:12334/2010
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ from .impacto import _limpo
 CACHE = db.ROOT / "data" / "raw" / "fontes" / "vigencia"
 LEXML = "https://www.lexml.gov.br/urn/"
 INTERVALO = {"www.lexml.gov.br": 5.0, "www2.camara.leg.br": 1.0, "legis.senado.leg.br": 1.0}   # segundos entre pedidos ao mesmo host
-AGENTE = "RegulaIA/0.1 (pesquisa regulatoria)"
+AGENTE = "Mitra/0.1 (pesquisa regulatoria)"
 FONTE = "Câmara dos Deputados, Legislação Informatizada"
 FONTE_SENADO = "Senado Federal, dados abertos (detalhe da norma)"
 SENADO_DETALHE = "https://legis.senado.leg.br/dadosabertos/legislacao/{id}"

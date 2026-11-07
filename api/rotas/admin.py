@@ -10,7 +10,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
-from regulaia import db, demo, sigbm, usuarios
+from mitra import db, demo, sigbm, usuarios
 
 from .. import auditoria
 from ..banco import conexao

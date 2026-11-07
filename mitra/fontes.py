@@ -1,6 +1,6 @@
 """Textos oficiais das normas do cadastro: de onde vêm e como baixar.
 
-Uso: uv run python -m regulaia.fontes [--forcar]
+Uso: uv run python -m mitra.fontes [--forcar]
 
 Salva em data/raw/normas/ (fora do Git). Arquivo que já existe não é baixado de novo.
 Com os textos baixados, tests/test_trechos.py confere cada trecho citado no cadastro.
@@ -27,7 +27,7 @@ FONTES: dict[str, tuple[str, str]] = {
     "res95_2022.html": ("Res. ANM 95/2022 (texto consolidado)", _ANMLEGIS.format(numero=95, ano=2022)),
     "res220_2025.html": ("Res. ANM 220/2025 (texto consolidado, com a Res. 245/2026)", _ANMLEGIS.format(numero=220, ano=2025)),
     # O Planalto derruba conexões que não vêm de navegador; a Câmara serve o mesmo texto consolidado, com as
-    # notas de redação (regulaia/vigencia.py tira as notas e o que está riscado antes de conferir)
+    # notas de redação (mitra/vigencia.py tira as notas e o que está riscado antes de conferir)
     "lei_12334_2010_camara.html": ("Lei 12.334/2010 (PNSB, texto atualizado da Câmara, com a Lei 15.355/2026)",
                                    "https://www2.camara.leg.br/legin/fed/lei/2010/"
                                    "lei-12334-20-setembro-2010-608607-normaatualizada-pl.html"),
@@ -53,7 +53,7 @@ def baixar(forcar: bool = False, destino: Path = DESTINO) -> list[str]:
 
     destino.mkdir(parents=True, exist_ok=True)
     feitos = []
-    with httpx.Client(follow_redirects=True, timeout=60, headers={"User-Agent": "RegulaIA/0.1"}) as http:
+    with httpx.Client(follow_redirects=True, timeout=60, headers={"User-Agent": "Mitra/0.1"}) as http:
         for nome, (norma, url) in FONTES.items():
             alvo = destino / nome
             if alvo.exists() and not forcar:

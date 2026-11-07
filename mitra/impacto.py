@@ -6,7 +6,7 @@ Fluxo:
   camada 3 (modelo forte)  -> só se a 2 teve baixa confiança ou mudança reprovada.
   Mudanças aprovadas pelo Python viram versões PENDENTES; uma pessoa decide.
 
-Uso: uv run python -m regulaia.impacto data/raw/dou/S01082026.zip [AAAA-MM-DD]
+Uso: uv run python -m mitra.impacto data/raw/dou/S01082026.zip [AAAA-MM-DD]
 """
 
 from __future__ import annotations

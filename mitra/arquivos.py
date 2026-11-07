@@ -1,7 +1,7 @@
 """Onde fica o PDF original de cada evidência registrada (a prova do que foi entregue).
 
 Sem configuração: pasta local data/evidencias/ (fora do Git).
-REGULAIA_S3_BUCKET=nome-do-bucket: Amazon S3, na região do AWS_REGION, com criptografia no servidor.
+MITRA_S3_BUCKET=nome-do-bucket: Amazon S3, na região do AWS_REGION, com criptografia no servidor.
 O bucket deve ter o acesso público bloqueado (regra do evento); este módulo nunca cria nem muda bucket.
 
 O endereço gravado no banco termina no nome do arquivo (.../<hash>/<nome>.pdf), então a torre mostra
@@ -27,7 +27,7 @@ def _nome_seguro(nome: str) -> str:
 def guardar(nome: str, conteudo: bytes, s3=None) -> str:
     """Guarda o original e devolve onde ficou (caminho relativo ao projeto, ou s3://bucket/chave)."""
     chave = f"evidencias/{hashlib.sha256(conteudo).hexdigest()[:16]}/{_nome_seguro(nome)}"
-    bucket = os.environ.get("REGULAIA_S3_BUCKET", "").strip()
+    bucket = os.environ.get("MITRA_S3_BUCKET", "").strip()
     if bucket:
         if s3 is None:
             from . import aws

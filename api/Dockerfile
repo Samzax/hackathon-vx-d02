@@ -1,10 +1,10 @@
-# RegulaIA API: a imagem que roda no ECS Fargate (e no docker compose local).
+# Mitra API: a imagem que roda no ECS Fargate (e no docker compose local).
 #
-#   docker build -f api/Dockerfile -t regulaia-api .
-#   docker run -p 8000:8000 -e REGULAIA_DATABASE_URL=postgresql://... regulaia-api
+#   docker build -f api/Dockerfile -t mitra-api .
+#   docker run -p 8000:8000 -e MITRA_DATABASE_URL=postgresql://... mitra-api
 #
 # A mesma imagem roda a API (padrão) e o job do radar do DOU:
-#   docker run regulaia-api python -m api.jobs radar
+#   docker run mitra-api python -m api.jobs radar
 # Segredos (URL do banco, chaves de IA, token do agente) entram por variável de ambiente,
 # vindos do Secrets Manager na AWS; nunca na imagem (.env está no .dockerignore).
 #
@@ -42,11 +42,11 @@ COPY . .
 RUN uv sync --locked --no-dev
 COPY --from=front /front/out /app/front/out
 
-RUN useradd --create-home regulaia && mkdir -p /app/data/uploads /app/data/raw/fontes && chown -R regulaia /app
-USER regulaia
+RUN useradd --create-home mitra && mkdir -p /app/data/uploads /app/data/raw/fontes && chown -R mitra /app
+USER mitra
 
 ENV PATH="/app/.venv/bin:$PATH" \
-    REGULAIA_COOKIE_SEGURO=1
+    MITRA_COOKIE_SEGURO=1
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \

@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Upl
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from regulaia import db, instanciacao as dominio, sigbm, usuarios
+from mitra import db, instanciacao as dominio, sigbm, usuarios
 
 from .. import auditoria
 from ..banco import conexao

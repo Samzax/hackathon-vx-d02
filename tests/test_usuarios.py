@@ -2,8 +2,8 @@
 
 import pytest
 
-from regulaia import db, usuarios
-from regulaia.usuarios import ErroConta
+from mitra import db, usuarios
+from mitra.usuarios import ErroConta
 
 
 @pytest.fixture
@@ -88,7 +88,7 @@ def test_contas_da_demo_e_areas(conn, monkeypatch):
     assert usuarios.semear(conn) == 0
     assert usuarios.por_email(conn, ana["email"])["nome"] == "Ana S."
     # no link público, a senha das contas da demo vem do ambiente
-    monkeypatch.setenv("REGULAIA_SENHA_DEMO", "outra-senha-forte")
+    monkeypatch.setenv("MITRA_SENHA_DEMO", "outra-senha-forte")
     c2 = db.conectar(":memory:")
     usuarios.semear(c2)
     assert usuarios.autenticar(c2, "diretoria@serraazul.demo", "outra-senha-forte")

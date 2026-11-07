@@ -1,7 +1,7 @@
 """As ferramentas de leitura da torre, sem depender do MCP.
 
 Servem a dois clientes: o servidor MCP (`agente/servidor.py`, do lado de quem usa, com o token de serviço)
-e o "Pergunte à torre" do front (`regulaia/pergunta.py` pela rota da API, com a sessão de quem pergunta).
+e o "Pergunte à torre" do front (`mitra/pergunta.py` pela rota da API, com a sessão de quem pergunta).
 As duas pontas falam com a torre só pela API (`Torre`), então valem as mesmas regras de acesso.
 
 Sem `from __future__ import annotations`: as anotações ficam como objetos, e o MCP e o Pydantic leem o
@@ -13,10 +13,10 @@ from typing import Annotated
 
 from pydantic import Field
 
-from .cliente import Torre
+from .cliente import ErroTorre, NaoEncontrado, Torre
 
 INSTRUCOES = """\
-Você consulta a torre de controle regulatória da RegulaIA: para cada ativo de uma mineradora (barragens,
+Você consulta a torre de controle regulatória da Mitra: para cada ativo de uma mineradora (barragens,
 unidades, equipamentos, licenças), quais obrigações de cada norma valem, quando vencem e se estão em dia.
 
 - Toda obrigação tem norma, dispositivo (artigo/item) e o trecho literal da norma: cite-os ao responder.
@@ -71,6 +71,28 @@ def ferramentas(torre: Torre) -> list[Callable]:
         """Empresas que este agente enxerga (id, nome, se é fictícia, de onde veio)."""
         return [{"id": e["id"], "nome": e["nome"], "ficticia": e.get("ficticia"), "origem": e.get("origem")}
                 for e in torre.empresas()]
+
+    def instanciacao(empresa: Empresa = None) -> dict:
+        """Em que pé está a instanciação da empresa: cada etapa (título, estado, o que falta nela e quem mexeu
+        por último), o percentual, se já entrou em operação e desde quando a torre cobra, e os dados que faltam
+        no cadastro dos ativos (o que perguntar e quais obrigações dependem do dado)."""
+        eid = torre.empresa_id(empresa)
+        try:
+            e = torre.get(f"/empresas/{eid}/instanciacao")
+        except NaoEncontrado:
+            # a empresa existe (empresa_id já a achou): o 404 aqui é da instanciação, que ela não tem
+            alvo = f"A empresa {empresa}" if empresa else "A empresa"
+            raise ErroTorre(f"{alvo} não passou pela instanciação (entrou na torre por outro caminho): não há "
+                            "etapas para contar; o que falta no cadastro dos ativos aparece na ficha de "
+                            "cada um.") from None
+        faltando = torre.get(f"/empresas/{eid}/dados-faltando")
+        return {"empresa": e["empresa"], "percentual": e["percentual"], "em_operacao": e["em_operacao"],
+                "monitorado_desde": e["monitorado_desde"],
+                "etapas": [{"titulo": x["titulo"], "estado": x["estado"], "falta": x["falta"],
+                            "numeros": x["numeros"], "por": x.get("por")} for x in e["etapas"]],
+                "dados_faltando": {"total": len(faltando),
+                                   "itens": [{"ativo": d["ativo"], "pergunta": d["pergunta"],
+                                              "obrigacoes": d["obrigacoes"]} for d in faltando]}}
 
     def pendencias(empresa: Empresa = None, hoje: Hoje = None,
                    ativo: Annotated[str | None, Field(description="Código do ativo (ex.: B1)")] = None,
@@ -161,7 +183,7 @@ def ferramentas(torre: Torre) -> list[Callable]:
     ) -> list[dict]:
         """Que normas valem para os ativos da empresa e quais ainda não estão no catálogo, por jurisdição e
         tipo de ativo: as normas catalogadas, as fontes oficiais lidas (e até que ano), as lacunas conhecidas,
-        as normas já publicadas que a IA achou relevantes e esperam a curadoria RegulaIA, e as aprovadas que
+        as normas já publicadas que a IA achou relevantes e esperam a curadoria Mitra, e as aprovadas que
         esperam a extração das obrigações. Ex.: "que normas valem para as minhas barragens em MG?"."""
         eid = torre.empresa_id(empresa)
         jur = (jurisdicao or "").strip().upper()
@@ -205,5 +227,5 @@ def ferramentas(torre: Torre) -> list[Callable]:
                 "mudancas": a["mudancas"], "aprovadas_pela_conferencia": a.get("aprovadas"),
                 "revisao_humana": a["revisao_humana"], "custo_usd": a["custo_usd"]}
 
-    return [empresas, pendencias, ativos, ficha_do_ativo, obrigacoes, historico_da_obrigacao, mudancas_pendentes,
-            linha_do_tempo, boletim, cobertura_normativa, radar_do_dou, analisar_ato]
+    return [empresas, instanciacao, pendencias, ativos, ficha_do_ativo, obrigacoes, historico_da_obrigacao,
+            mudancas_pendentes, linha_do_tempo, boletim, cobertura_normativa, radar_do_dou, analisar_ato]

@@ -1,4 +1,4 @@
-# Avaliação do "Pergunte à torre" (regulaia/pergunta.py) contra a demo (Mineradora Serra Azul, hoje
+# Avaliação do "Pergunte à torre" (mitra/pergunta.py) contra a demo (Mineradora Serra Azul, hoje
 # 2026-11-07). Os fatos esperados vêm das ferramentas, não de memória: conferidos com a API da demo.
 #
 #   contem       cada item precisa aparecer na resposta (lista dentro da lista = basta uma das opções)
@@ -8,7 +8,7 @@
 # Além disso, todo caso exige a conferência limpa: trecho entre aspas, data e código da resposta precisam
 # estar no que as ferramentas devolveram.
 #
-# Com o modelo de verdade: REGULAIA_BEDROCK=1 AWS_PROFILE=vx uv run python -m regulaia.pergunta avaliar
+# Com o modelo de verdade: MITRA_BEDROCK=1 AWS_PROFILE=vx uv run python -m mitra.pergunta avaliar
 # (--gravar regrava tests/fixtures/pergunta/, que o CI repete sem chave).
 
 [[caso]]

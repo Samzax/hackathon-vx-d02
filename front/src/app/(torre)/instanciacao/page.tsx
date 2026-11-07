@@ -225,7 +225,7 @@ export default function Instanciacao() {
           <p className="font-semibold">A {empresa.nome} não passou pela instanciação.</p>
           <p className="mt-1">
             Ela entrou na torre por outro caminho, então não há etapas para acompanhar aqui. Esta tela vale para as
-            empresas criadas pela curadoria da RegulaIA.
+            empresas criadas pela curadoria da Mitra.
           </p>
         </Aviso>
       )}

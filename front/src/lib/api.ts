@@ -1,12 +1,12 @@
 // Cliente da API: tipado pelo contrato (api/openapi.json -> api-tipos.ts), sempre com o cookie de
 // sessão (credentials: "include") e, em toda escrita, o cabeçalho X-CSRF-Token com o valor do
-// cookie regulaia_csrf (double submit). O front não fala com mais nada além desta API.
+// cookie mitra_csrf (double submit). O front não fala com mais nada além desta API.
 import createClient, { type Middleware } from "openapi-fetch";
 import type { components, paths } from "./api-tipos";
 
 export type Esquemas = components["schemas"];
 
-export const COOKIE_CSRF = "regulaia_csrf";
+export const COOKIE_CSRF = "mitra_csrf";
 export const CABECALHO_CSRF = "X-CSRF-Token";
 const ESCRITA = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 

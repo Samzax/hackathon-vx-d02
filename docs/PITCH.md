@@ -44,7 +44,7 @@ Como o tempo está dividido, e qual critério cada parte carrega:
 ## 4 · A torre em uma frase (1:15 – 1:30)
 
 - **Na tela:** duas setas chegando no mesmo ativo. De cima: "Diário Oficial → obrigação". De baixo: "PDF da operação → baixa ou alerta". No meio: "uma pessoa aprova".
-- **Fala:** "A RegulaIA é uma torre de controle por ativo. De cima, lê o Diário Oficial e atualiza as obrigações. De baixo, lê o documento da operação e dá baixa ou dispara o alerta. Nada muda sem uma pessoa aprovar."
+- **Fala:** "A Mitra é uma torre de controle por ativo. De cima, lê o Diário Oficial e atualiza as obrigações. De baixo, lê o documento da operação e dá baixa ou dispara o alerta. Nada muda sem uma pessoa aprovar."
 
 ## 5 · Vídeo da demo (1:30 – 3:15)
 
@@ -76,7 +76,7 @@ Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é a
 
 ## 8 · Concorrência (4:15 – 4:35)
 
-- **Na tela:** duas colunas. "Monitoramento legal (Sigalei, Verde Ghaia, Ius Natura): o que mudou na lei?" · "RegulaIA: o que esta barragem precisa entregar, até quando, e já entregou?"
+- **Na tela:** duas colunas. "Monitoramento legal (Sigalei, Verde Ghaia, Ius Natura): o que mudou na lei?" · "Mitra: o que esta barragem precisa entregar, até quando, e já entregou?"
 - **Fala:** "Monitoramento legal já existe, e é bom em dizer o que mudou na lei. Nós respondemos o que esta barragem precisa entregar, até quando, e se já entregou, lendo o documento que comprova. As consultorias que fazem a declaração de estabilidade não são concorrentes: são o nosso canal."
 
 ## 9 · Próximos passos (4:35 – 4:55)

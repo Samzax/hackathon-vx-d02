@@ -679,7 +679,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** A fila da curadoria RegulaIA: normas já publicadas que a busca achou e a IA triou (só a plataforma) */
+        /** A fila da curadoria Mitra: normas já publicadas que a busca achou e a IA triou (só a plataforma) */
         get: operations["fila_api_v1_normas_candidatas_get"];
         put?: never;
         post?: never;
@@ -715,7 +715,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Curadoria RegulaIA: aprovar (vai para a extração das obrigações) ou descartar, com nota */
+        /** Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota */
         post: operations["decidir_api_v1_normas_candidatas__chave__decisao_post"];
         delete?: never;
         options?: never;
@@ -1186,6 +1186,74 @@ export interface paths {
         post?: never;
         /** LGPD: apagar os dados pessoais da empresa (TI da própria empresa). Fica na auditoria */
         delete: operations["apagar_dados_pessoais_api_v1_empresas__empresa_id__dados_pessoais_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/personalizacao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** As regras próprias da empresa: prazo interno, responsável padrão e normas internas */
+        get: operations["ver_api_v1_empresas__empresa_id__personalizacao_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/prazos-internos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Adiantar o prazo de uma obrigação nesta empresa (a norma não muda) */
+        put: operations["prazo_interno_api_v1_empresas__empresa_id__prazos_internos_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/responsaveis-padrao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Quem responde por obrigação nova de uma área nesta empresa */
+        put: operations["responsavel_padrao_api_v1_empresas__empresa_id__responsaveis_padrao_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/normas-internas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Obrigação própria sem licença (padrão corporativo), aprovada pela própria empresa */
+        post: operations["norma_interna_api_v1_empresas__empresa_id__normas_internas_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1699,7 +1767,7 @@ export interface components {
             periodicidade: string | null;
             /**
              * Agenda
-             * @description a agenda que a torre usa (ver regulaia/agenda.py)
+             * @description a agenda que a torre usa (ver mitra/agenda.py)
              */
             agenda: string | null;
             /** Evidencia */
@@ -2174,7 +2242,7 @@ export interface components {
             empresa: string | null;
             /**
              * Plataforma
-             * @description age como a equipe da RegulaIA (curadoria das normas públicas)
+             * @description age como a equipe da Mitra (curadoria das normas públicas)
              */
             plataforma: boolean;
             /**
@@ -2501,7 +2569,7 @@ export interface components {
             triagem_pendente: number;
             /**
              * Em Curadoria
-             * @description relevantes pela IA, esperando a curadoria RegulaIA
+             * @description relevantes pela IA, esperando a curadoria Mitra
              */
             em_curadoria: components["schemas"]["NormaNaCobertura"][];
             /**
@@ -2724,6 +2792,16 @@ export interface components {
              * @default []
              */
             dados_faltando_rotulos: string[];
+            /**
+             * Vence Interno
+             * @description a meta da empresa (prazo interno), antes do prazo legal de `vence`: a torre cobra por ela
+             */
+            vence_interno?: string | null;
+            /**
+             * Dias Antes
+             * @description quantos dias antes do prazo legal é a meta interna
+             */
+            dias_antes?: number | null;
         };
         /** LinhaPlanilha */
         LinhaPlanilha: {
@@ -2866,7 +2944,7 @@ export interface components {
             decide: boolean;
             /**
              * Quem Decide
-             * @example curadoria RegulaIA
+             * @example curadoria Mitra
              * @example Regulatório ou Diretoria da Mineradora Serra Azul
              */
             quem_decide: string;
@@ -3001,6 +3079,35 @@ export interface components {
              */
             cita_catalogo: string[];
         };
+        /** NormaInterna */
+        NormaInterna: {
+            /** Codigo */
+            codigo: string;
+            /** Norma */
+            norma: string;
+            /** Area */
+            area: string;
+            /** Tipo Ativo */
+            tipo_ativo: string;
+            /** Titulo */
+            titulo: string;
+            /** Agenda */
+            agenda: string | null;
+            /** Periodicidade */
+            periodicidade: string | null;
+            /** Prazo */
+            prazo: string | null;
+            /** Evidencia */
+            evidencia: string | null;
+            /** Responsavel */
+            responsavel: string | null;
+            /** Vigencia Desde */
+            vigencia_desde: string | null;
+            /** Decidida Por */
+            decidida_por: string | null;
+            /** Decidida Em */
+            decidida_em: string | null;
+        };
         /** NormaNaCobertura */
         NormaNaCobertura: {
             /**
@@ -3054,6 +3161,66 @@ export interface components {
              * @default false
              */
             ficticia: boolean;
+        };
+        /** NovaNormaInterna */
+        NovaNormaInterna: {
+            /**
+             * Titulo
+             * @example Inspeção interna mensal da pilha
+             */
+            titulo: string;
+            /**
+             * Tipo Ativo
+             * @default barragem
+             */
+            tipo_ativo: string;
+            /**
+             * Area
+             * @default documentacao
+             */
+            area: string;
+            /**
+             * Agenda
+             * @description a agenda da torre (mensal+10d, anos:3, evento...)
+             * @default evento
+             */
+            agenda: string;
+            /**
+             * Periodicidade
+             * @example Mensal
+             */
+            periodicidade?: string | null;
+            /**
+             * Prazo
+             * @example Até 10 dias após o fim do mês
+             */
+            prazo?: string | null;
+            /**
+             * Evidencia
+             * @example Relatório interno assinado
+             */
+            evidencia?: string | null;
+            /**
+             * Aplica Se A
+             * @default todos os ativos do tipo
+             */
+            aplica_se_a: string;
+            /**
+             * Regra
+             * @description a regra de aplicabilidade (ver mitra/regras.py)
+             * @default *
+             */
+            regra: string;
+            /**
+             * Norma
+             * @default Padrão interno
+             */
+            norma: string;
+            /**
+             * Vigencia Desde
+             * @description AAAA-MM-DD; vazio: vale desde já
+             */
+            vigencia_desde?: string | null;
         };
         /** NovaSenha */
         NovaSenha: {
@@ -3151,6 +3318,19 @@ export interface components {
             atributos: {
                 [key: string]: unknown;
             };
+        };
+        /** NovoPrazo */
+        NovoPrazo: {
+            /**
+             * Codigo
+             * @example R95-01
+             */
+            codigo: string;
+            /**
+             * Dias Antes
+             * @description 0 tira a meta e volta a cobrar só pelo prazo legal
+             */
+            dias_antes: number;
         };
         /** ObrigacaoResumo */
         ObrigacaoResumo: {
@@ -3255,6 +3435,25 @@ export interface components {
             /** Rotulo */
             rotulo: string;
         };
+        /** Personalizacao */
+        Personalizacao: {
+            /** Prazos Internos */
+            prazos_internos: components["schemas"]["PrazoInterno"][];
+            /**
+             * Responsaveis Padrao
+             * @description {área: responsável}
+             */
+            responsaveis_padrao: {
+                [key: string]: string;
+            };
+            /** Normas Internas */
+            normas_internas: components["schemas"]["NormaInterna"][];
+            /**
+             * Areas
+             * @description as áreas que uma obrigação pode ter
+             */
+            areas: string[];
+        };
         /** Planilha */
         Planilha: {
             /** Linhas */
@@ -3266,6 +3465,20 @@ export interface components {
             importados: number;
             /** Erros */
             erros: number;
+        };
+        /** PrazoInterno */
+        PrazoInterno: {
+            /** Codigo */
+            codigo: string;
+            /**
+             * Dias Antes
+             * @description quantos dias antes do prazo legal a empresa quer entregar
+             */
+            dias_antes: number;
+            /** Definido Por */
+            definido_por: string;
+            /** Definido Em */
+            definido_em: string;
         };
         /** PrimeiraConta */
         PrimeiraConta: {
@@ -3381,6 +3594,19 @@ export interface components {
             criado_por: string;
             /** Criado Em */
             criado_em: string;
+        };
+        /** ResponsavelPadrao */
+        ResponsavelPadrao: {
+            /**
+             * Area
+             * @description barragem, emergencia, ambiental, equipamento, seguranca_trabalho, documentacao ou comunicacao
+             */
+            area: string;
+            /**
+             * Responsavel
+             * @description vazio tira o padrão
+             */
+            responsavel: string;
         };
         /** RespostaPergunta */
         RespostaPergunta: {
@@ -3667,7 +3893,7 @@ export interface components {
              * @example Diretoria (todos os ativos)
              * @example Gerência de Geotecnia
              * @example TI (usuários e acessos)
-             * @example Curadoria RegulaIA (plataforma)
+             * @example Curadoria Mitra (plataforma)
              */
             visao: string;
         };
@@ -3777,6 +4003,11 @@ export interface components {
              * @default []
              */
             problemas: string[];
+        };
+        /** Criada */
+        api__rotas__personalizacao__Criada: {
+            /** Codigo */
+            codigo: string;
         };
         /** Decisao */
         api__rotas__regulatorio__Decisao: {
@@ -6145,6 +6376,142 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Apagados"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ver_api_v1_empresas__empresa_id__personalizacao_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Personalizacao"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prazo_interno_api_v1_empresas__empresa_id__prazos_internos_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NovoPrazo"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ok"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    responsavel_padrao_api_v1_empresas__empresa_id__responsaveis_padrao_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResponsavelPadrao"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ok"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    norma_interna_api_v1_empresas__empresa_id__normas_internas_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NovaNormaInterna"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["api__rotas__personalizacao__Criada"];
                 };
             };
             /** @description Validation Error */

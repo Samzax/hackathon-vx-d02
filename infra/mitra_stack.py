@@ -1,4 +1,4 @@
-"""A RegulaIA na AWS (us-east-1), em uma pilha CDK.
+"""A Mitra na AWS (us-east-1), em uma pilha CDK.
 
     Internet ──HTTPS/HTTP──> ALB ──> ECS Fargate (API + front estático, mesma origem)
                                        │  ├── RDS Postgres 16 (subnets isoladas, sem acesso público)
@@ -55,6 +55,7 @@ from aws_cdk import (
 from constructs import Construct
 
 RAIZ = Path(__file__).resolve().parent.parent
+# nome legado: é o database_name do RDS já deployado — mudar força a RECRIAÇÃO da instância (perde os dados)
 BANCO = "regulaia"
 # a URL do banco é montada na task a partir do segredo: estes caracteres quebrariam a URL
 FORA_DA_SENHA = " %+~`#$&*()|[]{}:;<>?!'/@\"\\,="
@@ -62,7 +63,7 @@ FORA_DA_SENHA = " %+~`#$&*()|[]{}:;<>?!'/@\"\\,="
 PREFIXO_CLOUDFRONT = {"us-east-1": "pl-3b927c52"}
 
 
-class RegulaIA(Stack):
+class Mitra(Stack):
     def __init__(self, scope: Construct, id_: str, *, certificado_arn: str | None = None,
                  imagem: ecs.ContainerImage | None = None, imagem_tag: str | None = None,
                  ia: bool = False, **kw) -> None:
@@ -100,6 +101,7 @@ class RegulaIA(Stack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_ISOLATED),
             security_groups=[sg_banco],
             database_name=BANCO,
+            # usuário master legado: mudar também força a recriação da instância RDS
             credentials=rds.Credentials.from_generated_secret("regulaia", exclude_characters=FORA_DA_SENHA),
             allocated_storage=20,
             storage_encrypted=True,
@@ -117,19 +119,19 @@ class RegulaIA(Stack):
         )
         # chave da criptografia por campo (CPF): 64 caracteres alfanuméricos; o código deriva dela a chave
         chave_dados = sm.Secret(
-            self, "ChaveDados", description="REGULAIA_CHAVE_DADOS: criptografia por campo do dado pessoal",
+            self, "ChaveDados", description="MITRA_CHAVE_DADOS: criptografia por campo do dado pessoal",
             generate_secret_string=sm.SecretStringGenerator(exclude_punctuation=True, password_length=64),
         )
         # senha das contas da demo no link público (a do arquivo da demo está no Git)
         senha_demo = sm.Secret(
-            self, "SenhaDemo", description="REGULAIA_SENHA_DEMO: senha das contas ficticias da demo",
+            self, "SenhaDemo", description="MITRA_SENHA_DEMO: senha das contas ficticias da demo",
             generate_secret_string=sm.SecretStringGenerator(exclude_punctuation=True, password_length=20),
         )
 
         # ------------------------------------------------------------------ aplicação
         cluster = ecs.Cluster(self, "Cluster", vpc=vpc, container_insights_v2=ecs.ContainerInsights.ENABLED)
         if imagem is None and imagem_tag:
-            repo = ecr.Repository.from_repository_name(self, "Imagens", "regulaia-api")
+            repo = ecr.Repository.from_repository_name(self, "Imagens", "regulaia-api")   # repositório legado
             imagem = ecs.ContainerImage.from_ecr_repository(repo, tag=imagem_tag)
         imagem = imagem or ecs.ContainerImage.from_asset(str(RAIZ), file="api/Dockerfile",
                                                          exclude=["infra/cdk.out", ".venv", ".git", "front/node_modules"])
@@ -138,27 +140,27 @@ class RegulaIA(Stack):
             "DB_USUARIO": ecs.Secret.from_secrets_manager(banco.secret, "username"),
             "DB_SENHA": ecs.Secret.from_secrets_manager(banco.secret, "password"),
             "DB_HOST": ecs.Secret.from_secrets_manager(banco.secret, "host"),
-            "REGULAIA_TOKEN_SERVICO": ecs.Secret.from_secrets_manager(token_agente),
-            "REGULAIA_CHAVE_DADOS": ecs.Secret.from_secrets_manager(chave_dados),
-            "REGULAIA_SENHA_DEMO": ecs.Secret.from_secrets_manager(senha_demo),
+            "MITRA_TOKEN_SERVICO": ecs.Secret.from_secrets_manager(token_agente),
+            "MITRA_CHAVE_DADOS": ecs.Secret.from_secrets_manager(chave_dados),
+            "MITRA_SENHA_DEMO": ecs.Secret.from_secrets_manager(senha_demo),
         }
         https = certificado_arn is not None
         prefixo_cf = None if https else PREFIXO_CLOUDFRONT.get(self.region)   # CloudFront na frente do ALB
         ambiente = {
-            "REGULAIA_ARMAZENAMENTO": f"s3://{documentos.bucket_name}/",
-            "REGULAIA_COOKIE_SEGURO": "1" if https or prefixo_cf else "0",
-            "REGULAIA_ORIGENS": "",
+            "MITRA_ARMAZENAMENTO": f"s3://{documentos.bucket_name}/",
+            "MITRA_COOKIE_SEGURO": "1" if https or prefixo_cf else "0",
+            "MITRA_ORIGENS": "",
             "AWS_REGION": self.region,
-            "REGULAIA_BEDROCK": "1" if ia else "",   # provedor Bedrock (modelos em regulaia/modelos.toml)
-            "REGULAIA_TETO_DIA_USD": "10",            # link público: teto de gasto com IA por dia
+            "MITRA_BEDROCK": "1" if ia else "",   # provedor Bedrock (modelos em mitra/modelos.toml)
+            "MITRA_TETO_DIA_USD": "10",            # link público: teto de gasto com IA por dia
         }
         # a URL do banco é montada aqui, com a senha que veio do Secrets Manager
         url = f"postgresql://$DB_USUARIO:$DB_SENHA@$DB_HOST:5432/{BANCO}"
-        comando_api = ["sh", "-c", f'export REGULAIA_DATABASE_URL="{url}" && alembic upgrade head && '
+        comando_api = ["sh", "-c", f'export MITRA_DATABASE_URL="{url}" && alembic upgrade head && '
                                    "exec uvicorn api.main:app --host 0.0.0.0 --port 8000 --proxy-headers "
                                    "--forwarded-allow-ips='*' --workers 2"]
-        comando_radar = ["sh", "-c", f'export REGULAIA_DATABASE_URL="{url}" && exec python -m api.jobs radar']
-        comando_descoberta = ["sh", "-c", f'export REGULAIA_DATABASE_URL="{url}" && exec python -m api.jobs descoberta']
+        comando_radar = ["sh", "-c", f'export MITRA_DATABASE_URL="{url}" && exec python -m api.jobs radar']
+        comando_descoberta = ["sh", "-c", f'export MITRA_DATABASE_URL="{url}" && exec python -m api.jobs descoberta']
 
         logs_api = logs.LogGroup(self, "LogsApi", retention=logs.RetentionDays.ONE_MONTH,
                                  removal_policy=RemovalPolicy.DESTROY)
@@ -206,7 +208,7 @@ class RegulaIA(Stack):
                 read_timeout=Duration.seconds(60),     # análise com IA pode passar dos 30 s padrão
             )
             cdn = cf.Distribution(
-                self, "Cdn", comment="RegulaIA: HTTPS na frente do ALB",
+                self, "Cdn", comment="Mitra: HTTPS na frente do ALB",
                 price_class=cf.PriceClass.PRICE_CLASS_ALL,      # inclui os pontos de presença no Brasil
                 http_version=cf.HttpVersion.HTTP2_AND_3,
                 default_behavior=cf.BehaviorOptions(

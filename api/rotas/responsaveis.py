@@ -1,12 +1,12 @@
 """Responsáveis técnicos e o dado pessoal: CPF mascarado por padrão, "ver CPF" auditado, LGPD.
 
-Regras exercidas aqui (o resto está em `regulaia/pessoal.py` e `regulaia/responsaveis.py`):
+Regras exercidas aqui (o resto está em `mitra/pessoal.py` e `mitra/responsaveis.py`):
 - Quem cadastra e remove responsável é a **própria empresa** (`seguranca.da_empresa`): a plataforma só
   lê os dados da cliente, e dado pessoal não é exceção.
 - A listagem devolve **sempre o CPF mascarado**, para qualquer papel. Ver o CPF inteiro é do
   **Regulatório e da TI da própria empresa**, por `GET /responsaveis/{id}/cpf`, e **cada visualização
   vai para a auditoria** com quem viu, de quem e quando.
-- Sem `REGULAIA_CHAVE_DADOS` a API sobe, mas guardar CPF responde 503 com o motivo: nada de chave
+- Sem `MITRA_CHAVE_DADOS` a API sobe, mas guardar CPF responde 503 com o motivo: nada de chave
   padrão no código, que faria a cifra de enfeite.
 - LGPD: `GET /empresas/{id}/dados-pessoais` (exportar, com o CPF em claro, direito do titular) e
   `DELETE` (apagar). As duas são da TI da própria empresa e ficam na trilha.
@@ -17,7 +17,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
-from regulaia import db, pessoal, responsaveis as dominio
+from mitra import db, pessoal, responsaveis as dominio
 
 from .. import auditoria
 from ..banco import conexao
@@ -143,7 +143,7 @@ def ver_cpf(responsavel_id: int, empresa_id: int, request: Request, e: Escopo = 
     emp = empresa_visivel(conn, e, empresa_id)
     if e.so_leitura:        # a plataforma acompanha a empresa, mas não vê o dado pessoal dela
         raise HTTPException(status.HTTP_403_FORBIDDEN,
-                            "a equipe RegulaIA não vê o CPF dos responsáveis da empresa")
+                            "a equipe Mitra não vê o CPF dos responsáveis da empresa")
     if not (e.ve_tudo or e.admin):
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             "ver o CPF inteiro é do Regulatório, da Diretoria e da TI da empresa")
@@ -183,7 +183,7 @@ def exportar(empresa_id: int, request: Request, e: Escopo = Depends(ti), conn=De
     emp = empresa_visivel(conn, e, empresa_id)
     if e.so_leitura:
         raise HTTPException(status.HTTP_403_FORBIDDEN,
-                            "a equipe RegulaIA não exporta o dado pessoal da empresa")
+                            "a equipe Mitra não exporta o dado pessoal da empresa")
     pessoas = dominio.exportar(conn, empresa_id)
     auditoria.registrar(conn, request, "dados_pessoais_exportados", emp["nome"], {"pessoas": len(pessoas)})
     return DadosPessoais(empresa=emp["nome"], pessoas=pessoas)
@@ -196,7 +196,7 @@ def apagar_dados_pessoais(empresa_id: int, request: Request, e: Escopo = Depends
     emp = empresa_visivel(conn, e, empresa_id)
     if e.so_leitura:
         raise HTTPException(status.HTTP_403_FORBIDDEN,
-                            "a equipe RegulaIA não apaga o dado pessoal da empresa")
+                            "a equipe Mitra não apaga o dado pessoal da empresa")
     n = dominio.apagar_dados_pessoais(conn, empresa_id, e.assinante)
     auditoria.registrar(conn, request, "dados_pessoais_apagados", emp["nome"], {"removidos": n})
     return Apagados(removidos=n)

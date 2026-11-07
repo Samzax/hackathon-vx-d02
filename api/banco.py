@@ -2,7 +2,7 @@
 
 - Postgres (API, AWS RDS): um pool de conexões (psycopg_pool) aberto no início do app (`abrir_pool`,
   no lifespan) e fechado no fim. Cada requisição pega uma conexão emprestada, com a mesma cara do
-  sqlite3 que o domínio espera (`regulaia/banco.py`), e devolve no fim. Transação que ficou aberta
+  sqlite3 que o domínio espera (`mitra/banco.py`), e devolve no fim. Transação que ficou aberta
   (erro no meio, leitura sem commit) volta desfeita antes da devolução: a próxima requisição que
   pegar essa conexão começa limpa, sem ver nada pela metade.
 - SQLite (testes, demo): uma conexão por requisição, aberta e fechada aqui.
@@ -17,8 +17,8 @@ from contextlib import contextmanager
 
 from fastapi import Depends, HTTPException, Request, status
 
-from regulaia import banco, db
-from regulaia.ia import Roteador
+from mitra import banco, db
+from mitra.ia import Roteador
 
 from .config import Config
 from .observabilidade import log
@@ -34,7 +34,7 @@ def abrir_pool(cfg: Config):
         banco.url_psycopg(cfg.banco), min_size=cfg.pool_min, max_size=max(cfg.pool_max, cfg.pool_min),
         kwargs={"autocommit": False}, max_idle=cfg.pool_ociosa_s, timeout=cfg.pool_espera_s,
         # confere a conexão ao emprestar: depois de um failover do RDS, a quebrada é trocada, não vira 500
-        check=ConnectionPool.check_connection, name="regulaia-api", open=False)
+        check=ConnectionPool.check_connection, name="mitra-api", open=False)
     pool.open(wait=True, timeout=cfg.pool_espera_s)
     return pool
 

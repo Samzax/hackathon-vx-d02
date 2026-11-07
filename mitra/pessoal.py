@@ -4,7 +4,7 @@ O CPF do responsável técnico é o único dado pessoal da plataforma (o resto �
 público no SIGBM). Regras, todas exercidas por teste:
 
 - **Guardado cifrado por campo** (Fernet, da biblioteca `cryptography`), com a chave em
-  `REGULAIA_CHAVE_DADOS`. Em produção ela vem do Secrets Manager como texto alfanumérico; qualquer texto
+  `MITRA_CHAVE_DADOS`. Em produção ela vem do Secrets Manager como texto alfanumérico; qualquer texto
   serve, porque a chave Fernet é derivada por SHA-256. **Sem a variável a API sobe, mas guardar CPF dá
   erro claro**: nada de chave padrão no código, que viraria cifra decorativa.
 - **A API devolve mascarado** (`***.456.789-**`). Ver o CPF inteiro é do Regulatório e da TI da própria
@@ -22,7 +22,7 @@ import os
 import re
 
 MARCADOR = "[CPF REMOVIDO]"
-VARIAVEL = "REGULAIA_CHAVE_DADOS"
+VARIAVEL = "MITRA_CHAVE_DADOS"
 # ddd.ddd.ddd-dd ou 11 dígitos seguidos (nenhum CPF de exemplo neste repositório, nem fictício:
 # tests/test_documentacao.py recusa arquivo versionado com cara de CPF formatado)
 _CPF = re.compile(r"\b(\d{3})\.?(\d{3})\.?(\d{3})-?(\d{2})\b")

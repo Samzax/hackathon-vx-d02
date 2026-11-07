@@ -1,6 +1,6 @@
 """A API: sessão, CSRF, papéis, escopo por área, auditoria e os fluxos da torre ponta a ponta.
 
-Roda no SQLite por padrão e no Postgres com REGULAIA_TESTE_PG (ver conftest.py)."""
+Roda no SQLite por padrão e no Postgres com MITRA_TESTE_PG (ver conftest.py)."""
 
 from __future__ import annotations
 
@@ -13,13 +13,13 @@ from fastapi.testclient import TestClient
 
 from api.config import Config
 from api.main import PREFIXO, criar_app
-from regulaia import agenda, db, demo, evidencias, torre, usuarios
+from mitra import agenda, db, demo, evidencias, torre, usuarios
 from tests.conftest import URL_PG
 
 _CONTAS = json.loads((db.ROOT / "data" / "usuarios_demo.json").read_text(encoding="utf-8"))
 SENHA = _CONTAS["senha"]
 SERRA_AZUL = _CONTAS["empresa"]
-CURADORIA = "curadoria@regulaia.demo"       # equipe da RegulaIA: aprova mudança de norma pública
+CURADORIA = "curadoria@mitra.demo"       # equipe da Mitra: aprova mudança de norma pública
 OUTRA = "Mineradora Morro Alto (fictícia)"  # segunda cliente dos testes de isolamento
 _MODELO: dict[str, Path] = {}
 
@@ -59,7 +59,7 @@ def entrar(c: TestClient, email: str | None = None, senha: str = SENHA) -> dict:
     r = c.post(_url("/auth/demo")) if email is None else c.post(_url("/auth/login"),
                                                                 json={"email": email, "senha": senha})
     assert r.status_code == 200, r.text
-    c.headers["X-CSRF-Token"] = c.cookies["regulaia_csrf"]
+    c.headers["X-CSRF-Token"] = c.cookies["mitra_csrf"]
     return r.json()
 
 
@@ -99,9 +99,9 @@ def test_senha_errada_e_recusada_e_fica_na_auditoria(cliente):
 
 def test_cookie_de_sessao_e_httponly_e_o_banco_guarda_so_o_hash(cliente, cfg):
     r = cliente.post(_url("/auth/demo"))
-    cookie = next(h for h in r.headers.get_list("set-cookie") if h.startswith("regulaia_sessao="))
+    cookie = next(h for h in r.headers.get_list("set-cookie") if h.startswith("mitra_sessao="))
     assert "HttpOnly" in cookie and "SameSite=lax" in cookie
-    token = cliente.cookies["regulaia_sessao"]
+    token = cliente.cookies["mitra_sessao"]
     conn = db.conectar(cfg.banco)
     hashes = [x[0] for x in conn.execute("SELECT token_hash FROM sessao").fetchall()]
     assert token not in hashes and len(hashes[0]) == 64
@@ -225,7 +225,7 @@ def test_norma_publica_so_a_curadoria_decide_e_a_decisao_vale(cliente):
     pendentes = cliente.get(_url(f"/empresas/{emp}/mudancas")).json()
     ob01 = next(m for m in pendentes if m["codigo"] == "OB-01")
     assert ob01["diferencas"]["prazo"][1] == "2029-12-26" and ob01["trecho"]
-    assert ob01["escopo"] == "norma pública" and not ob01["decide"] and ob01["quem_decide"] == "curadoria RegulaIA"
+    assert ob01["escopo"] == "norma pública" and not ob01["decide"] and ob01["quem_decide"] == "curadoria Mitra"
     decisao = _url(f"/mudancas/{ob01['versao_id']}/decisao")
     como(cliente, "geotecnia@serraazul.demo")
     assert cliente.post(decisao, json={"aprovar": True}).status_code == 403
@@ -236,7 +236,7 @@ def test_norma_publica_so_a_curadoria_decide_e_a_decisao_vale(cliente):
     assert cliente.post(decisao, json={"aprovar": True}).status_code == 200
     assert not [m for m in cliente.get(_url(f"/empresas/{emp}/mudancas")).json() if m["codigo"] == "OB-01"]
     h = cliente.get(_url("/obrigacoes/OB-01/historico")).json()
-    assert [v["status"] for v in h] == ["substituida", "vigente"] and h[-1]["decidida_por"] == "Curadoria RegulaIA"
+    assert [v["status"] for v in h] == ["substituida", "vigente"] and h[-1]["decidida_por"] == "Curadoria Mitra"
 
 
 def test_correcao_invalida_e_recusada_e_auditada(cliente):
@@ -291,7 +291,7 @@ def test_transicao_e_linha_do_tempo(cliente):
 
 
 # ----------------------------------------------------------------- multiempresa
-# A RegulaIA é a plataforma; cada mineradora é uma cliente. A segunda cliente tem ativos com os
+# A Mitra é a plataforma; cada mineradora é uma cliente. A segunda cliente tem ativos com os
 # mesmos códigos da Serra Azul (B1, B3, L1) e a mesma área ("Gerência de Geotecnia").
 
 
@@ -507,9 +507,9 @@ def test_cada_cliente_ve_so_a_propria_trilha_e_a_plataforma_ve_todas(cliente, ou
 
 def test_conta_de_teste_olha_como_a_curadoria_e_o_token_de_servico_ve_todas(cliente, outra):
     eu = como(cliente)
-    assert eu["empresa"] == SERRA_AZUL and eu["visoes"][-1] == "Curadoria RegulaIA (plataforma)"
+    assert eu["empresa"] == SERRA_AZUL and eu["visoes"][-1] == "Curadoria Mitra (plataforma)"
     assert _ids(cliente) == [outra["serra"]]
-    r = cliente.put(_url("/auth/visao"), json={"visao": "Curadoria RegulaIA (plataforma)"})
+    r = cliente.put(_url("/auth/visao"), json={"visao": "Curadoria Mitra (plataforma)"})
     assert r.status_code == 200 and r.json()["plataforma"] and r.json()["empresa"] is None
     assert set(_ids(cliente)) == {outra["serra"], outra["id"]}
     h = {"Authorization": "Bearer token-de-teste-do-agente"}
@@ -522,7 +522,7 @@ def test_conta_sem_empresa_nao_entra(cliente, cfg):
     conn.close()
     cliente.cookies.clear()
     r = cliente.post(_url("/auth/login"), json={"email": "solta@exemplo.demo", "senha": SENHA})
-    assert r.status_code == 403 and "regulaia_sessao" not in cliente.cookies
+    assert r.status_code == 403 and "mitra_sessao" not in cliente.cookies
 
 
 # ----------------------------------------------------------------- a plataforma só lê
@@ -563,7 +563,7 @@ def _como_plataforma(c: TestClient, quem: str) -> None:
         c.headers.update(TOKEN)
     elif quem == "conta de teste como curadoria":
         como(c)
-        assert c.put(_url("/auth/visao"), json={"visao": "Curadoria RegulaIA (plataforma)"}).status_code == 200
+        assert c.put(_url("/auth/visao"), json={"visao": "Curadoria Mitra (plataforma)"}).status_code == 200
     else:
         como(c, CURADORIA)
 
@@ -577,7 +577,7 @@ def test_plataforma_so_le_os_dados_operacionais_da_empresa(cliente, quem):
     antes = cliente.get(_url(f"/ativos/{b3}")).json()
     r = _escritas_da_empresa(cliente, emp)
     assert {k: v.status_code for k, v in r.items()} == dict.fromkeys(r, 403)
-    assert all(v.json()["detail"].startswith("a equipe RegulaIA só lê os dados da empresa") for v in r.values())
+    assert all(v.json()["detail"].startswith("a equipe Mitra só lê os dados da empresa") for v in r.values())
     depois = cliente.get(_url(f"/ativos/{b3}")).json()
     assert (depois["ativo"], depois["evidencias"], depois["eventos"]) == (antes["ativo"], antes["evidencias"],
                                                                          antes["eventos"])
@@ -746,12 +746,12 @@ def test_recriar_demo_fica_na_auditoria(cliente):
 
 
 def test_sem_demo_nao_ha_conta_sem_senha(tmp_path):
-    """REGULAIA_MONTAR_DEMO=false (produção): /auth/demo não existe e só entram contas com senha."""
+    """MITRA_MONTAR_DEMO=false (produção): /auth/demo não existe e só entram contas com senha."""
     cfg = Config(banco=str(tmp_path / "prod.db"), banco_cache=str(tmp_path / "cache.db"),
                  armazenamento=str(tmp_path / "uploads"), montar_demo=False)
     with TestClient(criar_app(cfg)) as c:
         assert c.post(_url("/auth/demo")).status_code == 404
-        r = c.post(_url("/auth/login"), json={"email": "curadoria@regulaia.demo", "senha": SENHA})
+        r = c.post(_url("/auth/login"), json={"email": "curadoria@mitra.demo", "senha": SENHA})
         assert r.status_code == 200 and r.json()["plataforma"]
 
 
@@ -797,7 +797,7 @@ def test_mudanca_traz_a_analise_o_tamanho_e_a_decisao_fica_registrada(cliente):
     assert cliente.post(_url(f"/mudancas/{ob01['versao_id']}/decisao"), json={"aprovar": True}).status_code == 200
     d = cliente.get(_url(f"/empresas/{emp}/decisoes")).json()
     assert [(x["codigo"], x["aprovada"], x["corrigida"]) for x in d] == [("OB-01", True, False)]
-    assert d[0]["decidida_por"] == "Curadoria RegulaIA" and d[0]["ato_nome"].startswith("Resolução ANM nº 245")
+    assert d[0]["decidida_por"] == "Curadoria Mitra" and d[0]["ato_nome"].startswith("Resolução ANM nº 245")
     obs = cliente.get(_url(f"/empresas/{emp}/obrigacoes")).json()
     assert obs[0]["codigo"] == "OB-01" and obs[0]["mudou"]
     h = cliente.get(_url("/obrigacoes/OB-01/historico")).json()
@@ -997,7 +997,7 @@ def test_curadoria_reabre_o_que_a_ia_descartou_e_o_que_nao_se_decide_e_recusado(
 def test_job_da_descoberta_busca_tria_e_nao_mexe_no_que_a_curadoria_decidiu(cliente, cfg, tmp_path):
     """python -m api.jobs descoberta, com os trechos reais das fontes e uma IA roteirizada (sem internet)."""
     from api import jobs
-    from regulaia.ia import Roteador
+    from mitra.ia import Roteador
     from tests.test_descoberta import IRRELEVANTE, BaixadorFixo, IAFalsa
 
     como(cliente, CURADORIA)
@@ -1026,7 +1026,7 @@ def test_status_da_fila_na_api_sao_os_do_dominio():
     from typing import get_args
 
     from api.rotas.descoberta import StatusCandidata
-    from regulaia import descoberta
+    from mitra import descoberta
     assert get_args(StatusCandidata) == descoberta.STATUS
 
 

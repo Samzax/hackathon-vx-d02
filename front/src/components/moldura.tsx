@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  BookCheck, CalendarRange, ChartColumn, ClipboardList, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu,
+  BookCheck, CalendarRange, ChartColumn, ClipboardList, FileBadge, FileSearch, Gavel, History, IdCard, Inbox, ListChecks, LogOut, Map, Menu,
   MessageSquareText, Moon, Plus,
   Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
@@ -10,7 +10,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { api, dados } from "@/lib/api";
-import { useAtivos, useMudancas, useNormasCandidatas, usePainel, useRadar } from "@/lib/consultas";
+import { useAtivos, useCondicionantes, useMudancas, useNormasCandidatas, usePainel, useRadar } from "@/lib/consultas";
 import { dataBR, diasEntre, plural, usd } from "@/lib/formato";
 import { RES_220, ZAS, useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
@@ -28,6 +28,7 @@ function useGrupos(): Grupo[] {
   const mudancas = useMudancas();
   const painel = usePainel();
   const candidatas = useNormasCandidatas();
+  const condicionantes = useCondicionantes("pendente");
   if (t.ti) {
     return [{ titulo: "Administração", itens: [
       { href: "/usuarios/", rotulo: "Usuários e acessos", icone: <Users className="size-4" /> },
@@ -52,6 +53,9 @@ function useGrupos(): Grupo[] {
     ] },
     { titulo: "Empresa", itens: [
       { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" /> },
+      { href: "/licencas/", rotulo: "Licenças e condicionantes", icone: <FileBadge className="size-4" />,
+        contador: condicionantes.data?.length || undefined, tom: "marca" },
+      { href: "/responsaveis/", rotulo: "Responsáveis e unidades", icone: <IdCard className="size-4" /> },
     ] },
     { titulo: "Sobre", itens: [
       { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" /> },
@@ -63,7 +67,7 @@ function useGrupos(): Grupo[] {
 }
 
 /** O que cada papel pode abrir; o resto volta para a tela inicial do papel. A fila de normas candidatas
- * é trabalho da curadoria RegulaIA: só a plataforma. */
+ * é trabalho da curadoria Mitra: só a plataforma. */
 export function telaPermitida(caminho: string, ti: boolean, veTudo: boolean, plataforma = false): boolean {
   const c = caminho.endsWith("/") ? caminho : `${caminho}/`;
   if (ti) return c === "/usuarios/" || c === "/auditoria/";
@@ -91,7 +95,7 @@ export function useTema() {
     const novo = tema === "escuro" ? "claro" : "escuro";
     document.documentElement.dataset.tema = novo;
     try {
-      localStorage.setItem("regulaia_tema", novo);
+      localStorage.setItem("mitra_tema", novo);
     } catch {
       /* sem armazenamento: vale só nesta aba */
     }
@@ -102,7 +106,7 @@ export function useTema() {
 export function Logo({ className }: { className?: string }) {
   const { tema } = useTema();
   // eslint-disable-next-line @next/next/no-img-element -- SVG da marca, sem otimização no export estático
-  return <img src={tema === "escuro" ? "/logo_escuro.svg" : "/logo_claro.svg"} alt="RegulaIA" width={150} height={30} className={className} />;
+  return <img src={tema === "escuro" ? "/logo_escuro.svg" : "/logo_claro.svg"} alt="Mitra" width={150} height={30} className={className} />;
 }
 
 // ------------------------------------------------------------------ menu
@@ -295,7 +299,7 @@ function Cabecalho() {
           </p>
           {t.soLeitura && (
             <p className="mt-1" data-testid="so-leitura">
-              <Etiqueta title="A equipe RegulaIA acompanha a empresa, mas quem registra entrega, comenta e corrige o cadastro é a própria empresa.">
+              <Etiqueta title="A equipe Mitra acompanha a empresa, mas quem registra entrega, comenta e corrige o cadastro é a própria empresa.">
                 visão da plataforma: só leitura
               </Etiqueta>
             </p>
@@ -359,7 +363,7 @@ export function Moldura({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-[1240px]">
           <Cabecalho />
           {!permitida ? null : t.ti || t.empresa ? children : (
-            <Aviso tipo="info">Nenhuma empresa visível para esta conta ainda. Peça à curadoria da RegulaIA para montar a torre da sua empresa.</Aviso>
+            <Aviso tipo="info">Nenhuma empresa visível para esta conta ainda. Peça à curadoria da Mitra para montar a torre da sua empresa.</Aviso>
           )}
         </div>
       </main>

@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from api.config import Config
 from api.main import criar_app
-from regulaia import db, instanciacao as inst, pdf, usuarios
+from mitra import db, instanciacao as inst, pdf, usuarios
 from tests.test_api import CURADORIA, SENHA, _banco_da_demo, _url, como
 
 NOVA = "Mineradora Nova (fictícia)"
@@ -61,7 +61,7 @@ class IAFalsa:
 def ia(monkeypatch):
     """Troca o provedor de IA por um roteiro, sem rede (como nos outros testes de IA)."""
     falsa = IAFalsa(RESPOSTA_IA)
-    from regulaia import ia as modulo
+    from mitra import ia as modulo
 
     original = modulo.Roteador.__init__
 

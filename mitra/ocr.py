@@ -3,7 +3,7 @@
 PDF com texto selecionável: pypdf, sem custo e sem rede (é o caso dos exemplos da demo).
 PDF escaneado (a página é uma foto, sem camada de texto): precisa de OCR. O OCR é configuração:
 
-    REGULAIA_OCR=textract    Amazon Textract (DetectDocumentText), uma chamada por página,
+    MITRA_OCR=textract    Amazon Textract (DetectDocumentText), uma chamada por página,
                              na região do AWS_REGION (us-east-1 no evento). Credenciais pelo
                              perfil AWS do ambiente (AWS_PROFILE), nunca chave no código.
 
@@ -20,7 +20,7 @@ from io import BytesIO
 MIN_CARACTERES_POR_PAGINA = 20
 
 SEM_OCR = ("o PDF é escaneado (as páginas são imagem, sem texto selecionável) e o OCR não está ligado "
-           "nesta instalação: mande a versão digital do documento, ou ligue o OCR (REGULAIA_OCR=textract)")
+           "nesta instalação: mande a versão digital do documento, ou ligue o OCR (MITRA_OCR=textract)")
 
 
 @dataclass
@@ -54,8 +54,8 @@ class Textract:
 
 
 def ocr_configurado():
-    """O OCR que o ambiente pede (REGULAIA_OCR), ou None."""
-    return Textract() if os.environ.get("REGULAIA_OCR", "").strip().lower() == "textract" else None
+    """O OCR que o ambiente pede (MITRA_OCR), ou None."""
+    return Textract() if os.environ.get("MITRA_OCR", "").strip().lower() == "textract" else None
 
 
 def _pagina_sozinha(pagina) -> bytes:

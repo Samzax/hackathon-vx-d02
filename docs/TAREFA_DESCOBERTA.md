@@ -2,10 +2,10 @@
 
 **Feita** (o que entrou e o que ficou de fora está em [PLATAFORMA.md](PLATAFORMA.md), "Descoberta de normas").
 
-Ler antes: `regulaia/descoberta.py` (o módulo, com a explicação no topo), `regulaia/temas.toml`,
+Ler antes: `mitra/descoberta.py` (o módulo, com a explicação no topo), `mitra/temas.toml`,
 `tests/test_descoberta.py`, `docs/PLATAFORMA.md`. Branch `plataforma`. Commits sem linha de coautoria.
-`api/` e `front/` são seus; o domínio (`regulaia/`) já está pronto e testado. Se precisar mudar algo
-em `regulaia/descoberta.py`, mude e acrescente o teste.
+`api/` e `front/` são seus; o domínio (`mitra/`) já está pronto e testado. Se precisar mudar algo
+em `mitra/descoberta.py`, mude e acrescente o teste.
 
 ## O que já existe
 
@@ -17,7 +17,7 @@ em `regulaia/descoberta.py`, mude e acrescente o teste.
 - `descoberta.decidir(conn, chave, "aprovar"|"descartar", quem, nota)`: decisão da curadoria.
 - `descoberta.candidata(conn, chave)`: uma norma, com a triagem da IA (`deveres`, `motivo`, `confianca`, `modelo`).
 - A demo carrega `data/descoberta_demo.json` (a fila real, gerada com as fontes de verdade) em `demo.preparar`.
-- CLI: `uv run python -m regulaia.descoberta buscar|triar|cobertura|decidir|exportar`.
+- CLI: `uv run python -m mitra.descoberta buscar|triar|cobertura|decidir|exportar`.
 
 ## O que entregar
 
@@ -26,7 +26,7 @@ em `regulaia/descoberta.py`, mude e acrescente o teste.
 - `GET /api/v1/empresas/{id}/cobertura`: a cobertura da empresa. Cliente vê só a dela (404 para outra,
   como o resto); a plataforma vê qualquer uma.
 - `GET /api/v1/normas-candidatas?status=relevante&jurisdicao=MG`: a fila. **Só plataforma** (é trabalho
-  da curadoria RegulaIA; cliente recebe 403).
+  da curadoria Mitra; cliente recebe 403).
 - `GET /api/v1/normas-candidatas/{chave}`: uma norma (a chave tem `:` e `/`: usar `{chave:path}` ou
   query string).
 - `POST /api/v1/normas-candidatas/{chave}/decisao` `{"decisao": "aprovar"|"descartar", "nota": "..."}`:

@@ -1,4 +1,4 @@
-"""RegulaIA — Torre de Controle Regulatória (interface da demo).
+"""Mitra — Torre de Controle Regulatória (interface da demo).
 
 Uso: uv run streamlit run app.py
 """
@@ -15,11 +15,11 @@ from datetime import date, timedelta
 import pandas as pd
 import streamlit as st
 
-from regulaia import agenda, arquivos, db, demo, impacto, ocr, operacao, pdf, sigbm, torre, usuarios
-from regulaia import evidencias as ev
-from regulaia.ia import Roteador
+from mitra import agenda, arquivos, db, demo, impacto, ocr, operacao, pdf, sigbm, torre, usuarios
+from mitra import evidencias as ev
+from mitra.ia import Roteador
 
-st.set_page_config(page_title="RegulaIA · Torre de Controle", page_icon="assets/marca.svg", layout="wide")
+st.set_page_config(page_title="Mitra · Torre de Controle", page_icon="assets/marca.svg", layout="wide")
 # no celular o Streamlit empilha as colunas: os 5 números do topo ocupariam a tela inteira.
 # Só abaixo de 640 px, linha de métricas fica 3 por linha e com número menor; no desktop nada muda.
 st.html("""<style>
@@ -208,7 +208,7 @@ if "empresa_nova" in st.session_state:                      # acabou de importar
     st.session_state["empresa_id"] = st.session_state.pop("empresa_nova")
 if st.session_state.get("empresa_id") not in empresas:      # primeira visita, ou "Recriar demo"
     st.session_state["empresa_id"] = next(iter(empresas))
-LIMITE_IA_SESSAO = int(os.environ.get("REGULAIA_LIMITE_SESSAO") or 0) or None   # análises pagas por visita
+LIMITE_IA_SESSAO = int(os.environ.get("MITRA_LIMITE_SESSAO") or 0) or None   # análises pagas por visita
 
 
 def _roteador_da_sessao():
@@ -1112,7 +1112,7 @@ with aba_entregas:
     nome_arq = f"obrigacoes_{(visao if not diretoria else 'diretoria').replace(' ', '_')}_{hoje:%Y-%m-%d}"
     e1, e2, e3 = st.columns([1, 1, 2])
     e1.download_button(f"Excel ({len(filtradas)} linhas)",
-                       partial(operacao.planilha, filtradas, f"RegulaIA · {empresa['nome']}"), icon=":material/download:",
+                       partial(operacao.planilha, filtradas, f"Mitra · {empresa['nome']}"), icon=":material/download:",
                        file_name=f"{nome_arq}.xlsx", disabled=not filtradas,
                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     e2.download_button("Agenda (.ics)",
@@ -1553,7 +1553,7 @@ with aba_radar:
     f4.metric("Mudam o cadastro", "1")
     st.caption("Filtro por órgão e tipo de ato é regra, sem custo. Só os normativos chegam à IA, "
                "e só com as obrigações que a triagem considerou candidatas.")
-    from regulaia import impacto
+    from mitra import impacto
     gastos = db.conectar(impacto.CACHE_IA).execute(
         "SELECT tarefa, COUNT(*) AS n, COALESCE(SUM(custo_usd), 0) AS usd FROM analise_ia GROUP BY tarefa"
     ).fetchall()

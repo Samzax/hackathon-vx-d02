@@ -1,6 +1,6 @@
 """Gera os documentos fictícios usados na demo do leitor de evidências.
 
-Uso: uv run python -m regulaia.exemplos   (escreve em data/exemplos/)
+Uso: uv run python -m mitra.exemplos   (escreve em data/exemplos/)
 
 Todos os nomes, números de ART e responsáveis são inventados.
 """

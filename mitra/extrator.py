@@ -7,15 +7,15 @@ de aplicabilidade mal escrita ou com atributo desconhecido. Nada entra no
 cadastro sem uma pessoa revisar o arquivo gerado.
 
 Uso:
-  uv run python -m regulaia.extrator ORIGEM NORMA TIPO DESTINO [PREFIXOS]
+  uv run python -m mitra.extrator ORIGEM NORMA TIPO DESTINO [PREFIXOS]
 
   ORIGEM   .html do ANMlegis (unidade = artigo) ou .pdf de NR (unidade = item 13.5.4)
   PREFIXOS itens a ler, separados por vírgula (ex.: 22.24,22.30); padrão: todos
 
 Exemplos:
-  uv run python -m regulaia.extrator data/raw/normas/res95_2022.html \
+  uv run python -m mitra.extrator data/raw/normas/res95_2022.html \
       "Res. ANM 95/2022" barragem data/extraido/res95_2022.json
-  uv run python -m regulaia.extrator data/raw/normas/nr-13-atualizada-2023-b.pdf \
+  uv run python -m mitra.extrator data/raw/normas/nr-13-atualizada-2023-b.pdf \
       "NR-13" equipamento data/extraido/nr13.json
 """
 

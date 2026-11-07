@@ -1,10 +1,10 @@
-"""Os campos do cadastro (regulaia/campos.py): conversão por tipo e a conferência da edição."""
+"""Os campos do cadastro (mitra/campos.py): conversão por tipo e a conferência da edição."""
 
 from __future__ import annotations
 
 import pytest
 
-from regulaia import campos
+from mitra import campos
 
 
 def test_converter_numero_aceita_planilha_em_portugues():

@@ -1,9 +1,9 @@
 {
  "openapi": "3.1.0",
  "info": {
-  "title": "RegulaIA API",
+  "title": "Mitra API",
   "summary": "Torre de controle regulatória: cada obrigação de cada ativo, com a norma, o trecho e o prazo.",
-  "description": "Autenticação por cookie de sessão HttpOnly (POST /auth/login ou /auth/demo). Toda escrita precisa do cabeçalho X-CSRF-Token com o valor do cookie regulaia_csrf. O agente e os jobs usam Authorization: Bearer <REGULAIA_TOKEN_SERVICO>.",
+  "description": "Autenticação por cookie de sessão HttpOnly (POST /auth/login ou /auth/demo). Toda escrita precisa do cabeçalho X-CSRF-Token com o valor do cookie mitra_csrf. O agente e os jobs usam Authorization: Bearer <MITRA_TOKEN_SERVICO>.",
   "version": "1.0.0"
  },
  "paths": {
@@ -2098,7 +2098,7 @@
     "tags": [
      "descoberta"
     ],
-    "summary": "A fila da curadoria RegulaIA: normas já publicadas que a busca achou e a IA triou (só a plataforma)",
+    "summary": "A fila da curadoria Mitra: normas já publicadas que a busca achou e a IA triou (só a plataforma)",
     "operationId": "fila_api_v1_normas_candidatas_get",
     "parameters": [
      {
@@ -2215,7 +2215,7 @@
     "tags": [
      "descoberta"
     ],
-    "summary": "Curadoria RegulaIA: aprovar (vai para a extração das obrigações) ou descartar, com nota",
+    "summary": "Curadoria Mitra: aprovar (vai para a extração das obrigações) ou descartar, com nota",
     "operationId": "decidir_api_v1_normas_candidatas__chave__decisao_post",
     "parameters": [
      {
@@ -3855,6 +3855,204 @@
     }
    }
   },
+  "/api/v1/empresas/{empresa_id}/personalizacao": {
+   "get": {
+    "tags": [
+     "personalização"
+    ],
+    "summary": "As regras próprias da empresa: prazo interno, responsável padrão e normas internas",
+    "operationId": "ver_api_v1_empresas__empresa_id__personalizacao_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Personalizacao"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/prazos-internos": {
+   "put": {
+    "tags": [
+     "personalização"
+    ],
+    "summary": "Adiantar o prazo de uma obrigação nesta empresa (a norma não muda)",
+    "operationId": "prazo_interno_api_v1_empresas__empresa_id__prazos_internos_put",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovoPrazo"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Ok"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/responsaveis-padrao": {
+   "put": {
+    "tags": [
+     "personalização"
+    ],
+    "summary": "Quem responde por obrigação nova de uma área nesta empresa",
+    "operationId": "responsavel_padrao_api_v1_empresas__empresa_id__responsaveis_padrao_put",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResponsavelPadrao"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Ok"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/normas-internas": {
+   "post": {
+    "tags": [
+     "personalização"
+    ],
+    "summary": "Obrigação própria sem licença (padrão corporativo), aprovada pela própria empresa",
+    "operationId": "norma_interna_api_v1_empresas__empresa_id__normas_internas_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovaNormaInterna"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/api__rotas__personalizacao__Criada"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/usuarios": {
    "get": {
     "tags": [
@@ -5100,7 +5298,7 @@
        }
       ],
       "title": "Agenda",
-      "description": "a agenda que a torre usa (ver regulaia/agenda.py)"
+      "description": "a agenda que a torre usa (ver mitra/agenda.py)"
      },
      "evidencia": {
       "anyOf": [
@@ -6325,7 +6523,7 @@
      "plataforma": {
       "type": "boolean",
       "title": "Plataforma",
-      "description": "age como a equipe da RegulaIA (curadoria das normas públicas)"
+      "description": "age como a equipe da Mitra (curadoria das normas públicas)"
      },
      "so_leitura": {
       "type": "boolean",
@@ -6991,7 +7189,7 @@
       },
       "type": "array",
       "title": "Em Curadoria",
-      "description": "relevantes pela IA, esperando a curadoria RegulaIA"
+      "description": "relevantes pela IA, esperando a curadoria Mitra"
      },
      "aprovadas": {
       "items": {
@@ -7608,6 +7806,30 @@
       "title": "Dados Faltando Rotulos",
       "description": "o que falta no cadastro, em português",
       "default": []
+     },
+     "vence_interno": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vence Interno",
+      "description": "a meta da empresa (prazo interno), antes do prazo legal de `vence`: a torre cobra por ela"
+     },
+     "dias_antes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dias Antes",
+      "description": "quantos dias antes do prazo legal é a meta interna"
      }
     },
     "type": "object",
@@ -7968,7 +8190,7 @@
       "type": "string",
       "title": "Quem Decide",
       "examples": [
-       "curadoria RegulaIA",
+       "curadoria Mitra",
        "Regulatório ou Diretoria da Mineradora Serra Azul"
       ]
      },
@@ -8373,6 +8595,135 @@
     ],
     "title": "NormaCandidata"
    },
+   "NormaInterna": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "norma": {
+      "type": "string",
+      "title": "Norma"
+     },
+     "area": {
+      "type": "string",
+      "title": "Area"
+     },
+     "tipo_ativo": {
+      "type": "string",
+      "title": "Tipo Ativo"
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "agenda": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Agenda"
+     },
+     "periodicidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodicidade"
+     },
+     "prazo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prazo"
+     },
+     "evidencia": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidencia"
+     },
+     "responsavel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responsavel"
+     },
+     "vigencia_desde": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vigencia Desde"
+     },
+     "decidida_por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decidida Por"
+     },
+     "decidida_em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decidida Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo",
+     "norma",
+     "area",
+     "tipo_ativo",
+     "titulo",
+     "agenda",
+     "periodicidade",
+     "prazo",
+     "evidencia",
+     "responsavel",
+     "vigencia_desde",
+     "decidida_por",
+     "decidida_em"
+    ],
+    "title": "NormaInterna"
+   },
    "NormaNaCobertura": {
     "properties": {
      "chave": {
@@ -8477,6 +8828,112 @@
      "razao_social"
     ],
     "title": "Nova"
+   },
+   "NovaNormaInterna": {
+    "properties": {
+     "titulo": {
+      "type": "string",
+      "maxLength": 300,
+      "minLength": 3,
+      "title": "Titulo",
+      "examples": [
+       "Inspeção interna mensal da pilha"
+      ]
+     },
+     "tipo_ativo": {
+      "type": "string",
+      "pattern": "^(barragem|unidade|equipamento|licenca)$",
+      "title": "Tipo Ativo",
+      "default": "barragem"
+     },
+     "area": {
+      "type": "string",
+      "title": "Area",
+      "default": "documentacao"
+     },
+     "agenda": {
+      "type": "string",
+      "title": "Agenda",
+      "description": "a agenda da torre (mensal+10d, anos:3, evento...)",
+      "default": "evento"
+     },
+     "periodicidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodicidade",
+      "examples": [
+       "Mensal"
+      ]
+     },
+     "prazo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prazo",
+      "examples": [
+       "Até 10 dias após o fim do mês"
+      ]
+     },
+     "evidencia": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidencia",
+      "examples": [
+       "Relatório interno assinado"
+      ]
+     },
+     "aplica_se_a": {
+      "type": "string",
+      "title": "Aplica Se A",
+      "default": "todos os ativos do tipo"
+     },
+     "regra": {
+      "type": "string",
+      "title": "Regra",
+      "description": "a regra de aplicabilidade (ver mitra/regras.py)",
+      "default": "*"
+     },
+     "norma": {
+      "type": "string",
+      "maxLength": 120,
+      "title": "Norma",
+      "default": "Padrão interno"
+     },
+     "vigencia_desde": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vigencia Desde",
+      "description": "AAAA-MM-DD; vazio: vale desde já"
+     }
+    },
+    "type": "object",
+    "required": [
+     "titulo"
+    ],
+    "title": "NovaNormaInterna"
    },
    "NovaSenha": {
     "properties": {
@@ -8715,6 +9172,31 @@
      "nome"
     ],
     "title": "NovoAtivo"
+   },
+   "NovoPrazo": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "maxLength": 40,
+      "title": "Codigo",
+      "examples": [
+       "R95-01"
+      ]
+     },
+     "dias_antes": {
+      "type": "integer",
+      "maximum": 365.0,
+      "minimum": 0.0,
+      "title": "Dias Antes",
+      "description": "0 tira a meta e volta a cobrar só pelo prazo legal"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo",
+     "dias_antes"
+    ],
+    "title": "NovoPrazo"
    },
    "ObrigacaoResumo": {
     "properties": {
@@ -9006,6 +9488,48 @@
     ],
     "title": "PeriodoEntrega"
    },
+   "Personalizacao": {
+    "properties": {
+     "prazos_internos": {
+      "items": {
+       "$ref": "#/components/schemas/PrazoInterno"
+      },
+      "type": "array",
+      "title": "Prazos Internos"
+     },
+     "responsaveis_padrao": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Responsaveis Padrao",
+      "description": "{área: responsável}"
+     },
+     "normas_internas": {
+      "items": {
+       "$ref": "#/components/schemas/NormaInterna"
+      },
+      "type": "array",
+      "title": "Normas Internas"
+     },
+     "areas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Areas",
+      "description": "as áreas que uma obrigação pode ter"
+     }
+    },
+    "type": "object",
+    "required": [
+     "prazos_internos",
+     "responsaveis_padrao",
+     "normas_internas",
+     "areas"
+    ],
+    "title": "Personalizacao"
+   },
    "Planilha": {
     "properties": {
      "linhas": {
@@ -9032,6 +9556,35 @@
      "erros"
     ],
     "title": "Planilha"
+   },
+   "PrazoInterno": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "dias_antes": {
+      "type": "integer",
+      "title": "Dias Antes",
+      "description": "quantos dias antes do prazo legal a empresa quer entregar"
+     },
+     "definido_por": {
+      "type": "string",
+      "title": "Definido Por"
+     },
+     "definido_em": {
+      "type": "string",
+      "title": "Definido Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo",
+     "dias_antes",
+     "definido_por",
+     "definido_em"
+    ],
+    "title": "PrazoInterno"
    },
    "PrimeiraConta": {
     "properties": {
@@ -9349,6 +9902,26 @@
      "criado_em"
     ],
     "title": "Responsavel"
+   },
+   "ResponsavelPadrao": {
+    "properties": {
+     "area": {
+      "type": "string",
+      "title": "Area",
+      "description": "barragem, emergencia, ambiental, equipamento, seguranca_trabalho, documentacao ou comunicacao"
+     },
+     "responsavel": {
+      "type": "string",
+      "title": "Responsavel",
+      "description": "vazio tira o padrão"
+     }
+    },
+    "type": "object",
+    "required": [
+     "area",
+     "responsavel"
+    ],
+    "title": "ResponsavelPadrao"
    },
    "RespostaPergunta": {
     "properties": {
@@ -10156,7 +10729,7 @@
        "Diretoria (todos os ativos)",
        "Gerência de Geotecnia",
        "TI (usuários e acessos)",
-       "Curadoria RegulaIA (plataforma)"
+       "Curadoria Mitra (plataforma)"
       ]
      }
     },
@@ -10463,6 +11036,19 @@
      "custo_usd"
     ],
     "title": "Leitura"
+   },
+   "api__rotas__personalizacao__Criada": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo"
+    ],
+    "title": "Criada"
    },
    "api__rotas__regulatorio__Decisao": {
     "properties": {

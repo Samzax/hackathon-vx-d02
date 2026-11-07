@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const pptxgen = require("pptxgenjs");
 
-const saida = process.argv[2] || "RegulaIA_pitch.pptx";
+const saida = process.argv[2] || "Mitra_pitch.pptx";
 const pitch = fs.readFileSync(path.join(__dirname, "..", "PITCH.md"), "utf-8");
 
 // ---------- notas: falas e narração de cada seção "## N · Título (tempo)" ----------
@@ -39,15 +39,15 @@ const FONTE = "Arial";
 
 const pres = new pptxgen();
 pres.layout = "LAYOUT_16x9"; // 10 x 5,625 pol.
-pres.title = "RegulaIA: pitch";
-pres.author = "Time RegulaIA";
+pres.title = "Mitra: pitch";
+pres.author = "Time Mitra";
 pres.theme = { headFontFace: FONTE, bodyFontFace: FONTE };
 
 pres.defineSlideMaster({
   title: "CONTEUDO",
   background: { color: COR.branco },
   objects: [
-    { text: { text: "RegulaIA · Hackathon VX 2026",
+    { text: { text: "Mitra · Hackathon VX 2026",
               options: { x: 0.5, y: 5.2, w: 4, h: 0.3, fontFace: FONTE, fontSize: 9, color: COR.cinza, margin: 0 } } },
     { placeholder: { options: { name: "titulo", type: "title", x: 0.5, y: 0.35, w: 9, h: 0.7, fontFace: FONTE,
                                 fontSize: 28, bold: true, color: COR.tinta, margin: 0, valign: "middle", align: "left" },
@@ -69,7 +69,7 @@ function caixa(s, o) { s.addShape(pres.shapes.ROUNDED_RECTANGLE, { rectRadius: 0
 // ---------- 1 · Metade já foi embargada ----------
 {
   const s = pres.addSlide({ masterName: "ESCURO" });
-  texto(s, "RegulaIA", { x: 0.5, y: 0.4, w: 3, h: 0.35, fontSize: 14, bold: true, color: COR.ambar });
+  texto(s, "Mitra", { x: 0.5, y: 0.4, w: 3, h: 0.35, fontSize: 14, bold: true, color: COR.ambar });
   texto(s, [
     { text: "223", options: { color: COR.ambar } },
     { text: " de 461", options: { color: COR.branco } },
@@ -276,7 +276,7 @@ function caixa(s, o) { s.addShape(pres.shapes.ROUNDED_RECTANGLE, { rectRadius: 0
 
   caixa(s, { x: 5.2, y: 1.35, w: 4.3, h: 2.75, fill: { color: COR.noite } });
   texto(s, [
-    { text: "RegulaIA", options: { fontSize: 16, bold: true, color: COR.ambar, breakLine: true } },
+    { text: "Mitra", options: { fontSize: 16, bold: true, color: COR.ambar, breakLine: true } },
     { text: "por ativo, lendo o documento que comprova", options: { fontSize: 12, color: COR.claro } },
   ], { x: 5.45, y: 1.55, w: 3.8, h: 0.8, valign: "top" });
   texto(s, "“O que esta barragem precisa entregar, até quando, e já entregou?”",
@@ -315,7 +315,7 @@ function caixa(s, o) { s.addShape(pres.shapes.ROUNDED_RECTANGLE, { rectRadius: 0
   const s = pres.addSlide({ masterName: "ESCURO" });
   texto(s, "A norma muda, a torre muda junto, e uma pessoa decide.",
         { x: 0.5, y: 1.4, w: 9, h: 1.6, fontSize: 34, bold: true, color: COR.branco, valign: "middle" });
-  texto(s, "RegulaIA", { x: 0.5, y: 3.3, w: 4, h: 0.5, fontSize: 22, bold: true, color: COR.ambar });
+  texto(s, "Mitra", { x: 0.5, y: 3.3, w: 4, h: 0.5, fontSize: 22, bold: true, color: COR.ambar });
   texto(s, "Hackathon VX · Desafio 02 · Mineradora Serra Azul é fictícia",
         { x: 0.5, y: 3.85, w: 8, h: 0.35, fontSize: 12, color: COR.claro });
   s.addNotes(NOTAS["10"]);

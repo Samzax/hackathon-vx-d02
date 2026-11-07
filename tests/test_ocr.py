@@ -5,7 +5,7 @@ from io import BytesIO
 
 import pytest
 
-from regulaia import db, demo, evidencias as ev, exemplos, ocr
+from mitra import db, demo, evidencias as ev, exemplos, ocr
 
 pytest.importorskip("PIL")
 HOJE = date(2026, 11, 7)
@@ -124,9 +124,9 @@ def test_textract_manda_uma_pagina_por_chamada_e_junta_as_linhas():
 
 
 def test_ocr_do_ambiente(monkeypatch):
-    monkeypatch.delenv("REGULAIA_OCR", raising=False)
+    monkeypatch.delenv("MITRA_OCR", raising=False)
     assert ocr.ocr_configurado() is None
     pytest.importorskip("boto3")
-    monkeypatch.setenv("REGULAIA_OCR", "textract")
+    monkeypatch.setenv("MITRA_OCR", "textract")
     monkeypatch.setenv("AWS_REGION", "us-east-1")
     assert isinstance(ocr.ocr_configurado(), ocr.Textract)       # cria o cliente sem chamar a AWS

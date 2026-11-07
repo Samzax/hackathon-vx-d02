@@ -256,13 +256,13 @@ def ve_tudo(usuario: dict) -> bool:
 
 def semear(conn, origem: Path = SEED, com_senha_apenas: bool = False) -> int:
     """Contas da demo (fictícias). Não sobrescreve conta que já existe: o que a TI mudou fica.
-    A senha das contas da demo vem do arquivo, ou de REGULAIA_SENHA_DEMO no link público.
+    A senha das contas da demo vem do arquivo, ou de MITRA_SENHA_DEMO no link público.
     `com_senha_apenas` (produção, sem demo): a conta de teste sem senha, que entra por /auth/demo
     sem credencial e troca para a visão da curadoria, fica de fora."""
     if not origem.exists():
         return 0
     dados = json.loads(origem.read_text(encoding="utf-8"))
-    senha = os.environ.get("REGULAIA_SENHA_DEMO") or dados.get("senha")
+    senha = os.environ.get("MITRA_SENHA_DEMO") or dados.get("senha")
     n = 0
     for c in dados["contas"]:
         if com_senha_apenas and c.get("sem_senha"):

@@ -19,8 +19,8 @@ import hashlib
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel, Field
 
-from regulaia import evidencias as ev, licencas as dominio, ocr
-from regulaia.ia import Roteador
+from mitra import evidencias as ev, licencas as dominio, ocr
+from mitra.ia import Roteador
 
 from .. import armazenamento, auditoria
 from ..banco import conexao, roteador
@@ -65,7 +65,7 @@ class Condicionante(BaseModel):
     titulo: str
     prazo: str | None
     periodicidade: str | None
-    agenda: str | None = Field(description="a agenda que a torre usa (ver regulaia/agenda.py)")
+    agenda: str | None = Field(description="a agenda que a torre usa (ver mitra/agenda.py)")
     evidencia: str | None
     aplica_a: str | None = Field(description="empresa, unidade ou ativo")
     alvo: str | None

@@ -1,4 +1,4 @@
-# Análise de mercado e viabilidade: RegulaIA
+# Análise de mercado e viabilidade: Mitra
 
 Torre de controle regulatória por ativo, começando por barragens de mineração. Hackathon VX, Desafio 02. Versão de 05/11/2026.
 
@@ -11,7 +11,7 @@ Todo número deste documento tem fonte (lista no fim) ou é marcado como **premi
 - **O fiscal não vai achar o erro por você.** A ANM tem 53 servidores para fiscalizar cerca de 900 barragens, segundo a associação dos servidores. O controle é por declaração do próprio empreendedor: quem erra a data descobre no embargo.
 - **Mercado inicial bem definido.** 125 grupos econômicos com barragem na PNSB; 64 deles têm barragem de dano potencial alto (243 barragens, 144 em Minas Gerais). Com as premissas de preço da seção 3: TAM de R$ 24,5 milhões por ano (908 barragens de mineração), SAM de R$ 12,4 milhões (as 461 da PNSB) e SOM de R$ 1,2 milhão em 3 anos (46 barragens, cerca de 13 grupos).
 - **Expansão no mesmo motor: mesmo motor, outro cadastro.** Barragens de mineração são a porta de entrada; o mercado de verdade é compliance por ativo na mineradora inteira, e depois em todas as barragens do país. O SNISB tem 29.761 barragens cadastradas (água, energia, resíduos industriais), e 8.086 mineradoras recolheram CFEM em 2025. Vaso de pressão (NR-13), emergência (NR-22) e licença ambiental já rodam na demo.
-- **Concorrência existe, mas olha de cima para baixo.** Plataformas como Sigalei e Verde Ghaia respondem "o que mudou na lei?". A RegulaIA responde "o que esta barragem precisa entregar, até quando, e já entregou?", e lê o documento de campo que comprova.
+- **Concorrência existe, mas olha de cima para baixo.** Plataformas como Sigalei e Verde Ghaia respondem "o que mudou na lei?". A Mitra responde "o que esta barragem precisa entregar, até quando, e já entregou?", e lê o documento de campo que comprova.
 
 ## 2. O problema
 
@@ -87,7 +87,7 @@ Não há dado público do custo médio de controlar obrigações de barragem. A 
 | Entregas com data por ano | 4 × cerca de 60 (cadastro da demo) | cerca de 240 |
 | Custo-hora de quem controla | Salário de R$ 13,9 mil (CAGED) × 1,8 de encargos (hipótese) ÷ 168 h | cerca de R$ 150 por hora |
 | Triagem de norma, controle de prazo e cobrança | De 6 a 20 horas por semana (hipótese; 20 h é o número que a Nomos divulga para manter a lista de normas em dia) | De R$ 47 mil a R$ 156 mil por ano |
-| Preço da RegulaIA nas premissas da seção 3 | 4 × R$ 27 mil | R$ 108 mil por ano |
+| Preço da Mitra nas premissas da seção 3 | 4 × R$ 27 mil | R$ 108 mil por ano |
 
 O que a conta mostra: só com horas economizadas, o preço se paga perto do topo da faixa (20 h por semana), não embaixo. O argumento de compra precisa somar o que não entra nessa conta: consultoria chamada às pressas, uma estrutura embargada, retrabalho na troca 95 → 220. Esses custos são reais (casos na seção "Fiscalização e casos"), mas não tratamos multa ou embargo evitado como economia garantida. Por isso preço e horas são as duas primeiras perguntas das entrevistas (seção 8).
 
@@ -178,7 +178,7 @@ O modelo de dados não fala "barragem", fala **ativo**: uma obrigação tem norm
 | **Consultorias de engenharia** | Fazem DCE, RISR, RPSB | Confiança técnica do cliente | **Canal**: atendem muitas barragens e precisam do mesmo calendário |
 | **Planilha + e-mail + clipping** | Status quo | Custo zero aparente | É onde a data errada da notícia vira embargo |
 
-Nomos e Legalbot mostram que "norma vira tarefa com prazo e evidência" já é oferta conhecida. Por isso a RegulaIA não se posiciona como a única a fazer isso: o que ela faz e eles não divulgam é organizar por estrutura (cada barragem com suas entregas por período, pela norma que vale no dia) e dar baixa lendo o documento de campo que comprova a entrega.
+Nomos e Legalbot mostram que "norma vira tarefa com prazo e evidência" já é oferta conhecida. Por isso a Mitra não se posiciona como a única a fazer isso: o que ela faz e eles não divulgam é organizar por estrutura (cada barragem com suas entregas por período, pela norma que vale no dia) e dar baixa lendo o documento de campo que comprova a entrega.
 
 Sinal de interesse de investidor no tema: a RegDoor (inteligência regulatória com IA) levantou R$ 4,2 milhões em pré-seed com a Antler; a Sigalei levantou R$ 1,3 milhão com GVAngels; a consolidação de Ius Natura e Onegreen pelo grupo Constellation mostra que o setor compra empresas desse tipo.
 

@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Upl
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from regulaia import agenda, db, operacao, pdf, torre, usuarios
+from mitra import agenda, db, operacao, pdf, torre, usuarios
 
 from .. import armazenamento, auditoria, cadastro
 from ..banco import conexao
@@ -68,6 +68,9 @@ class LinhaPainel(BaseModel):
     ultima_rotulo: str | None = Field(None, description="o último período comprovado, em português")
     faltando_rotulos: list[str] = Field([], description="os períodos sem evidência, em português")
     dados_faltando_rotulos: list[str] = Field([], description="o que falta no cadastro, em português")
+    vence_interno: str | None = Field(None, description=(
+        "a meta da empresa (prazo interno), antes do prazo legal de `vence`: a torre cobra por ela"))
+    dias_antes: int | None = Field(None, description="quantos dias antes do prazo legal é a meta interna")
 
 
 class Painel(BaseModel):
@@ -691,7 +694,7 @@ def calendario_ics(empresa_id: int, responsavel: str | None = None, hoje: date |
     ics = torre.calendario(conn, empresa_id, hoje or hoje_padrao(), desde_padrao(emp), responsavel=responsavel,
                            unidades=e.escopo_unidades)
     return Response(ics, media_type="text/calendar; charset=utf-8",
-                    headers={"Content-Disposition": 'attachment; filename="regulaia.ics"'})
+                    headers={"Content-Disposition": 'attachment; filename="mitra.ics"'})
 
 
 @rota.get("/empresas/{empresa_id}/planilha", summary="As pendências em Excel (com os mesmos filtros da aba Entregas)")
@@ -710,7 +713,7 @@ def planilha(empresa_id: int, hoje: date | None = None,
               and (not vence_ate or (l.vence and l.vence <= vence_ate.isoformat()))]
     return Response(operacao.planilha(linhas, emp["nome"]),
                     media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    headers={"Content-Disposition": 'attachment; filename="regulaia.xlsx"'})
+                    headers={"Content-Disposition": 'attachment; filename="mitra.xlsx"'})
 
 
 @rota.get("/entregas/periodo", response_model=PeriodoEntrega,

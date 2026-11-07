@@ -1,14 +1,14 @@
 # Tarefa: instanciação de uma empresa (da base padrão à torre personalizada)
 
-A RegulaIA tem a **base padrão**, que vale para todo cliente: o catálogo de normas públicas, o SIGBM
+A Mitra tem a **base padrão**, que vale para todo cliente: o catálogo de normas públicas, o SIGBM
 público (só CNPJ), a descoberta e a vigência das normas. Falta a **base personalizada** de cada
 empresa e de cada operação: os ativos que o SIGBM não traz, as licenças e condicionantes, os
 responsáveis técnicos (com dado pessoal), quem vê o quê dentro da empresa e as regras próprias dela.
 Instanciar é levar uma cliente nova do zero até a torre funcionando, sem ninguém editar CSV à mão.
 
-Ler antes: `docs/PLATAFORMA.md` (Multiempresa, Descoberta), `regulaia/sigbm.py`, `regulaia/descoberta.py`
-(`cobertura`), `regulaia/extrator.py`, `api/rotas/admin.py` (`/sigbm/busca`, `/sigbm/importar`),
-`api/rotas/evidencias.py` (`/leitura`), `api/seguranca.py`, `regulaia/usuarios.py`.
+Ler antes: `docs/PLATAFORMA.md` (Multiempresa, Descoberta), `mitra/sigbm.py`, `mitra/descoberta.py`
+(`cobertura`), `mitra/extrator.py`, `api/rotas/admin.py` (`/sigbm/busca`, `/sigbm/importar`),
+`api/rotas/evidencias.py` (`/leitura`), `api/seguranca.py`, `mitra/usuarios.py`.
 
 ## Regras da sessão
 
@@ -17,13 +17,13 @@ Ler antes: `docs/PLATAFORMA.md` (Multiempresa, Descoberta), `regulaia/sigbm.py`,
 - **Não mexa em `infra/`.** Outra sessão está montando a AWS agora. Variável de ambiente nova (a chave de
   criptografia, por exemplo) vai documentada em `docs/PLATAFORMA.md`, seção "Para a infra", com nome, para
   que serve e de onde vem em produção (Secrets Manager); quem cuida da infra liga.
-- Não mexa em `regulaia/vigencia.py` (outra sessão está nele). A próxima migração é a `0005`.
+- Não mexa em `mitra/vigencia.py` (outra sessão está nele). A próxima migração é a `0005`.
 - O Docker desta máquina não sobe: Postgres se confere no CI (ou num cluster local sem Docker, como a
   sessão anterior fez na porta 55432).
 - Mantenha em `docs/PLATAFORMA.md` uma seção "Instanciação" com a lista do que está pronto e do que falta,
   atualizada a cada commit: se o limite de uso acabar no meio, outra sessão continua dali.
 
-## 1. Domínio: `regulaia/instanciacao.py`
+## 1. Domínio: `mitra/instanciacao.py`
 
 O estado da instanciação de cada empresa, em etapas, cada uma com quem fez e quando:
 
@@ -70,7 +70,7 @@ número inventado.
 
 - Por ativo ou unidade: responsável técnico (nome, CPF, registro no conselho, número da ART, vigência da
   ART), coordenador do PAEBM, etc. ART vencendo vira obrigação.
-- **CPF criptografado por campo** (biblioteca `cryptography`, chave em `REGULAIA_CHAVE_DADOS`, nunca no
+- **CPF criptografado por campo** (biblioteca `cryptography`, chave em `MITRA_CHAVE_DADOS`, nunca no
   Git; em produção vem do Secrets Manager). A API devolve mascarado (`***.456.789-**`); ver o CPF
   inteiro é do Regulatório e da TI da própria empresa, e cada visualização vai para a auditoria.
 - Dado pessoal **nunca** vai para a IA (a extração da licença recebe o texto com CPF trocado por
@@ -121,23 +121,23 @@ A sessão anterior parou no limite semanal antes do primeiro commit. Esta roda n
 Bedrock da conta do evento (Fable 5, perfil `vx`, us-east-1).
 
 **Estado que ficou no checkout, sem commit e sem teste** (rascunho da sessão anterior; confira antes de
-aproveitar, refaça o que não estiver bom): `regulaia/campos.py` (novo), `migrations/versions/0005_instanciacao.py`
-e `.sql` (novos), e mudanças em `regulaia/schema.sql`, `regulaia/schema_pg.sql`, `regulaia/db.py`,
-`regulaia/banco.py` e `api/cadastro.py`.
+aproveitar, refaça o que não estiver bom): `mitra/campos.py` (novo), `migrations/versions/0005_instanciacao.py`
+e `.sql` (novos), e mudanças em `mitra/schema.sql`, `mitra/schema_pg.sql`, `mitra/db.py`,
+`mitra/banco.py` e `api/cadastro.py`.
 
 **Mudanças de outra sessão (AWS), sem commit, que não são suas**: `infra/`, `api/Dockerfile` e
 `tests/test_infra.py`. Não reverta nem inclua nos seus commits: faça `git commit -- <seus caminhos>`.
 `pyproject.toml` e `uv.lock` estão livres: a dependência `cryptography` entra normalmente (`uv add`).
 
 **Ordem**
-1. **Revisão de código da base** (só leitura primeiro): `regulaia/`, `api/`, `agente/`, `front/src/`.
+1. **Revisão de código da base** (só leitura primeiro): `mitra/`, `api/`, `agente/`, `front/src/`.
    Procure erro de verdade (isolamento entre empresas, papéis, auditoria, SQL, Postgres x SQLite, regra de
    negócio, front chamando rota errada), não estilo. Escreva os achados em `docs/REVISAO_CODIGO.md`, do
    mais grave ao menos, cada um com arquivo:linha e o cenário que quebra. Corrija os que forem erro de
    verdade, com teste que falha antes e passa depois, um commit por correção (ou por grupo pequeno).
 2. **Instanciação**, seções 1 a 7 acima, a partir do rascunho.
 
-**Chave de dados**: em produção `REGULAIA_CHAVE_DADOS` chega do Secrets Manager como texto alfanumérico
+**Chave de dados**: em produção `MITRA_CHAVE_DADOS` chega do Secrets Manager como texto alfanumérico
 de 64 caracteres, não como chave Fernet. Derive a chave no código, para qualquer texto valer:
 `Fernet(base64.urlsafe_b64encode(hashlib.sha256(chave.encode()).digest()))`. Sem a variável, a API sobe,
 mas guardar CPF dá erro claro (nada de chave padrão no código).
@@ -157,11 +157,11 @@ Chamada (cada worker em segundo plano, com a saída num arquivo de log fora do r
   DeepSeek falha. Passe sempre `-m` e `--provider`, e confira no log qual modelo respondeu; trabalho de outro
   modelo você descarta ou refaz. Se o OpenCode Go limitar as chamadas, diminua o número de workers.
 - **Quem faz o quê**
-  - **Revisão de código: em paralelo, só leitura**, sem `--worktree`. Um worker por área (`regulaia/`, `api/`,
+  - **Revisão de código: em paralelo, só leitura**, sem `--worktree`. Um worker por área (`mitra/`, `api/`,
     `agente/`, `front/src/`), cada um devolvendo os achados com arquivo:linha e o cenário que quebra, sem
     mudar nada. Você confere cada achado no código antes de ele entrar em `docs/REVISAO_CODIGO.md`: o que
     não se confirmar, sai.
-  - **Base da instanciação: só você.** Esquema, migração 0005 e o núcleo de `regulaia/instanciacao.py`;
+  - **Base da instanciação: só você.** Esquema, migração 0005 e o núcleo de `mitra/instanciacao.py`;
     todo o resto depende disso, e em paralelo daria conflito.
   - **Partes sensíveis: só você.** CPF criptografado, isolamento por empresa e por unidade, papéis,
     auditoria, LGPD (exportar e apagar).

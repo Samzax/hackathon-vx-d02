@@ -1,9 +1,9 @@
-"""API da RegulaIA.
+"""API da Mitra.
 
     uv run uvicorn api.main:app --reload          # http://localhost:8000/docs
 
 Tudo o que a torre faz passa por aqui: o front (Next.js), o agente MCP e os jobs (radar do DOU)
-falam só com esta API. O domínio continua em `regulaia/`, igual para SQLite e Postgres.
+falam só com esta API. O domínio continua em `mitra/`, igual para SQLite e Postgres.
 """
 
 from __future__ import annotations
@@ -16,13 +16,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from regulaia import db, demo, usuarios
+from mitra import db, demo, usuarios
 
 from .banco import abrir_pool, conexao
 from .config import Config
 from .observabilidade import RequestId, configurar_logs, log
 from .rotas import (admin, auth, descoberta, evidencias, instanciacao, licencas, pergunta,
-                    regulatorio, responsaveis, torre)
+                    personalizacao, regulatorio, responsaveis, torre)
 
 VERSAO = "1.0.0"
 PREFIXO = "/api/v1"
@@ -63,13 +63,13 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
                 app.state.pool = None
 
     app = FastAPI(
-        title="RegulaIA API",
+        title="Mitra API",
         version=VERSAO,
         summary="Torre de controle regulatória: cada obrigação de cada ativo, com a norma, o trecho e o prazo.",
         description=(
             "Autenticação por cookie de sessão HttpOnly (POST /auth/login ou /auth/demo). "
-            "Toda escrita precisa do cabeçalho X-CSRF-Token com o valor do cookie regulaia_csrf. "
-            "O agente e os jobs usam Authorization: Bearer <REGULAIA_TOKEN_SERVICO>."),
+            "Toda escrita precisa do cabeçalho X-CSRF-Token com o valor do cookie mitra_csrf. "
+            "O agente e os jobs usam Authorization: Bearer <MITRA_TOKEN_SERVICO>."),
         lifespan=ciclo,
         openapi_url=f"{PREFIXO}/openapi.json",
         docs_url="/docs",
@@ -81,7 +81,8 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
     app.add_middleware(CORSMiddleware, allow_origins=list(cfg.origens), allow_credentials=True,
                        allow_methods=["*"], allow_headers=["*"], expose_headers=["X-Request-Id"])
     for r in (auth.rota, torre.rota, regulatorio.rota, descoberta.rota, evidencias.rota, pergunta.rota,
-              instanciacao.rota, licencas.rota, responsaveis.rota, admin.rota):
+              instanciacao.rota, licencas.rota, responsaveis.rota, personalizacao.rota,
+              admin.rota):
         app.include_router(r, prefix=PREFIXO)
 
     @app.get("/health", tags=["operação"], summary="Vivo e com banco")

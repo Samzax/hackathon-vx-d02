@@ -1,4 +1,4 @@
-"""Servidor MCP da RegulaIA: um agente (Claude, ou qualquer cliente MCP) consulta a torre.
+"""Servidor MCP da Mitra: um agente (Claude, ou qualquer cliente MCP) consulta a torre.
 
 Só leitura. O agente explica, cruza e prioriza; quem decide é gente, na torre: aprovar mudança de norma,
 registrar entrega e mexer no cadastro continuam nos botões, com nome na auditoria. A única ferramenta que
@@ -8,8 +8,8 @@ As ferramentas estão em `agente/ferramentas.py` (as mesmas do "Pergunte à torr
 ganham o embrulho do protocolo.
 
 Uso:
-    REGULAIA_TOKEN_SERVICO=... uv run python -m agente            # stdio (Claude Desktop)
-    REGULAIA_TOKEN_SERVICO=... uv run python -m agente --http     # streamable HTTP na 8100
+    MITRA_TOKEN_SERVICO=... uv run python -m agente            # stdio (Claude Desktop)
+    MITRA_TOKEN_SERVICO=... uv run python -m agente --http     # streamable HTTP na 8100
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ def _erro_de_ferramenta(fn: Callable) -> Callable:
 
 
 def criar_servidor(torre: Torre) -> MCPServer:
-    mcp = MCPServer(name="RegulaIA", title="RegulaIA: torre de controle regulatória",
+    mcp = MCPServer(name="Mitra", title="Mitra: torre de controle regulatória",
                     instructions=INSTRUCOES, version="1.0.0")
     for fn in ferramentas(torre):
         mcp.add_tool(_erro_de_ferramenta(fn), name=fn.__name__,

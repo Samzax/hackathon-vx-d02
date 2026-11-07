@@ -10,7 +10,7 @@ import uuid
 
 from starlette.middleware.base import BaseHTTPMiddleware
 
-log = logging.getLogger("regulaia.api")
+log = logging.getLogger("mitra.api")
 
 
 class _Json(logging.Formatter):

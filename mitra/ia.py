@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 
 CONFIG = Path(__file__).with_name("modelos.toml")
 ROOT = Path(__file__).resolve().parent.parent
-USER_AGENT = "regulaia/0.1 (hackathon-vx-d02)"
+USER_AGENT = "mitra/0.1 (hackathon-vx-d02)"
 
 
 class SemProvedor(RuntimeError):
@@ -31,7 +31,7 @@ class SemProvedor(RuntimeError):
 
 
 class TetoAtingido(SemProvedor):
-    """O gasto de IA do dia chegou ao teto (REGULAIA_TETO_DIA_USD): só regra e cache até amanhã."""
+    """O gasto de IA do dia chegou ao teto (MITRA_TETO_DIA_USD): só regra e cache até amanhã."""
 
 
 class RespostaInvalida(ValueError):
@@ -204,7 +204,7 @@ class Roteador:
         self.conn = conn
         # no link público: teto de gasto por dia (UTC), somado do cache, que guarda o custo de cada chamada
         try:
-            self.teto_dia_usd = float(env.get("REGULAIA_TETO_DIA_USD") or 0) or None
+            self.teto_dia_usd = float(env.get("MITRA_TETO_DIA_USD") or 0) or None
         except ValueError:
             self.teto_dia_usd = None
         if provedores is not None:

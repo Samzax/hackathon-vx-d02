@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from regulaia import curadoria
+from mitra import curadoria
 
 RAIZ = Path(__file__).resolve().parent.parent
 

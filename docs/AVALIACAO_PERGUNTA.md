@@ -1,6 +1,6 @@
 # Avaliação do Pergunte à torre
 
-Gerado por `python -m regulaia.pergunta avaliar` contra a demo (Mineradora Serra Azul), com o modelo de verdade. **10 de 10 casos passaram**; custo total US$ 0.1144; a mais lenta levou 13.2 s (o prazo é 45 s).
+Gerado por `python -m mitra.pergunta avaliar` contra a demo (Mineradora Serra Azul), com o modelo de verdade. **10 de 10 casos passaram**; custo total US$ 0.1144; a mais lenta levou 13.2 s (o prazo é 45 s).
 
 Cada caso tem critérios objetivos em `tests/pergunta_avaliacao.toml`: o que a resposta precisa conter, o que não pode conter, que ferramenta precisa ter usado, e a conferência do Python (trecho entre aspas, data e código de obrigação ou ativo precisam estar no que as ferramentas devolveram).
 
@@ -86,7 +86,7 @@ Para resolver, é preciso completar esse atributo no cadastro do ativo B4 — is
 - **Depois (proposto):** prazo/vigência em 2029-12-26
 - **Trecho do ato:** "III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º."
 - **Conferência Python:** obrigação estava entre as candidatas, o trecho existe no ato, e as datas propostas aparecem no trecho — tudo confirmado.
-- **Quem decide:** curadoria RegulaIA (é norma pública, não decisão da empresa).
+- **Quem decide:** curadoria Mitra (é norma pública, não decisão da empresa).
 
 Até a aprovação, a torre continua considerando o prazo atual (2027-08-02) para a OB-01 no ativo B2.
 
@@ -142,7 +142,7 @@ A lista completa de obrigações que a Res. 95/2022 deixa de gerar não veio nes
 **Lacunas conhecidas** (fora do alcance da fonte automática):
 - Deliberações Normativas do Copam e resoluções da Semad e da Feam — **não têm dados abertos**, então não são verificadas por aqui.
 
-**Esperando curadoria da RegulaIA** (já identificadas pela IA, ainda não entraram no catálogo — portanto **não geram obrigação** na torre hoje): são **27 normas**, entre as mais relevantes para barragens:
+**Esperando curadoria da Mitra** (já identificadas pela IA, ainda não entraram no catálogo — portanto **não geram obrigação** na torre hoje): são **27 normas**, entre as mais relevantes para barragens:
 - **Decreto MG 46.993/2016** — institui a Auditoria Técnica Extraordinária de Segurança de Barragem (declaração de estabilidade)
 - **Decreto MG 48.747/2023** e alterações (48.795/2024, 48.848/2024, 48.977/2024) — caução ambiental para barragens
 - **Decretos 48.133/2021, 48.149/2021, 48.190/2021, 48.454/2022, 48.759/2024** — todos alterando o regime do PAE (Plano de Ação de Emergência)

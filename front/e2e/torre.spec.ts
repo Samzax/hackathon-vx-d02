@@ -6,7 +6,7 @@ async function entrarNaDemo(page: Page) {
   await page.getByRole("button", { name: "Entrar na demo" }).click();
   await page.waitForURL(/\/caixa\/$/);
   const ok = await page.evaluate(async () => {
-    const csrf = decodeURIComponent(document.cookie.match(/(?:^|; )regulaia_csrf=([^;]*)/)?.[1] ?? "");
+    const csrf = decodeURIComponent(document.cookie.match(/(?:^|; )mitra_csrf=([^;]*)/)?.[1] ?? "");
     const r = await fetch("/api/v1/demo/recriar", { method: "POST", credentials: "include", headers: { "X-CSRF-Token": csrf } });
     return r.ok;
   });
@@ -88,10 +88,10 @@ test("curadoria aprova a Res. 245 e a Diretoria vê a decisão", async ({ page }
   const cartao = page.getByTestId("mudanca").filter({ hasText: "OB-01" });
   await expect(cartao).toContainText("Resolução ANM nº 245, de 31 de julho de 2026");
   await expect(cartao).toContainText("26/12/2029");
-  await expect(cartao).toContainText("Quem decide esta mudança: curadoria RegulaIA");
+  await expect(cartao).toContainText("Quem decide esta mudança: curadoria Mitra");
   await expect(cartao.getByRole("button", { name: "Aprovar" })).toHaveCount(0);
 
-  await verComo(page, "Curadoria RegulaIA (plataforma)");
+  await verComo(page, "Curadoria Mitra (plataforma)");
   await expect(cartao.getByRole("button", { name: "Aprovar", exact: true })).toBeVisible();
   await cartao.getByRole("button", { name: "Aprovar", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "OB-01: mudança aprovada" })).toBeVisible();
@@ -106,7 +106,7 @@ test("curadoria aprova a Res. 245 e a Diretoria vê a decisão", async ({ page }
 test("a curadoria da plataforma só lê os dados da empresa", async ({ page }) => {
   await entrarNaDemo(page);
   await expect(page.getByTestId("so-leitura")).toHaveCount(0);
-  await verComo(page, "Curadoria RegulaIA (plataforma)");
+  await verComo(page, "Curadoria Mitra (plataforma)");
   await expect(page.getByTestId("so-leitura")).toHaveText("visão da plataforma: só leitura");
 
   // vê as mesmas 4 atrasadas, sem o botão de registrar
@@ -147,7 +147,7 @@ const CAUCAO = "Decreto MG 48.747/2023"; // regulamenta a caução da Lei MG 23.
 
 test("curadoria aprova uma norma candidata e a cobertura da Serra Azul muda", async ({ page }) => {
   await page.goto("/entrar/");
-  await page.getByLabel("E-mail").fill("curadoria@regulaia.demo");
+  await page.getByLabel("E-mail").fill("curadoria@mitra.demo");
   await page.getByLabel("Senha").fill("serra-azul-2026");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL(/\/caixa\/$/);
@@ -181,7 +181,7 @@ test("curadoria aprova uma norma candidata e a cobertura da Serra Azul muda", as
   // na fila das aprovadas, com quem decidiu e a nota
   await page.getByLabel("Status").selectOption("aprovada");
   const aprovada = page.getByTestId("norma-candidata").filter({ hasText: CAUCAO });
-  await expect(aprovada).toContainText("Aprovada por curadoria@regulaia.demo");
+  await expect(aprovada).toContainText("Aprovada por curadoria@mitra.demo");
   await expect(aprovada).toContainText("extrair a caução do art. 7º");
 
   // depois: na cobertura da Serra Azul, aprovada, falta extrair
@@ -199,7 +199,7 @@ test("cliente vê a cobertura, não abre a fila da curadoria, e UF sem fonte nun
 
   // a B4 passa a ficar no Pará: nenhuma fonte automática lê a lei paraense
   const ok = await page.evaluate(async () => {
-    const csrf = decodeURIComponent(document.cookie.match(/(?:^|; )regulaia_csrf=([^;]*)/)?.[1] ?? "");
+    const csrf = decodeURIComponent(document.cookie.match(/(?:^|; )mitra_csrf=([^;]*)/)?.[1] ?? "");
     const empresas = await (await fetch("/api/v1/empresas", { credentials: "include" })).json();
     const ativos = await (await fetch(`/api/v1/empresas/${empresas[0].id}/ativos`, { credentials: "include" })).json();
     const b4 = ativos.find((a: { codigo: string }) => a.codigo === "B4");

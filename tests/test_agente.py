@@ -43,7 +43,7 @@ def ferramentas(http):
 def test_ferramentas_sao_so_de_leitura(http):
     tools = asyncio.run(criar_servidor(Torre(http)).list_tools())
     nomes = {t.name for t in tools}
-    assert {"empresas", "pendencias", "ficha_do_ativo", "mudancas_pendentes", "linha_do_tempo",
+    assert {"empresas", "instanciacao", "pendencias", "ficha_do_ativo", "mudancas_pendentes", "linha_do_tempo",
             "analisar_ato", "boletim", "cobertura_normativa"} <= nomes
     # analisar_ato não grava na torre, mas chama a IA (custo + cache): o cliente MCP pede confirmação
     assert all(t.annotations.read_only_hint for t in tools if t.name != "analisar_ato")
@@ -55,13 +55,20 @@ def test_ferramentas_sao_so_de_leitura(http):
 def test_nenhuma_ferramenta_escreve_na_torre(http, ferramentas, tmp_path):
     """Todas as ferramentas, chamadas de verdade: só GET, e o único POST é a análise de ato, que não grava."""
     from api.rotas.regulatorio import ATO_EXEMPLO
-    from regulaia import db
+    from mitra import db
 
     pedidos: list[tuple[str, str]] = []
     http.event_hooks["request"].append(lambda r: pedidos.append((r.method, r.url.path)))
     args = {"ficha_do_ativo": {"ativo": "B3", "hoje": HOJE}, "historico_da_obrigacao": {"codigo": "OB-01"},
             "analisar_ato": {"texto": ATO_EXEMPLO}}
     conn = db.conectar(str(tmp_path / "api.db"))
+    # a Serra Azul da demo entrou pelo seed, não pela instanciação: sem esta linha a ferramenta nova
+    # responde "não encontrado" e o teste pararia nela (a instanciação em si é lida duas vezes, só GET)
+    with conn:
+        eid = conn.execute("SELECT id FROM empresa ORDER BY id LIMIT 1").fetchone()[0]
+        conn.execute("INSERT INTO instanciacao (empresa_id, cnpj, razao_social, ufs, no_sigbm, criada_por, "
+                     "criada_em) VALUES (?, NULL, 'Mineradora Serra Azul S.A.', '[\"MG\"]', 1, 'teste', ?)",
+                     (eid, db.agora()))
     tabelas = ("evidencia", "evento", "responsavel_obrigacao", "obrigacao_versao", "acionamento", "ativo")
     contar = lambda: {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in tabelas}  # noqa: E731
     cadastro = lambda: [r["atributos"] for r in conn.execute("SELECT atributos FROM ativo ORDER BY id")]  # noqa: E731
@@ -95,7 +102,7 @@ def test_pin_de_empresa_esconde_obrigacao_propria_de_outra_cliente(http, tmp_pat
     """Agente preso a uma empresa: histórico e análise de ato nunca mostram a condicionante de outra."""
     from mcp.server.mcpserver.exceptions import ToolError
 
-    from regulaia import db
+    from mitra import db
 
     conn = db.conectar(str(tmp_path / "api.db"))
     with conn:
@@ -192,3 +199,45 @@ def test_erro_da_torre_e_erro_de_ferramenta(http):
 
     with pytest.raises(ToolError, match="B9"):
         asyncio.run(criar_servidor(Torre(http)).call_tool("ficha_do_ativo", {"ativo": "B9"}))
+
+
+def _empresa_instanciada(tmp_path, nome: str) -> int:
+    """Uma empresa que passou pela instanciação, direto no banco do teste: a Serra Azul da demo entrou
+    pelo seed, então a rota da instanciação responde 404 para ela."""
+    from mitra import db, instanciacao
+
+    conn = db.conectar(str(tmp_path / "api.db"))
+    eid = instanciacao.criar(conn, nome=nome, razao_social=f"{nome} S.A.", cnpj=None, ufs=["mg"], por="teste")
+    instanciacao.criar_ativo(conn, eid, tipo="barragem", codigo="B1", nome="Barragem da nova", por="teste")
+    conn.close()
+    return eid
+
+
+def test_instanciacao_conta_as_etapas_e_os_dados_que_faltam(ferramentas, tmp_path):
+    """'Em que pé está a instanciação?': as 8 etapas, o que falta em cada uma e o cadastro a completar."""
+    from mitra import instanciacao as dominio
+
+    nome = "Mineradora Instanciada (fictícia)"
+    _empresa_instanciada(tmp_path, nome)
+    i = ferramentas("instanciacao", empresa=nome)
+    assert i["empresa"] == nome and i["em_operacao"] is False and i["monitorado_desde"] is None
+    etapas = {e["titulo"]: e for e in i["etapas"]}
+    assert set(etapas) == set(dominio.TITULOS.values()) and len(i["etapas"]) == len(dominio.ETAPAS)
+    assert etapas["Cadastro da empresa"]["estado"] == "pronta" and etapas["Cadastro da empresa"]["por"] == "teste"
+    assert etapas["Ativos e unidades"]["estado"] == "pronta"
+    assert etapas["Ativos e unidades"]["numeros"] == {"ativos": 1, "unidades": 0}
+    assert etapas["Revisão e entrada em operação"]["estado"] == "pendente"
+    assert etapas["Revisão e entrada em operação"]["falta"]
+    assert 0 < i["percentual"] < 100
+    faltando = i["dados_faltando"]
+    assert faltando["total"] == len(faltando["itens"]) >= 1
+    assert all(item["ativo"] == "B1" and item["pergunta"] and item["obrigacoes"] for item in faltando["itens"])
+
+
+def test_instanciacao_de_empresa_sem_instanciacao_e_erro_legivel(http):
+    """A empresa que entrou por outro caminho não tem etapas: a ferramenta diz isso, não inventa."""
+    from mcp.server.mcpserver.exceptions import ToolError
+
+    mcp = criar_servidor(Torre(http))
+    with pytest.raises(ToolError, match="não passou pela instanciação"):
+        asyncio.run(mcp.call_tool("instanciacao", {"empresa": "Mineradora Serra Azul"}))

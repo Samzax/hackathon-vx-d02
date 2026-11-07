@@ -4,7 +4,7 @@
     python -m api.jobs descoberta [--desde ANO] [--fontes senado,anm,almg] [--limite N] [--paralelo N]
                                   [--sem-triagem]
         # descoberta de normas: lê as fontes oficiais (Senado, ANMlegis, Assembleia de Minas) e passa
-        # pela IA as candidatas novas; o que for relevante vai para a fila da curadoria RegulaIA
+        # pela IA as candidatas novas; o que for relevante vai para a fila da curadoria Mitra
 
 Radar: o arquivo é o XML mensal do DOU (dados abertos da Imprensa Nacional); sem argumento, a amostra
 de agosto/2026 que está no repositório. Cada ato vira registro único (idempotente): rodar de novo não
@@ -22,8 +22,8 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from regulaia import db, demo, impacto
-from regulaia.ia import Roteador
+from mitra import db, demo, impacto
+from mitra.ia import Roteador
 
 from .config import Config
 from .observabilidade import configurar_logs, log
@@ -54,7 +54,7 @@ def descoberta(cfg: Config, *, desde: int | None = None, fontes: tuple[str, ...]
                limite: int | None = None, triar: bool = True, paralelo: int = 4,
                baixador=None, roteador: Roteador | None = None) -> dict:
     """Busca nas fontes e triagem pela IA. `baixador` e `roteador` trocam a internet e a IA (testes)."""
-    from regulaia import descoberta as d
+    from mitra import descoberta as d
 
     conn = db.conectar(cfg.banco)
     try:
@@ -93,7 +93,7 @@ def main(argv: list[str]) -> int:
         alvo = Path(argv[1]) if len(argv) > 1 else demo.AMOSTRA_DOU
         print(json.dumps(radar(alvo, Config()), ensure_ascii=False))
         return 0
-    from regulaia.descoberta import FONTES
+    from mitra.descoberta import FONTES
 
     resto = argv[1:]
     desde, fontes, limite, paralelo = (_opcao(resto, o) for o in ("--desde", "--fontes", "--limite", "--paralelo"))

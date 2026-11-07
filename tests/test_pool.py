@@ -1,7 +1,7 @@
 """O pool de conexões da API no Postgres (api/banco.py).
 
 No Postgres a API empresta conexões de um psycopg_pool; no SQLite abre uma por requisição. Os testes
-do pool só rodam com REGULAIA_TESTE_PG: cada um num schema próprio, com as conexões marcadas por
+do pool só rodam com MITRA_TESTE_PG: cada um num schema próprio, com as conexões marcadas por
 `application_name` para contar no `pg_stat_activity` o que ficou aberto no servidor."""
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from api.main import PREFIXO, criar_app
 from tests.conftest import URL_PG
 
 TOKEN = "token-do-teste-do-pool"
-so_postgres = pytest.mark.skipif(not URL_PG, reason="o pool é só do Postgres: rode com REGULAIA_TESTE_PG")
+so_postgres = pytest.mark.skipif(not URL_PG, reason="o pool é só do Postgres: rode com MITRA_TESTE_PG")
 
 
 @pytest.fixture

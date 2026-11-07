@@ -15,8 +15,8 @@ from docx.oxml.ns import qn
 RAIZ = Path(__file__).resolve().parents[2]
 SAIDA = Path(__file__).resolve().parent / "saida"
 DOCS = {
-    "ANALISE_MERCADO.md": "RegulaIA_analise_de_mercado.docx",
-    "PITCH.md": "RegulaIA_roteiro_do_pitch.docx",
+    "ANALISE_MERCADO.md": "Mitra_analise_de_mercado.docx",
+    "PITCH.md": "Mitra_roteiro_do_pitch.docx",
 }
 
 

@@ -1,6 +1,6 @@
 import pytest
 
-from regulaia.regras import RegraInvalida, aplica, faltantes, validar
+from mitra.regras import RegraInvalida, aplica, faltantes, validar
 
 B_ALTO = {"dpa": "Alto", "dpa2": 6, "trabalhadores_zas": True, "mapa_inundacao_validado": False}
 B_BAIXO = {"dpa": "baixo", "dpa2": 2, "trabalhadores_zas": False}

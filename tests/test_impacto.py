@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 
 from collector.xml_dou import load_month
-from regulaia import db, demo, impacto, triagem
-from regulaia.ia import RespostaInvalida, Roteador, extrair_json
+from mitra import db, demo, impacto, triagem
+from mitra.ia import RespostaInvalida, Roteador, extrair_json
 
 AMOSTRA = Path(__file__).parent / "fixtures" / "dou" / "S01_amostra.zip"
 TRECHO = "III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º."
@@ -167,11 +167,11 @@ def test_extrair_json_recusa(texto):
 
 def test_teto_diario_de_ia_corta_chamada_paga_mas_nao_o_cache():
     """No link público a IA fica ligada com teto por dia: passou do teto, só regra e cache."""
-    from regulaia.ia import SemProvedor, TetoAtingido
+    from mitra.ia import SemProvedor, TetoAtingido
 
     conn = db.conectar(":memory:")
     falso = Falso({"high": {"ok": 1}})
-    rot = Roteador(conn, env={"REGULAIA_TETO_DIA_USD": "0.0001"}, provedores={"opencode": falso})
+    rot = Roteador(conn, env={"MITRA_TETO_DIA_USD": "0.0001"}, provedores={"opencode": falso})
     rot.cfg["camadas"]["2"]["modelos"] = [{"provedor": "opencode", "modelo": "x", "esforco": "high"}]
     rot.cfg["precos"]["x"] = (1.0, 1.0)            # 1000 + 200 tokens = US$ 0,0012
     assert rot.pedir_json("t", 2, "s", "u1", "v1").dados == {"ok": 1}

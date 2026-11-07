@@ -11,7 +11,7 @@ catálogo. Sem isso, uma cliente com barragem no Pará entraria sem a lei do Par
    de vigência). Vira candidata a norma que cita os termos de um tipo de ativo da carteira (temas.toml);
    revogada não entra. Nada de IA aqui.
 3. Triagem pela IA, pela ementa: a norma cobra algo de quem opera o ativo? De quais tipos de ativo?
-4. Curadoria RegulaIA: aprova (vai para o extrator, que propõe as obrigações com o trecho literal, e
+4. Curadoria Mitra: aprova (vai para o extrator, que propõe as obrigações com o trecho literal, e
    para a curadoria) ou descarta, com nome e nota.
 5. Cobertura: por cliente, cada jurisdição e tipo de ativo da carteira dela, com o que está catalogado,
    o que espera triagem ou curadoria, até quando cada fonte foi lida e as lacunas conhecidas.
@@ -20,12 +20,12 @@ O LexML, que indexa as normas de todos os estados, bloqueia acesso automático c
 anti-robô: não é usado. Estado sem conector aparece como "sem fonte automática", nunca como coberto.
 
 Uso:
-  uv run python -m regulaia.descoberta buscar [--desde ANO] [--fontes senado,anm,almg]
-  uv run python -m regulaia.descoberta triar [--limite N] [--paralelo N] [--revisar]
+  uv run python -m mitra.descoberta buscar [--desde ANO] [--fontes senado,anm,almg]
+  uv run python -m mitra.descoberta triar [--limite N] [--paralelo N] [--revisar]
       (paralelo: padrão 4, com Bedrock 1; revisar: relê pelo texto os descartes duvidosos)
-  uv run python -m regulaia.descoberta cobertura [EMPRESA]
-  uv run python -m regulaia.descoberta decidir CHAVE aprovar|descartar QUEM [NOTA]
-  uv run python -m regulaia.descoberta exportar        (data/descoberta_demo.json, a fila da demo)
+  uv run python -m mitra.descoberta cobertura [EMPRESA]
+  uv run python -m mitra.descoberta decidir CHAVE aprovar|descartar QUEM [NOTA]
+  uv run python -m mitra.descoberta exportar        (data/descoberta_demo.json, a fila da demo)
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ from .triagem import normalizar
 TEMAS = Path(__file__).with_name("temas.toml")
 CACHE_FONTES = db.ROOT / "data" / "raw" / "fontes"      # respostas das fontes (fora do Git)
 DEMO = db.ROOT / "data" / "descoberta_demo.json"         # a fila da demo (vai pro Git: só dado público)
-USER_AGENT = "RegulaIA/0.1 (hackathon-vx-d02)"
+USER_AGENT = "Mitra/0.1 (hackathon-vx-d02)"
 
 SENADO = "https://legis.senado.leg.br/dadosabertos/legislacao/lista"
 ALMG = "https://dadosabertos.almg.gov.br/arquivo/legislacao-mineira/download"
@@ -368,7 +368,7 @@ class Baixador:
     def texto(self, linha: dict, limite: int = 9000) -> str | None:
         """O começo do texto oficial, do artigo 1º em diante, para a segunda leitura da triagem. A ALMG e o
         ANMlegis servem a página sem verificação. A lei federal vem do texto atualizado da Câmara
-        (regulaia/vigencia.py; o Planalto derruba robô); sem ficha na Câmara, None, e fica a decisão pela
+        (mitra/vigencia.py; o Planalto derruba robô); sem ficha na Câmara, None, e fica a decisão pela
         ementa."""
         if linha["fonte"] == "senado":
             return self._texto_federal(linha, limite)
@@ -586,7 +586,7 @@ def buscar(conn, baixador: Baixador, fontes: tuple[str, ...] = tuple(FONTES), de
 
 # ------------------------------------------------------------------- triagem (IA)
 
-SISTEMA = """Você faz a triagem de normas para a RegulaIA, uma torre de controle regulatório de mineradoras.
+SISTEMA = """Você faz a triagem de normas para a Mitra, uma torre de controle regulatório de mineradoras.
 Recebe a identificação, a ementa e a indexação de uma norma brasileira e os tipos de ativo da carteira.
 Decida se a norma impõe dever, prazo, proibição, documento, inspeção, cadastro, comunicação, pagamento
 ou outra obrigação a quem opera algum desses ativos (o empreendedor, a mineradora).
@@ -775,7 +775,7 @@ def triar(conn, roteador: Roteador, limite: int | None = None, cfg: dict | None 
 
 
 def decidir(conn, chave_norma: str, decisao: str, por: str, nota: str | None = None) -> dict:
-    """Curadoria RegulaIA: aprovar (a norma vai para o extrator) ou descartar. Vale também para a que
+    """Curadoria Mitra: aprovar (a norma vai para o extrator) ou descartar. Vale também para a que
     a IA achou irrelevante: a pessoa pode discordar. Catalogada não se decide."""
     if decisao not in ("aprovar", "descartar"):
         raise ErroDescoberta("decisão é 'aprovar' ou 'descartar'")

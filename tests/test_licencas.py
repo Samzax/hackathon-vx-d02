@@ -9,8 +9,8 @@ import json
 
 import pytest
 
-from regulaia import db, instanciacao as inst, licencas, pessoal
-from regulaia.ia import Roteador
+from mitra import db, instanciacao as inst, licencas, pessoal
+from mitra.ia import Roteador
 
 POR = "Paulo Ribeiro (Regulatório)"
 EMPRESA = "Mineradora Nova (fictícia)"
@@ -80,9 +80,9 @@ RESPOSTA = {
 def empresa():
     conn = db.conectar(":memory:")
     eid = inst.criar(conn, nome=EMPRESA, razao_social="Mineradora Nova S.A.", cnpj=None, ufs=["MG"],
-                     por="Curadoria RegulaIA")
-    inst.criar_unidade(conn, eid, "Mina Nova", "Curadoria RegulaIA", uf="MG")
-    inst.criar_ativo(conn, eid, tipo="licenca", codigo="L1", nome="LO da Mina Nova", por="Curadoria RegulaIA")
+                     por="Curadoria Mitra")
+    inst.criar_unidade(conn, eid, "Mina Nova", "Curadoria Mitra", uf="MG")
+    inst.criar_ativo(conn, eid, tipo="licenca", codigo="L1", nome="LO da Mina Nova", por="Curadoria Mitra")
     yield conn, eid
     conn.close()
 
@@ -233,7 +233,7 @@ def test_correcao_invalida_e_recusada(com_licenca):
     prad = next(c for c in _propostas(conn, eid, lid) if "PRAD" in c["titulo"])
     with pytest.raises(licencas.ErroLicenca, match="não podem ser corrigidos"):
         licencas.aprovar(conn, eid, prad["id"], POR, correcoes={"trecho": "outro texto"})
-    from regulaia.agenda import AgendaInvalida
+    from mitra.agenda import AgendaInvalida
     with pytest.raises(AgendaInvalida):
         licencas.aprovar(conn, eid, prad["id"], POR, correcoes={"agenda": "de vez em quando"})
     assert licencas.condicionante(conn, eid, prad["id"])["status"] == "pendente"

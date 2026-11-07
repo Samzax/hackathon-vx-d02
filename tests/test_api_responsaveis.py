@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from api.config import Config
 from api.main import criar_app
-from regulaia import db, instanciacao as inst, pessoal, usuarios
+from mitra import db, instanciacao as inst, pessoal, usuarios
 from tests.test_api import CURADORIA, SENHA, _banco_da_demo, _url, como
 
 CHAVE = "chave-de-teste-" + "a" * 48
@@ -182,7 +182,7 @@ def test_consentimento_do_empreendedor_pessoa_fisica_fica_registrado(cliente, em
         "consentimento_para": "cadastrar o próprio CPF como empreendedor pessoa física"})
     assert r.status_code == 201
     conn = db.conectar(cfg.banco)
-    from regulaia import responsaveis as dominio
+    from mitra import responsaveis as dominio
     [pessoa] = dominio.responsaveis(conn, eid)
     conn.close()
     assert pessoa.consentimento["para_que"].startswith("cadastrar o próprio CPF")

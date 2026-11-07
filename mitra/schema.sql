@@ -1,4 +1,4 @@
--- Modelo de dados da RegulaIA.
+-- Modelo de dados da Mitra.
 -- Genérico de propósito: "ativo" pode ser barragem, obra, equipamento ou licença.
 -- Obrigações nunca são sobrescritas: cada mudança cria uma versão nova,
 -- ligada ao ato que a causou, e só vale depois de aprovada por uma pessoa.
@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     criado_em      TEXT NOT NULL DEFAULT (datetime('now')),
     ultimo_acesso  TEXT,
     empresa        TEXT,                              -- nome da empresa cliente: só vê o que é dela
-    plataforma     INTEGER NOT NULL DEFAULT 0 CHECK (plataforma IN (0, 1)),  -- equipe da RegulaIA (curadoria)
+    plataforma     INTEGER NOT NULL DEFAULT 0 CHECK (plataforma IN (0, 1)),  -- equipe da Mitra (curadoria)
     trocar_senha   INTEGER NOT NULL DEFAULT 0 CHECK (trocar_senha IN (0, 1)),  -- senha provisória: troca no 1º acesso
     unidades       TEXT NOT NULL DEFAULT '[]'         -- escopo por unidade (JSON); '[]' = todas as da empresa
 );
@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS sessao (
 );
 
 -- Descoberta de normas (descoberta.py): normas já publicadas que podem valer para os ativos da carteira.
--- É trabalho da plataforma (curadoria RegulaIA), não de uma cliente: fica fora do "Recriar demo".
+-- É trabalho da plataforma (curadoria Mitra), não de uma cliente: fica fora do "Recriar demo".
 CREATE TABLE IF NOT EXISTS norma_candidata (
     id            INTEGER PRIMARY KEY,
     chave         TEXT NOT NULL UNIQUE,         -- BR:LEI:12334/2010, MG:DEC:48078/2020, BR:RES-ANM:95/2022
@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS descoberta_busca (
     em          TEXT NOT NULL
 );
 
--- Vigência e alterações das normas federais, lidas da ficha da Câmara (regulaia/vigencia.py).
+-- Vigência e alterações das normas federais, lidas da ficha da Câmara (mitra/vigencia.py).
 CREATE TABLE IF NOT EXISTS norma_vigencia (
     chave         TEXT PRIMARY KEY,
     titulo        TEXT NOT NULL,
@@ -234,7 +234,7 @@ CREATE TABLE IF NOT EXISTS norma_vigencia (
     lida_em       TEXT NOT NULL
 );
 
--- Instanciação (regulaia/instanciacao.py): levar uma cliente nova do zero até a torre funcionando.
+-- Instanciação (mitra/instanciacao.py): levar uma cliente nova do zero até a torre funcionando.
 -- Uma por empresa. O estado de cada etapa sai dos dados; quem fez o quê e quando fica em instanciacao_evento.
 CREATE TABLE IF NOT EXISTS instanciacao (
     empresa_id    INTEGER PRIMARY KEY REFERENCES empresa(id),
@@ -300,7 +300,7 @@ CREATE TABLE IF NOT EXISTS condicionante (
     titulo         TEXT NOT NULL,
     prazo          TEXT,
     periodicidade  TEXT,
-    agenda         TEXT,                         -- a agenda que a torre usa (ver regulaia/agenda.py)
+    agenda         TEXT,                         -- a agenda que a torre usa (ver mitra/agenda.py)
     evidencia      TEXT,
     aplica_a       TEXT,                         -- unidade | ativo | empresa
     alvo           TEXT,                         -- o nome da unidade ou o código do ativo
@@ -316,7 +316,7 @@ CREATE TABLE IF NOT EXISTS condicionante (
 CREATE INDEX IF NOT EXISTS condicionante_empresa ON condicionante(empresa_id, status);
 
 -- Responsável técnico e coordenador do PAEBM. O CPF é dado pessoal: cifrado por campo
--- (regulaia/pessoal.py), mascarado pela API, e ver o CPF inteiro vai para a auditoria.
+-- (mitra/pessoal.py), mascarado pela API, e ver o CPF inteiro vai para a auditoria.
 CREATE TABLE IF NOT EXISTS responsavel_tecnico (
     id                INTEGER PRIMARY KEY,
     empresa_id        INTEGER NOT NULL REFERENCES empresa(id),

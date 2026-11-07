@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from regulaia import db, demo, descoberta as d
-from regulaia.ia import Roteador
+from mitra import db, demo, descoberta as d
+from mitra.ia import Roteador
 
 FIX = Path(__file__).parent / "fixtures" / "descoberta"
 
@@ -212,7 +212,7 @@ def test_buscar_de_novo_nao_apaga_triagem_nem_decisao(buscada, tmp_path):
         "relevante": True, "tipos_ativo": ["unidade"], "deveres": "Plano de aproveitamento e relatórios",
         "motivo": "regulamenta o Código de Mineração", "confianca": 0.9}})
     d.triar(buscada, rot)
-    d.decidir(buscada, "BR:DEC:9406/2018", "aprovar", "curadoria@regulaia.com.br", "prioridade")
+    d.decidir(buscada, "BR:DEC:9406/2018", "aprovar", "curadoria@mitra.com.br", "prioridade")
     d.buscar(buscada, BaixadorFixo(tmp_path), desde=1967)
     c = d.candidata(buscada, "BR:DEC:9406/2018")
     assert c["status"] == "aprovada" and c["triagem"]["deveres"] and c["nota"] == "prioridade"
@@ -289,8 +289,8 @@ def triada(buscada):
 
 
 def test_curadoria_aprova_com_nome_e_nota(triada):
-    c = d.decidir(triada, "MG:DEC:48747/2023", "aprovar", "curadoria@regulaia.com.br", "extrair em seguida")
-    assert c["status"] == "aprovada" and c["decidida_por"] == "curadoria@regulaia.com.br" and c["decidida_em"]
+    c = d.decidir(triada, "MG:DEC:48747/2023", "aprovar", "curadoria@mitra.com.br", "extrair em seguida")
+    assert c["status"] == "aprovada" and c["decidida_por"] == "curadoria@mitra.com.br" and c["decidida_em"]
 
 
 def test_curadoria_pode_discordar_da_ia(triada):
@@ -348,7 +348,7 @@ def test_cobertura_fica_coberta_quando_tudo_foi_decidido(triada):
 
 
 def test_aprovada_sai_da_curadoria_e_espera_a_extracao(triada):
-    d.decidir(triada, "MG:DEC:48747/2023", "aprovar", "curadoria@regulaia.demo")
+    d.decidir(triada, "MG:DEC:48747/2023", "aprovar", "curadoria@mitra.demo")
     mg = _por(d.cobertura(triada, 1))[("MG", "barragem")]
     assert mg.estado == "extracao_pendente" and mg.em_curadoria == []
     assert [c["chave"] for c in mg.aprovadas] == ["MG:DEC:48747/2023"]

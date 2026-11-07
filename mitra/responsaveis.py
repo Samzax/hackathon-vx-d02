@@ -4,7 +4,7 @@ Por unidade ou por ativo: responsável técnico, coordenador do PAEBM e afins, c
 conselho, número da ART e vigência da ART. **ART vencendo vira obrigação** (`obrigacao_de_art`).
 
 O CPF é o único dado pessoal da plataforma e segue as regras de `pessoal.py`:
-- guardado **cifrado por campo**, com a chave em `REGULAIA_CHAVE_DADOS` (sem ela, guardar CPF dá erro
+- guardado **cifrado por campo**, com a chave em `MITRA_CHAVE_DADOS` (sem ela, guardar CPF dá erro
   claro: nada de chave padrão no código);
 - lido **mascarado** por padrão (`cpf_mascarado`); ver o CPF inteiro é do Regulatório e da TI da própria
   empresa, por `ver_cpf`, e **cada visualização vai para a auditoria** (quem viu, de quem, quando) — a
@@ -79,7 +79,7 @@ def registrar_responsavel(conn, empresa_id: int, *, papel: str, nome: str, por: 
                           unidade: str | None = None, ativo_codigo: str | None = None,
                           consentimento: dict | None = None, ficticio: bool = False,
                           chave: str | None = None) -> int:
-    """Grava o responsável. O CPF entra cifrado; sem `REGULAIA_CHAVE_DADOS`, levanta `pessoal.SemChave`
+    """Grava o responsável. O CPF entra cifrado; sem `MITRA_CHAVE_DADOS`, levanta `pessoal.SemChave`
     (a API continua de pé, mas não guarda dado pessoal sem cifra)."""
     if papel not in PAPEIS:
         raise ErroResponsavel(f"papel desconhecido: {papel!r} (há: {', '.join(PAPEIS)})")
@@ -219,7 +219,7 @@ def exportar(conn, empresa_id: int, chave: str | None = None) -> list[dict]:
             try:
                 cpf = pessoal.decifrar(d["cpf_cifrado"], chave)
             except pessoal.SemChave:
-                cpf = "(cifrado: a chave REGULAIA_CHAVE_DADOS não está nesta instalação)"
+                cpf = "(cifrado: a chave MITRA_CHAVE_DADOS não está nesta instalação)"
         out.append({"id": d["id"], "papel": PAPEIS.get(d["papel"], d["papel"]), "nome": d["nome"],
                     "cpf": cpf, "registro": d["registro"], "art_numero": d["art_numero"],
                     "art_vigencia_ate": d["art_vigencia_ate"], "unidade": d["unidade"],

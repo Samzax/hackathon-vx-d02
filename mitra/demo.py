@@ -1,6 +1,6 @@
 """Monta o banco da demo: cadastro de obrigações + Mineradora Serra Azul + histórico.
 
-Uso: uv run python -m regulaia.demo [caminho.db]
+Uso: uv run python -m mitra.demo [caminho.db]
 Recria o banco do zero a cada execução.
 
 Cadastro: seed_obligations.csv (Res. ANM 220/2025) e todo cadastro/*.csv
@@ -102,7 +102,7 @@ def semear_cache(cache, origem: Path = CACHE_DEMO) -> int:
         return 0
     linhas = json.loads(origem.read_text(encoding="utf-8"))
     with cache:
-        # data fixa no passado: a resposta da demo não conta no teto de gasto do dia (REGULAIA_TETO_DIA_USD)
+        # data fixa no passado: a resposta da demo não conta no teto de gasto do dia (MITRA_TETO_DIA_USD)
         cache.executemany(
             f"INSERT INTO analise_ia ({', '.join(_COLUNAS_CACHE)}, criada_em) "
             f"VALUES ({', '.join('?' * len(_COLUNAS_CACHE))}, '2026-11-01 00:00:00') ON CONFLICT DO NOTHING",

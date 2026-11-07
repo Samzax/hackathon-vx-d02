@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 
 from . import agenda, db
 
@@ -45,6 +45,9 @@ class Linha:
     agenda: str = ""                       # DSL da versão que vale (ver agenda.py)
     ativo_id: int | None = None
     responsavel_proprio: bool = False      # a obrigação tem responsável próprio, não o do ativo
+    # meta interna da empresa (personalizacao.py): a norma não muda, mas a torre cobra pelo prazo dela
+    vence_interno: str | None = None        # AAAA-MM-DD da meta da empresa (antes do prazo legal)
+    dias_antes: int | None = None           # quantos dias antes do legal a empresa quer entregar
 
 
 def titulo_do_ato(texto: str, limite: int = 150) -> str:
@@ -187,6 +190,7 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
     metas = _metas(conn)
     abertos = db.acionamentos_abertos(conn, hoje.isoformat())
     donos = db.responsaveis(conn)
+    internos = _prazos_internos(conn, empresa_id)   # metas da empresa: adiantam o prazo, não a norma
     for a in _empresa_ativos(conn, empresa_id, unidades=unidades):
         if ativo and a["codigo"] != ativo:
             continue
@@ -234,9 +238,37 @@ def painel(conn, empresa_id: int, hoje: date, desde: date, ativo: str | None = N
                     linha.vence, linha.faltando = ac["prazo"], []
                     linha.nota = (f"acionada em {_br(ac['dia'])} por {ac['origem'] or 'documento'}: "
                                   f"aguardando {_minuscula(v['evidencia'] or 'a evidência')}")
+            _aplicar_prazo_interno(linha, internos.get(o.codigo), hoje)
             out.append(linha)
-    out.sort(key=lambda l: (l.ativo, ORDEM.get(l.status, 9), l.vence or "9999"))
+    out.sort(key=lambda l: (l.ativo, ORDEM.get(l.status, 9), l.vence_interno or l.vence or "9999"))
     return out
+
+
+def _prazos_internos(conn, empresa_id: int) -> dict[str, int]:
+    """{código: dias antes do prazo legal} que a empresa definiu (ver personalizacao.py)."""
+    return {r["codigo"]: r["dias_antes"] for r in conn.execute(
+        "SELECT codigo, dias_antes FROM prazo_interno WHERE empresa_id = ?", (empresa_id,))}
+
+
+def _aplicar_prazo_interno(linha: Linha, dias_antes: int | None, hoje: date) -> None:
+    """A meta da empresa: a torre mostra os dois prazos e cobra pelo interno. A norma não muda — o
+    `vence` continua sendo o prazo legal, e quem atrasa pela meta fica amarelo ou vermelho mais cedo."""
+    if not dias_antes or not linha.vence or linha.status in (agenda.CUMPRIDA, DADO_FALTANDO):
+        return
+    try:
+        legal = date.fromisoformat(linha.vence)
+    except ValueError:
+        return
+    interno = legal - timedelta(days=int(dias_antes))
+    linha.dias_antes, linha.vence_interno = int(dias_antes), interno.isoformat()
+    meta = f"meta interna da empresa: {_br(linha.vence_interno)}, {dias_antes} dias antes do prazo legal"
+    linha.nota = f"{linha.nota}; {meta}" if linha.nota else _maiuscula(meta)
+    if linha.status == agenda.ATRASADA:
+        return                       # já está vermelho pelo prazo legal
+    if hoje > interno:
+        linha.status = agenda.ATRASADA
+    elif linha.status == agenda.EM_DIA and (interno - hoje).days <= agenda.dias_de_aviso(linha.agenda):
+        linha.status = agenda.VENCE_LOGO
 
 
 def resumo(linhas: list[Linha]) -> dict[str, dict[str, int]]:
@@ -345,7 +377,7 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
             out.append(f"- **{m.codigo}** · {m.titulo} — {m.ato}: {campos} "
                        f"(ativos: {', '.join(sorted(set(m.ativos) & set(ativos)))})")
         out.append("")
-    out.append("Gerado pela RegulaIA. Cada item traz a norma e o dispositivo; o trecho literal está na torre.")
+    out.append("Gerado pela Mitra. Cada item traz a norma e o dispositivo; o trecho literal está na torre.")
     return "\n".join(out)
 
 
@@ -387,12 +419,12 @@ def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str 
             eventos.append((f.dia, f"{f.ativo}-{f.codigo}-inicio",
                             f"Começa a valer: {f.ativo} · {f.titulo}", dispositivo(f.norma, f.artigo),
                             agenda.AVISO_DIAS))
-    linhas = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//RegulaIA//Torre de Controle//PT-BR",
-              "CALSCALE:GREGORIAN", f"X-WR-CALNAME:RegulaIA · {_ics_texto(responsavel or 'Diretoria')}"]
+    linhas = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mitra//Torre de Controle//PT-BR",
+              "CALSCALE:GREGORIAN", f"X-WR-CALNAME:Mitra · {_ics_texto(responsavel or 'Diretoria')}"]
     carimbo = f"{hoje:%Y%m%d}T000000Z"
     for dia, uid, resumo, desc, aviso in sorted(eventos):
         d = date.fromisoformat(dia)
-        linhas += ["BEGIN:VEVENT", f"UID:{uid}-{d:%Y%m%d}@regulaia", f"DTSTAMP:{carimbo}",
+        linhas += ["BEGIN:VEVENT", f"UID:{uid}-{d:%Y%m%d}@mitra", f"DTSTAMP:{carimbo}",
                    f"DTSTART;VALUE=DATE:{d:%Y%m%d}",
                    f"DTEND;VALUE=DATE:{date.fromordinal(d.toordinal() + 1):%Y%m%d}",
                    f"SUMMARY:{_ics_texto(resumo)}", f"DESCRIPTION:{_ics_texto(desc)}",
@@ -576,7 +608,7 @@ def plano_transicao(conn, empresa_id: int, dia: date, hoje: date, responsavel: s
         out.insert(4, f"{_n(len(trocas), 'ativo afetado', 'ativos afetados')} · "
                       f"{_n(novas_total, 'obrigação sem equivalente', 'obrigações sem equivalente')} "
                       "na norma atual.\n")
-    out.append("Gerado pela RegulaIA a partir do cadastro aprovado. Mudanças ainda pendentes não entram.")
+    out.append("Gerado pela Mitra a partir do cadastro aprovado. Mudanças ainda pendentes não entram.")
     return "\n".join(out)
 
 

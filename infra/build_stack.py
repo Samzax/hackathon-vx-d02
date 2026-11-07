@@ -25,12 +25,12 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-REPOSITORIO = "regulaia-api"
+REPOSITORIO = "regulaia-api"   # nome legado: o repositório ECR já existe na conta com as imagens publicadas
 FONTE = "fonte.zip"
 ESPELHO = "public.ecr.aws/docker/library"
 
 
-class RegulaIABuild(Stack):
+class MitraBuild(Stack):
     def __init__(self, scope: Construct, id_: str, **kw) -> None:
         super().__init__(scope, id_, **kw)
 

@@ -11,7 +11,7 @@ modelos = [
   { provedor = "opencode",  modelo = "claude-haiku-5-5" },
   { provedor = "anthropic", modelo = "claude-haiku-5-5" },
   # No evento: troque pelo ID (ou perfil de inferência) que o console do Bedrock mostrar para o Haiku 4.5
-  # e mova esta linha para o topo da lista. Só vale com REGULAIA_BEDROCK=1 no .env.
+  # e mova esta linha para o topo da lista. Só vale com MITRA_BEDROCK=1 no .env.
   # Pela API Converse (boto3, o que o código usa) o Haiku 4.5 costuma aparecer como perfil entre regiões
   # "us.anthropic.claude-haiku-4-5-20251001-v1:0"; o endpoint Mantle usa "anthropic.claude-haiku-4-5".
   # Conferir no console da conta do evento antes de trocar: o que vale é o que ela habilitou.
@@ -28,8 +28,8 @@ modelos = [
   { provedor = "bedrock",   modelo = "ID_DO_SONNET_5_NO_BEDROCK" },
 ]
 
-# Pergunte à torre (regulaia/pergunta.py): conversa com uso de ferramentas, não JSON. Vale o primeiro
-# provedor ligado. Na AWS, o Bedrock (REGULAIA_BEDROCK=1): IDs conferidos com chamada real na conta do
+# Pergunte à torre (mitra/pergunta.py): conversa com uso de ferramentas, não JSON. Vale o primeiro
+# provedor ligado. Na AWS, o Bedrock (MITRA_BEDROCK=1): IDs conferidos com chamada real na conta do
 # evento em 7/11/2026 (perfis de inferência us.*). Fora da AWS, a API da Anthropic ou o DeepSeek.
 [pergunta]
 modelos = [
@@ -52,9 +52,9 @@ formato = "anthropic"
 base = "https://api.anthropic.com/v1"
 
 [provedores.bedrock]
-# Amazon Bedrock pela API Converse (boto3). "chave" aqui não é chave: REGULAIA_BEDROCK=1 liga o provedor.
+# Amazon Bedrock pela API Converse (boto3). "chave" aqui não é chave: MITRA_BEDROCK=1 liga o provedor.
 # A credencial vem do perfil AWS do ambiente (AWS_PROFILE) e nunca vai para o .env nem para o código.
-chave = "REGULAIA_BEDROCK"
+chave = "MITRA_BEDROCK"
 formato = "bedrock"
 regiao = "us-east-1"
 intervalo_minimo_s = 1.1      # regra do evento: menos de 1 requisição por segundo

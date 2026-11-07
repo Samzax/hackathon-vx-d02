@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { CABECALHO_CSRF, criarCliente, dados, enviarArquivo, ErroApi, lerCookie, mensagemDe, texto, urlDe } from "./api";
 
-const COOKIES = "outro=1; regulaia_csrf=abc%3D123; tema=escuro";
+const COOKIES = "outro=1; mitra_csrf=abc%3D123; tema=escuro";
 
 function fetchFalso(status = 200, corpo: unknown = { ok: true }) {
   return vi.fn(async (entrada: Request | string | URL, init?: RequestInit) => {
@@ -17,9 +17,9 @@ function pedido(f: ReturnType<typeof fetchFalso>): Request {
 
 describe("cookie", () => {
   it("lê o valor do cookie pelo nome", () => {
-    expect(lerCookie("regulaia_csrf", COOKIES)).toBe("abc=123");
+    expect(lerCookie("mitra_csrf", COOKIES)).toBe("abc=123");
     expect(lerCookie("nao_tem", COOKIES)).toBeNull();
-    expect(lerCookie("regulaia_csrf", "")).toBeNull();
+    expect(lerCookie("mitra_csrf", "")).toBeNull();
   });
 });
 

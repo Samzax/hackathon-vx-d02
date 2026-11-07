@@ -32,7 +32,7 @@ def test_numeros_do_cadastro_na_documentacao():
 
 
 def test_numero_de_tipos_de_documento():
-    from regulaia.evidencias import DOCUMENTOS
+    from mitra.evidencias import DOCUMENTOS
 
     tipos = len(DOCUMENTOS) + 1          # + exame interno do vaso, que sai do mesmo documento
     assert f"São {tipos} tipos de documento" in (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
@@ -43,7 +43,7 @@ def test_numeros_do_topo_no_roteiro():
     from collections import Counter
     from datetime import date
 
-    from regulaia import agenda, db, demo, torre
+    from mitra import agenda, db, demo, torre
 
     conn = db.conectar(":memory:")
     demo.montar(conn)
@@ -72,7 +72,7 @@ def test_imagens_dos_documentos_existem():
 
 
 def test_todos_os_exemplos_estao_documentados():
-    from regulaia import exemplos
+    from mitra import exemplos
 
     arquitetura = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
     faltando = [n for n in exemplos.DOCS if f"`{n}`" not in arquitetura]
@@ -83,7 +83,7 @@ def test_roteiro_so_cita_o_que_existe_na_tela():
     """Botões e abas em negrito no roteiro existem no app; os PDFs citados existem nos exemplos."""
     import re
 
-    from regulaia import exemplos
+    from mitra import exemplos
 
     roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
     app = (RAIZ / "app.py").read_text(encoding="utf-8")
@@ -121,11 +121,11 @@ def test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto():
                "data/historico_serra_azul.json", "data/serra_azul.json", "data/mercado_sigbm.json",
                "tests/fixtures/dou/S01_amostra.zip", ".streamlit/config.toml", "uv.lock", ".env.example",
                "assets/marca.svg", "assets/logo_claro.svg", "assets/logo_escuro.svg", "data/posicoes_demo.json",
-               "regulaia/temas.toml", "data/descoberta_demo.json"]
+               "mitra/temas.toml", "data/descoberta_demo.json"]
     for f in precisa:
         assert (RAIZ / f).exists(), f
         assert not _ignorado_no_docker(f, padroes), f"{f} ficaria fora da imagem"
-    for f in [".env", ".env.local", "data/raw/sigbm.csv", "data/regulaia.db", ".git/config", ".venv/x",
+    for f in [".env", ".env.local", "data/raw/sigbm.csv", "data/mitra.db", ".git/config", ".venv/x",
               "docs/img/torre_hoje.png"]:
         assert _ignorado_no_docker(f, padroes), f"{f} entraria na imagem"
 
@@ -169,7 +169,7 @@ def test_custos_citados_batem_com_o_que_foi_gasto():
 
 def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
     """A imagem Docker instala só [project].dependencies (uv sync --no-dev): tudo que o app,
-    a regulaia e o coletor importam de fora tem de estar lá, senão a tela quebra só na nuvem."""
+    a mitra e o coletor importam de fora tem de estar lá, senão a tela quebra só na nuvem."""
     import ast
     import sys
     import tomllib
@@ -179,9 +179,9 @@ def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
               "multipart": "python-multipart", "psycopg_pool": "psycopg-pool"}             # o botocore vem com o boto3
     deps = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))["project"]["dependencies"]
     nomes = {d.split(">")[0].split("=")[0].split("<")[0].split("[")[0].strip().lower() for d in deps}
-    locais = {"regulaia", "collector", "app", "api", "agente"}
+    locais = {"mitra", "collector", "app", "api", "agente"}
     faltando = set()
-    for arq in [RAIZ / "app.py", *(RAIZ / "regulaia").glob("*.py"), *(RAIZ / "collector").glob("*.py"),
+    for arq in [RAIZ / "app.py", *(RAIZ / "mitra").glob("*.py"), *(RAIZ / "collector").glob("*.py"),
                 *(RAIZ / "api").rglob("*.py"),
                 RAIZ / "agente" / "cliente.py", RAIZ / "agente" / "ferramentas.py"]:   # o chat da torre usa
         for no in ast.walk(ast.parse(arq.read_text(encoding="utf-8"))):
@@ -236,7 +236,7 @@ def test_caminhos_no_codigo_com_a_mesma_caixa_do_disco():
         assert rel.as_posix().isascii(), f"nome de arquivo com acento: {rel}"
     citado = re.compile(r"""["']([\w./-]+\.(?:csv|json|pdf|zip|toml|txt|sql|md|py))["']|/\s*["']([\w.-]+)["']""")
     errados = []
-    for arq in [RAIZ / "app.py", *(RAIZ / "regulaia").glob("*.py"), *(RAIZ / "collector").glob("*.py"),
+    for arq in [RAIZ / "app.py", *(RAIZ / "mitra").glob("*.py"), *(RAIZ / "collector").glob("*.py"),
                 *(RAIZ / "api").rglob("*.py"),
                 RAIZ / "agente" / "cliente.py", RAIZ / "agente" / "ferramentas.py"]:   # o chat da torre usa
         for m in citado.finditer(arq.read_text(encoding="utf-8")):
@@ -255,7 +255,7 @@ def test_numeros_do_pitch_saem_dos_dados():
     from collections import Counter
     from datetime import date
 
-    from regulaia import agenda, db, demo, torre
+    from mitra import agenda, db, demo, torre
 
     pitch = (RAIZ / "docs" / "PITCH.md").read_text(encoding="utf-8")
     m = json.loads((RAIZ / "data" / "mercado_sigbm.json").read_text(encoding="utf-8"))
@@ -350,7 +350,7 @@ def test_numeros_da_analise_de_mercado_saem_dos_dados():
     import json
     from datetime import date
 
-    from regulaia import agenda, db, demo
+    from mitra import agenda, db, demo
 
     doc = (RAIZ / "docs" / "ANALISE_MERCADO.md").read_text(encoding="utf-8")
     m = json.loads((RAIZ / "data" / "mercado_sigbm.json").read_text(encoding="utf-8"))

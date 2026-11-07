@@ -8,7 +8,7 @@ O SIGBM não diz tudo que as regras pedem (DPA em pontos, trabalhadores na ZAS, 
 inundação validado...). Esses campos ficam de fora do ativo importado, e a torre mostra a
 obrigação como "dado faltando" até alguém preencher. Nada é presumido.
 
-    uv run python -m regulaia.sigbm extrair
+    uv run python -m mitra.sigbm extrair
 """
 
 from __future__ import annotations

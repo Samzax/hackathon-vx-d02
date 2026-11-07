@@ -4,7 +4,7 @@ Converte só o Markdown que a torre e os documentos do repositório usam: `# tí
 `### subseção`, `- item`, `  - subitem`, `1. item numerado`, tabela `| a | b |`, `**negrito**`,
 `código` e parágrafos. Também gera o PDF de um documento do repositório:
 
-    uv run python -m regulaia.pdf docs/ANALISE_MERCADO.md analise_de_mercado.pdf "Análise de mercado"
+    uv run python -m mitra.pdf docs/ANALISE_MERCADO.md analise_de_mercado.pdf "Análise de mercado"
 
 As fontes padrão do PDF não têm emoji: cada emoji de status vira palavra ou some, para não aparecer
 quadrado preto no lugar.
@@ -73,7 +73,7 @@ def _tabela(linhas: list[str], estilo_celula, estilo_cabecalho, largura: float):
     return t
 
 
-def de_markdown(md: str, titulo_documento: str = "RegulaIA") -> bytes:
+def de_markdown(md: str, titulo_documento: str = "Mitra") -> bytes:
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import cm
@@ -122,7 +122,7 @@ def de_markdown(md: str, titulo_documento: str = "RegulaIA") -> bytes:
             corpo.append(Paragraph(_inline(linha[4:]), estilo["li2"], bulletText="–"))
         elif linha.startswith("- "):
             corpo.append(Paragraph(_inline(linha[2:]), estilo["li"], bulletText="•"))
-        elif linha.startswith("Gerado pela RegulaIA"):
+        elif linha.startswith("Gerado pela Mitra"):
             corpo.append(Paragraph(_inline(linha), estilo["rodape"]))
         else:
             corpo.append(Paragraph(_inline(linha), estilo["p"]))
@@ -132,13 +132,13 @@ def de_markdown(md: str, titulo_documento: str = "RegulaIA") -> bytes:
         canvas.saveState()
         canvas.setFont("Helvetica", 7.5)
         canvas.setFillGray(0.45)
-        canvas.drawString(2 * cm, 1.1 * cm, f"RegulaIA · {rodape}")
+        canvas.drawString(2 * cm, 1.1 * cm, f"Mitra · {rodape}")
         canvas.drawRightString(A4[0] - 2 * cm, 1.1 * cm, f"página {doc.page}")
         canvas.restoreState()
 
     saida = BytesIO()
     SimpleDocTemplate(saida, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm, topMargin=1.8 * cm,
-                      bottomMargin=1.8 * cm, title=rodape, author="RegulaIA").build(
+                      bottomMargin=1.8 * cm, title=rodape, author="Mitra").build(
         corpo, onFirstPage=numerar, onLaterPages=numerar)
     return saida.getvalue()
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     from pathlib import Path
 
     if len(sys.argv) < 3:
-        sys.exit("uso: python -m regulaia.pdf entrada.md saida.pdf [título do rodapé]")
+        sys.exit("uso: python -m mitra.pdf entrada.md saida.pdf [título do rodapé]")
     entrada, saida = Path(sys.argv[1]), Path(sys.argv[2])
     saida.write_bytes(de_markdown(entrada.read_text(encoding="utf-8"),
                                   sys.argv[3] if len(sys.argv) > 3 else entrada.stem))

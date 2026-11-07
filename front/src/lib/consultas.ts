@@ -90,7 +90,7 @@ export function useCobertura() {
   });
 }
 
-/** A fila da curadoria RegulaIA (só a plataforma): não depende da empresa nem do dia. */
+/** A fila da curadoria Mitra (só a plataforma): não depende da empresa nem do dia. */
 export function useNormasCandidatas(status: StatusCandidata = "relevante", jurisdicao = "") {
   const { t, chave } = useBase();
   return useQuery({
@@ -113,6 +113,17 @@ export function useDecidirCandidata(callbacks: { onSuccess?: (n: NormaCandidata)
       return invalidar();
     },
     onError: (e) => callbacks.onError?.(e),
+  });
+}
+
+/** As condicionantes da empresa (as propostas de licença esperando a decisão da dona). */
+export function useCondicionantes(status?: "pendente" | "aprovada" | "rejeitada") {
+  const { id, chave } = useBase();
+  return useQuery({
+    queryKey: [...chave, "condicionantes", status ?? "todas"],
+    queryFn: () => dados(api.GET("/api/v1/empresas/{empresa_id}/condicionantes", {
+      params: { path: { empresa_id: id }, query: { status_: status ?? null } } })),
+    enabled: !!id,
   });
 }
 

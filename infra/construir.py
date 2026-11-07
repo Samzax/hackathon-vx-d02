@@ -25,9 +25,9 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from regulaia.aws import cliente  # noqa: E402
+from mitra.aws import cliente  # noqa: E402
 
-PILHA = "RegulaIABuild"
+PILHA = "RegulaIABuild"   # id legado da pilha já deployada
 FONTE = "fonte.zip"
 
 

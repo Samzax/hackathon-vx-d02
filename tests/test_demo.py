@@ -1,6 +1,6 @@
 import pytest
 
-from regulaia import db, demo
+from mitra import db, demo
 
 TRECHO_245 = "III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º."
 

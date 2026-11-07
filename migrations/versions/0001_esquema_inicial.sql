@@ -1,4 +1,4 @@
--- Modelo de dados da RegulaIA no Postgres (API e AWS RDS).
+-- Modelo de dados da Mitra no Postgres (API e AWS RDS).
 -- Mesmas tabelas e colunas de schema.sql (SQLite); tests/test_banco.py confere que não divergem.
 -- Texto com COLLATE "C": ordena códigos (B1, OB-01, R95-03) igual ao SQLite, em qualquer locale do servidor.
 -- Datas ficam em texto AAAA-MM-DD / AAAA-MM-DD HH:MM:SS (UTC), como no SQLite: o domínio compara strings.

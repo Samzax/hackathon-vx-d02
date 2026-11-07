@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 
-from regulaia import usuarios
+from mitra import usuarios
 
 from .. import auditoria
 from ..banco import conexao
@@ -36,7 +36,7 @@ class Eu(BaseModel):
     area: str | None
     teste: bool
     empresa: str | None = Field(description="a empresa cliente que a sessão vê; vazio na plataforma (vê todas)")
-    plataforma: bool = Field(description="age como a equipe da RegulaIA (curadoria das normas públicas)")
+    plataforma: bool = Field(description="age como a equipe da Mitra (curadoria das normas públicas)")
     so_leitura: bool = Field(description="nos dados operacionais das clientes (entrega, comprovante, evidência, "
                                          "comentário, atribuição, cadastro e responsável do ativo) a sessão só lê")
     unidades: list[str] = Field([], description="as unidades (operações) a que a conta está presa; vazio: toda a empresa")

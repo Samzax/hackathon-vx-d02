@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from regulaia import pessoal
+from mitra import pessoal
 
 # Montado em pedaços de propósito: nenhum arquivo versionado tem cara de CPF formatado, nem fictício
 # (tests/test_documentacao.py::test_git_nao_versiona_segredo_nem_cpf varre o repositório inteiro).

@@ -1,7 +1,7 @@
 """O agente fala com a torre só pela API, como o front: mesmas regras de acesso, mesma auditoria.
 
-Autentica com o token de serviço (`REGULAIA_TOKEN_SERVICO`), que enxerga todas as empresas. Para dar o
-agente a uma cliente, `REGULAIA_EMPRESA` prende o escopo: o agente só responde sobre aquela empresa.
+Autentica com o token de serviço (`MITRA_TOKEN_SERVICO`), que enxerga todas as empresas. Para dar o
+agente a uma cliente, `MITRA_EMPRESA` prende o escopo: o agente só responde sobre aquela empresa.
 """
 
 from __future__ import annotations
@@ -51,12 +51,12 @@ class Torre:
 
     @classmethod
     def do_ambiente(cls) -> Torre:
-        token = os.environ.get("REGULAIA_TOKEN_SERVICO")
+        token = os.environ.get("MITRA_TOKEN_SERVICO")
         if not token:
-            raise SystemExit("Defina REGULAIA_TOKEN_SERVICO (o mesmo token configurado na API).")
-        url = os.environ.get("REGULAIA_API_URL", "http://localhost:8000").rstrip("/")
+            raise SystemExit("Defina MITRA_TOKEN_SERVICO (o mesmo token configurado na API).")
+        url = os.environ.get("MITRA_API_URL", "http://localhost:8000").rstrip("/")
         http = httpx.Client(base_url=url, timeout=120, headers={"Authorization": f"Bearer {token}"})
-        return cls(http, os.environ.get("REGULAIA_EMPRESA"))
+        return cls(http, os.environ.get("MITRA_EMPRESA"))
 
     # ------------------------------------------------------------------ HTTP
 
@@ -90,7 +90,7 @@ class Torre:
         if self.empresa_fixa:
             todas = [e for e in todas if self._mesma(e, self.empresa_fixa)]
             if not todas:   # pin que não casa não pode destravar o agente em silêncio (ids mudam na demo)
-                raise ErroTorre(f"REGULAIA_EMPRESA={self.empresa_fixa!r} não casa com nenhuma empresa da "
+                raise ErroTorre(f"MITRA_EMPRESA={self.empresa_fixa!r} não casa com nenhuma empresa da "
                                 "torre: confira o nome (o id muda quando a demo é recriada).")
         return todas
 

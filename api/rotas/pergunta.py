@@ -23,9 +23,9 @@ from pydantic import BaseModel, Field
 
 from agente.cliente import Torre
 from agente.ferramentas import CHAMA_IA, ferramentas
-from regulaia import pergunta as pg
-from regulaia import usuarios
-from regulaia.ia import CONFIG, SemProvedor, TetoAtingido
+from mitra import pergunta as pg
+from mitra import usuarios
+from mitra.ia import CONFIG, SemProvedor, TetoAtingido
 
 from .. import auditoria
 from ..banco import emprestar, roteador_avulso

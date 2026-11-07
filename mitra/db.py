@@ -1,4 +1,4 @@
-"""Camada de dados da RegulaIA: SQLite (testes, demo offline) ou Postgres (API, AWS RDS).
+"""Camada de dados da Mitra: SQLite (testes, demo offline) ou Postgres (API, AWS RDS).
 
 Toda leitura e escrita passa por aqui, com SQL portátil. As diferenças entre os dois
 bancos ficam em banco.py.
@@ -20,7 +20,7 @@ from . import agenda as agenda_, banco, regras
 
 SCHEMA = Path(__file__).with_name("schema.sql")
 ROOT = Path(__file__).resolve().parent.parent
-DB_PADRAO = ROOT / "data" / "regulaia.db"
+DB_PADRAO = ROOT / "data" / "mitra.db"
 
 # Campos de uma versão que uma mudança regulatória pode alterar.
 CAMPOS_VERSAO = (
@@ -42,9 +42,9 @@ def conectar(caminho: str | Path = DB_PADRAO):
     """Abre (ou cria) o banco e aplica o esquema. Use ':memory:' nos testes.
 
     `caminho` pode ser um arquivo SQLite ou uma URL `postgresql://...` (API e AWS RDS);
-    sem argumento, vale REGULAIA_DATABASE_URL se estiver definida."""
-    if caminho is DB_PADRAO and os.environ.get("REGULAIA_DATABASE_URL"):
-        caminho = os.environ["REGULAIA_DATABASE_URL"]
+    sem argumento, vale MITRA_DATABASE_URL se estiver definida."""
+    if caminho is DB_PADRAO and os.environ.get("MITRA_DATABASE_URL"):
+        caminho = os.environ["MITRA_DATABASE_URL"]
     if banco.eh_url_postgres(caminho):
         return banco.ConexaoPostgres(caminho)
     if caminho != ":memory:":

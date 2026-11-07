@@ -1,8 +1,8 @@
 {
-  "name": "regulaia-front",
+  "name": "mitra-front",
   "version": "1.0.0",
   "private": true,
-  "description": "RegulaIA: o front da torre de controle regulatória (Next.js exportado, fala só com a API)",
+  "description": "Mitra: o front da torre de controle regulatória (Next.js exportado, fala só com a API)",
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
