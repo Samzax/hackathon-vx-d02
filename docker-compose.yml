@@ -2,6 +2,7 @@
 #
 #   docker compose up --build        # API em http://localhost:8000/docs, Postgres em localhost:5432
 #   docker compose run --rm radar    # roda o radar do DOU uma vez
+#   docker compose run --rm descoberta   # busca normas já publicadas nas fontes oficiais e tria pela IA
 #
 # O Streamlit da demo continua rodando à parte: uv run streamlit run app.py
 
@@ -57,6 +58,26 @@ services:
         condition: service_healthy
     profiles: ["jobs"]
 
+  descoberta:
+    # normas já publicadas que valem para a carteira: lê o Senado, o ANMlegis e a Assembleia de Minas e
+    # passa as candidatas novas pela IA (fica para a curadoria RegulaIA aprovar ou descartar)
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    command: ["python", "-m", "api.jobs", "descoberta"]
+    environment:
+      REGULAIA_DATABASE_URL: postgresql://regulaia:regulaia-local@postgres:5432/regulaia
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - fontes:/app/data/raw/fontes     # o que a fonte já devolveu de anos passados não é baixado de novo
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ["jobs"]
+
 volumes:
   pgdata:
   uploads:
+  fontes:

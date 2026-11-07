@@ -634,6 +634,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/empresas/{empresa_id}/cobertura": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cobertura normativa: por jurisdição e tipo de ativo, o que está no catálogo, o que foi lido e o que falta */
+        get: operations["cobertura_api_v1_empresas__empresa_id__cobertura_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normas-candidatas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A fila da curadoria RegulaIA: normas já publicadas que a busca achou e a IA triou (só a plataforma) */
+        get: operations["fila_api_v1_normas_candidatas_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normas-candidatas/{chave}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Uma norma candidata, com a triagem da IA e a indexação da fonte (só a plataforma) */
+        get: operations["candidata_api_v1_normas_candidatas__chave__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normas-candidatas/{chave}/decisao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Curadoria RegulaIA: aprovar (vai para a extração das obrigações) ou descartar, com nota */
+        post: operations["decidir_api_v1_normas_candidatas__chave__decisao_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/evidencias/exemplos": {
         parameters: {
             query?: never;
@@ -1237,6 +1305,19 @@ export interface components {
                 [key: string]: string | null;
             } | null;
         };
+        /** DecisaoCandidata */
+        DecisaoCandidata: {
+            /**
+             * Decisao
+             * @enum {string}
+             */
+            decisao: "aprovar" | "descartar";
+            /**
+             * Nota
+             * @example regulamenta a Lei 23.291: extrair a caução
+             */
+            nota?: string | null;
+        };
         /** DecisaoRegistrada */
         DecisaoRegistrada: {
             /** Versao Id */
@@ -1461,6 +1542,66 @@ export interface components {
             /** Eventos */
             eventos: components["schemas"]["Evento"][];
         };
+        /** FilaCandidatas */
+        FilaCandidatas: {
+            /** Normas */
+            normas: components["schemas"]["NormaCandidata"][];
+            /**
+             * Contagem
+             * @description quantas normas há em cada status (na jurisdição filtrada)
+             */
+            contagem: {
+                [key: string]: number;
+            };
+            /** Status Rotulos */
+            status_rotulos: {
+                [key: string]: string;
+            };
+            /**
+             * Jurisdicoes
+             * @description as jurisdições que têm candidatas, para o filtro
+             */
+            jurisdicoes: components["schemas"]["Jurisdicao"][];
+            /**
+             * Decide
+             * @description se quem pede pode aprovar ou descartar
+             */
+            decide: boolean;
+        };
+        /** FonteLida */
+        FonteLida: {
+            /**
+             * Fonte
+             * @example almg
+             */
+            fonte: string;
+            /**
+             * Nome
+             * @example Assembleia de Minas
+             */
+            nome: string;
+            /**
+             * Cobre
+             * @description o que a fonte lista
+             * @example leis, leis complementares e decretos de Minas Gerais
+             */
+            cobre: string;
+            /**
+             * Desde
+             * @description primeiro ano lido
+             */
+            desde: number;
+            /**
+             * Ate
+             * @description último ano lido
+             */
+            ate: number;
+            /**
+             * Em
+             * @description quando foi lida (UTC, AAAA-MM-DD HH:MM:SS)
+             */
+            em: string;
+        };
         /** Funil */
         Funil: {
             /**
@@ -1551,6 +1692,82 @@ export interface components {
         Importada: {
             /** Empresa Id */
             empresa_id: number;
+        };
+        /**
+         * ItemCobertura
+         * @description Uma jurisdição e um tipo de ativo da carteira da empresa.
+         */
+        ItemCobertura: {
+            /**
+             * Jurisdicao
+             * @example MG
+             */
+            jurisdicao: string;
+            /**
+             * Jurisdicao Nome
+             * @example Minas Gerais
+             * @example Brasil (federal)
+             */
+            jurisdicao_nome: string;
+            /**
+             * Tipo Ativo
+             * @example barragem
+             */
+            tipo_ativo: string;
+            /**
+             * Ativos
+             * @description códigos dos ativos da empresa que precisam desta cobertura
+             */
+            ativos: string[];
+            /**
+             * Estado
+             * @description sem_fonte, nao_buscada, triagem_pendente, curadoria_pendente, extracao_pendente ou coberta
+             */
+            estado: string;
+            /** Estado Rotulo */
+            estado_rotulo: string;
+            /**
+             * Verificada
+             * @description as fontes automáticas da jurisdição foram lidas; falso: cobertura não verificada
+             */
+            verificada: boolean;
+            /**
+             * Fontes
+             * @description as fontes lidas para a jurisdição
+             */
+            fontes: components["schemas"]["FonteLida"][];
+            /**
+             * Lacunas
+             * @description o que a plataforma sabe que não cobre por fonte automática
+             */
+            lacunas: string[];
+            /**
+             * Catalogadas
+             * @description normas do catálogo que valem aqui
+             */
+            catalogadas: string[];
+            /**
+             * Triagem Pendente
+             * @description candidatas que ainda não passaram pela IA
+             */
+            triagem_pendente: number;
+            /**
+             * Em Curadoria
+             * @description relevantes pela IA, esperando a curadoria RegulaIA
+             */
+            em_curadoria: components["schemas"]["NormaNaCobertura"][];
+            /**
+             * Aprovadas
+             * @description aprovadas pela curadoria, falta extrair as obrigações
+             */
+            aprovadas: components["schemas"]["NormaNaCobertura"][];
+        };
+        /** Jurisdicao */
+        Jurisdicao: {
+            /** Sigla */
+            sigla: string;
+            /** Nome */
+            nome: string;
         };
         /** Leitura */
         Leitura: {
@@ -1886,6 +2103,101 @@ export interface components {
             /** Empresas Com Barragem Na Pnsb */
             empresas_com_barragem_na_pnsb: number;
         };
+        /** NormaCandidata */
+        NormaCandidata: {
+            /**
+             * Chave
+             * @example MG:DEC:48747/2023
+             */
+            chave: string;
+            /** Jurisdicao */
+            jurisdicao: string;
+            /** Jurisdicao Nome */
+            jurisdicao_nome: string;
+            /** Fonte */
+            fonte: string;
+            /** Fonte Nome */
+            fonte_nome: string;
+            /** Tipo */
+            tipo: string;
+            /** Numero */
+            numero: string;
+            /** Ano */
+            ano: number;
+            /** Titulo */
+            titulo: string;
+            /** Ementa */
+            ementa: string;
+            /**
+             * Indexacao
+             * @description assunto e indexação da fonte (só na consulta de uma norma)
+             */
+            indexacao?: string | null;
+            /** Data */
+            data: string | null;
+            /**
+             * Url
+             * @description o texto oficial
+             */
+            url: string | null;
+            /**
+             * Situacao
+             * @description a vigência, como a fonte diz (VIGENTE...)
+             */
+            situacao: string | null;
+            /**
+             * Temas
+             * @description tipos de ativo cujos termos a norma cita
+             */
+            temas: string[];
+            /** @description o que a IA disse; vazio: ainda não triada */
+            triagem: components["schemas"]["TriagemIA"] | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "nova" | "relevante" | "irrelevante" | "catalogada" | "aprovada" | "descartada";
+            /** Status Rotulo */
+            status_rotulo: string;
+            /** Decidida Por */
+            decidida_por: string | null;
+            /** Decidida Em */
+            decidida_em: string | null;
+            /** Nota */
+            nota: string | null;
+            /**
+             * Cita Catalogo
+             * @description normas do catálogo que esta altera ou regulamenta: conferir se o texto consolidado já tem
+             */
+            cita_catalogo: string[];
+        };
+        /** NormaNaCobertura */
+        NormaNaCobertura: {
+            /**
+             * Chave
+             * @example MG:DEC:48747/2023
+             */
+            chave: string;
+            /** Titulo */
+            titulo: string;
+            /** Ementa */
+            ementa: string;
+            /**
+             * Url
+             * @description o texto oficial
+             */
+            url: string | null;
+            /**
+             * Deveres
+             * @description o que a triagem da IA disse que a norma cobra de quem opera o ativo
+             */
+            deveres: string;
+            /**
+             * Cita Catalogo
+             * @description normas do catálogo que esta altera ou regulamenta: conferir se o texto consolidado já tem
+             */
+            cita_catalogo: string[];
+        };
         /** ObrigacaoResumo */
         ObrigacaoResumo: {
             /** Codigo */
@@ -2055,6 +2367,32 @@ export interface components {
              * @default []
              */
             so_para_outros: components["schemas"]["ObrigacaoTroca"][];
+        };
+        /** TriagemIA */
+        TriagemIA: {
+            /** Relevante */
+            relevante: boolean;
+            /** Tipos Ativo */
+            tipos_ativo: string[];
+            /** Deveres */
+            deveres: string;
+            /** Motivo */
+            motivo: string;
+            /** Confianca */
+            confianca: number;
+            /** Modelo */
+            modelo: string;
+            /**
+             * Custo Usd
+             * @default 0
+             */
+            custo_usd: number;
+            /**
+             * Leu Texto
+             * @description a IA leu o texto oficial; falso: decidiu só pela ementa
+             * @default false
+             */
+            leu_texto: boolean;
         };
         /** Troca */
         Troca: {
@@ -3366,6 +3704,135 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Proposta"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cobertura_api_v1_empresas__empresa_id__cobertura_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemCobertura"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    fila_api_v1_normas_candidatas_get: {
+        parameters: {
+            query?: {
+                status?: ("nova" | "relevante" | "irrelevante" | "catalogada" | "aprovada" | "descartada")[];
+                jurisdicao?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FilaCandidatas"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    candidata_api_v1_normas_candidatas__chave__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chave: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NormaCandidata"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decidir_api_v1_normas_candidatas__chave__decisao_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chave: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecisaoCandidata"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NormaCandidata"];
                 };
             };
             /** @description Validation Error */

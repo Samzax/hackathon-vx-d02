@@ -114,3 +114,89 @@ test("TI só administra contas e auditoria", async ({ page }) => {
   await page.goto("/caixa/");
   await page.waitForURL(/\/usuarios\/$/);
 });
+
+// A fila de normas candidatas (data/descoberta_demo.json) fica fora do "Recriar demo": é trabalho da curadoria, não da
+// cliente. Por isso só o teste abaixo decide algo nela, e os outros não dependem do que ele aprovou.
+const CAUCAO = "Decreto MG 48.747/2023"; // regulamenta a caução da Lei MG 23.291, que está no catálogo
+
+test("curadoria aprova uma norma candidata e a cobertura da Serra Azul muda", async ({ page }) => {
+  await page.goto("/entrar/");
+  await page.getByLabel("E-mail").fill("curadoria@regulaia.demo");
+  await page.getByLabel("Senha").fill("serra-azul-2026");
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.waitForURL(/\/caixa\/$/);
+  const nav = page.getByRole("navigation", { name: "Telas da torre" });
+
+  // antes: o decreto espera a curadoria na linha "Barragem · Minas Gerais"
+  await nav.getByRole("link", { name: "Cobertura normativa" }).click();
+  const mg = page.getByTestId("cobertura-MG-barragem");
+  await expect(mg).toHaveAttribute("data-tom", "amarelo");
+  await expect(mg.getByTestId("fontes")).toContainText("Assembleia de Minas, 1989–2026, lida em");
+  await expect(mg.getByTestId("catalogadas")).toContainText("Lei MG 23.291/2019");
+  await expect(mg.getByTestId("em-curadoria")).toContainText(CAUCAO);
+  await expect(mg.getByTestId("aprovadas")).toHaveCount(0);
+
+  await nav.getByRole("link", { name: /Normas candidatas/ }).click();
+  await page.getByLabel("Jurisdição").selectOption("MG");
+  await page.waitForURL(/jurisdicao=MG/);
+  await page.getByLabel("Buscar na fila").fill("48.747");
+  const cartao = page.getByTestId("norma-candidata").filter({ hasText: CAUCAO });
+  await expect(cartao).toHaveCount(1);
+  await expect(cartao).toContainText("esperando curadoria");
+  await expect(cartao).toContainText("Altera ou regulamenta Lei MG 23.291/2019: conferir se o texto consolidado");
+  await expect(cartao.getByTestId("triagem")).toContainText("Confiança 0,96");
+  await expect(cartao.getByTestId("leu-texto")).toHaveText("decidiu só pela ementa");
+  await expect(cartao.getByRole("link", { name: /Texto oficial/ })).toHaveAttribute("href", /^https:\/\/www\.almg\.gov\.br\//);
+  await cartao.getByLabel("Nota da curadoria").fill("extrair a caução do art. 7º");
+  await cartao.getByRole("button", { name: "Aprovar" }).click();
+  await expect(page.getByRole("status").filter({ hasText: `${CAUCAO}: aprovada, falta extrair` })).toBeVisible();
+  await expect(cartao).toHaveCount(0); // saiu das relevantes
+
+  // na fila das aprovadas, com quem decidiu e a nota
+  await page.getByLabel("Status").selectOption("aprovada");
+  const aprovada = page.getByTestId("norma-candidata").filter({ hasText: CAUCAO });
+  await expect(aprovada).toContainText("Aprovada por curadoria@regulaia.demo");
+  await expect(aprovada).toContainText("extrair a caução do art. 7º");
+
+  // depois: na cobertura da Serra Azul, aprovada, falta extrair
+  await nav.getByRole("link", { name: "Cobertura normativa" }).click();
+  await expect(mg.getByTestId("aprovadas")).toContainText(CAUCAO);
+  await expect(mg.getByTestId("em-curadoria")).not.toContainText(CAUCAO);
+});
+
+test("cliente vê a cobertura, não abre a fila da curadoria, e UF sem fonte nunca fica verde", async ({ page }) => {
+  await entrarNaDemo(page);
+  const nav = page.getByRole("navigation", { name: "Telas da torre" });
+  await expect(nav.getByRole("link", { name: /Normas candidatas/ })).toHaveCount(0);
+  await page.goto("/regulatorio/normas-candidatas/");
+  await page.waitForURL(/\/caixa\/$/);
+
+  // a B4 passa a ficar no Pará: nenhuma fonte automática lê a lei paraense
+  const ok = await page.evaluate(async () => {
+    const csrf = decodeURIComponent(document.cookie.match(/(?:^|; )regulaia_csrf=([^;]*)/)?.[1] ?? "");
+    const empresas = await (await fetch("/api/v1/empresas", { credentials: "include" })).json();
+    const ativos = await (await fetch(`/api/v1/empresas/${empresas[0].id}/ativos`, { credentials: "include" })).json();
+    const b4 = ativos.find((a: { codigo: string }) => a.codigo === "B4");
+    const r = await fetch(`/api/v1/ativos/${b4.id}/atributos`, {
+      method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
+      body: JSON.stringify({ atributos: { uf: "PA" } }),
+    });
+    return r.ok;
+  });
+  expect(ok).toBe(true);
+
+  await nav.getByRole("link", { name: "Cobertura normativa" }).click();
+  const pa = page.getByTestId("cobertura-PA-barragem");
+  await expect(pa).toHaveAttribute("data-tom", "cinza");
+  await expect(pa.getByTestId("estado")).toHaveText("sem fonte automática: cobertura não verificada");
+  await expect(pa).toContainText("Ativos: B4");
+  await expect(pa.getByTestId("fontes")).toContainText("Nenhuma fonte automática para esta jurisdição.");
+
+  // coberta é verde, mas com as lacunas conhecidas ao lado
+  const equip = page.getByTestId("cobertura-BR-equipamento");
+  await expect(equip).toHaveAttribute("data-tom", "verde");
+  await expect(equip.getByTestId("catalogadas")).toContainText("NR-13");
+  await expect(equip.getByTestId("lacunas")).toContainText("Normas Regulamentadoras do MTE");
+  await expect(page.getByTestId("cobertura-MG-barragem").getByText("Ativos: B1, B2, B3", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("cobertura-MG-barragem")).not.toContainText("Abrir na fila da curadoria");
+});

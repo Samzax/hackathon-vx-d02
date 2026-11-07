@@ -29,6 +29,8 @@ unidades, equipamentos, licenças), quais obrigações de cada norma valem, quan
 - "hoje" (AAAA-MM-DD) muda o dia da consulta: serve para ver o futuro (ex.: quando a Res. ANM 220/2025
   passa a valer, em 2027-08-02). Sem "hoje", vale o dia padrão da torre.
 - Você não decide nem grava: para aprovar uma mudança ou registrar uma entrega, diga onde fazer na torre.
+- Cobertura normativa: jurisdição sem fonte automática é "cobertura não verificada", nunca "coberta"; e mesmo
+  a coberta tem lacunas conhecidas (cite-as). Norma "esperando curadoria" ainda não está no catálogo.
 - Se faltar dado, diga que falta; não presuma.
 """
 
@@ -54,6 +56,14 @@ def _linha(l: dict, com_trecho: bool = True) -> dict:
         out["mudanca_pendente"] = True
     if com_trecho and l.get("trecho"):
         out["trecho"] = l["trecho"]
+    return out
+
+
+def _norma_descoberta(n: dict) -> dict:
+    out = {"norma": n["titulo"], "ementa": n["ementa"][:400], "deveres": n.get("deveres") or None,
+           "texto_oficial": n.get("url")}
+    if n.get("cita_catalogo"):          # altera ou regulamenta norma do catálogo: o consolidado pode já ter
+        out["altera_do_catalogo"] = n["cita_catalogo"]
     return out
 
 
@@ -149,6 +159,36 @@ def criar_servidor(torre: Torre) -> MCPServer:
         aguardando decisão, com norma e dispositivo. Não envia nada."""
         eid = torre.empresa_id(empresa)
         return torre.get(f"/empresas/{eid}/boletim", formato="md", responsavel=responsavel, hoje=hoje)
+
+    @mcp.tool(annotations=LEITURA)
+    def cobertura_normativa(
+            empresa: Empresa = None,
+            jurisdicao: Annotated[str | None, Field(description="BR (federal) ou a UF, ex.: MG")] = None,
+            tipo_ativo: Annotated[str | None, Field(description="barragem, unidade ou equipamento")] = None,
+    ) -> list[dict]:
+        """Que normas valem para os ativos da empresa e quais ainda não estão no catálogo, por jurisdição e
+        tipo de ativo: as normas catalogadas, as fontes oficiais lidas (e até que ano), as lacunas conhecidas,
+        as normas já publicadas que a IA achou relevantes e esperam a curadoria RegulaIA, e as aprovadas que
+        esperam a extração das obrigações. Ex.: "que normas valem para as minhas barragens em MG?"."""
+        eid = torre.empresa_id(empresa)
+        jur = (jurisdicao or "").strip().upper()
+        tipo = (tipo_ativo or "").strip().lower()
+        out = []
+        for i in torre.get(f"/empresas/{eid}/cobertura"):
+            if (jur and i["jurisdicao"] != jur) or (tipo and i["tipo_ativo"] != tipo):
+                continue
+            out.append({
+                "jurisdicao": i["jurisdicao"], "jurisdicao_nome": i["jurisdicao_nome"], "tipo_ativo": i["tipo_ativo"],
+                "ativos": i["ativos"], "estado": i["estado_rotulo"], "verificada": i["verificada"],
+                "no_catalogo": i["catalogadas"],
+                "fontes_lidas": [f"{f['nome']} ({f['cobre']}), {f['desde']}–{f['ate']}, lida em {f['em'][:16]} UTC"
+                                 for f in i["fontes"]],
+                "lacunas_conhecidas": i["lacunas"],
+                "esperando_triagem": i["triagem_pendente"],
+                "fora_do_catalogo_esperando_curadoria": [_norma_descoberta(n) for n in i["em_curadoria"]],
+                "aprovadas_falta_extrair": [_norma_descoberta(n) for n in i["aprovadas"]],
+            })
+        return out
 
     @mcp.tool(annotations=LEITURA)
     def radar_do_dou() -> dict:

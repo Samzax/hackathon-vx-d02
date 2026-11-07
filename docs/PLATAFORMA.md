@@ -86,7 +86,7 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
       RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
       06:00 BRT), Secrets Manager, CloudWatch com 3 alarmes, sem NAT. `tests/test_infra.py` confere a pilha;
       `npx aws-cdk@2 synth` sem aviso. Falta o deploy na conta do evento (IDs do Bedrock em `modelos.toml`).
-- [x] 2C servidor MCP (`agente/`): 11 ferramentas de leitura sobre a API com o token de serviço,
+- [x] 2C servidor MCP (`agente/`): 12 ferramentas de leitura sobre a API com o token de serviço,
       `REGULAIA_EMPRESA` prende o escopo numa cliente, erro da API vira erro de ferramenta legível; stdio e
       streamable HTTP. `tests/test_agente.py` contra a API real; conferido com um cliente MCP de verdade (stdio).
 - [ ] 2C chat "Pergunte à torre" no front: rota na API (ex.: `POST /api/v1/pergunta`) que roda o Claude
@@ -100,7 +100,24 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
 - [x] Tabelas `norma_candidata` e `descoberta_busca` (migração 0003); a fila real vai para a demo em
   `data/descoberta_demo.json` e entra no `demo.preparar`, fora do "Recriar demo".
 - [x] `tests/test_descoberta.py` com trechos reais das três fontes em `tests/fixtures/descoberta/`.
-- [ ] API e front (cobertura da empresa, fila da curadoria, decisão): [docs/TAREFA_DESCOBERTA.md](TAREFA_DESCOBERTA.md), para a CLI.
+- [x] API e front ([docs/TAREFA_DESCOBERTA.md](TAREFA_DESCOBERTA.md)):
+  - `api/rotas/descoberta.py`: `GET /empresas/{id}/cobertura` (cliente só a dela, 404 para outra; gestor só as
+    linhas dos ativos da área; a plataforma vê qualquer uma), `GET /normas-candidatas?status=&jurisdicao=` e
+    `GET /normas-candidatas/{chave}` (só a plataforma, `seguranca.plataforma`; cliente 403), `POST
+    /normas-candidatas/{chave}/decisao` (só a curadoria; `quem` = e-mail da sessão; auditoria
+    `descoberta.decidir` com empresa vazia, e a recusada também). A chave tem `:` e `/`: rota `{chave:path}`, e o
+    front manda codificada (`%3A`, `%2F`). Rótulos (estado, status, fonte, jurisdição) vêm do domínio.
+  - Domínio: o estado `extracao_pendente` ("aprovada, falta extrair") separado de `curadoria_pendente`;
+    `VERIFICADOS` (o que não foi lido nunca é verificado), `ROTULOS_STATUS`, `NOMES_FONTES`, `nome_jurisdicao`.
+  - Job `python -m api.jobs descoberta [--desde] [--fontes] [--limite] [--paralelo] [--sem-triagem]` e o serviço
+    `descoberta` no compose (perfil `jobs`, volume com o cache das fontes). Falta o agendamento na AWS
+    (EventBridge, em `infra/`), que não entrou aqui.
+  - Front: Regulatório → "Cobertura normativa" (todos menos a TI; cores em `src/lib/cobertura.ts`: verde só se
+    verificada, cinza com "cobertura não verificada") e "Normas candidatas" (só a plataforma, com contador das
+    relevantes; filtro por jurisdição e status na URL, busca, Aprovar / Descartar com nota). E2E: a curadoria
+    aprova o Decreto MG 48.747/2023 e ele passa de "esperando curadoria" para "aprovada, falta extrair" na
+    cobertura da Serra Azul; a cliente não abre a fila e a B4 levada para o Pará sai cinza.
+  - Agente: `cobertura_normativa(empresa, jurisdicao, tipo_ativo)`.
 - [ ] Mais conectores: outros estados (PA, BA, GO...) sem o LexML, que bloqueia robô; Copam/Semad em MG; Conama.
 
 ### Fase 3

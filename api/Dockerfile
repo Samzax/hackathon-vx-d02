@@ -38,7 +38,7 @@ COPY . .
 RUN uv sync --locked --no-dev
 COPY --from=front /front/out /app/front/out
 
-RUN useradd --create-home regulaia && mkdir -p /app/data/uploads && chown -R regulaia /app
+RUN useradd --create-home regulaia && mkdir -p /app/data/uploads /app/data/raw/fontes && chown -R regulaia /app
 USER regulaia
 
 ENV PATH="/app/.venv/bin:$PATH" \

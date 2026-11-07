@@ -226,6 +226,13 @@ def decide_normas(e: Escopo = Depends(regulatorio)) -> Escopo:
     return e
 
 
+def plataforma(e: Escopo = Depends(regulatorio)) -> Escopo:
+    """Trabalho interno da RegulaIA (a fila de normas candidatas): a cliente recebe 403."""
+    if not e.plataforma:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "isto é trabalho da curadoria da RegulaIA (plataforma)")
+    return e
+
+
 def curadoria(e: Escopo = Depends(decide_normas)) -> Escopo:
     """O que muda o catálogo de todas as clientes (propor mudança de norma, importar empresa)."""
     if not e.plataforma:

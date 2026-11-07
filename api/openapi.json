@@ -1985,6 +1985,221 @@
     }
    }
   },
+  "/api/v1/empresas/{empresa_id}/cobertura": {
+   "get": {
+    "tags": [
+     "descoberta"
+    ],
+    "summary": "Cobertura normativa: por jurisdição e tipo de ativo, o que está no catálogo, o que foi lido e o que falta",
+    "operationId": "cobertura_api_v1_empresas__empresa_id__cobertura_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/ItemCobertura"
+         },
+         "title": "Response Cobertura Api V1 Empresas  Empresa Id  Cobertura Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/normas-candidatas": {
+   "get": {
+    "tags": [
+     "descoberta"
+    ],
+    "summary": "A fila da curadoria RegulaIA: normas já publicadas que a busca achou e a IA triou (só a plataforma)",
+    "operationId": "fila_api_v1_normas_candidatas_get",
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "array",
+       "items": {
+        "enum": [
+         "nova",
+         "relevante",
+         "irrelevante",
+         "catalogada",
+         "aprovada",
+         "descartada"
+        ],
+        "type": "string"
+       },
+       "default": [
+        "relevante"
+       ],
+       "title": "Status"
+      }
+     },
+     {
+      "name": "jurisdicao",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "examples": [
+        "MG"
+       ],
+       "title": "Jurisdicao"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FilaCandidatas"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/normas-candidatas/{chave}": {
+   "get": {
+    "tags": [
+     "descoberta"
+    ],
+    "summary": "Uma norma candidata, com a triagem da IA e a indexação da fonte (só a plataforma)",
+    "operationId": "candidata_api_v1_normas_candidatas__chave__get",
+    "parameters": [
+     {
+      "name": "chave",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Chave"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/NormaCandidata"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/normas-candidatas/{chave}/decisao": {
+   "post": {
+    "tags": [
+     "descoberta"
+    ],
+    "summary": "Curadoria RegulaIA: aprovar (vai para a extração das obrigações) ou descartar, com nota",
+    "operationId": "decidir_api_v1_normas_candidatas__chave__decisao_post",
+    "parameters": [
+     {
+      "name": "chave",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Chave"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DecisaoCandidata"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/NormaCandidata"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/evidencias/exemplos": {
    "get": {
     "tags": [
@@ -3499,6 +3714,38 @@
     ],
     "title": "Decisao"
    },
+   "DecisaoCandidata": {
+    "properties": {
+     "decisao": {
+      "type": "string",
+      "enum": [
+       "aprovar",
+       "descartar"
+      ],
+      "title": "Decisao"
+     },
+     "nota": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nota",
+      "examples": [
+       "regulamenta a Lei 23.291: extrair a caução"
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "decisao"
+    ],
+    "title": "DecisaoCandidata"
+   },
    "DecisaoRegistrada": {
     "properties": {
      "versao_id": {
@@ -4143,6 +4390,105 @@
     ],
     "title": "Ficha"
    },
+   "FilaCandidatas": {
+    "properties": {
+     "normas": {
+      "items": {
+       "$ref": "#/components/schemas/NormaCandidata"
+      },
+      "type": "array",
+      "title": "Normas"
+     },
+     "contagem": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Contagem",
+      "description": "quantas normas há em cada status (na jurisdição filtrada)"
+     },
+     "status_rotulos": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Status Rotulos"
+     },
+     "jurisdicoes": {
+      "items": {
+       "$ref": "#/components/schemas/Jurisdicao"
+      },
+      "type": "array",
+      "title": "Jurisdicoes",
+      "description": "as jurisdições que têm candidatas, para o filtro"
+     },
+     "decide": {
+      "type": "boolean",
+      "title": "Decide",
+      "description": "se quem pede pode aprovar ou descartar"
+     }
+    },
+    "type": "object",
+    "required": [
+     "normas",
+     "contagem",
+     "status_rotulos",
+     "jurisdicoes",
+     "decide"
+    ],
+    "title": "FilaCandidatas"
+   },
+   "FonteLida": {
+    "properties": {
+     "fonte": {
+      "type": "string",
+      "title": "Fonte",
+      "examples": [
+       "almg"
+      ]
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome",
+      "examples": [
+       "Assembleia de Minas"
+      ]
+     },
+     "cobre": {
+      "type": "string",
+      "title": "Cobre",
+      "description": "o que a fonte lista",
+      "examples": [
+       "leis, leis complementares e decretos de Minas Gerais"
+      ]
+     },
+     "desde": {
+      "type": "integer",
+      "title": "Desde",
+      "description": "primeiro ano lido"
+     },
+     "ate": {
+      "type": "integer",
+      "title": "Ate",
+      "description": "último ano lido"
+     },
+     "em": {
+      "type": "string",
+      "title": "Em",
+      "description": "quando foi lida (UTC, AAAA-MM-DD HH:MM:SS)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "fonte",
+     "nome",
+     "cobre",
+     "desde",
+     "ate",
+     "em"
+    ],
+    "title": "FonteLida"
+   },
    "Funil": {
     "properties": {
      "mes": {
@@ -4318,6 +4664,135 @@
      "empresa_id"
     ],
     "title": "Importada"
+   },
+   "ItemCobertura": {
+    "properties": {
+     "jurisdicao": {
+      "type": "string",
+      "title": "Jurisdicao",
+      "examples": [
+       "MG"
+      ]
+     },
+     "jurisdicao_nome": {
+      "type": "string",
+      "title": "Jurisdicao Nome",
+      "examples": [
+       "Minas Gerais",
+       "Brasil (federal)"
+      ]
+     },
+     "tipo_ativo": {
+      "type": "string",
+      "title": "Tipo Ativo",
+      "examples": [
+       "barragem"
+      ]
+     },
+     "ativos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Ativos",
+      "description": "códigos dos ativos da empresa que precisam desta cobertura"
+     },
+     "estado": {
+      "type": "string",
+      "title": "Estado",
+      "description": "sem_fonte, nao_buscada, triagem_pendente, curadoria_pendente, extracao_pendente ou coberta"
+     },
+     "estado_rotulo": {
+      "type": "string",
+      "title": "Estado Rotulo"
+     },
+     "verificada": {
+      "type": "boolean",
+      "title": "Verificada",
+      "description": "as fontes automáticas da jurisdição foram lidas; falso: cobertura não verificada"
+     },
+     "fontes": {
+      "items": {
+       "$ref": "#/components/schemas/FonteLida"
+      },
+      "type": "array",
+      "title": "Fontes",
+      "description": "as fontes lidas para a jurisdição"
+     },
+     "lacunas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Lacunas",
+      "description": "o que a plataforma sabe que não cobre por fonte automática"
+     },
+     "catalogadas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Catalogadas",
+      "description": "normas do catálogo que valem aqui"
+     },
+     "triagem_pendente": {
+      "type": "integer",
+      "title": "Triagem Pendente",
+      "description": "candidatas que ainda não passaram pela IA"
+     },
+     "em_curadoria": {
+      "items": {
+       "$ref": "#/components/schemas/NormaNaCobertura"
+      },
+      "type": "array",
+      "title": "Em Curadoria",
+      "description": "relevantes pela IA, esperando a curadoria RegulaIA"
+     },
+     "aprovadas": {
+      "items": {
+       "$ref": "#/components/schemas/NormaNaCobertura"
+      },
+      "type": "array",
+      "title": "Aprovadas",
+      "description": "aprovadas pela curadoria, falta extrair as obrigações"
+     }
+    },
+    "type": "object",
+    "required": [
+     "jurisdicao",
+     "jurisdicao_nome",
+     "tipo_ativo",
+     "ativos",
+     "estado",
+     "estado_rotulo",
+     "verificada",
+     "fontes",
+     "lacunas",
+     "catalogadas",
+     "triagem_pendente",
+     "em_curadoria",
+     "aprovadas"
+    ],
+    "title": "ItemCobertura",
+    "description": "Uma jurisdição e um tipo de ativo da carteira da empresa."
+   },
+   "Jurisdicao": {
+    "properties": {
+     "sigla": {
+      "type": "string",
+      "title": "Sigla"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     }
+    },
+    "type": "object",
+    "required": [
+     "sigla",
+     "nome"
+    ],
+    "title": "Jurisdicao"
    },
    "Leitura": {
     "properties": {
@@ -5227,6 +5702,255 @@
     ],
     "title": "NaPnsb"
    },
+   "NormaCandidata": {
+    "properties": {
+     "chave": {
+      "type": "string",
+      "title": "Chave",
+      "examples": [
+       "MG:DEC:48747/2023"
+      ]
+     },
+     "jurisdicao": {
+      "type": "string",
+      "title": "Jurisdicao"
+     },
+     "jurisdicao_nome": {
+      "type": "string",
+      "title": "Jurisdicao Nome"
+     },
+     "fonte": {
+      "type": "string",
+      "title": "Fonte"
+     },
+     "fonte_nome": {
+      "type": "string",
+      "title": "Fonte Nome"
+     },
+     "tipo": {
+      "type": "string",
+      "title": "Tipo"
+     },
+     "numero": {
+      "type": "string",
+      "title": "Numero"
+     },
+     "ano": {
+      "type": "integer",
+      "title": "Ano"
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "ementa": {
+      "type": "string",
+      "title": "Ementa"
+     },
+     "indexacao": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Indexacao",
+      "description": "assunto e indexação da fonte (só na consulta de uma norma)"
+     },
+     "data": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Data"
+     },
+     "url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Url",
+      "description": "o texto oficial"
+     },
+     "situacao": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Situacao",
+      "description": "a vigência, como a fonte diz (VIGENTE...)"
+     },
+     "temas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Temas",
+      "description": "tipos de ativo cujos termos a norma cita"
+     },
+     "triagem": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TriagemIA"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "o que a IA disse; vazio: ainda não triada"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "nova",
+       "relevante",
+       "irrelevante",
+       "catalogada",
+       "aprovada",
+       "descartada"
+      ],
+      "title": "Status"
+     },
+     "status_rotulo": {
+      "type": "string",
+      "title": "Status Rotulo"
+     },
+     "decidida_por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decidida Por"
+     },
+     "decidida_em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decidida Em"
+     },
+     "nota": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nota"
+     },
+     "cita_catalogo": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Cita Catalogo",
+      "description": "normas do catálogo que esta altera ou regulamenta: conferir se o texto consolidado já tem"
+     }
+    },
+    "type": "object",
+    "required": [
+     "chave",
+     "jurisdicao",
+     "jurisdicao_nome",
+     "fonte",
+     "fonte_nome",
+     "tipo",
+     "numero",
+     "ano",
+     "titulo",
+     "ementa",
+     "data",
+     "url",
+     "situacao",
+     "temas",
+     "triagem",
+     "status",
+     "status_rotulo",
+     "decidida_por",
+     "decidida_em",
+     "nota",
+     "cita_catalogo"
+    ],
+    "title": "NormaCandidata"
+   },
+   "NormaNaCobertura": {
+    "properties": {
+     "chave": {
+      "type": "string",
+      "title": "Chave",
+      "examples": [
+       "MG:DEC:48747/2023"
+      ]
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "ementa": {
+      "type": "string",
+      "title": "Ementa"
+     },
+     "url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Url",
+      "description": "o texto oficial"
+     },
+     "deveres": {
+      "type": "string",
+      "title": "Deveres",
+      "description": "o que a triagem da IA disse que a norma cobra de quem opera o ativo"
+     },
+     "cita_catalogo": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Cita Catalogo",
+      "description": "normas do catálogo que esta altera ou regulamenta: conferir se o texto consolidado já tem"
+     }
+    },
+    "type": "object",
+    "required": [
+     "chave",
+     "titulo",
+     "ementa",
+     "url",
+     "deveres",
+     "cita_catalogo"
+    ],
+    "title": "NormaNaCobertura"
+   },
    "ObrigacaoResumo": {
     "properties": {
      "codigo": {
@@ -5721,6 +6445,58 @@
      "entram"
     ],
     "title": "TemaTroca"
+   },
+   "TriagemIA": {
+    "properties": {
+     "relevante": {
+      "type": "boolean",
+      "title": "Relevante"
+     },
+     "tipos_ativo": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Tipos Ativo"
+     },
+     "deveres": {
+      "type": "string",
+      "title": "Deveres"
+     },
+     "motivo": {
+      "type": "string",
+      "title": "Motivo"
+     },
+     "confianca": {
+      "type": "number",
+      "title": "Confianca"
+     },
+     "modelo": {
+      "type": "string",
+      "title": "Modelo"
+     },
+     "custo_usd": {
+      "type": "number",
+      "title": "Custo Usd",
+      "default": 0.0
+     },
+     "leu_texto": {
+      "type": "boolean",
+      "title": "Leu Texto",
+      "description": "a IA leu o texto oficial; falso: decidiu só pela ementa",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "relevante",
+     "tipos_ativo",
+     "deveres",
+     "motivo",
+     "confianca",
+     "modelo"
+    ],
+    "title": "TriagemIA"
    },
    "Troca": {
     "properties": {

@@ -62,6 +62,16 @@ FONTES = {
     "anm": ("BR", "resoluções da ANM", 2018),
     "almg": ("MG", "leis, leis complementares e decretos de Minas Gerais", 1989),
 }
+# fonte -> nome de tela ("Assembleia de Minas, 1989–2026, lida em ...")
+NOMES_FONTES = {"senado": "Senado Federal", "anm": "ANMlegis (ANM)", "almg": "Assembleia de Minas"}
+UFS = {
+    "AC": "Acre", "AL": "Alagoas", "AP": "Amapá", "AM": "Amazonas", "BA": "Bahia", "CE": "Ceará",
+    "DF": "Distrito Federal", "ES": "Espírito Santo", "GO": "Goiás", "MA": "Maranhão", "MT": "Mato Grosso",
+    "MS": "Mato Grosso do Sul", "MG": "Minas Gerais", "PA": "Pará", "PB": "Paraíba", "PR": "Paraná",
+    "PE": "Pernambuco", "PI": "Piauí", "RJ": "Rio de Janeiro", "RN": "Rio Grande do Norte",
+    "RS": "Rio Grande do Sul", "RO": "Rondônia", "RR": "Roraima", "SC": "Santa Catarina", "SP": "São Paulo",
+    "SE": "Sergipe", "TO": "Tocantins",
+}
 TIPOS_SENADO = ("LEI", "LCP", "DEL", "DEC")
 TIPOS_ALMG = ("LEI", "LCP", "DEC")
 STATUS = ("nova", "relevante", "irrelevante", "catalogada", "aprovada", "descartada")
@@ -71,6 +81,11 @@ CONFIANCA_MINIMA = 0.7
 
 class ErroDescoberta(ValueError):
     pass
+
+
+def nome_jurisdicao(jurisdicao: str) -> str:
+    """BR -> "Brasil (federal)"; MG -> "Minas Gerais"; o que não for UF fica como veio."""
+    return "Brasil (federal)" if jurisdicao == "BR" else UFS.get(jurisdicao, jurisdicao)
 
 
 @dataclass
@@ -801,7 +816,8 @@ class ItemCobertura:
     triagem_pendente: int
     em_curadoria: list[dict]    # relevantes ainda não decididas
     aprovadas: list[dict]       # aprovadas, esperando a extração das obrigações
-    estado: str                 # sem_fonte | nao_buscada | triagem_pendente | curadoria_pendente | coberta
+    estado: str                 # sem_fonte | nao_buscada | triagem_pendente | curadoria_pendente |
+                                # extracao_pendente | coberta
 
 
 def _alcanca(c: dict, nec: Necessidade) -> bool:
@@ -840,8 +856,10 @@ def cobertura(conn, empresa_id: int | None = None, cfg: dict | None = None) -> l
             estado = "nao_buscada"
         elif pend:
             estado = "triagem_pendente"
-        elif cur or apr:
+        elif cur:
             estado = "curadoria_pendente"
+        elif apr:
+            estado = "extracao_pendente"
         else:
             estado = "coberta"
         itens.append(ItemCobertura(
@@ -855,8 +873,20 @@ ROTULOS_ESTADO = {
     "sem_fonte": "sem fonte automática: cobertura não verificada",
     "nao_buscada": "fonte ainda não lida",
     "triagem_pendente": "candidatas esperando a triagem",
-    "curadoria_pendente": "normas relevantes esperando a curadoria ou a extração",
+    "curadoria_pendente": "normas relevantes esperando a curadoria",
+    "extracao_pendente": "aprovadas pela curadoria, esperando a extração das obrigações",
     "coberta": "fontes automáticas lidas, nada relevante fora do catálogo (as lacunas conhecidas seguem abertas)",
+}
+# Só estes dizem que a fonte foi lida de ponta a ponta: "sem fonte" e "não lida" nunca são cobertura.
+VERIFICADOS = ("triagem_pendente", "curadoria_pendente", "extracao_pendente", "coberta")
+
+ROTULOS_STATUS = {
+    "nova": "esperando triagem",
+    "relevante": "esperando curadoria",
+    "irrelevante": "descartada pela IA",
+    "catalogada": "já no catálogo",
+    "aprovada": "aprovada, falta extrair",
+    "descartada": "descartada pela curadoria",
 }
 
 
@@ -908,11 +938,10 @@ def _empresa_id(conn, nome: str | None) -> int | None:
 
 def _imprimir_cobertura(itens: list[ItemCobertura]) -> None:
     for i in itens:
-        jur = "Brasil (federal)" if i.jurisdicao == "BR" else i.jurisdicao
-        print(f"\n## {i.tipo_ativo} — {jur}: {ROTULOS_ESTADO[i.estado]}")
+        print(f"\n## {i.tipo_ativo} — {nome_jurisdicao(i.jurisdicao)}: {ROTULOS_ESTADO[i.estado]}")
         print(f"   ativos: {', '.join(i.ativos)}")
         for f in i.fontes:
-            print(f"   fonte: {f['fonte']} ({f['cobre']}), {f['desde']}–{f['ate']}, lida em {f['em']}")
+            print(f"   fonte: {NOMES_FONTES[f['fonte']]} ({f['cobre']}), {f['desde']}–{f['ate']}, lida em {f['em']}")
         for lac in i.lacunas:
             print(f"   lacuna conhecida: {lac}")
         print(f"   no catálogo: {', '.join(i.catalogadas) or 'nada'}")

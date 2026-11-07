@@ -44,7 +44,7 @@ def test_ferramentas_sao_so_de_leitura(http):
     tools = asyncio.run(criar_servidor(Torre(http)).list_tools())
     nomes = {t.name for t in tools}
     assert {"empresas", "pendencias", "ficha_do_ativo", "mudancas_pendentes", "linha_do_tempo",
-            "analisar_ato", "boletim"} <= nomes
+            "analisar_ato", "boletim", "cobertura_normativa"} <= nomes
     assert all(t.annotations.read_only_hint and not t.annotations.destructive_hint for t in tools)
     assert not nomes & {"registrar_entrega", "decidir", "aprovar"}       # decisão é de gente, na torre
 
@@ -81,6 +81,26 @@ def test_linha_do_tempo_ate_um_dia(ferramentas):
 def test_boletim_em_markdown(ferramentas):
     md = ferramentas("boletim", hoje=HOJE)
     assert isinstance(md, str) and "Res. ANM 95/2022" in md
+
+
+def test_cobertura_normativa_das_barragens_em_mg(ferramentas):
+    """'Que normas valem para as minhas barragens em MG e quais ainda não estão no catálogo?'"""
+    itens = ferramentas("cobertura_normativa", jurisdicao="mg", tipo_ativo="Barragem")
+    assert len(itens) == 1
+    mg = itens[0]
+    assert (mg["jurisdicao"], mg["jurisdicao_nome"], mg["ativos"]) == ("MG", "Minas Gerais", ["B1", "B2", "B3", "B4"])
+    assert mg["verificada"] and mg["estado"] == "normas relevantes esperando a curadoria"
+    assert {"Lei MG 23.291/2019", "Decreto MG 48.078/2020 (PAE)"} <= set(mg["no_catalogo"])
+    assert mg["fontes_lidas"][0].startswith("Assembleia de Minas (") and "1989–2026" in mg["fontes_lidas"][0]
+    assert any("Copam" in lac for lac in mg["lacunas_conhecidas"])
+    fora = {n["norma"]: n for n in mg["fora_do_catalogo_esperando_curadoria"]}
+    caucao = fora["Decreto MG 48.747/2023"]
+    assert caucao["altera_do_catalogo"] == ["Lei MG 23.291/2019"] and caucao["deveres"]
+    assert caucao["texto_oficial"].startswith("https://www.almg.gov.br/")
+    assert mg["aprovadas_falta_extrair"] == []
+    todas = ferramentas("cobertura_normativa")
+    assert {(i["jurisdicao"], i["tipo_ativo"]) for i in todas} >= {("BR", "barragem"), ("MG", "barragem"),
+                                                                    ("BR", "equipamento")}
 
 
 def test_empresa_fixa_prende_o_escopo(http):

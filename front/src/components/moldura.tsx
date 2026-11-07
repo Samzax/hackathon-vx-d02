@@ -2,14 +2,14 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  CalendarRange, ChartColumn, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu, Moon, Plus, Radar as IconeRadar,
-  RotateCcw, ScrollText, Sun, Users, Workflow, X,
+  BookCheck, CalendarRange, ChartColumn, FileSearch, Gavel, History, Inbox, ListChecks, LogOut, Map, Menu, Moon, Plus,
+  Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { api, dados } from "@/lib/api";
-import { useAtivos, useMudancas, usePainel, useRadar } from "@/lib/consultas";
+import { useAtivos, useMudancas, useNormasCandidatas, usePainel, useRadar } from "@/lib/consultas";
 import { dataBR, diasEntre, plural, usd } from "@/lib/formato";
 import { RES_220, ZAS, useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
@@ -26,6 +26,7 @@ function useGrupos(): Grupo[] {
   const t = useTorre();
   const mudancas = useMudancas();
   const painel = usePainel();
+  const candidatas = useNormasCandidatas();
   if (t.ti) {
     return [{ titulo: "Administração", itens: [
       { href: "/usuarios/", rotulo: "Usuários e acessos", icone: <Users className="size-4" /> },
@@ -43,6 +44,9 @@ function useGrupos(): Grupo[] {
       { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca" },
       { href: "/regulatorio/radar/", rotulo: "Radar do DOU", icone: <IconeRadar className="size-4" /> },
       { href: "/regulatorio/transicao/", rotulo: "Transição e linha do tempo", icone: <CalendarRange className="size-4" /> },
+      { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" /> },
+      ...(t.plataforma ? [{ href: "/regulatorio/normas-candidatas/", rotulo: "Normas candidatas", icone: <FileSearch className="size-4" />,
+        contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const }] : []),
     ] },
     { titulo: "Sobre", itens: [
       { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" /> },
@@ -53,12 +57,14 @@ function useGrupos(): Grupo[] {
   return grupos;
 }
 
-/** O que cada papel pode abrir; o resto volta para a tela inicial do papel. */
-export function telaPermitida(caminho: string, ti: boolean, veTudo: boolean): boolean {
+/** O que cada papel pode abrir; o resto volta para a tela inicial do papel. A fila de normas candidatas
+ * é trabalho da curadoria RegulaIA: só a plataforma. */
+export function telaPermitida(caminho: string, ti: boolean, veTudo: boolean, plataforma = false): boolean {
   const c = caminho.endsWith("/") ? caminho : `${caminho}/`;
   if (ti) return c === "/usuarios/" || c === "/auditoria/";
   if (c === "/usuarios/") return false;
   if (c === "/auditoria/") return veTudo;
+  if (c === "/regulatorio/normas-candidatas/") return plataforma;
   return true;
 }
 
@@ -300,7 +306,7 @@ export function Moldura({ children }: { children: React.ReactNode }) {
   const caminho = usePathname();
   const router = useRouter();
   const [menu, setMenu] = useState(false);
-  const permitida = telaPermitida(caminho, t.ti, t.veTudo);
+  const permitida = telaPermitida(caminho, t.ti, t.veTudo, t.plataforma);
 
   useEffect(() => {
     if (!permitida) router.replace(t.ti ? "/usuarios/" : "/caixa/");

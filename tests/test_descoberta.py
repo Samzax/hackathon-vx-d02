@@ -347,6 +347,23 @@ def test_cobertura_fica_coberta_quando_tudo_foi_decidido(triada):
     assert _por(d.cobertura(triada, 1))[("MG", "barragem")].estado == "coberta"
 
 
+def test_aprovada_sai_da_curadoria_e_espera_a_extracao(triada):
+    d.decidir(triada, "MG:DEC:48747/2023", "aprovar", "curadoria@regulaia.demo")
+    mg = _por(d.cobertura(triada, 1))[("MG", "barragem")]
+    assert mg.estado == "extracao_pendente" and mg.em_curadoria == []
+    assert [c["chave"] for c in mg.aprovadas] == ["MG:DEC:48747/2023"]
+    assert mg.estado in d.VERIFICADOS and mg.estado != "coberta"       # aprovada não é catalogada
+
+
+def test_rotulos_para_a_tela_cobrem_todos_os_estados_status_e_fontes(triada):
+    estados = {i.estado for i in d.cobertura(triada)} | {"sem_fonte", "nao_buscada", "extracao_pendente"}
+    assert estados <= set(d.ROTULOS_ESTADO) and set(d.ROTULOS_STATUS) == set(d.STATUS)
+    assert set(d.NOMES_FONTES) == set(d.FONTES) and d.NOMES_FONTES["almg"] == "Assembleia de Minas"
+    assert not {"sem_fonte", "nao_buscada"} & set(d.VERIFICADOS)       # o que não foi lido nunca é verificado
+    assert (d.nome_jurisdicao("BR"), d.nome_jurisdicao("MG"), d.nome_jurisdicao("PA")) == (
+        "Brasil (federal)", "Minas Gerais", "Pará")
+
+
 def test_estado_sem_conector_nunca_aparece_como_coberto(triada):
     emp = db.criar_empresa(triada, "Mineradora do Norte")
     db.criar_ativo(triada, emp, "barragem", "P1", "Barragem no Pará", {"uf": "PA"}, "Geotecnia")

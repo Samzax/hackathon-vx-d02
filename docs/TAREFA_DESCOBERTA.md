@@ -1,5 +1,7 @@
 # Tarefa: descoberta de normas na API e no front
 
+**Feita** (o que entrou e o que ficou de fora está em [PLATAFORMA.md](PLATAFORMA.md), "Descoberta de normas").
+
 Ler antes: `regulaia/descoberta.py` (o módulo, com a explicação no topo), `regulaia/temas.toml`,
 `tests/test_descoberta.py`, `docs/PLATAFORMA.md`. Branch `plataforma`. Commits sem linha de coautoria.
 `api/` e `front/` são seus; o domínio (`regulaia/`) já está pronto e testado. Se precisar mudar algo

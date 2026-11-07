@@ -96,6 +96,13 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
   abertos), Conama, Ibama e ANA, e em Minas as deliberações do Copam e as resoluções da Semad e da Feam.
 - **É trabalho da plataforma.** A fila e as decisões ficam fora do "Recriar demo", como as contas; a
   cliente vê a própria cobertura, não a fila.
+- **Na API, leitura e decisão; busca e triagem são job.** `GET /empresas/{id}/cobertura` (cliente só a dela,
+  gestor só as linhas dos ativos da área), `GET /normas-candidatas` e `GET /normas-candidatas/{chave}` (só a
+  plataforma: a cliente recebe 403), `POST /normas-candidatas/{chave}/decisao` (só a curadoria, com o e-mail
+  da sessão e a auditoria `descoberta.decidir`). Buscar e triar leem dezenas de milhares de normas e chamam a
+  IA: `python -m api.jobs descoberta`, que sai com erro se uma fonte falhou ou a triagem parou.
+- **Aprovada não é coberta.** A cobertura separa "esperando curadoria" de "aprovada, falta extrair": só
+  quando a norma vira obrigação no catálogo a linha pode ficar verde.
 
 ## Leitor de evidência
 

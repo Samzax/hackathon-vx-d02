@@ -13,6 +13,9 @@ export type Ficha = Esquemas["Ficha"];
 export type Mudanca = Esquemas["Mudanca"];
 export type Leitura = Esquemas["ResultadoLeitura"];
 export type CampoCadastro = Esquemas["CampoCadastro"];
+export type ItemCobertura = Esquemas["ItemCobertura"];
+export type NormaCandidata = Esquemas["NormaCandidata"];
+export type StatusCandidata = NormaCandidata["status"];
 
 function useBase() {
   const t = useTorre();
@@ -75,6 +78,42 @@ export function useCamposCadastro() {
 export function useRadar() {
   const { t, chave } = useBase();
   return useQuery({ queryKey: [chave[0], chave[1], "radar"], queryFn: () => dados(api.GET("/api/v1/radar")), enabled: !t.ti });
+}
+
+/** Cobertura normativa da empresa: por jurisdição e tipo de ativo, o catálogo, as fontes lidas e o que espera. */
+export function useCobertura() {
+  const { id, chave } = useBase();
+  return useQuery({
+    queryKey: [...chave, "cobertura"],
+    queryFn: () => dados(api.GET("/api/v1/empresas/{empresa_id}/cobertura", { params: { path: { empresa_id: id } } })),
+    enabled: !!id,
+  });
+}
+
+/** A fila da curadoria RegulaIA (só a plataforma): não depende da empresa nem do dia. */
+export function useNormasCandidatas(status: StatusCandidata = "relevante", jurisdicao = "") {
+  const { t, chave } = useBase();
+  return useQuery({
+    queryKey: [chave[0], chave[1], "normas-candidatas", status, jurisdicao],
+    queryFn: () => dados(api.GET("/api/v1/normas-candidatas", { params: { query: { status: [status], jurisdicao: jurisdicao || null } } })),
+    enabled: t.plataforma && !t.ti,
+  });
+}
+
+export type DecisaoCandidata = { chave: string; decisao: "aprovar" | "descartar"; nota?: string };
+
+/** Os avisos vão nos callbacks do hook (não nos do `mutate`): a norma decidida sai da lista e o cartão desmonta. */
+export function useDecidirCandidata(callbacks: { onSuccess?: (n: NormaCandidata) => void; onError?: (e: unknown) => void } = {}) {
+  const invalidar = useInvalidarTorre();
+  return useMutation({
+    mutationFn: ({ chave, decisao, nota }: DecisaoCandidata) =>
+      dados(api.POST("/api/v1/normas-candidatas/{chave}/decisao", { params: { path: { chave } }, body: { decisao, nota: nota?.trim() || null } })),
+    onSuccess: (n) => {
+      callbacks.onSuccess?.(n);
+      return invalidar();
+    },
+    onError: (e) => callbacks.onError?.(e),
+  });
 }
 
 /** Depois de uma escrita, tudo o que é da torre pode ter mudado (contagens, ficha, calendário). */

@@ -626,6 +626,171 @@ def test_api_serve_o_front_na_mesma_origem(cfg, tmp_path):
         assert c.post(_url("/auth/demo")).status_code == 200
 
 
+# ----------------------------------------------------------------- descoberta de normas
+# A fila da demo (data/descoberta_demo.json) vem das fontes de verdade: Senado, ANMlegis e Assembleia de Minas.
+
+CAUCAO = "MG:DEC:48747/2023"        # regulamenta a caução da Lei MG 23.291 (que está no catálogo)
+
+
+def _cobertura(c, emp: int) -> dict:
+    r = c.get(_url(f"/empresas/{emp}/cobertura"))
+    assert r.status_code == 200, r.text
+    return {(i["jurisdicao"], i["tipo_ativo"]): i for i in r.json()}
+
+
+def test_cobertura_mostra_catalogo_fontes_lidas_lacunas_e_o_que_espera(cliente):
+    entrar(cliente)
+    itens = _cobertura(cliente, _empresa(cliente))
+    assert set(itens) == {("BR", "barragem"), ("BR", "equipamento"), ("BR", "unidade"), ("MG", "barragem"),
+                          ("MG", "unidade")}
+    mg = itens[("MG", "barragem")]
+    assert mg["jurisdicao_nome"] == "Minas Gerais" and mg["ativos"] == ["B1", "B2", "B3", "B4"]
+    assert mg["estado"] == "curadoria_pendente" and mg["verificada"]
+    assert mg["estado_rotulo"] == "normas relevantes esperando a curadoria"
+    assert [(f["nome"], f["desde"], f["ate"]) for f in mg["fontes"]] == [("Assembleia de Minas", 1989, 2026)]
+    assert "Lei MG 23.291/2019" in mg["catalogadas"] and any("Copam" in lac for lac in mg["lacunas"])
+    caucao = next(n for n in mg["em_curadoria"] if n["chave"] == CAUCAO)
+    assert caucao["cita_catalogo"] == ["Lei MG 23.291/2019"] and caucao["deveres"] and caucao["url"]
+    assert mg["aprovadas"] == []
+    br = itens[("BR", "equipamento")]
+    assert br["estado"] == "coberta" and br["catalogadas"] == ["NR-13"] and br["lacunas"]     # coberta, com as lacunas
+    assert {f["nome"] for f in br["fontes"]} == {"Senado Federal", "ANMlegis (ANM)"}
+
+
+def test_cobertura_cliente_ve_so_a_dela_e_estado_sem_fonte_nunca_e_verificado(cliente, outra, cfg):
+    conn = db.conectar(cfg.banco)
+    with conn:
+        db.criar_ativo(conn, outra["id"], "barragem", "P1", "Barragem no Pará (Morro Alto)", {"uf": "PA"},
+                       "Gerência de Geotecnia")
+    conn.close()
+    como(cliente, "diretoria@serraazul.demo")
+    assert cliente.get(_url(f"/empresas/{outra['id']}/cobertura")).status_code == 404
+    como(cliente, "diretoria@morroalto.demo")
+    assert cliente.get(_url(f"/empresas/{outra['serra']}/cobertura")).status_code == 404
+    pa = _cobertura(cliente, outra["id"])[("PA", "barragem")]
+    assert pa["estado"] == "sem_fonte" and not pa["verificada"] and pa["fontes"] == []
+    assert "cobertura não verificada" in pa["estado_rotulo"] and pa["jurisdicao_nome"] == "Pará"
+    como(cliente, CURADORIA)                            # a plataforma vê a de qualquer cliente
+    assert ("PA", "barragem") in _cobertura(cliente, outra["id"])
+    assert ("PA", "barragem") not in _cobertura(cliente, outra["serra"])
+
+
+def test_cobertura_do_gestor_so_com_os_ativos_da_area(cliente):
+    como(cliente, "geotecnia@serraazul.demo")
+    itens = _cobertura(cliente, _empresa(cliente))
+    assert set(itens) == {("BR", "barragem"), ("MG", "barragem")}
+    assert all(i["ativos"] == ["B1", "B3"] for i in itens.values())
+
+
+def test_fila_de_normas_candidatas_e_so_da_plataforma(cliente):
+    caminhos = [("GET", "/normas-candidatas"), ("GET", f"/normas-candidatas/{CAUCAO}"),
+                ("POST", f"/normas-candidatas/{CAUCAO}/decisao")]
+    for email in ("diretoria@serraazul.demo", "regulatorio@serraazul.demo", "ti@serraazul.demo"):
+        como(cliente, email)
+        for metodo, caminho in caminhos:
+            r = cliente.request(metodo, _url(caminho), json={"decisao": "aprovar"} if metodo == "POST" else None)
+            assert r.status_code == 403, (email, caminho)
+    como(cliente, CURADORIA)
+    assert cliente.get(_url(f"/normas-candidatas/{CAUCAO}")).json()["status"] == "relevante"     # nada mudou
+
+
+def test_fila_filtra_por_jurisdicao_e_status_com_o_que_a_ia_disse(cliente):
+    como(cliente, CURADORIA)
+    f = cliente.get(_url("/normas-candidatas"), params={"jurisdicao": "MG"}).json()
+    assert f["decide"] and f["normas"] and {(n["jurisdicao"], n["status"]) for n in f["normas"]} == {("MG", "relevante")}
+    assert f["contagem"]["relevante"] == len(f["normas"]) and f["contagem"]["irrelevante"] > 0
+    assert [j["sigla"] for j in f["jurisdicoes"]] == ["BR", "MG"] and f["status_rotulos"]["aprovada"]
+    confs = [n["triagem"]["confianca"] for n in f["normas"]]
+    assert confs == sorted(confs)                       # as que mais precisam de olho primeiro
+    caucao = next(n for n in f["normas"] if n["chave"] == CAUCAO)
+    assert caucao["fonte_nome"] == "Assembleia de Minas" and caucao["status_rotulo"] == "esperando curadoria"
+    assert caucao["url"].startswith("https://www.almg.gov.br/") and caucao["cita_catalogo"] == ["Lei MG 23.291/2019"]
+    t = caucao["triagem"]
+    assert t["relevante"] and "barragem" in t["tipos_ativo"] and t["deveres"] and t["motivo"] and t["modelo"]
+    assert t["leu_texto"] is False and caucao["indexacao"] is None      # a lista não traz a indexação
+    lidas = cliente.get(_url("/normas-candidatas"), params={"status": "relevante", "jurisdicao": "mg"}).json()["normas"]
+    assert any(n["triagem"]["leu_texto"] for n in lidas)
+    duas = cliente.get(_url("/normas-candidatas"), params=[("status", "irrelevante"), ("status", "aprovada")]).json()
+    assert duas["normas"] and {n["status"] for n in duas["normas"]} == {"irrelevante"}
+    assert cliente.get(_url("/normas-candidatas"), params={"status": "talvez"}).status_code == 422
+
+
+def test_norma_candidata_pela_chave_com_dois_pontos_e_barra(cliente):
+    como(cliente, CURADORIA)
+    for caminho in (CAUCAO, "MG%3ADEC%3A48747%2F2023"):     # o front manda a chave codificada
+        n = cliente.get(_url(f"/normas-candidatas/{caminho}"))
+        assert n.status_code == 200, n.text
+        assert n.json()["chave"] == CAUCAO and n.json()["indexacao"]
+    assert cliente.get(_url("/normas-candidatas/MG:DEC:1/1900")).status_code == 404
+
+
+def test_curadoria_aprova_com_o_email_na_auditoria_e_a_cobertura_da_cliente_muda(cliente):
+    como(cliente, CURADORIA)
+    emp = _empresa(cliente)
+    r = cliente.post(_url(f"/normas-candidatas/{CAUCAO}/decisao"),
+                     json={"decisao": "aprovar", "nota": "extrair a caução do art. 7º"})
+    assert r.status_code == 200, r.text
+    n = r.json()
+    assert (n["status"], n["status_rotulo"]) == ("aprovada", "aprovada, falta extrair")
+    assert n["decidida_por"] == CURADORIA and n["decidida_em"] and n["nota"] == "extrair a caução do art. 7º"
+    trilha = cliente.get(_url("/auditoria")).json()
+    a = next(t for t in trilha if t["acao"] == "descoberta.decidir")
+    assert (a["alvo"], a["usuario"], a["empresa"], a["resultado"]) == (CAUCAO, CURADORIA, None, "ok")
+    assert a["detalhe"] == {"decisao": "aprovar", "nota": "extrair a caução do art. 7º"}
+    como(cliente, "diretoria@serraazul.demo")           # a cliente vê: aprovada, falta extrair
+    mg = _cobertura(cliente, emp)[("MG", "barragem")]
+    assert CAUCAO in {x["chave"] for x in mg["aprovadas"]} and CAUCAO not in {x["chave"] for x in mg["em_curadoria"]}
+
+
+def test_curadoria_reabre_o_que_a_ia_descartou_e_o_que_nao_se_decide_e_recusado(cliente):
+    como(cliente, CURADORIA)
+    descartada = cliente.get(_url("/normas-candidatas"), params={"status": "irrelevante"}).json()["normas"][0]
+    r = cliente.post(_url(f"/normas-candidatas/{descartada['chave']}/decisao"), json={"decisao": "aprovar"})
+    assert r.status_code == 200 and r.json()["status"] == "aprovada"
+    catalogada = cliente.get(_url("/normas-candidatas"), params={"status": "catalogada"}).json()["normas"][0]
+    r = cliente.post(_url(f"/normas-candidatas/{catalogada['chave']}/decisao"), json={"decisao": "descartar"})
+    assert r.status_code == 422 and "catálogo" in r.json()["detail"]
+    assert cliente.get(_url("/auditoria")).json()[0]["resultado"] == "recusado"
+    assert cliente.post(_url("/normas-candidatas/MG:DEC:1/1900/decisao"), json={"decisao": "aprovar"}).status_code == 404
+    assert cliente.post(_url(f"/normas-candidatas/{CAUCAO}/decisao"), json={"decisao": "talvez"}).status_code == 422
+
+
+def test_job_da_descoberta_busca_tria_e_nao_mexe_no_que_a_curadoria_decidiu(cliente, cfg, tmp_path):
+    """python -m api.jobs descoberta, com os trechos reais das fontes e uma IA roteirizada (sem internet)."""
+    from api import jobs
+    from regulaia.ia import Roteador
+    from tests.test_descoberta import IRRELEVANTE, BaixadorFixo, IAFalsa
+
+    como(cliente, CURADORIA)
+    assert cliente.post(_url(f"/normas-candidatas/{CAUCAO}/decisao"), json={"decisao": "aprovar"}).status_code == 200
+    conn = db.conectar(cfg.banco)
+    with conn:      # como se a fonte tivesse publicado de novo: a Res. 127 volta a ser candidata nova
+        conn.execute("UPDATE norma_candidata SET status = 'nova', triagem = NULL WHERE chave = 'BR:RES-ANM:127/2022'")
+    conn.close()
+    ia = IAFalsa({}, IRRELEVANTE)
+    resumo = jobs.descoberta(cfg, desde=2010, baixador=BaixadorFixo(tmp_path / "fontes"), paralelo=1,
+                             roteador=Roteador(db.conectar(cfg.cache), provedores={"opencode": ia}))
+    assert {r["fonte"] for r in resumo["busca"]} == {"senado", "anm", "almg"} and not jobs.falhou(resumo)
+    assert all(r["lidas"] for r in resumo["busca"]) and resumo["triagem"]["erro"] is None
+    assert (resumo["triagem"]["triadas"], resumo["triagem"]["restam"]) == (1, 0) and "nova" not in resumo["fila"]
+    assert [c[0] for c in ia.chamadas] == ["RESOLUÇÃO ANM Nº 127, DE 22 DE DEZEMBRO DE 2022"]   # só a nova vai à IA
+    assert cliente.get(_url("/normas-candidatas/BR:RES-ANM:127/2022")).json()["status"] == "irrelevante"
+    assert cliente.get(_url(f"/normas-candidatas/{CAUCAO}")).json()["status"] == "aprovada"      # decisão fica
+    mg = _cobertura(cliente, _empresa(cliente))[("MG", "barragem")]
+    assert [(f["desde"], f["ate"]) for f in mg["fontes"]] == [(2010, 2026)]     # a cobertura diz o que foi lido
+    assert jobs.falhou({"busca": [{"falhas": ["2020: ConnectError"]}]})
+    assert jobs.falhou({"busca": [], "triagem": {"erro": "nenhum provedor"}})
+    assert jobs.main(["descoberta", "--fontes", "planalto"]) == 2
+
+
+def test_status_da_fila_na_api_sao_os_do_dominio():
+    from typing import get_args
+
+    from api.rotas.descoberta import StatusCandidata
+    from regulaia import descoberta
+    assert get_args(StatusCandidata) == descoberta.STATUS
+
+
 # ----------------------------------------------------------------- contrato
 
 
