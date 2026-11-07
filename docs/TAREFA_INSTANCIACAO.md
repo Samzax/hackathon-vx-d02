@@ -114,3 +114,46 @@ número inventado.
 
 Atualize README (seção nova curta, com o fluxo), `docs/ARQUITETURA.md` e `docs/PLATAFORMA.md`. No fim,
 diga o que ficou de fora e por quê.
+
+## Continuação (7 nov): sessão no Bedrock
+
+A sessão anterior parou no limite semanal antes do primeiro commit. Esta roda no Claude Code com o
+Bedrock da conta do evento (Fable 5, perfil `vx`, us-east-1).
+
+**Estado que ficou no checkout, sem commit e sem teste** (rascunho da sessão anterior; confira antes de
+aproveitar, refaça o que não estiver bom): `regulaia/campos.py` (novo), `migrations/versions/0005_instanciacao.py`
+e `.sql` (novos), e mudanças em `regulaia/schema.sql`, `regulaia/schema_pg.sql`, `regulaia/db.py`,
+`regulaia/banco.py` e `api/cadastro.py`.
+
+**Mudanças de outra sessão (AWS), sem commit, que não são suas**: `infra/`, `api/Dockerfile`,
+`pyproject.toml`, `uv.lock`, `tests/test_infra.py`. Não reverta nem inclua nos seus commits: faça
+`git commit -- <seus caminhos>`. A dependência `cryptography` precisa entrar no `pyproject.toml`; enquanto a
+sessão AWS não tiver feito commit desses dois arquivos (confira com `git status`), deixe essa parte para
+depois e siga com o resto.
+
+**Ordem**
+1. **Revisão de código da base** (só leitura primeiro): `regulaia/`, `api/`, `agente/`, `front/src/`.
+   Procure erro de verdade (isolamento entre empresas, papéis, auditoria, SQL, Postgres x SQLite, regra de
+   negócio, front chamando rota errada), não estilo. Escreva os achados em `docs/REVISAO_CODIGO.md`, do
+   mais grave ao menos, cada um com arquivo:linha e o cenário que quebra. Corrija os que forem erro de
+   verdade, com teste que falha antes e passa depois, um commit por correção (ou por grupo pequeno).
+2. **Instanciação**, seções 1 a 7 acima, a partir do rascunho.
+
+**Chave de dados**: em produção `REGULAIA_CHAVE_DADOS` chega do Secrets Manager como texto alfanumérico
+de 64 caracteres, não como chave Fernet. Derive a chave no código, para qualquer texto valer:
+`Fernet(base64.urlsafe_b64encode(hashlib.sha256(chave.encode()).digest()))`. Sem a variável, a API sobe,
+mas guardar CPF dá erro claro (nada de chave padrão no código).
+
+**Ritmo do Bedrock**: a conta do evento pede menos de 1 pedido por segundo. Nada de subagentes em paralelo:
+um de cada vez, ou nenhum.
+
+**Delegar ao DeepSeek (Hermes)**: dá para passar tarefa fechada ao DeepSeek V4.1 Flash pelo Hermes desta
+máquina: `hermes -z "<tarefa>" --in .` (cerca de 2 minutos por chamada). Regras:
+- Uma chamada por vez, com os arquivos nomeados e o que entregar. Bom para: segunda opinião na revisão de
+  um arquivo, rascunho de testes, ler um arquivo grande e resumir.
+- Diga sempre na tarefa: não fazer commit, não mexer em `infra/`, não ler `.env` nem nada em `data/raw/`
+  (lá está o CSV do SIGBM com CPF), não mandar dado pessoal para lugar nenhum.
+- O que ele mudar, você confere no `git diff` e roda ruff e a suíte antes de aceitar. Quem faz commit é você.
+
+**Migração 0005**: quando estiver com commit, empurrada e com o CI verde, escreva isso na seção
+"Instanciação" de `docs/PLATAFORMA.md` (a sessão AWS espera para refazer a imagem e o deploy).
