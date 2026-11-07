@@ -16,7 +16,7 @@ from regulaia import agenda, db, operacao, pdf, torre, usuarios
 from .. import armazenamento, auditoria, cadastro
 from ..banco import conexao
 from ..config import desde_padrao, hoje_padrao
-from ..seguranca import Escopo, diretoria, empresa_visivel, regulatorio
+from ..seguranca import Escopo, da_empresa, diretoria, empresa_visivel, regulatorio
 
 rota = APIRouter(tags=["torre"])
 
@@ -666,12 +666,13 @@ def periodo_da_entrega(ativo_id: int, codigo: str, dia: date | None = None, e: E
 
 
 # ------------------------------------------------------------------ escrita
+# Dados operacionais da cliente: quem escreve é a própria empresa; a plataforma só lê (seguranca.da_empresa).
 
 
 @rota.post("/comprovantes", status_code=201, response_model=Comprovante,
            summary="Guardar o comprovante de uma entrega (pasta local ou S3) antes de registrá-la")
 async def comprovante(request: Request, ativo_id: int, arquivo: UploadFile = File(...),
-                      e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+                      e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     a = _ativo(conn, ativo_id, e)
     dados = await arquivo.read(LIMITE_COMPROVANTE + 1)
     if len(dados) > LIMITE_COMPROVANTE:
@@ -687,7 +688,7 @@ async def comprovante(request: Request, ativo_id: int, arquivo: UploadFile = Fil
 
 @rota.post("/entregas", status_code=201, response_model=EntregaFeita,
            summary="Registrar a entrega de um período (com ou sem comprovante)")
-def entregar(dados: Entrega, request: Request, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+def entregar(dados: Entrega, request: Request, e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     a = _ativo(conn, dados.ativo_id, e)
     emp = empresa_visivel(conn, e, a["empresa_id"])
     dia = dados.dia or hoje_padrao()
@@ -706,7 +707,7 @@ def entregar(dados: Entrega, request: Request, e: Escopo = Depends(regulatorio),
 
 
 @rota.delete("/entregas", response_model=Ok, summary="Desfazer uma entrega registrada por engano")
-def desfazer(ativo_id: int, codigo: str, periodo: str, request: Request, e: Escopo = Depends(regulatorio),
+def desfazer(ativo_id: int, codigo: str, periodo: str, request: Request, e: Escopo = Depends(da_empresa),
              conn=Depends(conexao)):
     a = _ativo(conn, ativo_id, e)
     if not db.desfazer_entrega(conn, a["id"], codigo, periodo, por=e.assinante):
@@ -716,7 +717,7 @@ def desfazer(ativo_id: int, codigo: str, periodo: str, request: Request, e: Esco
 
 
 @rota.post("/atribuicoes", response_model=Ok, summary="Passar uma obrigação para outra área")
-def atribuir(dados: Atribuicao, request: Request, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+def atribuir(dados: Atribuicao, request: Request, e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     a = _ativo(conn, dados.ativo_id, e)
     db.atribuir(conn, a["id"], dados.codigo, dados.responsavel.strip(), por=e.assinante)
     auditoria.registrar(conn, request, "atribuicao", f"{a['codigo']}/{dados.codigo}", {"para": dados.responsavel})
@@ -724,7 +725,7 @@ def atribuir(dados: Atribuicao, request: Request, e: Escopo = Depends(regulatori
 
 
 @rota.post("/comentarios", status_code=201, response_model=Ok, summary="Comentar uma obrigação ou o ativo")
-def comentar(dados: Comentario, request: Request, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+def comentar(dados: Comentario, request: Request, e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     a = _ativo(conn, dados.ativo_id, e)
     db.registrar_evento(conn, a["id"], dados.codigo, "comentario", dados.texto, e.assinante)
     auditoria.registrar(conn, request, "comentario", f"{a['codigo']}/{dados.codigo or '-'}")
@@ -732,7 +733,7 @@ def comentar(dados: Comentario, request: Request, e: Escopo = Depends(regulatori
 
 
 @rota.patch("/ativos/{ativo_id}/atributos", summary="Completar ou corrigir o cadastro do ativo")
-def atributos(ativo_id: int, dados: Atributos, request: Request, e: Escopo = Depends(regulatorio),
+def atributos(ativo_id: int, dados: Atributos, request: Request, e: Escopo = Depends(da_empresa),
               conn=Depends(conexao)) -> dict:
     a = _ativo(conn, ativo_id, e)
     novo = db.atualizar_atributos(conn, a["id"], dados.atributos, por=e.assinante)

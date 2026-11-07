@@ -9,6 +9,9 @@
 - Papel: TI só administra contas; Diretoria e Regulatório veem toda a empresa; gestor vê a própria área.
 - Mudança de norma pública (Res. ANM, NR...): quem aprova é a curadoria da plataforma, uma vez para
   todas as clientes. Obrigação própria da empresa (condicionante, TAC): quem aprova é ela mesma.
+- Plataforma: nos dados operacionais da cliente (entrega, comprovante, evidência, comentário,
+  atribuição, cadastro e responsável do ativo) só lê; quem escreve é a própria empresa. Escreve o que
+  é dela: decisão de norma pública, radar, descoberta e curadoria, contas (TI da plataforma) e SIGBM.
 - Conta de teste (demo e pitch): escolhe a visão (Diretoria, uma área, TI ou a curadoria da
   plataforma) e age como ela.
 - Token de serviço (Bearer): o agente MCP e os jobs agem como Regulatório da plataforma, sem cookie.
@@ -36,6 +39,7 @@ VISAO_DIRETORIA = "Diretoria (todos os ativos)"
 VISAO_TI = "TI (usuários e acessos)"
 VISAO_CURADORIA = "Curadoria RegulaIA (plataforma)"
 _ESCRITA = {"POST", "PUT", "PATCH", "DELETE"}
+SO_LEITURA = "a equipe RegulaIA só lê os dados da empresa"
 
 
 @dataclass(frozen=True)
@@ -58,6 +62,11 @@ class Escopo:
     @property
     def admin(self) -> bool:
         return self.papel == usuarios.ADMIN
+
+    @property
+    def so_leitura(self) -> bool:
+        """Nos dados operacionais das clientes, só lê: a plataforma (curadoria, token de serviço)."""
+        return self.plataforma
 
     def ve_empresa(self, empresa_id: int) -> bool:
         return self.plataforma or empresa_id == self.empresa_id
@@ -241,7 +250,15 @@ def curadoria(e: Escopo = Depends(decide_normas)) -> Escopo:
     return e
 
 
-def diretoria(e: Escopo = Depends(regulatorio)) -> Escopo:
+def da_empresa(e: Escopo = Depends(regulatorio)) -> Escopo:
+    """Escrita nos dados operacionais de uma cliente: só a própria empresa. A plataforma só lê."""
+    if e.so_leitura:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            f"{SO_LEITURA}: quem registra entrega, comenta e corrige o cadastro é a própria empresa")
+    return e
+
+
+def diretoria(e: Escopo = Depends(da_empresa)) -> Escopo:
     if e.papel != usuarios.DIRETORIA:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "só a Diretoria decide qual área responde por um ativo")
     return e

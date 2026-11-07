@@ -5,6 +5,7 @@ import { Save } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 import { api, dados } from "@/lib/api";
 import { type Ativo, type CampoCadastro, useCamposCadastro, useInvalidarTorre } from "@/lib/consultas";
+import { useTorre } from "@/lib/torre";
 import { dataBR, ehDataISO, maiuscula, numeroLivre } from "@/lib/formato";
 import { useAvisar } from "./avisos";
 import { Aviso, Botao, Entrada, Selecao, cx, mensagem } from "./ui";
@@ -46,9 +47,11 @@ function deTexto(texto: string, tipo: string): unknown {
 
 /**
  * O cadastro do ativo, editável: o que decide se uma obrigação vale. O que falta (dado faltando) vem
- * primeiro e marcado; o resto pode ser corrigido. Só o que mudou vai para a API.
+ * primeiro e marcado; o resto pode ser corrigido. Só o que mudou vai para a API. Na visão da
+ * plataforma (só leitura) mostra os valores, sem campo para editar.
  */
 export function EditorCadastro({ ativo, faltando }: { ativo: Ativo; faltando: string[] }) {
+  const { soLeitura } = useTorre();
   const campos = useCamposCadastro();
   const avisar = useAvisar();
   const invalidar = useInvalidarTorre();
@@ -118,7 +121,9 @@ export function EditorCadastro({ ativo, faltando }: { ativo: Ativo; faltando: st
                     {falta.has(c.campo) && <p className="text-xs text-faltando">{maiuscula(c.pergunta)}</p>}
                   </td>
                   <td className="w-[45%] px-3 py-1.5">
-                    {c.tipo === "booleano" ? (
+                    {soLeitura ? (
+                      <span className={cx(falta.has(c.campo) && "text-faltando")}>{falta.has(c.campo) ? "faltando" : valorDoCadastro(atual, c)}</span>
+                    ) : c.tipo === "booleano" ? (
                       <Selecao id={id} value={valor} onChange={(e) => set(e.target.value)} className="h-8">
                         <option value="">não sei</option>
                         <option value="sim">sim</option>
@@ -141,12 +146,14 @@ export function EditorCadastro({ ativo, faltando }: { ativo: Ativo; faltando: st
         </table>
       </div>
       {(ativo.atributos.alertas_sigbm as string[] | undefined)?.map((a) => <Aviso key={a} tipo="atencao">SIGBM: {a}</Aviso>)}
-      <div className="flex items-center gap-3">
-        <Botao type="submit" variante="primario" icone={<Save className="size-4" />} disabled={!mudou.length} carregando={salvar.isPending}>
-          Salvar no cadastro
-        </Botao>
-        {mudou.length > 0 && <span className="text-xs text-texto-2">{mudou.length} {mudou.length === 1 ? "dado mudou" : "dados mudaram"}</span>}
-      </div>
+      {!soLeitura && (
+        <div className="flex items-center gap-3">
+          <Botao type="submit" variante="primario" icone={<Save className="size-4" />} disabled={!mudou.length} carregando={salvar.isPending}>
+            Salvar no cadastro
+          </Botao>
+          {mudou.length > 0 && <span className="text-xs text-texto-2">{mudou.length} {mudou.length === 1 ? "dado mudou" : "dados mudaram"}</span>}
+        </div>
+      )}
     </form>
   );
 }

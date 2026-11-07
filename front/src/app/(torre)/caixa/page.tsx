@@ -36,7 +36,8 @@ function oQueFalta(l: Linha): string {
   return partes.join(" · ") || "—";
 }
 
-function Item({ l, onEntregar }: { l: Linha; onEntregar: (l: Linha) => void }) {
+/** Sem `onEntregar` (a plataforma só lê), o item não oferece registrar nem completar o cadastro. */
+function Item({ l, onEntregar }: { l: Linha; onEntregar?: (l: Linha) => void }) {
   const ficha = `/ativos/?id=${l.ativo_id}`;
   return (
     <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-4" data-testid="item-caixa">
@@ -49,13 +50,13 @@ function Item({ l, onEntregar }: { l: Linha; onEntregar: (l: Linha) => void }) {
         </p>
       </div>
       <div className="flex shrink-0 gap-1.5">
-        {faltaCadastro(l) ? (
+        {onEntregar && (faltaCadastro(l) ? (
           <LinkBotao href={`${ficha}&aba=cadastro`} tamanho="p" icone={<Pencil className="size-3.5" />}>Completar cadastro</LinkBotao>
         ) : (
           <Botao tamanho="p" icone={<Check className="size-3.5" />} onClick={() => onEntregar(l)}>
             {l.status === DADO_FALTANDO ? "Última entrega" : "Registrar entrega"}
           </Botao>
-        )}
+        ))}
         <LinkBotao href={ficha} tamanho="p" variante="fantasma">Ver ativo</LinkBotao>
       </div>
     </li>
@@ -192,7 +193,7 @@ export default function Caixa() {
             <Selo status={g.status} texto={`${g.linhas.length} ${g.titulo}`} />
             <ul className="divide-y divide-borda">
               {g.linhas.slice(0, MAX_ITENS).map((l) => (
-                <Item key={`${l.ativo_id}-${l.codigo}`} l={l} onEntregar={setAlvo} />
+                <Item key={`${l.ativo_id}-${l.codigo}`} l={l} onEntregar={t.soLeitura ? undefined : setAlvo} />
               ))}
             </ul>
             {g.linhas.length > MAX_ITENS && (

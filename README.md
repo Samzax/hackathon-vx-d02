@@ -111,6 +111,8 @@ uv run python -m api.jobs descoberta                        # buscar + triar, co
 | Os números da documentação, do roteiro e da análise de mercado batem com o cadastro, a demo, o DOU e o SIGBM | `tests/test_documentacao.py`, `test_numeros_do_funil_na_tela_e_nos_documentos`, `test_numeros_da_analise_de_mercado_saem_dos_dados` |
 | O boletim não contradiz o amarelo da tela; o PDF sai sem emoji quebrado nem marcação crua | `test_boletim_bate_com_o_amarelo_da_torre`, `tests/test_pdf.py` |
 | Cada gestor só vê os ativos dele, em todas as abas (texto, tabelas e títulos), e não registra documento de ativo de outro gestor | `test_cada_gestor_so_ve_os_ativos_dele`, `test_gestor_nao_registra_documento_de_ativo_alheio` |
+| No Postgres, a API não vaza conexão: o pool volta ao mínimo, e requisição que cai no meio não deixa transação aberta para a próxima | `tests/test_pool.py` |
+| A equipe RegulaIA só lê os dados da cliente: entrega, comprovante, evidência, comentário, atribuição e cadastro dão 403 para a plataforma e passam para a própria empresa; nenhuma ferramenta do agente escreve | `test_plataforma_so_le_os_dados_operacionais_da_empresa`, `test_a_propria_empresa_escreve_nos_dados_dela`, `test_nenhuma_ferramenta_escreve_na_torre` |
 | Empresa importada do SIGBM não ganha atraso inventado; o que o SIGBM não informa vira dado faltando, e preencher tira do dado faltando | `tests/test_sigbm.py`, `test_importar_mineradora_do_sigbm_e_operar` |
 | Passou do teto de gasto de IA do dia, só regra e cache; o que já foi pago continua valendo | `test_teto_diario_de_ia_corta_chamada_paga_mas_nao_o_cache` |
 | A imagem Docker leva o que a demo precisa e deixa de fora `.env` e dados brutos | `test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto` |

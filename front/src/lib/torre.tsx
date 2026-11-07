@@ -27,6 +27,8 @@ export type Torre = {
   veTudo: boolean;
   diretoria: boolean;
   plataforma: boolean;
+  /** nos dados operacionais da empresa a sessão só lê (a plataforma): a tela esconde entrega, comentário, cadastro */
+  soLeitura: boolean;
   trocarVisao: (visao: string) => Promise<void>;
   sair: () => Promise<void>;
 };
@@ -109,6 +111,7 @@ export function TorreProvider({ children, carregando, erro }:
       veTudo: d.papel_efetivo === "diretoria" || d.papel_efetivo === "regulatorio",
       diretoria: d.papel_efetivo === "diretoria",
       plataforma: d.plataforma,
+      soLeitura: d.so_leitura,
       trocarVisao, sair,
     };
   }, [eu.data, lista, empresa, setEmpresaId, hoje, hojeDemo, setHoje, trocarVisao, sair]);

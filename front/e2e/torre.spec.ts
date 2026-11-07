@@ -103,6 +103,32 @@ test("curadoria aprova a Res. 245 e a Diretoria vê a decisão", async ({ page }
   await expect(page.getByTestId("decisoes")).toContainText("Resolução ANM nº 245");
 });
 
+test("a curadoria da plataforma só lê os dados da empresa", async ({ page }) => {
+  await entrarNaDemo(page);
+  await expect(page.getByTestId("so-leitura")).toHaveCount(0);
+  await verComo(page, "Curadoria RegulaIA (plataforma)");
+  await expect(page.getByTestId("so-leitura")).toHaveText("visão da plataforma: só leitura");
+
+  // vê as mesmas 4 atrasadas, sem o botão de registrar
+  const atrasadas = page.getByTestId("grupo-atrasada");
+  await expect(atrasadas.getByTestId("item-caixa")).toHaveCount(4);
+  await expect(atrasadas.getByRole("button", { name: "Registrar entrega" })).toHaveCount(0);
+
+  // o cadastro aparece sem campo para editar, e a área do ativo sem o seletor
+  await page.goto("/ativos/?id=3&aba=cadastro");
+  await expect(page.getByTestId("cadastro")).toContainText("Altura (m)");
+  await expect(page.getByTestId("cadastro").locator("input, select")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Salvar no cadastro" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Salvar área" })).toHaveCount(0);
+
+  // nas entregas, a linha abre o histórico, sem registrar, atribuir nem comentar
+  await page.goto("/entregas/?status=atrasada");
+  await page.getByTestId("tabela-entregas").locator("tbody tr").first().click();
+  const uma = page.getByTestId("acoes-uma");
+  await expect(uma).toContainText("Histórico");
+  await expect(uma.getByRole("button")).toHaveCount(0);
+});
+
 test("TI só administra contas e auditoria", async ({ page }) => {
   await entrarNaDemo(page);
   await verComo(page, "TI (usuários e acessos)");

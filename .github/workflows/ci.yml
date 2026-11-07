@@ -2,7 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [main, plataforma]
+    # plataforma-*: os branches das sessões em paralelo (worktrees), antes de entrar na plataforma
+    branches: [main, plataforma, "plataforma-*"]
   pull_request:
 
 permissions:

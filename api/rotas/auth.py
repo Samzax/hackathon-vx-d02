@@ -35,6 +35,8 @@ class Eu(BaseModel):
     teste: bool
     empresa: str | None = Field(description="a empresa cliente que a sessão vê; vazio na plataforma (vê todas)")
     plataforma: bool = Field(description="age como a equipe da RegulaIA (curadoria das normas públicas)")
+    so_leitura: bool = Field(description="nos dados operacionais das clientes (entrega, comprovante, evidência, "
+                                         "comentário, atribuição, cadastro e responsável do ativo) a sessão só lê")
     visao: str
     visoes: list[str] = Field(description="visões que a conta pode escolher (só a conta de teste tem mais de uma)")
     hoje: str = Field(description="o hoje da torre (na demo, 7/11/2026): o padrão de toda consulta sem `hoje`")
@@ -48,7 +50,7 @@ def _eu(conn, e: Escopo, csrf: str | None = None) -> Eu:
         visoes = [VISAO_DIRETORIA, *areas_da_empresa(conn, empresa_da_conta(conn, u)), VISAO_TI, VISAO_CURADORIA]
     return Eu(id=u["id"], email=u["email"], nome=u["nome"], papel=u["papel"], papel_efetivo=e.papel,
               area=u.get("area"), teste=bool(u["teste"]), empresa=e.empresa, plataforma=e.plataforma,
-              visao=e.visao, visoes=visoes, hoje=hoje_padrao().isoformat(), csrf=csrf)
+              so_leitura=e.so_leitura, visao=e.visao, visoes=visoes, hoje=hoje_padrao().isoformat(), csrf=csrf)
 
 
 def _entrar(conn, request: Request, resposta: Response, u: dict) -> Eu:

@@ -49,6 +49,29 @@ def test_ferramentas_sao_so_de_leitura(http):
     assert not nomes & {"registrar_entrega", "decidir", "aprovar"}       # decisão é de gente, na torre
 
 
+def test_nenhuma_ferramenta_escreve_na_torre(http, ferramentas, tmp_path):
+    """Todas as ferramentas, chamadas de verdade: só GET, e o único POST é a análise de ato, que não grava."""
+    from api.rotas.regulatorio import ATO_EXEMPLO
+    from regulaia import db
+
+    pedidos: list[tuple[str, str]] = []
+    http.event_hooks["request"].append(lambda r: pedidos.append((r.method, r.url.path)))
+    args = {"ficha_do_ativo": {"ativo": "B3", "hoje": HOJE}, "historico_da_obrigacao": {"codigo": "OB-01"},
+            "analisar_ato": {"texto": ATO_EXEMPLO}}
+    conn = db.conectar(str(tmp_path / "api.db"))
+    tabelas = ("evidencia", "evento", "responsavel_obrigacao", "obrigacao_versao", "acionamento", "ativo")
+    contar = lambda: {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in tabelas}  # noqa: E731
+    cadastro = lambda: [r["atributos"] for r in conn.execute("SELECT atributos FROM ativo ORDER BY id")]  # noqa: E731
+    antes = (contar(), cadastro())
+    nomes = [t.name for t in asyncio.run(criar_servidor(Torre(http)).list_tools())]
+    for nome in nomes:
+        ferramentas(nome, **args.get(nome, {}))
+    assert (contar(), cadastro()) == antes
+    escritas = {(m, p) for m, p in pedidos if m != "GET"}
+    assert escritas == {("POST", "/api/v1/radar/analise")}, escritas
+    conn.close()
+
+
 def test_pendencias_da_demo_com_norma_e_dispositivo(ferramentas):
     p = ferramentas("pendencias", hoje=HOJE)
     assert p["contagem"]["atrasada"] == 4

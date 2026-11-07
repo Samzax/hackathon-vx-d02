@@ -11,13 +11,14 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from regulaia import db, demo, usuarios
 
+from .banco import abrir_pool, conexao
 from .config import Config
 from .observabilidade import RequestId, configurar_logs, log
 from .rotas import admin, auth, descoberta, evidencias, regulatorio, torre
@@ -50,7 +51,13 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
     @asynccontextmanager
     async def ciclo(app: FastAPI):
         _preparar_banco(cfg)
-        yield
+        app.state.pool = abrir_pool(cfg)        # Postgres: o pool de conexões; SQLite: None
+        try:
+            yield
+        finally:
+            if app.state.pool is not None:
+                app.state.pool.close()
+                app.state.pool = None
 
     app = FastAPI(
         title="RegulaIA API",
@@ -66,6 +73,7 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
         redoc_url=None,
     )
     app.state.cfg = cfg
+    app.state.pool = None
     app.add_middleware(RequestId)
     app.add_middleware(CORSMiddleware, allow_origins=list(cfg.origens), allow_credentials=True,
                        allow_methods=["*"], allow_headers=["*"], expose_headers=["X-Request-Id"])
@@ -73,12 +81,8 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
         app.include_router(r, prefix=PREFIXO)
 
     @app.get("/health", tags=["operação"], summary="Vivo e com banco")
-    def health():
-        conn = db.conectar(cfg.banco)
-        try:
-            conn.execute("SELECT 1").fetchone()
-        finally:
-            conn.close()
+    def health(conn=Depends(conexao)):
+        conn.execute("SELECT 1").fetchone()
         return {"status": "ok", "versao": VERSAO, "banco": "postgres" if cfg.postgres else "sqlite"}
 
     @app.exception_handler(Exception)

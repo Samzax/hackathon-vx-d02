@@ -476,6 +476,102 @@ def test_conta_sem_empresa_nao_entra(cliente, cfg):
     assert r.status_code == 403 and "regulaia_sessao" not in cliente.cookies
 
 
+# ----------------------------------------------------------------- a plataforma só lê
+# Nos dados operacionais da cliente (entrega, comprovante, evidência, comentário, atribuição, cadastro e
+# responsável do ativo) quem escreve é a própria empresa. A plataforma (curadoria, token de serviço, a conta
+# de teste olhando como a curadoria) lê tudo e escreve só o que é dela (norma pública, radar, contas, SIGBM).
+
+TOKEN = {"Authorization": "Bearer token-de-teste-do-agente"}
+
+
+def _escritas_da_empresa(c: TestClient, emp: int) -> dict:
+    """Cada escrita nos dados operacionais da cliente, na ordem em que a própria empresa faria."""
+    b3 = _ativo_id(c, emp, "B3")
+    cod = next(l for l in c.get(_url(f"/ativos/{b3}")).json()["linhas"] if l["status"] == agenda.ATRASADA)["codigo"]
+    periodo = c.get(_url("/entregas/periodo"), params={"ativo_id": b3, "codigo": cod}).json()["periodo"]
+    r = {"comprovante": c.post(_url("/comprovantes"), params={"ativo_id": b3},
+                               files={"arquivo": ("laudo.pdf", b"%PDF-1.4 laudo", "application/pdf")})}
+    guardado = r["comprovante"].json().get("guardado_em")
+    r["entrega"] = c.post(_url("/entregas"), json={"ativo_id": b3, "codigo": cod, "arquivo": guardado})
+    r["desfazer"] = c.request("DELETE", _url("/entregas"), params={"ativo_id": b3, "codigo": cod, "periodo": periodo})
+    r["atribuicao"] = c.post(_url("/atribuicoes"), json={"ativo_id": b3, "codigo": cod, "responsavel": "Consultoria X"})
+    r["comentario"] = c.post(_url("/comentarios"), json={"ativo_id": b3, "codigo": cod, "texto": "laudo chega dia 20"})
+    r["cadastro"] = c.patch(_url(f"/ativos/{b3}/atributos"), json={"atributos": {"altura_m": 17.5}})
+    r["responsavel"] = c.put(_url(f"/ativos/{b3}/responsavel"), json={"area": "Gerência de Barragens"})
+    pdf = evidencias.exemplo("FIR_B3_2026-10-1Q.pdf")
+    lido = c.post(_url("/evidencias/leitura"), params={"empresa_id": emp},
+                  files={"arquivo": (pdf.name, pdf.read_bytes(), "application/pdf")})
+    assert lido.status_code == 200, lido.text        # ler o PDF sem gravar continua aberto
+    r["evidencia"] = c.post(_url("/evidencias/registro"),
+                            json={k: lido.json()[k] for k in ("leitura", "arquivo", "guardado_em")})
+    return r
+
+
+def _como_plataforma(c: TestClient, quem: str) -> None:
+    if quem == "token de serviço":
+        c.cookies.clear()
+        c.headers.pop("X-CSRF-Token", None)
+        c.headers.update(TOKEN)
+    elif quem == "conta de teste como curadoria":
+        como(c)
+        assert c.put(_url("/auth/visao"), json={"visao": "Curadoria RegulaIA (plataforma)"}).status_code == 200
+    else:
+        como(c, CURADORIA)
+
+
+@pytest.mark.parametrize("quem", ["curadoria", "token de serviço", "conta de teste como curadoria"])
+def test_plataforma_so_le_os_dados_operacionais_da_empresa(cliente, quem):
+    _como_plataforma(cliente, quem)
+    assert cliente.get(_url("/auth/me")).json()["so_leitura"]
+    emp = _empresa(cliente)
+    b3 = _ativo_id(cliente, emp, "B3")
+    antes = cliente.get(_url(f"/ativos/{b3}")).json()
+    r = _escritas_da_empresa(cliente, emp)
+    assert {k: v.status_code for k, v in r.items()} == dict.fromkeys(r, 403)
+    assert all(v.json()["detail"].startswith("a equipe RegulaIA só lê os dados da empresa") for v in r.values())
+    depois = cliente.get(_url(f"/ativos/{b3}")).json()
+    assert (depois["ativo"], depois["evidencias"], depois["eventos"]) == (antes["ativo"], antes["evidencias"],
+                                                                         antes["eventos"])
+
+
+def test_a_propria_empresa_escreve_nos_dados_dela(cliente):
+    eu = como(cliente, "diretoria@serraazul.demo")
+    assert not eu["so_leitura"] and not eu["plataforma"]
+    r = _escritas_da_empresa(cliente, _empresa(cliente))
+    assert {k: v.status_code for k, v in r.items()} == {
+        "comprovante": 201, "entrega": 201, "desfazer": 200, "atribuicao": 200, "comentario": 201, "cadastro": 200,
+        "responsavel": 200, "evidencia": 201}, {k: v.text for k, v in r.items() if v.status_code >= 400}
+    assert r["responsavel"].json()["mudou"] and r["cadastro"].json()["altura_m"] == 17.5
+
+
+def test_obrigacao_propria_a_plataforma_nem_aprova_nem_rejeita(cliente, cfg):
+    conn = db.conectar(cfg.banco)
+    lo02 = db.propor_versao(conn, "LO-02", {"prazo": "Até 20 dias após o fim do mês"}, ato_id=None,
+                            trecho="(aditivo fictício da licença)", fonte="Aditivo à LO 000/2023 (fictício)")
+    conn.close()
+    decisao = _url(f"/mudancas/{lo02}/decisao")
+    for quem in ("curadoria", "token de serviço"):
+        _como_plataforma(cliente, quem)
+        for aprovar in (True, False):
+            r = cliente.post(decisao, json={"aprovar": aprovar})
+            assert r.status_code == 403, (quem, aprovar)
+            assert "Regulatório ou a Diretoria dela" in r.json()["detail"] and "só lê" in r.json()["detail"]
+    cliente.headers.pop("Authorization")
+    como(cliente, "regulatorio@serraazul.demo")      # a dona decide (aqui, rejeita)
+    assert cliente.post(decisao, json={"aprovar": False}).status_code == 200
+    assert cliente.get(_url("/obrigacoes/LO-02/historico")).json()[-1]["decidida_por"] == "Paulo Ribeiro"
+
+
+def test_plataforma_continua_escrevendo_o_que_e_dela(cliente):
+    _como_plataforma(cliente, "token de serviço")
+    emp = _empresa(cliente)
+    ob01 = next(m for m in cliente.get(_url(f"/empresas/{emp}/mudancas")).json() if m["codigo"] == "OB-01")
+    assert ob01["decide"]           # norma pública: a plataforma decide, uma vez para todas as clientes
+    assert cliente.post(_url(f"/mudancas/{ob01['versao_id']}/decisao"), json={"aprovar": True}).status_code == 200
+    ex = cliente.get(_url("/radar/exemplo")).json()
+    assert cliente.post(_url("/radar/analise"), json={"texto": ex["texto"]}).status_code == 200
+
+
 # ----------------------------------------------------------------- o que o front usa
 
 

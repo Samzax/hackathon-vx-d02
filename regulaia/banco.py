@@ -10,6 +10,9 @@ O que muda entre os dois fica aqui:
 - `?` vira `%s` (fora de strings) e `%` literal vira `%%`;
 - `lastrowid` vem de `RETURNING id`, acrescentado nos INSERT das tabelas com `id`;
 - `with conn:` faz commit no fim e rollback se der erro, como no sqlite3.
+
+A API empresta conexões de um pool (api/banco.py): `ConexaoPostgres.sobre(pg)` dá o mesmo
+embrulho a uma conexão psycopg que já está aberta.
 """
 
 from __future__ import annotations
@@ -29,6 +32,11 @@ _INSERT = re.compile(r"^\s*INSERT\s+INTO\s+(\w+)", re.IGNORECASE)
 
 def eh_url_postgres(alvo) -> bool:
     return isinstance(alvo, str) and alvo.startswith(("postgresql://", "postgres://", "postgresql+psycopg://"))
+
+
+def url_psycopg(url: str) -> str:
+    """A URL do SQLAlchemy (`postgresql+psycopg://`, a do Alembic) no formato que o psycopg aceita."""
+    return url.replace("postgresql+psycopg://", "postgresql://")
 
 
 def traduzir(sql: str) -> str:
@@ -115,9 +123,8 @@ class ConexaoPostgres:
     def __init__(self, url: str, *, esquema: str | None = None, criar: bool = True):
         import psycopg
 
-        url = url.replace("postgresql+psycopg://", "postgresql://")
+        url = url_psycopg(url)
         self._pg = psycopg.connect(url, autocommit=False)
-        self._nivel = 0
         if esquema:
             with self._pg.cursor() as c:
                 c.execute(f'CREATE SCHEMA IF NOT EXISTS "{esquema}"')
@@ -126,6 +133,14 @@ class ConexaoPostgres:
         if criar and (url, esquema) not in _CRIADOS:     # uma vez por processo, não a cada conexão
             aplicar_esquema(self)
             _CRIADOS.add((url, esquema))
+
+    @classmethod
+    def sobre(cls, pg) -> ConexaoPostgres:
+        """O mesmo embrulho sobre uma conexão psycopg já aberta (a que o pool da API empresta).
+        Não conecta nem cria tabelas: quem abriu a conexão cuida dela (e de devolvê-la)."""
+        conn = cls.__new__(cls)
+        conn._pg = pg
+        return conn
 
     # --- a interface do sqlite3 que o domínio usa
 
