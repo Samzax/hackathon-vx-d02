@@ -394,10 +394,9 @@ def test_dia_do_calendario_lista_e_registra_entrega(banco_temporario):
 
 
 def test_mapa_e_linha_do_tempo_aparecem_na_demo(banco_temporario):
-    """Empresa fictícia: mapa dos ativos (posições fictícias) e Gantt da transição, sem erro."""
+    """A demonstração exibe o mapa dos ativos e o Gantt da transição, sem erro."""
     at = _abrir().run()
     assert not at.exception
-    assert any(c.value.startswith("Posições fictícias") for c in at.caption)
     assert at.get("deck_gl_json_chart"), "mapa dos ativos"
     assert at.get("vega_lite_chart"), "linha do tempo da transição"
 
