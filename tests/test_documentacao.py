@@ -463,4 +463,6 @@ def test_numeros_da_descoberta_saem_da_fila_da_demo():
     assert f"{st['relevante']} relevantes para a curadoria" in readme
     assert f"{st['irrelevante']} descartadas pela IA" in readme
     assert f"{st['catalogada']} já no catálogo" in readme
+    assert f"{st['descartada']} revogadas" in readme
+    assert all(c["decidida_por"].startswith("vigência") for c in dados["candidatas"] if c["status"] == "descartada")
     assert f"US$ {custo:.2f}".replace(".", ",") in readme
