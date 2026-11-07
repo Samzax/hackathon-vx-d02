@@ -334,9 +334,10 @@ def test_uf_sem_conector_vira_registro_de_lacuna_e_obra_e_tipo_valido(cliente, n
     assert any("PR sem fonte automática" in e["acao"] for e in eventos), eventos
 
 
-def test_uf_nova_com_conector_nunca_lido_dispara_a_busca(cfg):
+def test_uf_nova_com_conector_nunca_lido_dispara_a_busca(cliente, nova, cfg):
     """Primeira cliente com ativo em MG antes de qualquer busca: a descoberta da ALMG sai na hora,
-    em segundo plano, e fica registrada na instanciação (não espera o domingo)."""
+    em segundo plano, e fica registrada na instanciação (não espera o domingo). A empresa e o ativo
+    nascem pela API, como no resto do arquivo: vale igual no SQLite e no Postgres."""
     from types import SimpleNamespace
 
     from fastapi import BackgroundTasks
@@ -344,11 +345,18 @@ def test_uf_nova_com_conector_nunca_lido_dispara_a_busca(cfg):
     from api.rotas.instanciacao import _cobrir_ufs_novas
     from mitra import instanciacao as dominio
 
+    eid = nova["empresa_id"]
+    _conta(cfg, "diretoria2@nova.demo", "diretoria")
+    como(cliente, "diretoria2@nova.demo")
+    assert cliente.post(_url(f"/empresas/{eid}/unidades"), json={"nome": "Mina MG"}).status_code == 201
+    r = cliente.post(_url(f"/empresas/{eid}/instanciacao/ativos"), json={
+        "tipo": "barragem", "codigo": "BMG", "nome": "Barragem MG", "unidade": "Mina MG",
+        "atributos": {"uf": "mg"}})
+    assert r.status_code == 201, r.text
     conn = db.conectar(cfg.banco)
     try:
         conn.execute("DELETE FROM descoberta_busca")
         conn.commit()
-        eid = conn.execute("SELECT id FROM empresa ORDER BY id").fetchone()["id"]
         tarefas = BackgroundTasks()
         _cobrir_ufs_novas(SimpleNamespace(app="app-falso"), conn, eid, set(), "teste", tarefas)
         assert len(tarefas.tasks) == 1 and tarefas.tasks[0].args == ("app-falso", ("almg",))

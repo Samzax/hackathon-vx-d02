@@ -46,7 +46,7 @@ CAMPOS: dict[str, tuple[str, str, list[str] | None, tuple[str, ...]]] = {
     "usa_explosivos": ("Usa explosivos", BOOL, None, ("unidade",)),
     "carvao": ("Mina de carvão", BOOL, None, ("unidade",)),
     "dragas": ("Dragas flutuantes", BOOL, None, ("unidade",)),
-    "trabalhadores": ("Trabalhadores", NUMERO, None, ("unidade",)),
+    "trabalhadores": ("Trabalhadores", NUMERO, None, ("unidade", "obra")),
     "classe": ("Classe do equipamento", OPCOES, ["vaso_pressao", "caldeira", "tubulacao", "tanque", "maquina",
                                                  "transportador_continuo", "equipamento_guindar", "veiculo"],
                ("equipamento",)),
@@ -61,7 +61,6 @@ CAMPOS: dict[str, tuple[str, str, list[str] | None, tuple[str, ...]]] = {
     "categoria_obra": ("Tipo de obra", OPCOES, ["edificacao", "infraestrutura", "industrial", "demolicao",
                                                 "outra"], ("obra",)),
     "fase_obra": ("Fase da obra", OPCOES, ["projeto", "execucao", "paralisada", "concluida"], ("obra",)),
-    "trabalhadores": ("Trabalhadores no canteiro", NUMERO, None, ("obra",)),
     "trabalho_altura": ("Trabalho em altura (acima de 2 m)", BOOL, None, ("obra",)),
 }
 
