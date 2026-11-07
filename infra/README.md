@@ -39,7 +39,9 @@ Segredos gerados pela AWS: senha do banco, token do agente, `REGULAIA_CHAVE_DADO
 código deriva a chave Fernet) e `REGULAIA_SENHA_DEMO` (contas da demo no link público). Jobs: radar do
 DOU todo dia 06:00 BRT; descoberta de normas domingo 03:00 BRT.
 
-Com domínio próprio, HTTPS e cookie `Secure`: `npx aws-cdk@2 deploy -c certificado=arn:aws:acm:...`.
+HTTPS sem domínio: o CloudFront fica na frente do ALB (`https://<id>.cloudfront.net`, certificado da AWS,
+cookie `Secure`); o ALB só aceita os IPs do CloudFront e nada é cacheado além de `/_next/static/*`.
+Com domínio próprio: `npx aws-cdk@2 deploy -c certificado=arn:aws:acm:...` (o ALB faz o HTTPS e o CloudFront sai).
 
 ## Antes do deploy na conta do evento
 

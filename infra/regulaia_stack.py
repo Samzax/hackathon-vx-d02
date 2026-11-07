@@ -20,6 +20,10 @@ Decisões:
 - **Uma imagem, dois usos**: a mesma imagem (api/Dockerfile) roda a API e o job do radar.
 - **Migração no start**: `alembic upgrade head` roda antes do uvicorn, com lock no Postgres (várias tasks).
 - **Sem dado pessoal**: o SIGBM vai só com as linhas de empresa (CNPJ), como no repositório.
+- **HTTPS sem domínio**: sem certificado próprio, um CloudFront fica na frente do ALB e dá
+  https://<id>.cloudfront.net com certificado da AWS. O ALB só aceita os IPs do CloudFront (lista
+  gerenciada), então ninguém fala HTTP direto com ele. Nada é cacheado, menos /_next/static/*
+  (arquivos com hash no nome). Com `-c certificado=arn:...`, o ALB faz o HTTPS e o CloudFront sai.
 """
 
 from __future__ import annotations
@@ -32,6 +36,8 @@ from aws_cdk import (
     RemovalPolicy,
     Stack,
     aws_certificatemanager as acm,
+    aws_cloudfront as cf,
+    aws_cloudfront_origins as origens_cf,
     aws_cloudwatch as cw,
     aws_ec2 as ec2,
     aws_ecr as ecr,
@@ -52,6 +58,8 @@ RAIZ = Path(__file__).resolve().parent.parent
 BANCO = "regulaia"
 # a URL do banco é montada na task a partir do segredo: estes caracteres quebrariam a URL
 FORA_DA_SENHA = " %+~`#$&*()|[]{}:;<>?!'/@\"\\,="
+# lista gerenciada com os IPs que o CloudFront usa para falar com a origem (um ID por região)
+PREFIXO_CLOUDFRONT = {"us-east-1": "pl-3b927c52"}
 
 
 class RegulaIA(Stack):
@@ -135,9 +143,10 @@ class RegulaIA(Stack):
             "REGULAIA_SENHA_DEMO": ecs.Secret.from_secrets_manager(senha_demo),
         }
         https = certificado_arn is not None
+        prefixo_cf = None if https else PREFIXO_CLOUDFRONT.get(self.region)   # CloudFront na frente do ALB
         ambiente = {
             "REGULAIA_ARMAZENAMENTO": f"s3://{documentos.bucket_name}/",
-            "REGULAIA_COOKIE_SEGURO": "1" if https else "0",
+            "REGULAIA_COOKIE_SEGURO": "1" if https or prefixo_cf else "0",
             "REGULAIA_ORIGENS": "",
             "AWS_REGION": self.region,
             "REGULAIA_BEDROCK": "1" if ia else "",   # provedor Bedrock (modelos em regulaia/modelos.toml)
@@ -161,6 +170,7 @@ class RegulaIA(Stack):
             desired_count=1,
             min_healthy_percent=100,      # com uma task, o deploy sobe a nova antes de derrubar a velha
             public_load_balancer=True,
+            open_listener=prefixo_cf is None,     # com CloudFront, o ALB só aceita os IPs dele (abaixo)
             assign_public_ip=True,
             task_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             certificate=acm.Certificate.from_certificate_arn(self, "Certificado", certificado_arn) if https else None,
@@ -185,6 +195,34 @@ class RegulaIA(Stack):
         escala.scale_on_cpu_utilization("Cpu", target_utilization_percent=60)
         sg_banco.add_ingress_rule(servico.service.connections.security_groups[0], ec2.Port.tcp(5432),
                                   "API no Postgres")
+
+        # ------------------------------------------------------------------ HTTPS: CloudFront na frente do ALB
+        cdn = None
+        if prefixo_cf:
+            servico.load_balancer.connections.allow_from(ec2.Peer.prefix_list(prefixo_cf), ec2.Port.tcp(80),
+                                                         "Only CloudFront reaches the ALB")
+            origem = origens_cf.LoadBalancerV2Origin(
+                servico.load_balancer, protocol_policy=cf.OriginProtocolPolicy.HTTP_ONLY,
+                read_timeout=Duration.seconds(60),     # análise com IA pode passar dos 30 s padrão
+            )
+            cdn = cf.Distribution(
+                self, "Cdn", comment="RegulaIA: HTTPS na frente do ALB",
+                price_class=cf.PriceClass.PRICE_CLASS_ALL,      # inclui os pontos de presença no Brasil
+                http_version=cf.HttpVersion.HTTP2_AND_3,
+                default_behavior=cf.BehaviorOptions(
+                    origin=origem,
+                    viewer_protocol_policy=cf.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                    allowed_methods=cf.AllowedMethods.ALLOW_ALL,
+                    cache_policy=cf.CachePolicy.CACHING_DISABLED,               # API e páginas: nada em cache
+                    origin_request_policy=cf.OriginRequestPolicy.ALL_VIEWER,    # cookies, cabeçalhos, query
+                ),
+                additional_behaviors={"/_next/static/*": cf.BehaviorOptions(
+                    origin=origem,
+                    viewer_protocol_policy=cf.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                    cache_policy=cf.CachePolicy.CACHING_OPTIMIZED,              # nome com hash: cache longo
+                    compress=True,
+                )},
+            )
 
         # ------------------------------------------------------------------ radar do DOU (job diário)
         tarefa_radar = ecs.FargateTaskDefinition(self, "TarefaRadar", cpu=512, memory_limit_mib=1024)
@@ -250,7 +288,10 @@ class RegulaIA(Stack):
         cw.Alarm(self, "BancoCpu", metric=banco.metric_cpu_utilization(period=Duration.minutes(5)),
                  threshold=80, evaluation_periods=3, alarm_description="Postgres com CPU alta")
 
-        CfnOutput(self, "Endereco", value=f"{'https' if https else 'http'}://{servico.load_balancer.load_balancer_dns_name}")
+        if cdn is not None:
+            CfnOutput(self, "Endereco", value=f"https://{cdn.distribution_domain_name}")
+        else:
+            CfnOutput(self, "Endereco", value=f"{'https' if https else 'http'}://{servico.load_balancer.load_balancer_dns_name}")
         CfnOutput(self, "BucketDocumentos", value=documentos.bucket_name)
         CfnOutput(self, "SegredoBanco", value=banco.secret.secret_name)
         CfnOutput(self, "SegredoSenhaDemo", value=senha_demo.secret_name)

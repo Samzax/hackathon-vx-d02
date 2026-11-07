@@ -137,6 +137,33 @@ def test_build_na_aws_privilegiado_e_publica_no_ecr():
         {"BlockPublicAcls": True})})
 
 
+def test_https_pelo_cloudfront_sem_cache_na_api(modelo):
+    modelo.has_resource_properties("AWS::CloudFront::Distribution", {"DistributionConfig": assertions.Match.object_like({
+        "DefaultCacheBehavior": assertions.Match.object_like({
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": assertions.Match.array_with(["POST", "DELETE"]),
+            "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",         # CachingDisabled
+        })})})
+    for d in modelo.find_resources("AWS::ECS::TaskDefinition").values():
+        for c in d["Properties"]["ContainerDefinitions"]:
+            assert {e["Name"]: e["Value"] for e in c.get("Environment", [])}["REGULAIA_COOKIE_SEGURO"] == "1"
+
+
+def test_alb_so_aceita_o_cloudfront(modelo):
+    for sg in modelo.find_resources("AWS::EC2::SecurityGroup").values():
+        for regra in sg["Properties"].get("SecurityGroupIngress", []):
+            assert regra.get("CidrIp") != "0.0.0.0/0", regra
+    assert "pl-3b927c52" in str(modelo.to_json())
+
+
+def test_com_certificado_proprio_o_cloudfront_sai():
+    app = cdk.App()
+    pilha = RegulaIA(app, "TesteCert", certificado_arn="arn:aws:acm:us-east-1:123456789012:certificate/abc",
+                     imagem=ecs.ContainerImage.from_registry("public.ecr.aws/docker/library/python:3.13-slim"),
+                     env=cdk.Environment(account="123456789012", region="us-east-1"))
+    assertions.Template.from_stack(pilha).resource_count_is("AWS::CloudFront::Distribution", 0)
+
+
 def test_descricoes_que_o_cloudformation_aceita(modelo):
     """O CloudFormation recusa acento na descrição do security group (o deploy quebraria no meio)."""
     import re
