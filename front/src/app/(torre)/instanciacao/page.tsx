@@ -1,21 +1,26 @@
 "use client";
 
 // A instanciação da empresa escolhida: as oito etapas, o que falta em cada uma, os dados que faltam no
-// cadastro dos ativos e as unidades com os ativos de cada uma. Tudo vem da API: a tela só dá forma.
-import { useQuery } from "@tanstack/react-query";
-import { Factory } from "lucide-react";
+// cadastro dos ativos e as unidades com os ativos de cada uma — e, para quem é da empresa, as ações:
+// criar unidade, cadastrar ativo (formulário ou planilha) e entrar em operação. Na visão da plataforma
+// tudo isso some: nos dados operacionais a Mitra só lê. Tudo vem da API: a tela só dá forma.
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Factory, FileDown, FileUp, Plus, Rocket } from "lucide-react";
+import { useRef, useState } from "react";
+import { useAvisar } from "@/components/avisos";
+import { Dialogo } from "@/components/dialogo";
 import { EtapaDaInstanciacao } from "@/components/etapas";
-import { Aviso, Carregando, Cartao, ErroCarga, Etiqueta, Secao, Titulo, Vazio, cx } from "@/components/ui";
-import { ErroApi, api, dados, type Esquemas } from "@/lib/api";
+import {
+  Aviso, Botao, CampoEntrada, CampoSelecao, Carregando, Cartao, ErroCarga, Etiqueta, Secao, Titulo,
+  Vazio, cx, mensagem,
+} from "@/components/ui";
+import { ErroApi, api, baixar, dados, enviarArquivo, type Esquemas } from "@/lib/api";
+import { useCamposCadastro, useInvalidarTorre, type CampoCadastro } from "@/lib/consultas";
 import { dataBR, emBrasilia, plural } from "@/lib/formato";
+import {
+  ROTULO_TIPO, TIPOS_ATIVO, atributosDoRascunho, cnpjBR, resumoPlanilha, type Planilha as RespostaPlanilha,
+} from "@/lib/instanciacao";
 import { useEmpresa, useTorre } from "@/lib/torre";
-
-/** "12345678000199" -> "12.345.678/0001-99"; o que não for CNPJ de 14 dígitos volta como veio. */
-function cnpjBR(cnpj: string | null): string {
-  const d = (cnpj ?? "").replace(/\D/g, "");
-  if (d.length !== 14) return cnpj ?? "não informado";
-  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
-}
 
 function useInstanciacao() {
   const { empresa, chave } = useTorre();
@@ -152,21 +157,75 @@ function DadosQueFaltam() {
   );
 }
 
-function Unidades() {
+function useUnidades() {
   const { empresa, chave } = useTorre();
   const id = empresa?.id ?? 0;
-  const unidades = useQuery({
+  return useQuery({
     queryKey: [...chave, "unidades"],
     queryFn: () => dados(api.GET("/api/v1/empresas/{empresa_id}/unidades", { params: { path: { empresa_id: id } } })),
     enabled: !!id,
   });
+}
+
+/** Criar uma unidade (a própria empresa): nome, UF e município. UF nova sem conector vira lacuna
+ * declarada na cobertura — e legislação municipal e alvarás entram pelo cadastro, não por fonte. */
+function DialogoNovaUnidade({ onFechar }: { onFechar: () => void }) {
+  const { empresa } = useTorre();
+  const avisar = useAvisar();
+  const invalidar = useInvalidarTorre();
+  const [nome, setNome] = useState("");
+  const [uf, setUf] = useState("");
+  const [municipio, setMunicipio] = useState("");
+  const criar = useMutation({
+    mutationFn: () =>
+      dados(api.POST("/api/v1/empresas/{empresa_id}/unidades", {
+        params: { path: { empresa_id: empresa?.id ?? 0 } },
+        body: { nome: nome.trim(), uf: uf.trim() || null, municipio: municipio.trim() || null },
+      })),
+    onSuccess: async (u) => {
+      await invalidar();
+      avisar(`Unidade criada: ${u.nome}.`);
+      onFechar();
+    },
+    onError: (e) => avisar(mensagem(e), "erro"),
+  });
+  return (
+    <Dialogo aberto onFechar={onFechar} titulo="Nova unidade"
+      rodape={<>
+        <Botao onClick={onFechar}>Cancelar</Botao>
+        <Botao variante="primario" disabled={nome.trim().length < 2} carregando={criar.isPending}
+          onClick={() => criar.mutate()}>Criar a unidade</Botao>
+      </>}>
+      <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); if (nome.trim().length >= 2) criar.mutate(); }}>
+        <CampoEntrada rotulo="Nome" value={nome} onChange={(e) => setNome(e.target.value)}
+          placeholder="Mina Serra Azul" required minLength={2} />
+        <div className="grid grid-cols-2 gap-3">
+          <CampoEntrada rotulo="UF" value={uf} onChange={(e) => setUf(e.target.value)} placeholder="MG" maxLength={2} />
+          <CampoEntrada rotulo="Município" value={municipio} onChange={(e) => setMunicipio(e.target.value)}
+            placeholder="Itabirito" />
+        </div>
+      </form>
+    </Dialogo>
+  );
+}
+
+function Unidades() {
+  const { soLeitura } = useTorre();
+  const unidades = useUnidades();
+  const [criando, setCriando] = useState(false);
   const lista = unidades.data ?? [];
 
   return (
     <Secao
       titulo={lista.length ? `Unidades (${lista.length})` : "Unidades"}
       descricao="As operações da empresa e os ativos de cada uma."
+      acoes={!soLeitura && (
+        <Botao tamanho="p" icone={<Plus className="size-3.5" />} onClick={() => setCriando(true)}>
+          Nova unidade
+        </Botao>
+      )}
     >
+      {criando && <DialogoNovaUnidade onFechar={() => setCriando(false)} />}
       {unidades.isLoading && <Carregando linhas={2} />}
       {unidades.error && <ErroCarga erro={unidades.error} onTentar={() => unidades.refetch()} />}
       {unidades.data && !lista.length && (
@@ -207,7 +266,234 @@ function Unidades() {
   );
 }
 
+// ------------------------------------------------------------------ cadastrar ativos (a empresa)
+
+/** O campo do cadastro no tipo certo: sim/não, opções pelo rótulo, data, número ou texto. O valor
+ * segue como texto e quem converte e confere é a API — valor que não serve volta com o erro. */
+function EntradaDoCampo({ campo, valor, onChange }:
+  { campo: CampoCadastro; valor: string; onChange: (v: string) => void }) {
+  if (campo.tipo === "booleano") {
+    return (
+      <CampoSelecao rotulo={campo.rotulo} value={valor} onChange={(e) => onChange(e.target.value)} dica={campo.pergunta}>
+        <option value="">não informado</option>
+        <option value="sim">sim</option>
+        <option value="não">não</option>
+      </CampoSelecao>
+    );
+  }
+  if (campo.tipo === "opcoes") {
+    return (
+      <CampoSelecao rotulo={campo.rotulo} value={valor} onChange={(e) => onChange(e.target.value)} dica={campo.pergunta}>
+        <option value="">não informado</option>
+        {campo.opcoes.map((o) => <option key={o.valor} value={o.valor}>{o.rotulo}</option>)}
+      </CampoSelecao>
+    );
+  }
+  return (
+    <CampoEntrada rotulo={campo.rotulo} value={valor} onChange={(e) => onChange(e.target.value)}
+      dica={campo.pergunta} type={campo.tipo === "data" ? "date" : "text"}
+      inputMode={campo.tipo === "numero" ? "decimal" : undefined} />
+  );
+}
+
+function FormularioAtivo() {
+  const { empresa } = useTorre();
+  const avisar = useAvisar();
+  const invalidar = useInvalidarTorre();
+  const campos = useCamposCadastro();
+  const unidades = useUnidades();
+  const [tipo, setTipo] = useState<(typeof TIPOS_ATIVO)[number]>("barragem");
+  const [codigo, setCodigo] = useState("");
+  const [nome, setNome] = useState("");
+  const [unidade, setUnidade] = useState("");
+  const [responsavel, setResponsavel] = useState("");
+  const [rascunho, setRascunho] = useState<Record<string, string>>({});
+
+  const doTipo = (campos.data ?? []).filter((c) => c.tipos_ativo.includes(tipo) && c.campo !== "alertas_sigbm");
+  const criar = useMutation({
+    mutationFn: () =>
+      dados(api.POST("/api/v1/empresas/{empresa_id}/instanciacao/ativos", {
+        params: { path: { empresa_id: empresa?.id ?? 0 } },
+        body: {
+          tipo, codigo: codigo.trim(), nome: nome.trim(), unidade: unidade || null,
+          responsavel: responsavel.trim() || null, atributos: atributosDoRascunho(rascunho),
+        },
+      })),
+    onSuccess: async (r) => {
+      await invalidar();
+      avisar(`Ativo cadastrado: ${r.codigo}. O que ficou sem valor aparece em dados que faltam.`);
+      setCodigo(""); setNome(""); setRascunho({});
+    },
+    onError: (e) => avisar(mensagem(e), "erro"),
+  });
+  const pronto = codigo.trim().length >= 1 && nome.trim().length >= 1;
+
+  return (
+    <Cartao className="p-4 sm:p-5">
+      <form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="novo-ativo"
+        onSubmit={(e) => { e.preventDefault(); if (pronto) criar.mutate(); }}>
+        <CampoSelecao rotulo="Tipo" value={tipo}
+          onChange={(e) => { setTipo(e.target.value as (typeof TIPOS_ATIVO)[number]); setRascunho({}); }}>
+          {TIPOS_ATIVO.map((t) => <option key={t} value={t}>{ROTULO_TIPO[t]}</option>)}
+        </CampoSelecao>
+        <CampoEntrada rotulo="Código" value={codigo} onChange={(e) => setCodigo(e.target.value)}
+          placeholder="B1" required dica="Único na empresa; é como a torre chama o ativo." />
+        <CampoEntrada rotulo="Nome" value={nome} onChange={(e) => setNome(e.target.value)}
+          placeholder="Barragem Nova" required />
+        <CampoSelecao rotulo="Unidade" value={unidade} onChange={(e) => setUnidade(e.target.value)}
+          dica="A operação a que o ativo pertence (crie a unidade antes).">
+          <option value="">sem unidade</option>
+          {(unidades.data ?? []).map((u) => <option key={u.id} value={u.nome}>{u.nome}</option>)}
+        </CampoSelecao>
+        <CampoEntrada rotulo="Área responsável" value={responsavel} onChange={(e) => setResponsavel(e.target.value)}
+          placeholder="Gerência de Geotecnia" />
+        {doTipo.map((c) => (
+          <EntradaDoCampo key={c.campo} campo={c} valor={rascunho[c.campo] ?? ""}
+            onChange={(v) => setRascunho((r) => ({ ...r, [c.campo]: v }))} />
+        ))}
+        <div className="sm:col-span-2 lg:col-span-3">
+          <Botao type="submit" variante="primario" icone={<Plus className="size-4" />} disabled={!pronto}
+            carregando={criar.isPending}>
+            Cadastrar o ativo
+          </Botao>
+        </div>
+      </form>
+    </Cartao>
+  );
+}
+
+function PlanilhaDeAtivos() {
+  const { empresa } = useTorre();
+  const avisar = useAvisar();
+  const invalidar = useInvalidarTorre();
+  const [tipoModelo, setTipoModelo] = useState<(typeof TIPOS_ATIVO)[number]>("barragem");
+  const [resultado, setResultado] = useState<RespostaPlanilha | null>(null);
+  const [soConferiu, setSoConferiu] = useState(true);
+  const arquivoRef = useRef<HTMLInputElement>(null);
+
+  const enviar = useMutation({
+    mutationFn: async ({ conferir }: { conferir: boolean }) => {
+      const arquivo = arquivoRef.current?.files?.[0];
+      if (!arquivo) throw new Error("escolha a planilha CSV primeiro");
+      const r = await enviarArquivo<RespostaPlanilha>(
+        `/api/v1/empresas/${empresa?.id ?? 0}/instanciacao/planilha`, { conferir }, arquivo);
+      return { r, conferir };
+    },
+    onSuccess: async ({ r, conferir }) => {
+      setResultado(r);
+      setSoConferiu(conferir);
+      if (!conferir && r.importados) await invalidar();
+      avisar(resumoPlanilha(r, conferir), r.erros ? "erro" : "ok");
+    },
+    onError: (e) => avisar(mensagem(e), "erro"),
+  });
+
+  const comErro = resultado?.linhas.filter((l) => l.erro) ?? [];
+
+  return (
+    <Cartao className="p-4 sm:p-5">
+      <div className="flex flex-wrap items-end gap-3">
+        <CampoSelecao rotulo="Modelo por tipo" className="w-56" value={tipoModelo}
+          onChange={(e) => setTipoModelo(e.target.value as (typeof TIPOS_ATIVO)[number])}>
+          {TIPOS_ATIVO.map((t) => <option key={t} value={t}>{ROTULO_TIPO[t]}</option>)}
+        </CampoSelecao>
+        <Botao icone={<FileDown className="size-4" />}
+          onClick={() => baixar("/api/v1/instanciacoes/modelo.csv", { tipo: tipoModelo }, `modelo_${tipoModelo}.csv`)
+            .catch((e) => avisar(mensagem(e), "erro"))}>
+          Baixar o modelo
+        </Botao>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-borda pt-4">
+        <input ref={arquivoRef} type="file" accept=".csv,text/csv" aria-label="Planilha CSV de ativos"
+          className="text-sm file:mr-3 file:rounded-md file:border file:border-borda-forte file:bg-fundo file:px-3 file:py-1.5 file:text-sm file:text-texto" />
+        <Botao carregando={enviar.isPending} onClick={() => enviar.mutate({ conferir: true })}>
+          Só conferir
+        </Botao>
+        <Botao variante="primario" icone={<FileUp className="size-4" />} carregando={enviar.isPending}
+          onClick={() => enviar.mutate({ conferir: false })}>
+          Importar (tudo ou nada)
+        </Botao>
+      </div>
+      <p className="mt-2 text-xs text-texto-3">
+        A planilha é validada linha a linha, com o erro na linha, como a pessoa vê no arquivo. Com qualquer
+        erro, nada é gravado.
+      </p>
+      {resultado && (
+        <div className="mt-3">
+          <Aviso tipo={resultado.erros ? "erro" : "sucesso"}>{resumoPlanilha(resultado, soConferiu)}</Aviso>
+          {comErro.length > 0 && (
+            <div className="mt-2 overflow-x-auto rounded-lg border border-borda" data-testid="erros-planilha">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead className="bg-fundo-2 text-left text-xs text-texto-2">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">Linha</th>
+                    <th className="px-3 py-2 font-medium">Código</th>
+                    <th className="px-3 py-2 font-medium">O que está errado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-borda">
+                  {comErro.map((l) => (
+                    <tr key={l.linha}>
+                      <td className="num px-3 py-2">{l.linha}</td>
+                      <td className="px-3 py-2">{l.codigo || "—"}</td>
+                      <td className="px-3 py-2 text-atrasada">{l.erro}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </Cartao>
+  );
+}
+
+// ------------------------------------------------------------------ entrar em operação
+
+function EntrarEmOperacao() {
+  const t = useTorre();
+  const avisar = useAvisar();
+  const invalidar = useInvalidarTorre();
+  const [desde, setDesde] = useState(t.hoje);
+  const [pendencias, setPendencias] = useState<string[] | null>(null);
+  const entrar = useMutation({
+    mutationFn: () =>
+      dados(api.POST("/api/v1/empresas/{empresa_id}/instanciacao/operacao", {
+        params: { path: { empresa_id: t.empresa?.id ?? 0 } },
+        body: { desde: desde || null },
+      })),
+    onSuccess: async (r) => {
+      await invalidar();
+      setPendencias(r.pendencias);
+      avisar(`Em operação desde ${dataBR(r.monitorado_desde)}: a torre passou a cobrar.`);
+    },
+    onError: (e) => avisar(mensagem(e), "erro"),
+  });
+  return (
+    <Secao
+      titulo="Entrar em operação"
+      descricao="Etapa 8: a torre passa a cobrar as obrigações a partir da data. Dá para entrar com pendências — elas continuam visíveis."
+    >
+      <Cartao className="flex flex-wrap items-end gap-3 p-4 sm:p-5" data-testid="entrar-operacao">
+        <CampoEntrada rotulo="A torre cobra a partir de" type="date" className="w-52" value={desde}
+          onChange={(e) => setDesde(e.target.value)} />
+        <Botao variante="primario" icone={<Rocket className="size-4" />} carregando={entrar.isPending}
+          onClick={() => entrar.mutate()}>
+          Entrar em operação
+        </Botao>
+        {pendencias && pendencias.length > 0 && (
+          <p className="w-full text-[13px] text-texto-2">
+            Etapas que seguem pendentes: {pendencias.join(", ")}.
+          </p>
+        )}
+      </Cartao>
+    </Secao>
+  );
+}
+
 export default function Instanciacao() {
+  const t = useTorre();
   const empresa = useEmpresa();
   const inst = useInstanciacao();
   const semInstanciacao = inst.error instanceof ErroApi && inst.error.status === 404;
@@ -247,8 +533,34 @@ export default function Instanciacao() {
             </ol>
           </Secao>
 
-          <DadosQueFaltam />
           <Unidades />
+
+          {!t.soLeitura && (
+            <>
+              <Secao
+                titulo="Cadastrar ativos"
+                descricao="Etapa 2, da própria empresa: barragens, minas, usinas, equipamentos, licenças e obras, um a um. O que ficar sem valor vira dado faltando, nunca é presumido."
+              >
+                <FormularioAtivo />
+              </Secao>
+              <Secao
+                titulo="Planilha de ativos"
+                descricao="O mesmo cadastro em lote: baixe o modelo do tipo, preencha e importe."
+              >
+                <PlanilhaDeAtivos />
+              </Secao>
+            </>
+          )}
+
+          <DadosQueFaltam />
+
+          {!t.soLeitura && t.veTudo && !inst.data.em_operacao && <EntrarEmOperacao />}
+          {t.soLeitura && (
+            <Aviso tipo="info" className="mt-8">
+              Visão da plataforma: aqui só se lê. Quem cadastra unidade e ativo, preenche o que falta e entra em
+              operação é a própria empresa.
+            </Aviso>
+          )}
         </>
       )}
     </>

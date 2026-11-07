@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  BookCheck, CalendarRange, ChartColumn, ClipboardList, FileBadge, FileSearch, Gavel, History, IdCard, Inbox, ListChecks, LogOut, Map, Menu,
+  BookCheck, Building2, CalendarRange, ChartColumn, ClipboardList, FileBadge, FileSearch, Gavel, History, IdCard, Inbox, ListChecks, LogOut, Map, Menu,
   MessageSquareText, Moon, Plus,
   Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
@@ -52,6 +52,7 @@ function useGrupos(): Grupo[] {
         contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const }] : []),
     ] },
     { titulo: "Empresa", itens: [
+      ...(t.plataforma ? [{ href: "/nova-empresa/", rotulo: "Nova empresa", icone: <Building2 className="size-4" /> }] : []),
       { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" /> },
       { href: "/licencas/", rotulo: "Licenças e condicionantes", icone: <FileBadge className="size-4" />,
         contador: condicionantes.data?.length || undefined, tom: "marca" },
@@ -74,6 +75,7 @@ export function telaPermitida(caminho: string, ti: boolean, veTudo: boolean, pla
   if (c === "/usuarios/") return false;
   if (c === "/auditoria/") return veTudo;
   if (c === "/regulatorio/normas-candidatas/") return plataforma;
+  if (c === "/nova-empresa/") return plataforma;
   return true;
 }
 
