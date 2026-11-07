@@ -193,7 +193,7 @@ function Ficha({ ativoId, abaInicial }: { ativoId: number; abaInicial: Aba }) {
         <Abas<Aba> rotulo="Ficha do ativo" ativa={aba} onTrocar={setAba} abas={[
           { id: "pendencias", rotulo: `Pendências (${ruins.length})` },
           { id: "obrigacoes", rotulo: `Obrigações (${linhas.length})` },
-          { id: "evidencias", rotulo: "O que comprova" },
+          { id: "evidencias", rotulo: "Evidências" },
           { id: "historico", rotulo: "Histórico" },
           { id: "cadastro", rotulo: faltaCad.length ? `Cadastro (${faltaCad.length} faltando)` : "Cadastro" },
         ]} />
@@ -313,9 +313,7 @@ function Ativos() {
 
   return (
     <>
-      <Titulo sobre="Operação" titulo="Ativos">
-        Clique num ativo para abrir a ficha. Vencendo = vence em até 30 dias (5 para quinzenal e mensal).
-      </Titulo>
+      <Titulo titulo="Ativos" />
       {ativos.isLoading && <Carregando linhas={6} />}
 
       {t.empresa?.setor === "saude" && (
@@ -325,7 +323,6 @@ function Ativos() {
       {t.empresa?.setor !== "saude" && pontos.length > 0 && (
         <div className="mb-5">
           <Mapa pontos={pontos} escolhido={escolhido} onEscolher={escolher} />
-          <p className="mt-1.5 text-xs text-texto-3">Posições fictícias, na região do Quadrilátero Ferrífero (MG). Clique num ponto para abrir a ficha.</p>
         </div>
       )}
 

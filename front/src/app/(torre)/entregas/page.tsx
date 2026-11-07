@@ -248,11 +248,7 @@ function Entregas() {
 
   return (
     <>
-      <Titulo sobre="Operação" titulo="Entregas">
-        {t.soLeitura
-          ? "Selecione uma linha para ver o histórico. Quem registra, passa para outra área e comenta é a própria empresa."
-          : "Selecione uma ou várias linhas para registrar, passar para outra área ou comentar. Tudo fica no histórico."}
-      </Titulo>
+      <Titulo titulo="Entregas" />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <FiltroMulti rotulo="Status" valor={f.status} onMudar={(v) => mudar({ status: v })}

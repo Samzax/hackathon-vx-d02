@@ -10,7 +10,7 @@ import { useEmpresa, useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
 import { Aviso, Botao, Campo, Selecao, mensagem } from "./ui";
 
-/** Chegou um documento da operação? PDF -> leitura (nada é gravado) -> conferência -> registro. */
+/** Insira um documento. PDF -> leitura (nada é gravado) -> conferência -> registro. */
 export function LeitorDeDocumento() {
   const t = useTorre();
   const empresa = useEmpresa();
@@ -62,12 +62,8 @@ export function LeitorDeDocumento() {
     <div className="rounded-lg border border-dashed border-borda-forte bg-fundo p-4" data-testid="leitor">
       <div className="flex items-center gap-2">
         <FileUp className="size-4 text-marca" aria-hidden />
-        <h2 className="text-base font-semibold">Chegou um documento da operação?</h2>
+        <h2 className="text-base font-semibold">Insira um documento</h2>
       </div>
-      <p className="mt-1 text-[13px] text-texto-2">
-        FIR, laudo, recibo do SIGBM ou boletim: a regra lê ativo, documento e data, e a torre dá baixa. A IA só entra se a
-        regra não fechar, e o Python confere. Nada é gravado antes da sua conferência.
-      </p>
       <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         <Campo rotulo="Documento em PDF" htmlFor={idArquivo}>
           <input id={idArquivo} type="file" accept="application/pdf,.pdf"
@@ -112,7 +108,7 @@ export function LeitorDeDocumento() {
           </dl>
           {alheio && (
             <Aviso tipo="atencao">
-              O documento é de {le.ativo}, que não está entre os ativos de {t.eu.visao}. Quem registra é o responsável por esse
+              O documento é de {le.ativo}, que não está entre os ativos da sua visão. Quem registra é o responsável por esse
               ativo ou a Diretoria.
             </Aviso>
           )}

@@ -22,6 +22,8 @@ Cada gestor vê só os seus ativos e ninguém precisa ler norma nenhuma.
 
 A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. Ela reúne 8 ativos da mineração e 131 obrigações cadastradas, em 7 de novembro de 2026. Com o protótipo de saúde e o catálogo de obras (NR-18 e NR-35), são 161 obrigações no ambiente de demonstração:
 
+Posições fictícias, na região do Quadrilátero Ferrífero (MG). Clique num ponto para abrir a ficha.
+
 ### Protótipo de outro setor: saúde
 
 O seletor **Empresa** também traz a **Rede Hospitalar Vida Plena · saúde**, inteiramente fictícia e sem dados pessoais. Ela demonstra que a torre não depende de barragens: acompanha duas unidades assistenciais e um abrigo de resíduos, com ações baseadas em RDC Anvisa 63/2011, RDC Anvisa 36/2013, RDC Anvisa 222/2018 e NR-32. O fluxo é o mesmo — DOU e fontes oficiais → triagem/extrator → obrigação versionada → evidência e caixa de entrada — mas a página **Ativos** é propositalmente uma lista operacional: não há mapa para ativos que não precisam ser localizados geograficamente.

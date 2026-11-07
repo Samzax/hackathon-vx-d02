@@ -178,9 +178,11 @@ export default function Radar() {
                 ))}
               </ul>
             ) : <p className="text-sm text-texto-2">Nenhuma chamada de IA registrada ainda.</p>}
-            <p className="mt-2 text-xs text-texto-3">
-              {r.ia.ligada ? `IA ligada · gasto hoje ${usd(r.ia.gasto_hoje_usd, 4)}${r.ia.teto_dia_usd ? ` de ${usd(r.ia.teto_dia_usd, 2)} por dia` : ""}.` : "IA desligada: só regra e respostas em cache."}
-            </p>
+            {r.ia.ligada && (
+              <p className="mt-2 text-xs text-texto-3">
+                IA ligada · gasto hoje {usd(r.ia.gasto_hoje_usd, 4)}{r.ia.teto_dia_usd ? ` de ${usd(r.ia.teto_dia_usd, 2)} por dia` : ""}.
+              </p>
+            )}
           </Secao>
 
           <Secao titulo="Atos analisados" className="mt-8">

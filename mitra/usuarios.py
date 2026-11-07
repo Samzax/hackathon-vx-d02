@@ -269,6 +269,9 @@ def semear(conn, origem: Path = SEED, com_senha_apenas: bool = False) -> int:
             continue
         empresa = None if c.get("plataforma") else c.get("empresa", dados.get("empresa"))
         if existente := por_email(conn, c["email"]):
+            if existente["teste"] and existente["nome"] == "Visitante da demo" and c["nome"] == "Visitante":
+                with conn:
+                    conn.execute("UPDATE usuario SET nome = ? WHERE id = ?", (c["nome"], existente["id"]))
             if existente.get("empresa") is None and empresa and not existente.get("plataforma"):
                 with conn:      # banco de antes do multiempresa: a conta da demo ganha a empresa dela
                     conn.execute("UPDATE usuario SET empresa = ? WHERE id = ?", (empresa, existente["id"]))

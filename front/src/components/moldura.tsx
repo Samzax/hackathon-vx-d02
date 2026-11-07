@@ -3,14 +3,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BookCheck, Building2, CalendarRange, ChartColumn, ClipboardList, FileBadge, FileSearch, Gavel, History, IdCard, Inbox, ListChecks, LogOut, Map, Menu,
-  MessageSquareText, Moon, Plus,
-  Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
+  MessageSquareText, Moon, PanelLeftClose,
+  PanelLeftOpen, Plus, Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { api, dados } from "@/lib/api";
-import { useAtivos, useCondicionantes, useMudancas, useNormasCandidatas, usePainel, useRadar } from "@/lib/consultas";
+import { useCondicionantes, useMudancas, useNormasCandidatas, useRadar } from "@/lib/consultas";
 import { dataBR, diasEntre, plural, usd } from "@/lib/formato";
 import { RES_220, ZAS, useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
@@ -20,13 +20,20 @@ import { Aviso, Botao, Entrada, Etiqueta, Selecao, cx, mensagem } from "./ui";
 
 const PAPEL: Record<string, string> = { admin: "TI", diretoria: "Diretoria", regulatorio: "Regulatório", gestor: "Gestor de área" };
 
+function rotuloVisao(visao: string): string {
+  return visao === "Diretoria (todos os ativos)" ? "Diretoria" : visao;
+}
+
 type Item = { href: string; rotulo: string; icone: React.ReactNode; contador?: number; tom?: "perigo" | "marca" };
 type Grupo = { titulo: string; itens: Item[] };
+
+function eCuradoriaMitra(plataforma: boolean, papel: string): boolean {
+  return plataforma && papel === "regulatorio";
+}
 
 function useGrupos(): Grupo[] {
   const t = useTorre();
   const mudancas = useMudancas();
-  const painel = usePainel();
   const candidatas = useNormasCandidatas();
   const condicionantes = useCondicionantes("pendente");
   if (t.ti) {
@@ -35,10 +42,10 @@ function useGrupos(): Grupo[] {
       { href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> },
     ] }];
   }
-  const atrasadas = painel.data?.contagem.atrasada ?? 0;
+  const curadoria = eCuradoriaMitra(t.plataforma, t.eu.papel_efetivo);
   const grupos: Grupo[] = [
     { titulo: "Operação", itens: [
-      { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" />, contador: atrasadas || undefined, tom: "perigo" },
+      { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" /> },
       { href: "/ativos/", rotulo: "Ativos", icone: t.empresa?.setor === "saude" ? <ListChecks className="size-4" /> : <Map className="size-4" /> },
       { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" /> },
       { href: "/pergunte/", rotulo: "Pergunte à torre", icone: <MessageSquareText className="size-4" /> },
@@ -58,10 +65,10 @@ function useGrupos(): Grupo[] {
         contador: condicionantes.data?.length || undefined, tom: "marca" },
       { href: "/responsaveis/", rotulo: "Responsáveis e unidades", icone: <IdCard className="size-4" /> },
     ] },
-    { titulo: "Sobre", itens: [
+    ...(curadoria ? [{ titulo: "Sobre", itens: [
       { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" /> },
       { href: "/sobre/como-funciona/", rotulo: "Como funciona", icone: <Workflow className="size-4" /> },
-    ] },
+    ] }] : []),
   ];
   if (t.veTudo) grupos.push({ titulo: "Administração", itens: [{ href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> }] });
   return grupos;
@@ -69,13 +76,14 @@ function useGrupos(): Grupo[] {
 
 /** O que cada papel pode abrir; o resto volta para a tela inicial do papel. A fila de normas candidatas
  * é trabalho da curadoria Mitra: só a plataforma. */
-export function telaPermitida(caminho: string, ti: boolean, veTudo: boolean, plataforma = false): boolean {
+export function telaPermitida(caminho: string, ti: boolean, veTudo: boolean, plataforma = false, curadoria = false): boolean {
   const c = caminho.endsWith("/") ? caminho : `${caminho}/`;
   if (ti) return c === "/usuarios/" || c === "/auditoria/";
   if (c === "/usuarios/") return false;
   if (c === "/auditoria/") return veTudo;
   if (c === "/regulatorio/normas-candidatas/") return plataforma;
   if (c === "/nova-empresa/") return plataforma;
+  if (c.startsWith("/sobre/")) return curadoria;
   return true;
 }
 
@@ -95,7 +103,12 @@ export function useTema() {
   const tema = useSyncExternalStore(assinarTema, temaAtual, () => "claro" as const);
   const trocar = () => {
     const novo = tema === "escuro" ? "claro" : "escuro";
-    document.documentElement.dataset.tema = novo;
+    const raiz = document.documentElement;
+    raiz.classList.add("tema-em-transicao");
+    requestAnimationFrame(() => {
+      raiz.dataset.tema = novo;
+      window.setTimeout(() => raiz.classList.remove("tema-em-transicao"), 360);
+    });
     try {
       localStorage.setItem("mitra_tema", novo);
     } catch {
@@ -189,16 +202,15 @@ function Controles() {
         <p className="mt-0.5 text-xs text-texto-2">
           {PAPEL[t.eu.papel] ?? t.eu.papel}
           {t.eu.area ? ` · ${t.eu.area}` : ""}
-          {t.eu.teste ? " · conta de teste" : ""}
+          {t.eu.teste ? " · Teste" : ""}
         </p>
-        {t.eu.empresa && <p className="mt-0.5 text-xs text-texto-3">{t.eu.empresa}</p>}
       </div>
 
       {t.eu.visoes.length > 1 && (
         <label className="block">
-          <span className="mb-1 block text-[13px] font-medium text-texto-2">Quem está olhando</span>
-          <Selecao value={t.eu.visao} onChange={(e) => trocarVisao.mutate(e.target.value)} disabled={trocarVisao.isPending} aria-label="Quem está olhando">
-            {t.eu.visoes.map((v) => <option key={v} value={v}>{v}</option>)}
+          <span className="mb-1 block text-[13px] font-medium text-texto-2">Persona</span>
+          <Selecao value={t.eu.visao} onChange={(e) => trocarVisao.mutate(e.target.value)} disabled={trocarVisao.isPending} aria-label="Persona">
+            {t.eu.visoes.map((v) => <option key={v} value={v}>{rotuloVisao(v)}</option>)}
           </Selecao>
         </label>
       )}
@@ -207,7 +219,7 @@ function Controles() {
         <label className="block">
           <span className="mb-1 block text-[13px] font-medium text-texto-2">Empresa</span>
           <Selecao value={t.empresa?.id ?? ""} onChange={(e) => t.setEmpresaId(Number(e.target.value))} aria-label="Empresa">
-            {t.empresas.map((e) => <option key={e.id} value={e.id}>{e.nome}{e.setor === "saude" ? " · saúde" : ""}{e.ficticia ? " · fictícia" : ""}</option>)}
+            {t.empresas.map((e) => <option key={e.id} value={e.id}>Empresa {e.id}{e.setor === "saude" ? " · saúde" : ""}{e.ficticia ? " · fictícia" : ""}</option>)}
           </Selecao>
         </label>
       )}
@@ -247,22 +259,21 @@ function Controles() {
         </div>
       )}
 
-      {ia && !t.ti && (
+      {ia?.ligada && !t.ti && (
         <p className="text-xs text-texto-3">
-          {ia.ligada
-            ? `IA ligada · gasto hoje ${usd(ia.gasto_hoje_usd, 3)}${ia.teto_dia_usd ? ` de ${usd(ia.teto_dia_usd, 2)}` : ""}`
-            : "IA desligada: só regra e respostas em cache"}
+          IA ligada · gasto hoje {usd(ia.gasto_hoje_usd, 3)}{ia.teto_dia_usd ? ` de ${usd(ia.teto_dia_usd, 2)}` : ""}
         </p>
       )}
 
-      <div className="flex flex-wrap gap-1.5 pt-1">
+      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+        <button type="button" onClick={trocar} title={tema === "escuro" ? "Usar tema claro" : "Usar tema escuro"}
+          aria-label={tema === "escuro" ? "Usar tema claro" : "Usar tema escuro"}
+          className="rounded-full border border-borda-forte bg-fundo p-2 text-texto-2 transition hover:bg-fundo-2 hover:text-texto active:scale-95">
+          {tema === "escuro" ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
+        </button>
         {t.eu.teste && (
           <Botao tamanho="p" icone={<RotateCcw className="size-3.5" />} onClick={() => setRecriar(true)}>Recriar demo</Botao>
         )}
-        <Botao tamanho="p" onClick={trocar} aria-label={tema === "escuro" ? "Usar tema claro" : "Usar tema escuro"}
-          icone={tema === "escuro" ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}>
-          {tema === "escuro" ? "Claro" : "Escuro"}
-        </Botao>
         <Botao tamanho="p" icone={<LogOut className="size-3.5" />} onClick={() => void t.sair()}>Sair</Botao>
       </div>
 
@@ -287,33 +298,20 @@ function Controles() {
 
 function Cabecalho() {
   const t = useTorre();
-  const ativos = useAtivos();
   if (t.ti) return null;
   const viajando = t.empresa?.setor !== "saude" && t.hoje > t.hojeDemo && !t.empresa?.monitorado_desde;
+  if (!viajando && !t.soLeitura) return null;
   return (
     <div className="mb-6">
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-borda pb-3">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-texto-3">Torre de controle regulatória</p>
-          <p className="truncate text-xl font-semibold" data-testid="empresa">{t.empresa?.nome}</p>
-        </div>
-        <div className="text-[13px] text-texto-2 sm:text-right">
-          <p className="num font-semibold text-texto" data-testid="hoje">{dataBR(t.hoje)}</p>
-          <p>
-            {t.eu.visao}
-            {ativos.data ? ` · ${plural(ativos.data.length, "ativo", "ativos")}` : ""}
-          </p>
-          {t.soLeitura && (
-            <p className="mt-1" data-testid="so-leitura">
-              <Etiqueta title="A equipe Mitra acompanha a empresa, mas quem registra entrega, comenta e corrige o cadastro é a própria empresa.">
-                visão da plataforma: só leitura
-              </Etiqueta>
-            </p>
-          )}
-        </div>
-      </div>
+      {t.soLeitura && (
+        <p className="mb-3" data-testid="so-leitura">
+          <Etiqueta title="A equipe Mitra acompanha a empresa, mas quem registra entrega, comenta e corrige o cadastro é a própria empresa.">
+            visão da plataforma: só leitura
+          </Etiqueta>
+        </p>
+      )}
       {viajando && (
-        <Aviso tipo="info" className="mt-3" icone={<History className="size-4 text-gatilho" />}>
+        <Aviso tipo="info" icone={<History className="size-4 text-gatilho" />}>
           Viagem no tempo: {dataBR(t.hoje)}, {plural(diasEntre(t.hojeDemo, t.hoje), "dia", "dias")} depois da demo. As entregas da
           demo vão até {dataBR(t.hojeDemo)}; o que venceu depois disso aparece atrasado porque ninguém registrou a entrega.
           O ponto aqui é ver o que a torre passa a cobrar, e de qual norma.
@@ -328,14 +326,18 @@ export function Moldura({ children }: { children: React.ReactNode }) {
   const caminho = usePathname();
   const router = useRouter();
   const [menu, setMenu] = useState(false);
-  const permitida = telaPermitida(caminho, t.ti, t.veTudo, t.plataforma);
+  const [sidebarOculta, setSidebarOculta] = useState(false);
+  const permitida = telaPermitida(caminho, t.ti, t.veTudo, t.plataforma, eCuradoriaMitra(t.plataforma, t.eu.papel_efetivo));
 
   useEffect(() => {
     if (!permitida) router.replace(t.ti ? "/usuarios/" : "/caixa/");
   }, [permitida, t.ti, router]);
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[272px_1fr]">
+    <div className={cx(
+      "min-h-dvh lg:grid lg:transition-[grid-template-columns] lg:duration-500 lg:ease-[cubic-bezier(0.22,1,0.36,1)]",
+      sidebarOculta ? "lg:grid-cols-[0px_1fr]" : "lg:grid-cols-[272px_1fr]",
+    )}>
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-borda bg-fundo/95 px-4 py-2.5 backdrop-blur lg:hidden">
         <Logo className="h-7 w-auto" />
         <button type="button" onClick={() => setMenu(true)} aria-label="Abrir o menu" className="rounded-md p-2 hover:bg-fundo-2">
@@ -344,9 +346,16 @@ export function Moldura({ children }: { children: React.ReactNode }) {
       </header>
 
       {menu && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMenu(false)} aria-hidden />}
+      {sidebarOculta && (
+        <button type="button" onClick={() => setSidebarOculta(false)} aria-label="Mostrar barra lateral" title="Mostrar barra lateral"
+          className="fixed left-4 top-4 z-30 hidden rounded-full border border-borda-forte bg-fundo p-2 text-texto-2 shadow-cartao transition hover:bg-fundo-2 hover:text-texto lg:inline-flex">
+          <PanelLeftOpen className="size-4" aria-hidden />
+        </button>
+      )}
       <aside
         className={cx(
-          "fixed inset-y-0 left-0 z-50 flex w-[288px] max-w-[85vw] flex-col gap-6 overflow-y-auto border-r border-borda bg-lateral px-3 py-4 transition-transform lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:w-auto lg:max-w-none lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[288px] max-w-[85vw] flex-col gap-6 overflow-y-auto border-r border-borda bg-lateral px-3 py-4 transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:w-[272px] lg:max-w-none lg:min-w-0",
+          sidebarOculta ? "lg:-translate-x-full lg:opacity-0" : "lg:translate-x-0 lg:opacity-100",
           menu ? "translate-x-0" : "-translate-x-full",
         )}
         aria-label="Menu da torre"
@@ -357,6 +366,10 @@ export function Moldura({ children }: { children: React.ReactNode }) {
           </Link>
           <button type="button" onClick={() => setMenu(false)} aria-label="Fechar o menu" className="rounded-md p-1.5 hover:bg-fundo-3 lg:hidden">
             <X className="size-5" />
+          </button>
+          <button type="button" onClick={() => setSidebarOculta(true)} aria-label="Ocultar barra lateral" title="Ocultar barra lateral"
+            className="hidden rounded-md p-1.5 text-texto-2 transition hover:bg-fundo-3 hover:text-texto lg:inline-flex">
+            <PanelLeftClose className="size-5" aria-hidden />
           </button>
         </div>
         <Navegacao onNavegar={() => setMenu(false)} />

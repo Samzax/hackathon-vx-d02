@@ -76,7 +76,7 @@ export default function ComoFunciona() {
             <Seta />
             <Caixa titulo="Cadastro versionado" sub={`${numero(r.obrigacoes)} obrigações de ${r.normas} normas`} tom="torre" />
             <Seta />
-            <Caixa titulo="Torre por ativo" sub={`${r.ativos} ativos de ${empresa.nome}`} tom="torre" forte />
+            <Caixa titulo="Torre por ativo" sub={`${r.ativos} ativos monitorados`} tom="torre" forte />
           </div>
           <div role="listitem">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-texto-3">Prova de cumprimento</p>

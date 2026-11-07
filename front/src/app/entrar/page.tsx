@@ -33,18 +33,12 @@ export default function Entrar() {
           <Logo className="h-9 w-auto" />
         </div>
         <Cartao className="px-6 py-7">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-texto-3">Torre de controle regulatória</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">Entrar</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Entrar</h1>
 
           <Botao variante="primario" className="mt-5 w-full" icone={<Play className="size-4" />} carregando={demo.isPending}
             onClick={() => demo.mutate()}>
             Entrar na demo
           </Botao>
-          <p className="mt-2 text-xs text-texto-2">
-            Conta de teste da Mineradora Serra Azul (fictícia), sem senha: troque de visão (Diretoria, cada gestor, TI, curadoria)
-            pelo menu.
-          </p>
-
           <div className="my-6 flex items-center gap-3 text-xs text-texto-3">
             <span className="h-px flex-1 bg-borda" />ou com a sua conta<span className="h-px flex-1 bg-borda" />
           </div>
@@ -52,10 +46,12 @@ export default function Entrar() {
           <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); login.mutate(); }}>
             <CampoEntrada rotulo="E-mail" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
             <CampoEntrada rotulo="Senha" type="password" autoComplete="current-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
-            <Botao type="submit" className="w-full" carregando={login.isPending}>Entrar</Botao>
+            <Botao type="submit" variante="primario" className="w-full" carregando={login.isPending}>Entrar</Botao>
           </form>
           {erro && <Aviso tipo="erro" className="mt-4">{mensagem(erro)}.</Aviso>}
-          <p className="mt-5 text-xs text-texto-3">Sem conta? Peça à TI da sua empresa: é ela que cria os acessos.</p>
+          <p className="mt-5 text-xs text-texto-3">
+            Esqueceu sua senha? <a href="mailto:demo@mitra.com" className="font-medium text-marca hover:underline">Entre em contato com o suporte</a>
+          </p>
         </Cartao>
       </div>
     </main>

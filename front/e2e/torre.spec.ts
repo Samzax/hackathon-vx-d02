@@ -16,8 +16,8 @@ async function entrarNaDemo(page: Page) {
 }
 
 async function verComo(page: Page, visao: string) {
-  await page.getByLabel("Quem está olhando").selectOption(visao);
-  await expect(page.getByLabel("Quem está olhando")).toHaveValue(visao);
+  await page.getByLabel("Persona").selectOption(visao);
+  await expect(page.getByLabel("Persona")).toHaveValue(visao);
 }
 
 function numero(page: Page, rotulo: string) {
@@ -26,8 +26,7 @@ function numero(page: Page, rotulo: string) {
 
 test("entrar na demo e ver as 4 atrasadas", async ({ page }) => {
   await entrarNaDemo(page);
-  await expect(page.getByTestId("empresa")).toHaveText("Mineradora Serra Azul");
-  await expect(page.getByTestId("hoje")).toHaveText("07/11/2026");
+  await expect(page.getByRole("navigation", { name: "Telas da torre" }).getByRole("link", { name: "Mercado" })).toHaveCount(0);
   await expect(numero(page, "Atrasada")).toContainText("4");
   const atrasadas = page.getByTestId("grupo-atrasada");
   await expect(atrasadas.getByTestId("item-caixa")).toHaveCount(4);
@@ -38,6 +37,17 @@ test("entrar na demo e ver as 4 atrasadas", async ({ page }) => {
   await numero(page, "Atrasada").click();
   await page.waitForURL(/\/entregas\/\?status=atrasada/);
   await expect(page.getByTestId("tabela-entregas").locator("tbody tr")).toHaveCount(4);
+});
+
+test("só a Curadoria Mitra acessa as páginas Sobre", async ({ page }) => {
+  await entrarNaDemo(page);
+  await page.goto("/sobre/mercado/");
+  await page.waitForURL(/\/caixa\/$/);
+
+  await verComo(page, "Curadoria Mitra (plataforma)");
+  const nav = page.getByRole("navigation", { name: "Telas da torre" });
+  await expect(nav.getByRole("link", { name: "Mercado" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Como funciona" })).toBeVisible();
 });
 
 test("registrar uma entrega tira a obrigação das atrasadas", async ({ page }) => {

@@ -377,7 +377,6 @@ def boletim(conn, empresa_id: int, hoje: date, desde: date, responsavel: str | N
             out.append(f"- **{m.codigo}** · {m.titulo} — {m.ato}: {campos} "
                        f"(ativos: {', '.join(sorted(set(m.ativos) & set(ativos)))})")
         out.append("")
-    out.append("Gerado pela Mitra. Cada item traz a norma e o dispositivo; o trecho literal está na torre.")
     return "\n".join(out)
 
 

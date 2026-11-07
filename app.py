@@ -320,7 +320,7 @@ def _quem_entrou():
     with st.container(border=True):
         st.markdown(f"**{usuario['nome']}**  \n<small>{usuarios.PAPEIS[usuario['papel']]}"
                     f"{' · ' + usuario['area'] if usuario['area'] else ''}"
-                    f"{' · conta de teste' if usuario['teste'] else ''}</small>", unsafe_allow_html=True)
+                    f"{' · Teste' if usuario['teste'] else ''}</small>", unsafe_allow_html=True)
         st.button("Sair", icon=":material/logout:", on_click=_sair, key="sair", width="stretch")
 
 
@@ -458,8 +458,6 @@ with st.sidebar:
         resta = (f" · {max(LIMITE_IA_SESSAO - st.session_state.get('ia_usadas', 0), 0)} análises novas nesta visita"
                  if LIMITE_IA_SESSAO else "")
         st.caption(f"IA ligada · gasto hoje {_usd(rot_ia.gasto_hoje(), 3)}{teto}{resta}")
-    else:
-        st.caption("IA desligada: só regra e respostas em cache")
     if usuario["teste"] and st.button("Recriar demo", help="Apaga decisões, entregas e empresas importadas e volta ao estado inicial"):
         _conexao.clear()
         for k in ("leitura", "analise_teste", "ato_teste", "radar_teste", "empresa_id"):
@@ -886,7 +884,6 @@ def _mapa_geo():
     chave = f"mapa_geo_{visao}"
     st.pydeck_chart(deck, height=300, selection_mode="single-object", key=chave,
                     on_select=partial(_escolheu_no_mapa_geo, chave))
-    st.caption("Posições fictícias, na região do Quadrilátero Ferrífero (MG). Clique num ponto para abrir a ficha.")
 
 
 def _selo(codigo: str) -> str:

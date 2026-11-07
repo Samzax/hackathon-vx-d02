@@ -238,7 +238,7 @@ export default function Mudancas() {
   return (
     <>
       <Titulo sobre="Regulatório" titulo="Mudanças">
-        O que o radar propôs a partir do Diário Oficial. Nada muda sem aprovação; toda versão guarda o ato, o trecho e quem decidiu.
+        Mudanças propostas a partir de fontes oficiais
       </Titulo>
       {mudancas.isLoading && <Carregando linhas={4} />}
       {mudancas.error && <ErroCarga erro={mudancas.error} onTentar={() => mudancas.refetch()} />}

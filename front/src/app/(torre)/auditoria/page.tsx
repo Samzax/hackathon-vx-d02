@@ -31,17 +31,14 @@ export default function Auditoria() {
   const opcoes = [...new Set(todas.map((l) => l.acao))].sort().map((a) => ({ valor: a, rotulo: a.replace(/_/g, " ") }));
   const termo = busca.trim().toLowerCase();
   const linhas = todas.filter((l) => (!acoes.length || acoes.includes(l.acao))
-    && (!termo || `${l.usuario} ${l.alvo} ${detalhe(l.detalhe)} ${l.request_id}`.toLowerCase().includes(termo)));
+    && (!termo || `${l.em} ${emBrasilia(l.em)} ${l.usuario} ${l.alvo} ${detalhe(l.detalhe)}`.toLowerCase().includes(termo)));
 
   return (
     <>
-      <Titulo sobre="Administração" titulo="Auditoria">
-        Quem fez o quê, quando e de onde: entradas, entregas, decisões de norma, cadastro e contas. A trilha é só de leitura.
-        {t.plataforma ? " Na plataforma, de todas as clientes." : ""}
-      </Titulo>
+      <Titulo titulo="Auditoria" />
       <div className="grid gap-3 sm:grid-cols-[1fr_2fr_160px]">
         <FiltroMulti rotulo="Ação" valor={acoes} onMudar={setAcoes} opcoes={opcoes} todos="todas" />
-        <CampoEntrada rotulo="Buscar" type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="pessoa, ativo, obrigação, request id…" />
+        <CampoEntrada rotulo="Buscar" type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="data, e-mail, nome do usuário, ativo, obrigação…" />
         <CampoSelecao rotulo="Últimas" value={limite} onChange={(e) => setLimite(Number(e.target.value))}>
           {LIMITES.map((n) => <option key={n} value={n}>{n} ações</option>)}
         </CampoSelecao>
@@ -50,11 +47,11 @@ export default function Auditoria() {
       {trilha.error && <div className="mt-4"><ErroCarga erro={trilha.error} onTentar={() => trilha.refetch()} /></div>}
       {trilha.data && (
         <>
-          <p className="mt-4 text-xs text-texto-2">{linhas.length} de {plural(todas.length, "ação", "ações")} · horário de Brasília</p>
+          <p className="mt-4 text-xs text-texto-2">{linhas.length} de {plural(todas.length, "ação", "ações")}</p>
           <div className="mt-2 max-h-[640px] overflow-auto rounded-lg border border-borda">
             <table className="w-full min-w-[900px] text-sm" data-testid="auditoria">
               <thead className="sticky top-0 bg-fundo-2 text-left text-xs text-texto-2">
-                <tr>{["Quando", "Quem", "Ação", "Alvo", "Detalhe", "Resultado", ...(t.plataforma ? ["Empresa"] : [])].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
+                <tr>{["Data", "E-mail", "Ação", "Nome do Usuário", "Detalhe", "Resultado", ...(t.plataforma ? ["Empresa"] : [])].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-borda">
                 {linhas.map((l) => (

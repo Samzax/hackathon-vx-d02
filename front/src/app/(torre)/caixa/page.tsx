@@ -86,9 +86,6 @@ function Boletim() {
       onToggle={setAberto}
       resumo={<span className="flex items-center gap-2 font-medium"><Mail className="size-4 text-marca" aria-hidden />Boletim da semana — {quem}</span>}
     >
-      <p className="text-[13px] text-texto-2">
-        O que cada gestor receberia toda segunda, só com os ativos dele. Aqui o boletim é só gerado; nada é enviado.
-      </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Botao variante="primario" tamanho="p" icone={<FileDown className="size-3.5" />}
           onClick={() => baixe(`/api/v1/empresas/${empresa.id}/boletim`, `boletim_${sufixo}.pdf`, { formato: "pdf" })}>
@@ -132,10 +129,7 @@ export default function Caixa() {
 
   return (
     <>
-      <Titulo sobre="Operação" titulo="Caixa de entrada">
-        {t.veTudo ? "O que pede decisão ou ação em todos os ativos." : `O que é de ${t.eu.area ?? t.eu.visao}.`}{" "}
-        Desde {dataBR(painel.data?.desde)}.
-      </Titulo>
+      <Titulo titulo="Caixa de entrada" />
 
       {painel.error ? <ErroCarga erro={painel.error} onTentar={() => painel.refetch()} /> : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" data-testid="numeros">
@@ -155,7 +149,7 @@ export default function Caixa() {
         <LeitorDeDocumento />
       </div>
 
-      <h2 className="mb-3 mt-8 text-base font-semibold">O que precisa de {t.veTudo ? "decisão ou ação" : "mim"}</h2>
+      <h2 className="mb-3 mt-8 text-base font-semibold">Revisões Pendentes</h2>
       {painel.isLoading && <Carregando linhas={5} />}
       <div className="space-y-4">
         {pendentes.length > 0 && (
@@ -164,7 +158,6 @@ export default function Caixa() {
               <Etiqueta tom="marca">
                 {pendentes.length} {pendentes.length === 1 ? "mudança de norma" : "mudanças de norma"} aguardando decisão
               </Etiqueta>
-              <span className="text-xs text-texto-2">nada muda sem aprovação</span>
             </div>
             <ul className="divide-y divide-borda">
               {pendentes.map((m) => (

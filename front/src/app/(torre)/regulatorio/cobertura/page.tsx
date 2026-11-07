@@ -6,7 +6,7 @@ import { CLASSES, fonteLida, rotuloDaCobertura, tomDaCobertura } from "@/lib/cob
 import { type ItemCobertura, useCobertura } from "@/lib/consultas";
 import { curto, plural } from "@/lib/formato";
 import { TIPO_ATIVO } from "@/lib/status";
-import { useEmpresa, useTorre } from "@/lib/torre";
+import { useTorre } from "@/lib/torre";
 
 type Norma = ItemCobertura["em_curadoria"][number];
 
@@ -125,12 +125,11 @@ function Linha({ i, plataforma }: { i: ItemCobertura; plataforma: boolean }) {
 
 export default function Cobertura() {
   const t = useTorre();
-  const empresa = useEmpresa();
   const cobertura = useCobertura();
   return (
     <>
       <Titulo sobre="Regulatório" titulo="Cobertura normativa">
-        Que normas valem para os ativos da {empresa.nome}, por jurisdição e tipo de ativo: o que já está no catálogo, até onde
+        Que normas valem para estes ativos, por jurisdição e tipo de ativo: o que já está no catálogo, até onde
         cada fonte oficial foi lida, o que a plataforma sabe que não cobre e as normas já publicadas que ainda esperam a curadoria
         Mitra. Jurisdição sem fonte automática aparece como cobertura não verificada, nunca como coberta.
       </Titulo>

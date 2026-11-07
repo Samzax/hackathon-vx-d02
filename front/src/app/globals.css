@@ -128,6 +128,17 @@ body {
   font-feature-settings: "cv11", "ss01";
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .tema-em-transicao,
+  .tema-em-transicao *,
+  .tema-em-transicao *::before,
+  .tema-em-transicao *::after {
+    transition-duration: 280ms !important;
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow, filter !important;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+}
+
 .num {
   font-variant-numeric: tabular-nums;
 }
