@@ -135,3 +135,21 @@ def test_bloco_que_falha_e_dividido_ao_meio():
     res = extrator.extrair(rot, "Res. Teste", unidades, "barragem")
     assert res.blocos_sem_resposta == []
     assert any("dividido" in m for m in res.modelos)
+
+
+def test_pula_sumario_com_linhas_coladas_corta_pelo_numero_do_item():
+    """Regressão do PDF da NR-18 (2026): o sumário sai com linhas coladas ("18.1 Objetivo 118.78.2
+    Campo de aplicação"), então o parágrafo do corpo nunca é idêntico ao do sumário — o corte do
+    sumário é pelo número do item, não pelo texto inteiro."""
+    from mitra.normas import _pula_sumario
+
+    paras = ["NR 18 - SEGURANÇA E SAÚDE NO TRABALHO NA INDÚSTRIA DA CONSTRUÇÃO",
+             "18.1 Objetivo 118.78.2 Campo de aplicação",
+             "18.4 Programa de Gerenciamento de Riscos (PGR)",
+             "18.1 Objetivo",
+             "18.1.1 Esta Norma Regulamentadora tem o objetivo de estabelecer diretrizes.",
+             "18.4 Programa de Gerenciamento de Riscos (PGR)"]
+    corpo = _pula_sumario(paras)
+    assert corpo[0] == "18.1 Objetivo" and corpo[1].startswith("18.1.1")
+    # sem sumário (o primeiro item não repete), o corpo começa no primeiro item, como antes
+    assert _pula_sumario(paras[3:])[0] == "18.1 Objetivo"

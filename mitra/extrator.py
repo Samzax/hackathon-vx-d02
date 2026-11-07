@@ -72,6 +72,13 @@ VOCABULARIO = {
         "dragas": "verdadeiro se opera dragas flutuantes",
         "trabalhadores": "número de trabalhadores (número)",
     },
+    # obra de construção (NR-18 e NR-35), fase B da vertical obras (7/11/2026)
+    "obra": {
+        "categoria_obra": "edificacao, infraestrutura, industrial, demolicao ou outra",
+        "fase_obra": "projeto, execucao, paralisada ou concluida",
+        "trabalhadores": "número de trabalhadores no canteiro (número)",
+        "trabalho_altura": "verdadeiro se há trabalho acima de 2 m do nível inferior",
+    },
     "estabelecimento_saude": {
         "tem_nsp": "verdadeiro se o serviço tem Núcleo de Segurança do Paciente",
         "exposicao_biologica": "verdadeiro se trabalhadores podem se expor a agentes biológicos",

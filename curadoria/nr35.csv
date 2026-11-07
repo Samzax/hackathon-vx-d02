@@ -1,0 +1,12 @@
+codigo,artigo,titulo_contem,agenda,titulo,responsavel,regra,aplica_se_a
+N35-01,35.4.2.1,treinamento inicial,evento,Realizar o treinamento inicial de trabalho em altura (8 h) antes do início da atividade,Segurança do Trabalho,trabalho_altura,
+N35-02,35.4.2.2,periódico,anos:2,Realizar o treinamento periódico de trabalho em altura a cada dois anos,Segurança do Trabalho,trabalho_altura,
+N35-03,35.5.5,Análise de Risco,evento,Preceder todo trabalho em altura de Análise de Risco (AR),Segurança do Trabalho,trabalho_altura,
+N35-04,35.5.7,não rotineiras,evento,Emitir Permissão de Trabalho (PT) para atividades não rotineiras em altura,Segurança do Trabalho,trabalho_altura,
+N35-05,35.5.8,arquivar,evento,Emitir e arquivar a PT com rastreabilidade,Segurança do Trabalho,trabalho_altura,
+N35-06,35.6.6.3,inspeção periódica,meses:12,Realizar a inspeção periódica do SPIQ,Segurança do Trabalho,trabalho_altura,
+N35-07,35.7.1,emergências,evento,Manter procedimentos de resposta a emergências de trabalho em altura,Gerência de Emergências,trabalho_altura,
+N35-08,35.4.1,formalmente autorizado,evento,Garantir que trabalho em altura seja feito só por trabalhador autorizado,Segurança do Trabalho,trabalho_altura,
+N35-09,35.3.1 i,sistemática,evento,Estabelecer a sistemática de autorização para trabalho em altura,Segurança do Trabalho,trabalho_altura,
+N35-10,35.7.3,salvamento,evento,Garantir capacitação e aptidão da equipe de salvamento,Gerência de Emergências,trabalho_altura,
+N35-11,35.4.4,estado de saúde,evento,Avaliar o estado de saúde dos trabalhadores em altura (NR-07),Segurança do Trabalho,trabalho_altura,

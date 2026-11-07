@@ -129,13 +129,16 @@ def paragrafos_de_linhas(linhas: list[str]) -> list[str]:
 
 def _pula_sumario(paragrafos: list[str]) -> list[str]:
     """Algumas NRs abrem com um sumário ("22.1 Objetivo", ..., "ANEXO I ..."):
-    o corpo começa na segunda vez que o primeiro item aparece."""
+    o corpo começa na segunda vez que o primeiro item aparece. A comparação é pelo número do
+    item, não pelo parágrafo inteiro: no PDF da NR-18 (2026) o sumário sai com linhas coladas
+    ("18.1 Objetivo 118.78.2 ..."), e o parágrafo do corpo nunca é idêntico ao do sumário."""
     primeiro = next((i for i, p in enumerate(paragrafos) if _ITEM.match(p)), None)
     if primeiro is None:
         return paragrafos
-    cabeca = paragrafos[primeiro]
+    cabeca_id = _ITEM.match(paragrafos[primeiro]).group(1)
     for i in range(primeiro + 1, len(paragrafos)):
-        if paragrafos[i] == cabeca:
+        m = _ITEM.match(paragrafos[i])
+        if m and m.group(1) == cabeca_id:
             return paragrafos[i:]
     return paragrafos[primeiro:]
 

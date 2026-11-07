@@ -50,6 +50,12 @@ DOCUMENTOS = {
     "plano de seguranca do paciente": ("Plano de Segurança do Paciente", "plano de seguranca do paciente"),
     "plano de gerenciamento de residuos": ("PGRSS", "plano de gerenciamento de residuos"),
     "capacitacao em riscos biologicos": ("Capacitação em riscos biológicos", "capacitacao trabalhadores expostos"),
+    # obra (NR-18 e NR-35, fase B de 7/11/2026)
+    "programa de gerenciamento de riscos": ("PGR da obra", "pgr"),
+    "treinamento para trabalho em altura": ("Treinamento NR-35", "trabalho em altura"),
+    "inspecao periodica do spiq": ("Inspeção do SPIQ", "spiq"),
+    "liberacao de uso do andaime": ("Liberação de andaime", "andaime"),
+    "comunicacao de acidente de trabalho": ("CAT", "acidente fatal"),
 }
 
 SISTEMA = """Você lê documentos de conformidade de uma mineradora (fichas de inspeção, relatórios,
@@ -194,8 +200,18 @@ def _estado_conservacao(texto_n: str) -> dict[str, int]:
 _EC_ISE = ("EC1", "EC3", "EC4", "EC5")      # Res. 220, art. 42: EC2 = 5 não obriga ISE
 
 
-def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date) -> None:
-    """A regra de ISE é a da norma que vale hoje para o ativo (a obrigação de ISE vigente diz qual)."""
+def _gatilhos(conn, le: Leitura, ativos: list[dict], hoje: date, texto_n: str = "") -> None:
+    """A regra de ISE é a da norma que vale hoje para o ativo (a obrigação de ISE vigente diz qual).
+    Em obra, a CAT de acidente fatal abre o isolamento do local (NR-18, 18.16.23). O gatilho de
+    embargo/interdição fica pendente: a NR-18 não o traz (é a NR-3, ainda fora do catálogo)."""
+    if le.ativo and le.documento == "CAT" and re.search(r"\bfatal|\bobito|\bfalecimento", texto_n):
+        aid = next(a["id"] for a in ativos if a["codigo"] == le.ativo)
+        isolar = _obrigacao(conn, aid, "isolar", hoje.isoformat())
+        if isolar:
+            le.acionar.append(isolar["codigo"])
+            le.gatilhos.append("Acidente fatal: comunicar por escrito ao órgão regional e isolar o local "
+                               "até a liberação (NR-18, 18.16.23)")
+        return
     ise = None
     if le.ativo:
         aid = next(a["id"] for a in ativos if a["codigo"] == le.ativo)
@@ -301,7 +317,7 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
                 else:
                     le.periodo = agenda.periodo_de(ob["agenda"], d)
                     _atraso(le, texto, ob["agenda"], d)
-    _gatilhos(conn, le, ativos, hoje)
+    _gatilhos(conn, le, ativos, hoje, tn)
     return le
 
 

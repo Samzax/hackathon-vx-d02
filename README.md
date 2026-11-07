@@ -20,7 +20,7 @@ Cada gestor vê só os seus ativos e ninguém precisa ler norma nenhuma.
 
 ## A demo
 
-A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. Ela reúne 8 ativos da mineração e 129 obrigações cadastradas, em 7 de novembro de 2026. Com o protótipo de saúde, são 135 obrigações no ambiente de demonstração:
+A Mineradora Serra Azul é fictícia, mas os perfis das quatro barragens vêm do SIGBM. Ela reúne 8 ativos da mineração e 129 obrigações cadastradas, em 7 de novembro de 2026. Com o protótipo de saúde e o catálogo de obras (NR-18 e NR-35), são 159 obrigações no ambiente de demonstração:
 
 ### Protótipo de outro setor: saúde
 

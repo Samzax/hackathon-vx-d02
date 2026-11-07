@@ -1,0 +1,14 @@
+codigo,artigo,titulo_contem,agenda,titulo,responsavel,regra,aplica_se_a,periodicidade
+N18-01,18.4.1,PGR,evento,Elaborar e implementar o PGR do canteiro de obras,Segurança do Trabalho,*,Todo canteiro de obras,
+N18-02,18.4.3.1,atualizado,evento,Manter o PGR atualizado conforme a etapa da obra,Segurança do Trabalho,*,Todo canteiro de obras,
+N18-03,18.5.1,vivência,evento,Projetar e manter as áreas de vivência em condições adequadas,Administração da Obra,*,Todo canteiro de obras,
+N18-04,18.6.7,medições,evento,Realizar inspeções e medições elétricas com laudo de profissional habilitado,Engenharia da Obra,*,Instalações elétricas do canteiro,
+N18-05,18.9.4.4.5,semanal,semanal+2d,Inspecionar semanalmente o sistema de redes de segurança,Segurança do Trabalho,trabalho_altura,Obras com redes de segurança contra quedas,Semanal
+N18-06,18.11.7 c,freios,meses:3,Realizar o laudo de teste dos freios de emergência do elevador a cada 90 dias,Engenharia da Obra,*,Obras com elevador de transporte vertical,A cada 90 dias
+N18-07,18.12.4,liberação,evento,Emitir o registro de liberação de uso do andaime,Segurança do Trabalho,trabalho_altura,Obras com andaimes,
+N18-08,18.14.1,Capacitar os trabalhadores,evento,Capacitar os trabalhadores da obra conforme a NR-01,Segurança do Trabalho,*,Todo canteiro de obras,
+N18-09,18.16.9,incêndios,evento,Dotar o canteiro de medidas de prevenção de incêndios,Segurança do Trabalho,*,Todo canteiro de obras,
+N18-10,18.7.2.3,"1,25",evento,"Obter liberação de profissional habilitado para escavações acima de 1,25 m",Engenharia da Obra,*,Obras com escavação,
+N18-11,18.16.23 a,Comunicar,evento,Comunicar o acidente fatal por escrito ao órgão regional,Segurança do Trabalho,*,Todo canteiro de obras,
+N18-12,18.16.23 b,Isolar,evento,Isolar o local do acidente fatal até a liberação,Segurança do Trabalho,*,Todo canteiro de obras,
+N18-13,18.7.1.1,Demolição,evento,Elaborar e implementar o Plano de Demolição,Engenharia da Obra,categoria_obra = demolicao,Obras de demolição,

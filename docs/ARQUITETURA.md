@@ -118,12 +118,14 @@ ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, uni
 
 ## Leitor de evidência
 
-Quem opera manda o PDF e a torre dá baixa na obrigação certa (`mitra/evidencias.py`). São 26 tipos de documento:
+Quem opera manda o PDF e a torre dá baixa na obrigação certa (`mitra/evidencias.py`). São 31 tipos de documento:
 - barragem: FIR, EIR, RISR, DCE, RPSB, DCO, RCO, ISE, RCIE e recibo do EIE, simulado, treinamento e seminário do PAEBM, PGRBM;
 - vaso NR-13: exame externo e interno;
 - mina: treinamento da brigada e simulação de emergência da NR-22;
 - licença: efluentes, águas, ruído, PRAD e relatório de condicionantes;
-- saúde (setor vida_plena): Plano de Segurança do Paciente, PGRSS e capacitação em riscos biológicos.
+- saúde (setor vida_plena): Plano de Segurança do Paciente, PGRSS e capacitação em riscos biológicos;
+- obra (NR-18/NR-35): PGR da obra, treinamento NR-35, inspeção do SPIQ, liberação de andaime e CAT — a CAT
+  de acidente fatal abre, por gatilho, o isolamento do local (NR-18, 18.16.23), no padrão da ISE.
 
 Ficam de fora só as obrigações únicas comprovadas por plano ou requerimento, como a adequação da ZAS e a renovação da licença.
 
@@ -298,7 +300,7 @@ Mais duas proteções:
 | Extrair obrigações da NR-13 | 1 vez por norma | US$ 0,045 |
 | Extrair obrigações da NR-22 (capítulo de barragens) | 1 vez por norma | US$ 0,009 |
 | Analisar o impacto de um ato candidato do DOU | ~2 mil tokens de entrada | US$ 0,0005 a 0,003 |
-| Funil de um mês do DOU (7.884 atos) | 80 atos de interesse → ~70 para a IA barata | ~US$ 0,05 |
+| Funil de um mês do DOU (7.884 atos, 825 da ANM) | 80 atos de interesse → ~70 para a IA barata | ~US$ 0,05 |
 
 **O radar lê além da ANM (7/11).** A camada 0 aceita ato normativo dos órgãos de interesse (ANM, MTE,
 meio ambiente, ANA, saúde/Anvisa, leis e decretos federais — `collector/dou.py: ORGAOS_RADAR`) e, de

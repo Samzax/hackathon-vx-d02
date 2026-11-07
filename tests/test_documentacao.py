@@ -18,7 +18,8 @@ def test_numeros_do_cadastro_na_documentacao():
     res220 = _linhas(RAIZ / "seed_obligations.csv")
     cadastro = list((RAIZ / "cadastro").glob("*.csv"))
     total = res220 + sum(_linhas(p) for p in cadastro)
-    mineracao = res220 + sum(_linhas(p) for p in cadastro if p.name != "saude.csv")
+    # saúde e obras são outras verticais: ficam fora da conta "da mineração" do README
+    mineracao = res220 + sum(_linhas(p) for p in cadastro if p.name not in ("saude.csv", "nr18.csv", "nr35.csv"))
     readme = (RAIZ / "README.md").read_text(encoding="utf-8")
     roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
     arquitetura = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")

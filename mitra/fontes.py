@@ -42,6 +42,9 @@ FONTES: dict[str, tuple[str, str]] = {
                                "https://www.almg.gov.br/legislacao-mineira/texto/DEC/48140/2021/"),
     "nr-13-atualizada-2023-b.pdf": ("NR-13", _NRS + "nr-13-atualizada-2023-b.pdf"),
     "nr-22-atualizada-2026.pdf": ("NR-22", _NRS + "nr-22-atualizada-2026.pdf"),
+    # vertical obras (fase B de 7/11/2026): condições de segurança na construção e trabalho em altura
+    "NR18atualizada2026I.pdf": ("NR-18", _NRS + "NR18atualizada2026I.pdf"),
+    "nr-35-atualizada-2025-1.pdf": ("NR-35", _NRS + "nr-35-atualizada-2025-1.pdf"),
     "portaria-mte-no-105-altera-a-nr-22-anexo-iii-nr-09-e-aprova-o-anexo-v-poeiras-minerais-ii.pdf": (
         "Portaria MTE 105/2026 (altera a NR-22)",
         _PORTARIAS + "portaria-mte-no-105-altera-a-nr-22-anexo-iii-nr-09-e-aprova-o-anexo-v-poeiras-minerais-ii.pdf"),
