@@ -86,7 +86,7 @@ export function useTema() {
     const novo = tema === "escuro" ? "claro" : "escuro";
     document.documentElement.dataset.tema = novo;
     try {
-      localStorage.setItem("regulaia_tema", novo);
+      localStorage.setItem("mitra_tema", novo);
     } catch {
       /* sem armazenamento: vale só nesta aba */
     }
@@ -95,9 +95,11 @@ export function useTema() {
 }
 
 export function Logo({ className }: { className?: string }) {
-  const { tema } = useTema();
-  // eslint-disable-next-line @next/next/no-img-element -- SVG da marca, sem otimização no export estático
-  return <img src={tema === "escuro" ? "/logo_escuro.svg" : "/logo_claro.svg"} alt="RegulaIA" width={150} height={30} className={className} />;
+  const [erro, setErro] = useState(false);
+  if (erro) return <span className={cx("grid size-8 place-items-center rounded-lg bg-[#14b8a6] font-bold text-[#04282b]", className)}>M</span>;
+  // A logo final entra depois em /public/logo.png; o placeholder mantém a moldura estável até lá.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/logo.png" alt="Mitra" width={32} height={32} className={cx("size-8 rounded-lg object-cover", className)} onError={() => setErro(true)} />;
 }
 
 // ------------------------------------------------------------------ menu
