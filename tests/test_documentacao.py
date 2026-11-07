@@ -120,7 +120,8 @@ def test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto():
     precisa = ["app.py", "seed_obligations.csv", "cadastro/res95_2022.csv", "data/cache_ia_demo.json",
                "data/historico_serra_azul.json", "data/serra_azul.json", "data/mercado_sigbm.json",
                "tests/fixtures/dou/S01_amostra.zip", ".streamlit/config.toml", "uv.lock", ".env.example",
-               "assets/marca.svg", "assets/logo_claro.svg", "assets/logo_escuro.svg", "data/posicoes_demo.json"]
+               "assets/marca.svg", "assets/logo_claro.svg", "assets/logo_escuro.svg", "data/posicoes_demo.json",
+               "regulaia/temas.toml", "data/descoberta_demo.json"]
     for f in precisa:
         assert (RAIZ / f).exists(), f
         assert not _ignorado_no_docker(f, padroes), f"{f} ficaria fora da imagem"
@@ -445,3 +446,21 @@ def test_numeros_da_analise_de_mercado_saem_dos_dados():
     assert all(59 <= n <= 61 for _, n in federal)                  # "cerca de 60" continua verdade
     mil = f"{pnsb * 60 / 1000:.1f}".replace(".", ",")
     assert f"{pnsb} barragens × cerca de 60 entregas = **cerca de {mil} mil entregas datadas por ano**" in doc
+
+
+def test_numeros_da_descoberta_saem_da_fila_da_demo():
+    """A rodada de verdade citada no README é a que está em data/descoberta_demo.json."""
+    import json
+    from collections import Counter
+
+    dados = json.loads((RAIZ / "data" / "descoberta_demo.json").read_text(encoding="utf-8"))
+    lidas = sum(b["lidas"] for b in dados["buscas"])
+    st = Counter(c["status"] for c in dados["candidatas"])
+    custo = sum(json.loads(c["triagem"])["custo_usd"] for c in dados["candidatas"] if c["triagem"])
+    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+    assert f"{lidas:,}".replace(",", ".") + " normas lidas" in readme
+    assert f"{len(dados['candidatas'])} candidatas" in readme
+    assert f"{st['relevante']} relevantes para a curadoria" in readme
+    assert f"{st['irrelevante']} descartadas pela IA" in readme
+    assert f"{st['catalogada']} já no catálogo" in readme
+    assert f"US$ {custo:.2f}".replace(".", ",") in readme

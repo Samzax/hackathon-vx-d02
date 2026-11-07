@@ -176,3 +176,40 @@ CREATE TABLE IF NOT EXISTS sessao (
     expira_em   TEXT NOT NULL,
     visao       TEXT
 );
+
+-- Descoberta de normas (descoberta.py): normas já publicadas que podem valer para os ativos da carteira.
+-- É trabalho da plataforma (curadoria RegulaIA), não de uma cliente: fica fora do "Recriar demo".
+CREATE TABLE IF NOT EXISTS norma_candidata (
+    id            INTEGER PRIMARY KEY,
+    chave         TEXT NOT NULL UNIQUE,         -- BR:LEI:12334/2010, MG:DEC:48078/2020, BR:RES-ANM:95/2022
+    jurisdicao    TEXT NOT NULL,                -- BR ou a UF
+    fonte         TEXT NOT NULL,                -- senado, anm, almg
+    tipo          TEXT NOT NULL,
+    numero        TEXT NOT NULL,
+    ano           INTEGER NOT NULL,
+    titulo        TEXT NOT NULL,
+    ementa        TEXT,
+    indexacao     TEXT,
+    data          TEXT,                         -- AAAA-MM-DD
+    url           TEXT,
+    situacao      TEXT,                         -- como a fonte diz (VIGENTE...); vazio: a fonte não diz
+    temas         TEXT NOT NULL DEFAULT '[]',   -- tipos de ativo cujos termos a norma cita (JSON)
+    triagem       TEXT,                         -- o que a IA respondeu (JSON); vazio: ainda não triada
+    status        TEXT NOT NULL DEFAULT 'nova'
+                  CHECK (status IN ('nova', 'relevante', 'irrelevante', 'catalogada', 'aprovada', 'descartada')),
+    decidida_por  TEXT,
+    decidida_em   TEXT,
+    nota          TEXT,
+    vista_em      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Até onde cada fonte foi lida: a cobertura só diz "verificada" do que foi lido de fato.
+CREATE TABLE IF NOT EXISTS descoberta_busca (
+    fonte       TEXT PRIMARY KEY,
+    jurisdicao  TEXT NOT NULL,
+    desde       INTEGER NOT NULL,
+    ate         INTEGER NOT NULL,
+    lidas       INTEGER NOT NULL,
+    candidatas  INTEGER NOT NULL,
+    em          TEXT NOT NULL
+);

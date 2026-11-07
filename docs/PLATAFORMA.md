@@ -92,6 +92,17 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
 - [ ] 2C chat "Pergunte à torre" no front: rota na API (ex.: `POST /api/v1/pergunta`) que roda o Claude
       (Bedrock na AWS) com as mesmas ferramentas no escopo da sessão, e a tela no front (sessão do front).
 
+### Descoberta de normas (produto, não a demo)
+- [x] `regulaia/descoberta.py`: perfil da carteira (jurisdição x tipo de ativo), três fontes oficiais com dados
+  abertos (Senado, ANMlegis, Assembleia de Minas), camada 0 sem IA (termos em `regulaia/temas.toml`, revogada e
+  regra fora, segunda passada pela citação na ementa), triagem pela IA em paralelo (uma por vez com Bedrock),
+  curadoria (aprovar/descartar com nome e nota) e cobertura por cliente com as lacunas conhecidas.
+- [x] Tabelas `norma_candidata` e `descoberta_busca` (migração 0003); a fila real vai para a demo em
+  `data/descoberta_demo.json` e entra no `demo.preparar`, fora do "Recriar demo".
+- [x] `tests/test_descoberta.py` com trechos reais das três fontes em `tests/fixtures/descoberta/`.
+- [ ] API e front (cobertura da empresa, fila da curadoria, decisão): [docs/TAREFA_DESCOBERTA.md](TAREFA_DESCOBERTA.md), para a CLI.
+- [ ] Mais conectores: outros estados (PA, BA, GO...) sem o LexML, que bloqueia robô; Copam/Semad em MG; Conama.
+
 ### Fase 3
 - [ ] GitHub Actions: ruff, pytest (SQLite e Postgres), front, docker build, cdk synth
 

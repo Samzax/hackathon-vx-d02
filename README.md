@@ -75,6 +75,26 @@ Os 123 trechos das normas oficiais são conferidos por teste (`tests/test_trecho
 
 O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto (`regulaia/extrator.py`), uma pessoa escolhe e ajusta (`curadoria/*.csv`) e o script gera o CSV final (`regulaia/curadoria.py`). Repetir o processo dá o mesmo resultado.
 
+## Descoberta: as normas que a carteira precisa e o catálogo ainda não tem
+
+O catálogo é da plataforma, e o radar do DOU pega a norma nova. A descoberta (`regulaia/descoberta.py`) responde a outra pergunta: das normas já publicadas, quais valem para os ativos das clientes e ainda não foram catalogadas?
+
+1. **Perfil:** dos ativos de todas as clientes sai o que cobrir, por jurisdição e tipo de ativo (barragem em MG, unidade no Brasil, vaso de pressão no Brasil...).
+2. **Fontes oficiais com dados abertos**, ano a ano: o Senado (leis e decretos federais desde 1967), o ANMlegis (resoluções da ANM, com a revogada marcada) e a Assembleia de Minas (a legislação mineira desde 1989, com a situação de vigência).
+3. **Camada 0, sem IA:** fica a norma vigente que cita os termos de um tipo de ativo da carteira ([regulaia/temas.toml](regulaia/temas.toml)); crédito orçamentário, homenagem e concessão de lavra a uma empresa saem pela regra. Uma segunda passada traz a norma que regulamenta ou altera uma candidata pela citação na ementa: é assim que entra o Decreto 9.406/2018, que regulamenta o Código de Mineração sem nenhuma palavra de mineração na ementa.
+4. **Triagem pela IA**, pela ementa: a norma cobra algo de quem opera o ativo? De qual tipo? Descarte com confiança abaixo de 0,85 é relido pelo texto oficial (ALMG e ANMlegis; o Planalto bloqueia robô). A ementa de "Institui a Política Estadual dos Atingidos por Barragens" parece só organização do Estado; o dever da mineradora está no corpo da lei.
+5. **Curadoria RegulaIA** aprova (segue para o extrator e a curadoria do catálogo) ou descarta, com nome e nota.
+6. **Cobertura por cliente:** o que está no catálogo, o que espera triagem ou curadoria, até quando cada fonte foi lida e as lacunas conhecidas. Estado sem fonte automática aparece como "cobertura não verificada", nunca como coberto. O LexML, que indexa todos os estados, bloqueia acesso automático com verificação anti-robô e não é usado.
+
+Rodada de verdade para a carteira da demo (barragens e unidade em MG, equipamentos): 103.014 normas lidas, 579 candidatas, 167 relevantes para a curadoria, 406 descartadas pela IA com o motivo, 6 já no catálogo. Custo da triagem: US$ 0,28. A releitura pelo texto trouxe de volta 5 descartadas, entre elas a Lei MG 23.795/2021 (a mineradora custeia a assessoria técnica dos atingidos, art. 3º, VIII). A fila está em [data/descoberta_demo.json](data/descoberta_demo.json) e entra na demo. Entre as relevantes estão a Lei 14.755/2023 (direitos das populações atingidas por barragens), a Lei 9.433/1997 (outorga de uso da água), a Res. ANM 68/2021 (plano de fechamento de mina), o Decreto 9.406/2018 e as normas da CFEM.
+
+```bash
+uv run python -m regulaia.descoberta buscar                 # lê as fontes (cache em data/raw/fontes/)
+uv run python -m regulaia.descoberta triar --paralelo 6     # IA nas candidatas novas
+uv run python -m regulaia.descoberta cobertura "Mineradora Serra Azul"
+uv run python -m regulaia.descoberta decidir BR:LEI:14755/2023 aprovar curadoria@regulaia.demo "extrair"
+```
+
 ## O que os testes garantem
 
 | Garantia | Teste |
@@ -91,6 +111,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | Empresa importada do SIGBM não ganha atraso inventado; o que o SIGBM não informa vira dado faltando, e preencher tira do dado faltando | `tests/test_sigbm.py`, `test_importar_mineradora_do_sigbm_e_operar` |
 | Passou do teto de gasto de IA do dia, só regra e cache; o que já foi pago continua valendo | `test_teto_diario_de_ia_corta_chamada_paga_mas_nao_o_cache` |
 | A imagem Docker leva o que a demo precisa e deixa de fora `.env` e dados brutos | `test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto` |
+| A descoberta lê as três fontes reais, deixa fora revogada, crédito e concessão de lavra, pega o decreto que só cita o Código de Mineração, e estado sem fonte nunca aparece como coberto | `tests/test_descoberta.py`, `test_decreto_que_so_cita_o_codigo_de_mineracao_entra_pela_citacao`, `test_estado_sem_conector_nunca_aparece_como_coberto` |
 | No front, contra a API real: entrar na demo, ver as 4 atrasadas, registrar uma entrega, o gestor vendo só a área dele, a curadoria aprovando a Res. 245 | `front/e2e/torre.spec.ts` (Playwright) |
 
 ## Conteúdo
@@ -102,6 +123,7 @@ O cadastro sai das normas assim: a IA propõe as obrigações a partir do texto 
 | [app.py](app.py) | A interface da demo (Streamlit) |
 | `regulaia/` | Banco, versões, regras, agenda, torre, extrator, impacto, leitor de evidência, boletim e plano em PDF |
 | `collector/` | Leitor do XML mensal do DOU (dados abertos) |
+| [regulaia/descoberta.py](regulaia/descoberta.py), [regulaia/temas.toml](regulaia/temas.toml) | Descoberta de normas: perfil da carteira, fontes oficiais, triagem, curadoria e cobertura |
 | `agente/` | Servidor MCP: o Claude (ou outro cliente MCP) consulta a torre pela API, só leitura |
 | [data/serra_azul.json](data/serra_azul.json), [data/historico_serra_azul.json](data/historico_serra_azul.json) | A empresa da demo e o histórico de entregas, com as falhas planejadas |
 | `data/exemplos/` | PDFs fictícios para o leitor de evidência |

@@ -18,7 +18,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from . import banco, agenda, db, usuarios
+from . import banco, agenda, db, descoberta, usuarios
 
 ROOT = Path(__file__).resolve().parent.parent
 SEED = ROOT / "seed_obligations.csv"
@@ -160,6 +160,7 @@ def _preparar(conn, caminho, dou: Path, cache: Path | None) -> tuple:
         db.limpar(conn)     # no Windows o arquivo pode estar aberto pela interface
         ids = montar(conn)
         usuarios.semear(conn)       # contas ficam fora do limpar(): só entram as que faltam
+        descoberta.semear(conn)     # a fila de normas candidatas também (trabalho da curadoria, não da cliente)
         for a in load_month(dou):
             if not (a.is_anm and a.is_normative):
                 continue

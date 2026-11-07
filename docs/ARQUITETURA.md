@@ -59,6 +59,44 @@ norma (ANMlegis ou PDF) -> unidades (artigos / itens) -> blocos de ~9 mil caract
 - **Repetível.** A curadoria guarda só as escolhas (artigo + parte do título + ajustes). Rodar de novo gera o mesmo CSV a partir da extração versionada.
 - **Leitura das normas.** A da ANM vem do ANMlegis (HTML por artigo). A NR vem do PDF, por item (`22.24.8`). O leitor pula o sumário, junta itens repetidos e descarta os revogados.
 
+## Descoberta: quais normas a carteira precisa e o catálogo ainda não tem
+
+O extrator transforma uma norma em obrigações; o radar do DOU pega a norma nova. Faltava saber quais normas
+já publicadas valem para os ativos das clientes. O catálogo não pode depender de alguém lembrar da lei do
+Pará quando entrar uma cliente com barragem no Pará.
+
+```
+ativos das clientes -> perfil (jurisdição x tipo de ativo: barragem em MG, unidade no Brasil...)
+   -> fontes oficiais, ano a ano (Senado, ANMlegis, Assembleia de Minas) -> camada 0, sem IA:
+      termos do tipo de ativo (temas.toml), revogada fora, regra fora (crédito, homenagem, concessão
+      de lavra a uma empresa), e a norma que regulamenta ou altera uma candidata ou uma do catálogo
+   -> triagem pela IA, pela ementa: cobra algo de quem opera o ativo? de qual tipo?
+   -> curadoria RegulaIA aprova ou descarta, com nome e nota -> extrator -> curadoria -> catálogo
+   -> cobertura por cliente: o que está no catálogo, o que espera, até quando cada fonte foi lida
+```
+
+- **Fontes com dados abertos, nada de robô contra verificação.** O Senado tem API de legislação federal
+  (lista por tipo e ano); a Assembleia de Minas publica toda a legislação mineira em CSV por ano, com a
+  situação de vigência; o ANMlegis lista as resoluções da ANM por ano, com a revogada marcada. O LexML,
+  que indexa todos os estados, responde com uma verificação anti-robô: não é usado. Estado sem conector
+  aparece na cobertura como "sem fonte automática: cobertura não verificada", nunca como coberto.
+- **A segunda passada pega o que a palavra-chave perde.** A ementa do Decreto 9.406/2018 ("Regulamenta o
+  Decreto-Lei nº 227...") não tem palavra de mineração; entra porque cita o Código de Mineração, que já é
+  candidato. A passada repete até não aparecer mais nenhuma.
+- **Descarte duvidoso relê pelo texto.** A triagem é pela ementa, e ementa engana: "Institui a Política
+  Estadual dos Atingidos por Barragens" parece só organização do Estado, e a IA descartou a Lei MG
+  23.795/2021. Descarte com confiança abaixo de 0,85 baixa o texto oficial (do artigo 1º em diante) e
+  pergunta de novo, pedindo o artigo que cobra o empreendedor. Onde a fonte bloqueia robô (Planalto),
+  fica a decisão pela ementa e a curadoria pode reabrir.
+- **Na dúvida, a IA marca relevante com confiança baixa.** O que ela descarta não chega a ninguém; o que
+  ela marca, a curadoria lê. A curadoria também pode reabrir uma descartada.
+- **Quem altera norma do catálogo vem marcado.** Uma resolução que altera a Res. 95 pode já estar no texto
+  consolidado que o catálogo usa: a fila diz "cita Res. ANM 95/2022: conferir o texto consolidado".
+- **Lacunas conhecidas ficam escritas** (`temas.toml`): Normas Regulamentadoras (sem lista em dados
+  abertos), Conama, Ibama e ANA, e em Minas as deliberações do Copam e as resoluções da Semad e da Feam.
+- **É trabalho da plataforma.** A fila e as decisões ficam fora do "Recriar demo", como as contas; a
+  cliente vê a própria cobertura, não a fila.
+
 ## Leitor de evidência
 
 Quem opera manda o PDF e a torre dá baixa na obrigação certa (`regulaia/evidencias.py`). São 23 tipos de documento:
