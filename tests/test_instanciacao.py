@@ -209,6 +209,79 @@ def test_estado_de_empresa_que_nao_foi_instanciada(conn):
         inst.estado(conn, eid)
 
 
+# ------------------------------------------------------------------ etapa 5: o checklist municipal
+
+
+def _alvara(conn, eid: int, numero: str, unidade: str | None = None, ativo: str | None = None) -> None:
+    conn.execute("INSERT INTO licenca (empresa_id, tipo, numero, unidade, ativo_codigo, enviada_por, enviada_em) "
+                 "VALUES (?, 'alvara', ?, ?, ?, 'teste', '2026-11-07 12:00:00')", (eid, numero, unidade, ativo))
+    conn.commit()
+
+
+def test_checklist_municipal_tem_a_sede_e_cada_unidade_com_os_alvaras_de_cada_uma(conn, nova):
+    inst.criar_unidade(conn, nova, "Mina Norte", POR, uf="PA", municipio="Parauapebas")
+    inst.criar_unidade(conn, nova, "Mina Sul", POR, uf="MG", municipio="Itabirito")
+    inst.criar_ativo(conn, nova, tipo="barragem", codigo="B1", nome="B1", por=POR, unidade="Mina Sul",
+                     atributos={"uf": "MG"})
+    inst.criar_ativo(conn, nova, tipo="barragem", codigo="B9", nome="B9", por=POR, atributos={"uf": "MG"})
+    _alvara(conn, nova, "ALV-1", unidade="Mina Norte")
+    _alvara(conn, nova, "ALV-2", ativo="B1")          # o alvará do ativo vale para a unidade dele
+    _alvara(conn, nova, "ALV-3", ativo="B9")          # ativo sem unidade: é da empresa (sede)
+    _alvara(conn, nova, "ALV-4")                      # sem unidade nem ativo: sede
+    conn.execute("INSERT INTO licenca (empresa_id, tipo, numero, enviada_por, enviada_em) "
+                 "VALUES (?, 'LO', 'LO-1', 'teste', '2026-11-07')", (nova,))   # LO não é alvará
+    itens = {i.local: i for i in inst.checklist_municipal(conn, nova)}
+    assert list(itens) == [inst.SEDE, "Mina Norte", "Mina Sul"]
+    assert itens[inst.SEDE].titulo == "Sede da empresa" and itens[inst.SEDE].alvaras == ["ALV-3", "ALV-4"]
+    assert itens["Mina Norte"].alvaras == ["ALV-1"] and itens["Mina Norte"].municipio == "Parauapebas"
+    assert itens["Mina Sul"].alvaras == ["ALV-2"]
+    assert not any(i.resolvido for i in itens.values())
+
+
+def test_etapa_5_so_fica_pronta_com_o_checklist_municipal_respondido(conn, nova):
+    inst.criar_unidade(conn, nova, "Mina Sul", POR, uf="MG", municipio="Itabirito")
+    e5 = {x.etapa: x for x in inst.estado(conn, nova).etapas}[inst.LICENCAS]
+    assert e5.estado == inst.PENDENTE and e5.numeros["municipais_pendentes"] == 2
+    assert "envie o PDF" in e5.falta and "2 local(is)" in e5.falta
+
+    # responder o checklist sem licença nenhuma já é andamento, mas não pronta
+    inst.responder_municipal(conn, nova, inst.SEDE, inst.NAO_SE_APLICA, POR, nota="sede virtual")
+    e5 = {x.etapa: x for x in inst.estado(conn, nova).etapas}[inst.LICENCAS]
+    assert e5.estado == inst.EM_ANDAMENTO and e5.numeros["municipais_pendentes"] == 1
+
+    _alvara(conn, nova, "ALV-9", unidade="Mina Sul")
+    item = inst.responder_municipal(conn, nova, "Mina Sul", inst.CONFIRMADO, POR)   # tem alvará: sem nota
+    assert item.situacao == inst.CONFIRMADO and item.alvaras == ["ALV-9"] and item.por == POR
+    e5 = {x.etapa: x for x in inst.estado(conn, nova).etapas}[inst.LICENCAS]
+    assert e5.pronta and e5.falta == "" and e5.por == POR
+
+    # responder de novo troca a resposta (uma por local); reabrir volta a etapa para andamento
+    inst.responder_municipal(conn, nova, "Mina Sul", inst.NAO_SE_APLICA, POR, nota="unidade desativada")
+    assert conn.execute("SELECT COUNT(*) FROM exigencia_municipal WHERE empresa_id = ?", (nova,)).fetchone()[0] == 2
+    inst.responder_municipal(conn, nova, "Mina Sul", inst.PENDENTE, POR)
+    e5 = {x.etapa: x for x in inst.estado(conn, nova).etapas}[inst.LICENCAS]
+    assert e5.estado == inst.EM_ANDAMENTO and "1 local(is)" in e5.falta
+
+    # quem respondeu o quê fica no histórico da etapa 5
+    acoes = [ev["acao"] for ev in inst.eventos(conn, nova, inst.LICENCAS)]
+    assert "exigências municipais de Sede da empresa: não se aplica" in acoes
+    assert "exigências municipais de Mina Sul: confirmado" in acoes
+
+
+def test_checklist_municipal_recusa_o_que_deixaria_a_resposta_vazia(conn, nova):
+    with pytest.raises(inst.ErroInstanciacao, match="nenhum alvará de Sede da empresa"):
+        inst.responder_municipal(conn, nova, inst.SEDE, inst.CONFIRMADO, POR)
+    with pytest.raises(inst.ErroInstanciacao, match="por que não se aplica"):
+        inst.responder_municipal(conn, nova, inst.SEDE, inst.NAO_SE_APLICA, POR, nota="   ")
+    with pytest.raises(inst.ErroInstanciacao, match="não tem a unidade"):
+        inst.responder_municipal(conn, nova, "Mina de Outra", inst.CONFIRMADO, POR, nota="x")
+    with pytest.raises(inst.ErroInstanciacao, match="situação desconhecida"):
+        inst.responder_municipal(conn, nova, inst.SEDE, "talvez", POR)
+    # confirmar sem alvará vale com nota dizendo o que foi entregue
+    item = inst.responder_municipal(conn, nova, None, inst.CONFIRMADO, POR, nota="protocolo 123 na prefeitura")
+    assert item.local == inst.SEDE and item.nota == "protocolo 123 na prefeitura"
+
+
 # ------------------------------------------------------------------ etapa 8: entrar em operação
 
 

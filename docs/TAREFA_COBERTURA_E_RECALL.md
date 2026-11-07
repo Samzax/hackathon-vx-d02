@@ -60,6 +60,11 @@ todas as clientes — ativo com UF=PR cria a necessidade "PR × barragem" sozinh
   entram **no cadastro da empresa, na fase de consultoria/implantação**: checklist na etapa 5 da
   instanciação ("alvarás e exigências municipais da sede e de cada unidade enviados?"), virando
   obrigação própria pelo pipeline de licenças.
+  **Feito (7/11):** tabela `exigencia_municipal` (migração 0007), `instanciacao.checklist_municipal` /
+  `responder_municipal`, `GET/PUT /empresas/{id}/instanciacao/municipal` e a seção "Alvarás e exigências
+  municipais" na tela Instanciação. Cada local (sede e cada unidade) fica confirmado ou "não se aplica";
+  o alvará enviado em Licenças aparece como prova do local, confirmar sem ele pede nota e "não se aplica"
+  sempre pede o porquê. A etapa 5 só fica pronta com todos os locais respondidos.
 
 ## 4. Alvará no cadastro (pequeno)
 

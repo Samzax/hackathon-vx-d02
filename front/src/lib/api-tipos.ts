@@ -980,6 +980,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/empresas/{empresa_id}/instanciacao/municipal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Etapa 5: alvarás e exigências municipais da sede e de cada unidade (sem fonte automática) */
+        get: operations["checklist_municipal_api_v1_empresas__empresa_id__instanciacao_municipal_get"];
+        /**
+         * Responder um local do checklist municipal (Diretoria ou Regulatório da própria empresa)
+         * @description Confirmar sem alvará enviado para o local pede nota (protocolo, dispensa do município...);
+         *     "não se aplica" sempre pede o porquê; `pendente` reabre. Fica na auditoria e no histórico da etapa.
+         */
+        put: operations["responder_municipal_api_v1_empresas__empresa_id__instanciacao_municipal_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/empresas/{empresa_id}/instanciacao/primeira-conta": {
         parameters: {
             query?: never;
@@ -1728,6 +1750,18 @@ export interface components {
             titulo: string | null;
             /** Motivos */
             motivos: string[];
+        };
+        /** ChecklistMunicipal */
+        ChecklistMunicipal: {
+            /**
+             * Pergunta
+             * @description a pergunta que cada local responde
+             */
+            pergunta: string;
+            /** Itens */
+            itens: components["schemas"]["ItemMunicipal"][];
+            /** Pendentes */
+            pendentes: number;
         };
         /** Comentario */
         Comentario: {
@@ -2582,6 +2616,42 @@ export interface components {
              * @description aprovadas pela curadoria, falta extrair as obrigações
              */
             aprovadas: components["schemas"]["NormaNaCobertura"][];
+        };
+        /** ItemMunicipal */
+        ItemMunicipal: {
+            /**
+             * Local
+             * @description vazio: a sede da empresa; senão o nome da unidade
+             */
+            local: string;
+            /**
+             * Titulo
+             * @description 'Sede da empresa' ou o nome da unidade
+             */
+            titulo: string;
+            /** Uf */
+            uf: string | null;
+            /** Municipio */
+            municipio: string | null;
+            /**
+             * Alvaras
+             * @description os números dos alvarás enviados em Licenças para este local
+             */
+            alvaras: string[];
+            /**
+             * Situacao
+             * @description pendente, confirmado ou nao_se_aplica
+             */
+            situacao: string;
+            /**
+             * Nota
+             * @description o que foi entregue, ou por que não se aplica
+             */
+            nota: string | null;
+            /** Por */
+            por: string | null;
+            /** Em */
+            em: string | null;
         };
         /** Jurisdicao */
         Jurisdicao: {
@@ -3612,6 +3682,25 @@ export interface components {
              * @description vazio tira o padrão
              */
             responsavel: string;
+        };
+        /** RespostaMunicipal */
+        RespostaMunicipal: {
+            /**
+             * Local
+             * @description vazio: a sede; senão o nome da unidade
+             * @default
+             */
+            local: string;
+            /**
+             * Situacao
+             * @description confirmado, nao_se_aplica, ou pendente para reabrir
+             */
+            situacao: string;
+            /**
+             * Nota
+             * @description obrigatória em nao_se_aplica e ao confirmar um local sem alvará enviado
+             */
+            nota?: string | null;
         };
         /** RespostaPergunta */
         RespostaPergunta: {
@@ -5885,6 +5974,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DadoFaltando"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    checklist_municipal_api_v1_empresas__empresa_id__instanciacao_municipal_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChecklistMunicipal"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    responder_municipal_api_v1_empresas__empresa_id__instanciacao_municipal_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RespostaMunicipal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChecklistMunicipal"];
                 };
             };
             /** @description Validation Error */

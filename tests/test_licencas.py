@@ -293,11 +293,16 @@ def test_licenca_sem_validade_nao_inventa_renovacao(empresa):
 def test_a_etapa_de_licencas_segue_os_dados(com_licenca):
     conn, eid, lid = com_licenca
     etapas = {e.etapa: e for e in inst.estado(conn, eid).etapas}
-    assert etapas[inst.LICENCAS].estado == inst.PRONTA        # licença sem proposta pendente
+    assert etapas[inst.LICENCAS].estado == inst.EM_ANDAMENTO  # licença enviada, checklist municipal pendente
+    for local in (inst.SEDE, "Mina Nova"):
+        inst.responder_municipal(conn, eid, local, inst.CONFIRMADO, POR, nota="entregue na implantação")
+    etapas = {e.etapa: e for e in inst.estado(conn, eid).etapas}
+    assert etapas[inst.LICENCAS].estado == inst.PRONTA        # licença sem proposta pendente, checklist ok
     _propostas(conn, eid, lid)
     etapas = {e.etapa: e for e in inst.estado(conn, eid).etapas}
     assert etapas[inst.LICENCAS].estado == inst.EM_ANDAMENTO  # com proposta esperando a dona
-    assert etapas[inst.LICENCAS].numeros == {"licencas": 1, "propostas": 3, "aprovadas": 0, "rejeitadas": 0}
+    assert etapas[inst.LICENCAS].numeros == {"licencas": 1, "propostas": 3, "aprovadas": 0, "rejeitadas": 0,
+                                             "municipais": 2, "municipais_pendentes": 0}
     for c in licencas.condicionantes(conn, eid, status=licencas.PENDENTE):
         licencas.aprovar(conn, eid, c["id"], POR)
     etapas = {e.etapa: e for e in inst.estado(conn, eid).etapas}

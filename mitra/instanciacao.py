@@ -12,7 +12,9 @@ número inventado; quem fez o quê e quando fica em `instanciacao_evento`:
  2. `ativos`        o resto: minas, usinas, pilhas, equipamentos, licenças — formulário ou planilha
  3. `dados`         o que as regras do catálogo pedem e ninguém informou: lista de tarefas, não bloqueio
  4. `cobertura`     `descoberta.cobertura` assim que há ativos: o que vale e o que falta no catálogo
- 5. `licencas`      PDF da licença -> condicionantes propostas com trecho conferido -> a dona aprova
+ 5. `licencas`      PDF da licença ou do alvará -> condicionantes propostas com trecho conferido -> a dona
+                    aprova; e o checklist municipal: alvarás e exigências municipais da sede e de cada
+                    unidade (legislação municipal não tem fonte automática: entra pela implantação)
  6. `responsaveis`  responsável técnico e coordenador do PAEBM (CPF cifrado, ver `pessoal.py`)
  7. `contas`        a primeira conta da cliente (senha provisória) e as demais, com escopo por unidade
  8. `operacao`      resumo e "entrar em operação": grava `monitorado_desde` e a torre passa a valer
@@ -56,7 +58,8 @@ O_QUE_FALTA = {
     ATIVOS: "cadastre os ativos (barragens do SIGBM, minas, usinas, pilhas, equipamentos e licenças)",
     DADOS: "complete no cadastro dos ativos o que as regras do catálogo pedem",
     COBERTURA: "cadastre ao menos um ativo para a cobertura normativa ser calculada",
-    LICENCAS: "envie o PDF das licenças e aprove as condicionantes propostas",
+    LICENCAS: "envie o PDF das licenças e alvarás, aprove as condicionantes propostas e confirme as "
+              "exigências municipais da sede e de cada unidade",
     RESPONSAVEIS: "informe o responsável técnico de cada unidade ou ativo",
     CONTAS: "crie a primeira conta da empresa (TI), que cria as demais",
     OPERACAO: "revise o resumo e entre em operação",
@@ -395,6 +398,100 @@ def dados_que_faltam(conn, empresa_id: int) -> list[DadoFaltando]:
     return out
 
 
+# ------------------------------------------------------------------ etapa 5: o checklist municipal
+#
+# Legislação municipal e alvarás não têm fonte automática (decisão de 7/11): entram pelo cadastro da
+# empresa, na implantação. Cada local — a sede e cada unidade — responde uma pergunta: os alvarás e as
+# exigências do município foram enviados? O alvará enviado em Licenças (tipo `alvara`) aparece como prova
+# do local; sem ele, confirmar pede uma nota dizendo o que foi entregue. "Não se aplica" sempre pede o
+# porquê. Enquanto um local está pendente, a etapa 5 não fica pronta.
+
+SEDE = ""                                       # o local da sede; os demais são o nome da unidade
+CONFIRMADO, NAO_SE_APLICA = "confirmado", "nao_se_aplica"
+SITUACOES_MUNICIPAIS = (PENDENTE, CONFIRMADO, NAO_SE_APLICA)
+PERGUNTA_MUNICIPAL = ("Os alvarás e as exigências do município (alvará de funcionamento, uso e ocupação do "
+                      "solo, licença ambiental municipal, posturas) foram enviados?")
+ROTULO_SITUACAO = {PENDENTE: "pendente", CONFIRMADO: "confirmado", NAO_SE_APLICA: "não se aplica"}
+
+
+@dataclass
+class ItemMunicipal:
+    local: str                      # SEDE ("") ou o nome da unidade
+    titulo: str                     # "Sede da empresa" ou o nome da unidade
+    uf: str | None
+    municipio: str | None
+    alvaras: list[str]              # os números dos alvarás enviados para este local
+    situacao: str = PENDENTE        # pendente, confirmado ou nao_se_aplica
+    nota: str | None = None
+    por: str | None = None
+    em: str | None = None
+
+    @property
+    def resolvido(self) -> bool:
+        return self.situacao != PENDENTE
+
+
+def _alvaras_por_local(conn, empresa_id: int) -> dict[str, list[str]]:
+    """Os alvarás enviados, por local: o da unidade vale para ela; o de um ativo vale para a unidade do
+    ativo; o sem unidade (ou de ativo sem unidade) é da empresa, ou seja, da sede."""
+    do_ativo = {a["codigo"]: (a.get("unidade") or SEDE) for a in db.ativos(conn, empresa_id)}
+    out: dict[str, list[str]] = {}
+    for r in conn.execute("SELECT numero, unidade, ativo_codigo FROM licenca "
+                          "WHERE empresa_id = ? AND tipo = 'alvara' ORDER BY numero", (empresa_id,)):
+        local = (r["unidade"] or "").strip() or do_ativo.get(r["ativo_codigo"] or "", SEDE)
+        out.setdefault(local, []).append(r["numero"])
+    return out
+
+
+def checklist_municipal(conn, empresa_id: int) -> list[ItemMunicipal]:
+    """A sede e cada unidade, com os alvarás enviados e a resposta de quem confirmou (ou pendente)."""
+    alvaras = _alvaras_por_local(conn, empresa_id)
+    respostas = {r["local"]: dict(r) for r in conn.execute(
+        "SELECT local, situacao, nota, por, em FROM exigencia_municipal WHERE empresa_id = ?", (empresa_id,))}
+    locais = [(SEDE, "Sede da empresa", None, None)] + [
+        (u["nome"], u["nome"], u["uf"], u["municipio"]) for u in unidades(conn, empresa_id)]
+    itens = []
+    for local, titulo, uf, municipio in locais:
+        r = respostas.get(local, {})
+        itens.append(ItemMunicipal(local=local, titulo=titulo, uf=uf, municipio=municipio,
+                                   alvaras=alvaras.get(local, []), situacao=r.get("situacao", PENDENTE),
+                                   nota=r.get("nota"), por=r.get("por"), em=r.get("em")))
+    return itens
+
+
+def responder_municipal(conn, empresa_id: int, local: str | None, situacao: str, por: str,
+                        nota: str | None = None) -> ItemMunicipal:
+    """Grava a resposta de um local. `pendente` reabre (apaga a resposta). Confirmar sem alvará enviado
+    para o local pede nota (o que foi entregue: protocolo, dispensa do município...); "não se aplica"
+    sempre pede o porquê. Quem respondeu e quando fica no histórico da etapa 5."""
+    local = (local or "").strip()
+    nota = (nota or "").strip() or None
+    if situacao not in SITUACOES_MUNICIPAIS:
+        raise ErroInstanciacao(f"situação desconhecida: {situacao!r} (use {', '.join(SITUACOES_MUNICIPAIS)})")
+    itens = {i.local: i for i in checklist_municipal(conn, empresa_id)}
+    if local not in itens:
+        raise ErroInstanciacao(f"a empresa não tem a unidade {local!r}: crie a unidade antes")
+    item = itens[local]
+    if situacao == NAO_SE_APLICA and not nota:
+        raise ErroInstanciacao(f"diga por que não se aplica a {item.titulo} "
+                               "(ex.: o município dispensa alvará para esta atividade)")
+    if situacao == CONFIRMADO and not item.alvaras and not nota:
+        raise ErroInstanciacao(f"nenhum alvará de {item.titulo} foi enviado: envie o PDF em Licenças "
+                               "(tipo alvará) ou diga na nota o que foi entregue (ex.: protocolo da renovação)")
+    with conn:
+        if situacao == PENDENTE:
+            conn.execute("DELETE FROM exigencia_municipal WHERE empresa_id = ? AND local = ?", (empresa_id, local))
+        else:
+            conn.execute(
+                "INSERT INTO exigencia_municipal (empresa_id, local, situacao, nota, por, em) "
+                "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(empresa_id, local) DO UPDATE SET "
+                "situacao = excluded.situacao, nota = excluded.nota, por = excluded.por, em = excluded.em",
+                (empresa_id, local, situacao, nota, por, db.agora()))
+    registrar(conn, empresa_id, LICENCAS, f"exigências municipais de {item.titulo}: {ROTULO_SITUACAO[situacao]}",
+              por, {"local": local, "situacao": situacao, "nota": nota, "alvaras": item.alvaras})
+    return next(i for i in checklist_municipal(conn, empresa_id) if i.local == local)
+
+
 # ------------------------------------------------------------------ etapa 8: entrar em operação
 
 
@@ -443,18 +540,31 @@ def _estado_dados(conn, empresa_id: int, tem_ativos: bool) -> tuple[str, dict]:
     return (EM_ANDAMENTO if mexeu else PENDENTE), nums
 
 
-def _estado_licencas(conn, empresa_id: int) -> tuple[str, dict]:
+def _estado_licencas(conn, empresa_id: int) -> tuple[str, dict, str]:
+    """Licenças e condicionantes, mais o checklist municipal: pronta só com licença enviada, nenhuma
+    condicionante esperando decisão e a sede e todas as unidades respondidas. O 'falta' diz qual parte."""
     n_lic = conn.execute("SELECT COUNT(*) FROM licenca WHERE empresa_id = ?", (empresa_id,)).fetchone()[0]
     por_status = {r["status"]: r["n"] for r in conn.execute(
         "SELECT status, COUNT(*) AS n FROM condicionante WHERE empresa_id = ? GROUP BY status",
         (empresa_id,))}
+    itens = checklist_municipal(conn, empresa_id)
+    pend_mun = sum(1 for i in itens if not i.resolvido)
     nums = {"licencas": n_lic, "propostas": por_status.get("pendente", 0),
-            "aprovadas": por_status.get("aprovada", 0), "rejeitadas": por_status.get("rejeitada", 0)}
+            "aprovadas": por_status.get("aprovada", 0), "rejeitadas": por_status.get("rejeitada", 0),
+            "municipais": len(itens), "municipais_pendentes": pend_mun}
+    falta = []
     if not n_lic:
-        return PENDENTE, nums
+        falta.append("envie o PDF das licenças e alvarás")
     if nums["propostas"]:
-        return EM_ANDAMENTO, nums
-    return PRONTA, nums
+        falta.append(f"decida {nums['propostas']} condicionante(s) proposta(s)")
+    if pend_mun:
+        falta.append(f"confirme os alvarás e exigências municipais de {pend_mun} local(is) (sede e unidades)")
+    texto = "; ".join(falta)
+    if not falta:
+        return PRONTA, nums, ""
+    if not n_lic and pend_mun == len(itens):
+        return PENDENTE, nums, texto
+    return EM_ANDAMENTO, nums, texto
 
 
 def _estado_responsaveis(conn, empresa_id: int) -> tuple[str, dict]:
@@ -494,7 +604,7 @@ def estado(conn, empresa_id: int) -> Estado:
     est_ativos, n_ativos = _estado_ativos(conn, empresa_id)
     tem_ativos = bool(n_ativos["ativos"])
     est_dados, n_dados = _estado_dados(conn, empresa_id, tem_ativos)
-    est_lic, n_lic = _estado_licencas(conn, empresa_id)
+    est_lic, n_lic, falta_lic = _estado_licencas(conn, empresa_id)
     est_resp, n_resp = _estado_responsaveis(conn, empresa_id)
     est_contas, n_contas = _estado_contas(conn, empresa_id, inst["nome"])
     em_operacao = bool(inst["monitorado_desde"])
@@ -509,8 +619,10 @@ def estado(conn, empresa_id: int) -> Estado:
         CONTAS: (est_contas, n_contas),
         OPERACAO: ((PRONTA if em_operacao else PENDENTE), {}),
     }
+    faltas = {LICENCAS: falta_lic}         # a etapa 5 diz qual parte falta; as outras, o texto fixo
     etapas = [Etapa(etapa=e, titulo=TITULOS[e], estado=bruto[e][0],
-                    falta="" if bruto[e][0] == PRONTA else O_QUE_FALTA[e], numeros=bruto[e][1],
+                    falta="" if bruto[e][0] == PRONTA else (faltas.get(e) or O_QUE_FALTA[e]),
+                    numeros=bruto[e][1],
                     por=ultimo.get(e, {}).get("por"), em=ultimo.get(e, {}).get("em")) for e in ETAPAS]
     return Estado(empresa_id=empresa_id, empresa=inst["nome"], cnpj=inst["cnpj"],
                   razao_social=inst["razao_social"], ufs=inst["ufs"], no_sigbm=bool(inst["no_sigbm"]),

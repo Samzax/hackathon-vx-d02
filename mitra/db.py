@@ -129,7 +129,7 @@ def limpar(conn) -> None:
     """Apaga todos os dados (menos o cache de IA), mantendo o arquivo e as conexões abertas."""
     with conn:
         for tabela in ("evento", "responsavel_obrigacao", "acionamento", "evidencia", "obrigacao_versao", "obrigacao",
-                       "ato", "instanciacao_evento", "instanciacao", "unidade", "ativo", "empresa"):
+                       "ato", "exigencia_municipal", "instanciacao_evento", "instanciacao", "unidade", "ativo", "empresa"):
             conn.execute(f"DELETE FROM {tabela}")
 
 

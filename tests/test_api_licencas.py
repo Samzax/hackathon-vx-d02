@@ -254,4 +254,73 @@ def test_etapa_de_licencas_na_instanciacao_acompanha(cliente, empresa, ia):
                      json={"aprovar": True})
     etapas = {e["etapa"]: e for e in
               cliente.get(_url(f"/empresas/{empresa}/instanciacao")).json()["etapas"]}
-    assert etapas["licencas"]["estado"] == "pronta" and etapas["licencas"]["numeros"]["aprovadas"] == 2
+    # condicionantes decididas, mas a sede e a Mina Nova ainda não responderam o checklist municipal
+    assert etapas["licencas"]["estado"] == "em_andamento" and etapas["licencas"]["numeros"]["aprovadas"] == 2
+    assert etapas["licencas"]["numeros"]["municipais_pendentes"] == 2
+    assert "exigências municipais de 2 local" in etapas["licencas"]["falta"]
+    for local in ("", "Mina Nova"):
+        assert cliente.put(_url(f"/empresas/{empresa}/instanciacao/municipal"), json={
+            "local": local, "situacao": "confirmado", "nota": "alvará entregue na implantação"}).status_code == 200
+    etapas = {e["etapa"]: e for e in
+              cliente.get(_url(f"/empresas/{empresa}/instanciacao")).json()["etapas"]}
+    assert etapas["licencas"]["estado"] == "pronta" and etapas["licencas"]["falta"] == ""
+
+
+# ------------------------------------------------------------------ o checklist municipal (etapa 5)
+
+
+def _municipal(cliente, eid: int):
+    return cliente.get(_url(f"/empresas/{eid}/instanciacao/municipal"))
+
+
+def _responder(cliente, eid: int, **corpo):
+    return cliente.put(_url(f"/empresas/{eid}/instanciacao/municipal"), json=corpo)
+
+
+def test_checklist_municipal_lista_a_sede_e_cada_unidade_com_o_alvara_enviado(cliente, empresa):
+    como(cliente, "diretoria@nova.demo")
+    c = _municipal(cliente, empresa).json()
+    assert "alvarás" in c["pergunta"] and c["pendentes"] == 2
+    assert [(i["local"], i["titulo"], i["uf"], i["situacao"]) for i in c["itens"]] == [
+        ("", "Sede da empresa", None, "pendente"), ("Mina Nova", "Mina Nova", "MG", "pendente")]
+    # o alvará enviado em Licenças aparece como prova do local dele
+    assert _enviar(cliente, empresa, tipo="alvara", numero="ALV-77/2026",
+                   orgao="Prefeitura (fictícia)").status_code == 201
+    itens = {i["local"]: i for i in _municipal(cliente, empresa).json()["itens"]}
+    assert itens["Mina Nova"]["alvaras"] == ["ALV-77/2026"] and itens[""]["alvaras"] == []
+
+
+def test_confirmar_sem_alvara_pede_nota_e_nao_se_aplica_pede_o_porque(cliente, empresa):
+    como(cliente, "diretoria@nova.demo")
+    r = _responder(cliente, empresa, local="", situacao="confirmado")
+    assert r.status_code == 422 and "nenhum alvará de Sede da empresa" in r.json()["detail"]
+    r = _responder(cliente, empresa, local="Mina Nova", situacao="nao_se_aplica", nota="  ")
+    assert r.status_code == 422 and "por que não se aplica" in r.json()["detail"]
+    r = _responder(cliente, empresa, local="Mina Velha", situacao="confirmado", nota="x")
+    assert r.status_code == 422 and "não tem a unidade" in r.json()["detail"]
+    assert _responder(cliente, empresa, local="", situacao="talvez").status_code == 422
+
+    # com o alvará da unidade enviado, confirmar não pede nota
+    _enviar(cliente, empresa, tipo="alvara", numero="ALV-77/2026", orgao="Prefeitura (fictícia)")
+    c = _responder(cliente, empresa, local="Mina Nova", situacao="confirmado").json()
+    mina = next(i for i in c["itens"] if i["local"] == "Mina Nova")
+    assert mina["situacao"] == "confirmado" and mina["por"] and mina["em"] and c["pendentes"] == 1
+    c = _responder(cliente, empresa, local="", situacao="nao_se_aplica",
+                   nota="sede administrativa em sala comercial: o município dispensa").json()
+    assert c["pendentes"] == 0 and c["itens"][0]["nota"].startswith("sede administrativa")
+    # reabrir volta a pendente
+    c = _responder(cliente, empresa, local="", situacao="pendente").json()
+    assert c["itens"][0]["situacao"] == "pendente" and c["itens"][0]["nota"] is None and c["pendentes"] == 1
+
+
+def test_checklist_municipal_quem_responde_e_quem_so_le(cliente, empresa):
+    # a plataforma (curadoria) lê, mas não responde pela empresa
+    como(cliente, CURADORIA)
+    assert _municipal(cliente, empresa).status_code == 200
+    assert _responder(cliente, empresa, local="", situacao="nao_se_aplica", nota="x").status_code == 403
+    # gestor de área não responde: é da Diretoria ou do Regulatório
+    como(cliente, "geo@nova.demo")
+    assert _responder(cliente, empresa, local="", situacao="nao_se_aplica", nota="x").status_code == 403
+    # outra cliente não vê
+    como(cliente)
+    assert _municipal(cliente, empresa).status_code == 404

@@ -3004,6 +3004,99 @@
     }
    }
   },
+  "/api/v1/empresas/{empresa_id}/instanciacao/municipal": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Etapa 5: alvarás e exigências municipais da sede e de cada unidade (sem fonte automática)",
+    "operationId": "checklist_municipal_api_v1_empresas__empresa_id__instanciacao_municipal_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ChecklistMunicipal"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Responder um local do checklist municipal (Diretoria ou Regulatório da própria empresa)",
+    "description": "Confirmar sem alvará enviado para o local pede nota (protocolo, dispensa do município...);\n\"não se aplica\" sempre pede o porquê; `pendente` reabre. Fica na auditoria e no histórico da etapa.",
+    "operationId": "responder_municipal_api_v1_empresas__empresa_id__instanciacao_municipal_put",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RespostaMunicipal"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ChecklistMunicipal"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/empresas/{empresa_id}/instanciacao/primeira-conta": {
    "post": {
     "tags": [
@@ -5190,6 +5283,33 @@
     ],
     "title": "Candidata"
    },
+   "ChecklistMunicipal": {
+    "properties": {
+     "pergunta": {
+      "type": "string",
+      "title": "Pergunta",
+      "description": "a pergunta que cada local responde"
+     },
+     "itens": {
+      "items": {
+       "$ref": "#/components/schemas/ItemMunicipal"
+      },
+      "type": "array",
+      "title": "Itens"
+     },
+     "pendentes": {
+      "type": "integer",
+      "title": "Pendentes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "pergunta",
+     "itens",
+     "pendentes"
+    ],
+    "title": "ChecklistMunicipal"
+   },
    "Comentario": {
     "properties": {
      "ativo_id": {
@@ -7223,6 +7343,102 @@
     ],
     "title": "ItemCobertura",
     "description": "Uma jurisdição e um tipo de ativo da carteira da empresa."
+   },
+   "ItemMunicipal": {
+    "properties": {
+     "local": {
+      "type": "string",
+      "title": "Local",
+      "description": "vazio: a sede da empresa; senão o nome da unidade"
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo",
+      "description": "'Sede da empresa' ou o nome da unidade"
+     },
+     "uf": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uf"
+     },
+     "municipio": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Municipio"
+     },
+     "alvaras": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Alvaras",
+      "description": "os números dos alvarás enviados em Licenças para este local"
+     },
+     "situacao": {
+      "type": "string",
+      "title": "Situacao",
+      "description": "pendente, confirmado ou nao_se_aplica"
+     },
+     "nota": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nota",
+      "description": "o que foi entregue, ou por que não se aplica"
+     },
+     "por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Por"
+     },
+     "em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "local",
+     "titulo",
+     "uf",
+     "municipio",
+     "alvaras",
+     "situacao",
+     "nota",
+     "por",
+     "em"
+    ],
+    "title": "ItemMunicipal"
    },
    "Jurisdicao": {
     "properties": {
@@ -9927,6 +10143,41 @@
      "responsavel"
     ],
     "title": "ResponsavelPadrao"
+   },
+   "RespostaMunicipal": {
+    "properties": {
+     "local": {
+      "type": "string",
+      "maxLength": 200,
+      "title": "Local",
+      "description": "vazio: a sede; senão o nome da unidade",
+      "default": ""
+     },
+     "situacao": {
+      "type": "string",
+      "pattern": "^(pendente|confirmado|nao_se_aplica)$",
+      "title": "Situacao",
+      "description": "confirmado, nao_se_aplica, ou pendente para reabrir"
+     },
+     "nota": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 1000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nota",
+      "description": "obrigatória em nao_se_aplica e ao confirmar um local sem alvará enviado"
+     }
+    },
+    "type": "object",
+    "required": [
+     "situacao"
+    ],
+    "title": "RespostaMunicipal"
    },
    "RespostaPergunta": {
     "properties": {

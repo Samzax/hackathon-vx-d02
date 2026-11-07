@@ -1,18 +1,20 @@
 "use client";
 
 // A instanciação da empresa escolhida: as oito etapas, o que falta em cada uma, os dados que faltam no
-// cadastro dos ativos e as unidades com os ativos de cada uma — e, para quem é da empresa, as ações:
-// criar unidade, cadastrar ativo (formulário ou planilha) e entrar em operação. Na visão da plataforma
+// cadastro dos ativos, as unidades com os ativos de cada uma e o checklist municipal (alvarás e exigências
+// do município da sede e de cada unidade) — e, para quem é da empresa, as ações: criar unidade, cadastrar
+// ativo (formulário ou planilha), responder o checklist e entrar em operação. Na visão da plataforma
 // tudo isso some: nos dados operacionais a Mitra só lê. Tudo vem da API: a tela só dá forma.
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Factory, FileDown, FileUp, Plus, Rocket } from "lucide-react";
-import { useRef, useState } from "react";
+import { Factory, FileDown, FileUp, Landmark, Plus, Rocket } from "lucide-react";
+import Link from "next/link";
+import { useId, useRef, useState } from "react";
 import { useAvisar } from "@/components/avisos";
 import { Dialogo } from "@/components/dialogo";
 import { EtapaDaInstanciacao } from "@/components/etapas";
 import {
-  Aviso, Botao, CampoEntrada, CampoSelecao, Carregando, Cartao, ErroCarga, Etiqueta, Secao, Titulo,
-  Vazio, cx, mensagem,
+  AreaTexto, Aviso, Botao, Campo, CampoEntrada, CampoSelecao, Carregando, Cartao, ErroCarga, Etiqueta, Secao,
+  Titulo, Vazio, cx, mensagem,
 } from "@/components/ui";
 import { ErroApi, api, baixar, dados, enviarArquivo, type Esquemas } from "@/lib/api";
 import { useCamposCadastro, useInvalidarTorre, type CampoCadastro } from "@/lib/consultas";
@@ -261,6 +263,177 @@ function Unidades() {
             </li>
           ))}
         </ul>
+      )}
+    </Secao>
+  );
+}
+
+// ------------------------------------------------------------------ etapa 5: o checklist municipal
+
+type ItemMunicipal = Esquemas["ItemMunicipal"];
+type Resposta = "confirmado" | "nao_se_aplica";
+
+type Situacao = "pendente" | Resposta;
+const SITUACAO_MUNICIPAL: Record<Situacao, { rotulo: string; tom: "neutro" | "ok" | "atencao" }> = {
+  pendente: { rotulo: "Pendente", tom: "atencao" },
+  confirmado: { rotulo: "Confirmado", tom: "ok" },
+  nao_se_aplica: { rotulo: "Não se aplica", tom: "neutro" },
+};
+
+/** Confirmar ou dizer que não se aplica. A nota é obrigatória em "não se aplica" e ao confirmar um local
+ * sem alvará enviado — a API confere e devolve o erro; aqui só se evita mandar o que ela vai recusar. */
+function DialogoMunicipal({ item, resposta, onFechar }:
+  { item: ItemMunicipal; resposta: Resposta; onFechar: () => void }) {
+  const { empresa } = useTorre();
+  const avisar = useAvisar();
+  const invalidar = useInvalidarTorre();
+  const id = useId();
+  const [nota, setNota] = useState("");
+  const exigeNota = resposta === "nao_se_aplica" || item.alvaras.length === 0;
+  const responder = useMutation({
+    mutationFn: () =>
+      dados(api.PUT("/api/v1/empresas/{empresa_id}/instanciacao/municipal", {
+        params: { path: { empresa_id: empresa?.id ?? 0 } },
+        body: { local: item.local, situacao: resposta, nota: nota.trim() || null },
+      })),
+    onSuccess: async () => {
+      await invalidar();
+      avisar(`${item.titulo}: ${SITUACAO_MUNICIPAL[resposta].rotulo.toLowerCase()}.`);
+      onFechar();
+    },
+    onError: (e) => avisar(mensagem(e), "erro"),
+  });
+  const pronto = !exigeNota || nota.trim().length > 0;
+  return (
+    <Dialogo aberto onFechar={onFechar}
+      titulo={resposta === "confirmado" ? `Confirmar: ${item.titulo}` : `Não se aplica: ${item.titulo}`}
+      rodape={<>
+        <Botao onClick={onFechar}>Cancelar</Botao>
+        <Botao variante="primario" disabled={!pronto} carregando={responder.isPending}
+          onClick={() => responder.mutate()}>
+          {resposta === "confirmado" ? "Confirmar" : "Registrar"}
+        </Botao>
+      </>}>
+      <div className="grid gap-3 text-sm">
+        {resposta === "confirmado" && item.alvaras.length > 0 && (
+          <p>
+            {item.alvaras.length === 1 ? "Alvará enviado" : "Alvarás enviados"}: <strong>{item.alvaras.join(", ")}</strong>.
+            Confirme que as demais exigências do município também foram entregues.
+          </p>
+        )}
+        {resposta === "confirmado" && item.alvaras.length === 0 && (
+          <Aviso tipo="atencao">
+            Nenhum alvará deste local foi enviado em Licenças. Para confirmar mesmo assim, diga o que foi entregue
+            (ex.: protocolo da renovação na prefeitura).
+          </Aviso>
+        )}
+        <Campo htmlFor={id} rotulo={exigeNota ? "Nota (obrigatória)" : "Nota (opcional)"}
+          dica={resposta === "nao_se_aplica"
+            ? "Por que não se aplica: ex.: o município dispensa alvará para esta atividade." : undefined}>
+          <AreaTexto id={id} value={nota} onChange={(e) => setNota(e.target.value)} maxLength={1000} />
+        </Campo>
+      </div>
+    </Dialogo>
+  );
+}
+
+function ChecklistMunicipal() {
+  const t = useTorre();
+  const id = t.empresa?.id ?? 0;
+  const avisar = useAvisar();
+  const invalidar = useInvalidarTorre();
+  const [aberto, setAberto] = useState<{ item: ItemMunicipal; resposta: Resposta } | null>(null);
+  const checklist = useQuery({
+    queryKey: [...t.chave, "municipal"],
+    queryFn: () => dados(api.GET("/api/v1/empresas/{empresa_id}/instanciacao/municipal",
+      { params: { path: { empresa_id: id } } })),
+    enabled: !!id,
+  });
+  const reabrir = useMutation({
+    mutationFn: (item: ItemMunicipal) =>
+      dados(api.PUT("/api/v1/empresas/{empresa_id}/instanciacao/municipal", {
+        params: { path: { empresa_id: id } }, body: { local: item.local, situacao: "pendente", nota: null },
+      })),
+    onSuccess: async (_, item) => {
+      await invalidar();
+      avisar(`${item.titulo} voltou a pendente.`);
+    },
+    onError: (e) => avisar(mensagem(e), "erro"),
+  });
+  const responde = !t.soLeitura && t.veTudo;
+  const pendentes = checklist.data?.pendentes ?? 0;
+
+  return (
+    <Secao
+      titulo={pendentes
+        ? `Alvarás e exigências municipais (${plural(pendentes, "pendente", "pendentes")})`
+        : "Alvarás e exigências municipais"}
+      descricao="Etapa 5. Legislação municipal e alvarás não têm fonte automática: entram pelo cadastro, na implantação. A sede e cada unidade respondem; o alvará enviado em Licenças aparece como prova do local."
+    >
+      {aberto && <DialogoMunicipal item={aberto.item} resposta={aberto.resposta} onFechar={() => setAberto(null)} />}
+      {checklist.isLoading && <Carregando linhas={2} />}
+      {checklist.error && <ErroCarga erro={checklist.error} onTentar={() => checklist.refetch()} />}
+      {checklist.data && (
+        <>
+          <p className="mb-3 text-[13px] text-texto-2">{checklist.data.pergunta}</p>
+          <ul className="grid gap-3 md:grid-cols-2" data-testid="checklist-municipal">
+            {checklist.data.itens.map((i) => {
+              const s = SITUACAO_MUNICIPAL[i.situacao as Situacao] ?? SITUACAO_MUNICIPAL.pendente;
+              return (
+                <li key={i.local || "sede"}>
+                  <Cartao className="flex h-full flex-col p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold">{i.titulo}</p>
+                        <p className="text-[13px] text-texto-2">
+                          {[i.municipio, i.uf].filter(Boolean).join(" · ") || (i.local ? "sem município e UF" : "a empresa")}
+                        </p>
+                      </div>
+                      <Etiqueta tom={s.tom}>{s.rotulo}</Etiqueta>
+                    </div>
+                    <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[13px]">
+                      {i.alvaras.length ? (
+                        i.alvaras.map((a) => <Etiqueta key={a} tom="marca">Alvará {a}</Etiqueta>)
+                      ) : (
+                        <span className="text-texto-3">Nenhum alvará enviado.</span>
+                      )}
+                    </div>
+                    {i.nota && <p className="mt-2 text-[13px]">“{i.nota}”</p>}
+                    {i.por && i.em && (
+                      <p className="mt-2 text-xs text-texto-3">{s.rotulo} por {i.por} em {emBrasilia(i.em, false)}.</p>
+                    )}
+                    {responde && (
+                      <div className="mt-auto flex flex-wrap gap-2 pt-3">
+                        {i.situacao === "pendente" ? (
+                          <>
+                            <Botao tamanho="p" variante="primario"
+                              onClick={() => setAberto({ item: i, resposta: "confirmado" })}>
+                              Confirmar
+                            </Botao>
+                            <Botao tamanho="p" onClick={() => setAberto({ item: i, resposta: "nao_se_aplica" })}>
+                              Não se aplica
+                            </Botao>
+                          </>
+                        ) : (
+                          <Botao tamanho="p" carregando={reabrir.isPending && reabrir.variables?.local === i.local}
+                            onClick={() => reabrir.mutate(i)}>
+                            Reabrir
+                          </Botao>
+                        )}
+                      </div>
+                    )}
+                  </Cartao>
+                </li>
+              );
+            })}
+          </ul>
+          {responde && (
+            <p className="mt-3 flex items-center gap-1.5 text-xs text-texto-3">
+              <Landmark className="size-3.5" aria-hidden />
+              O PDF do alvará entra em <Link href="/licencas" className="underline">Licenças</Link>, com o tipo alvará e a unidade.
+            </p>
+          )}
+        </>
       )}
     </Secao>
   );
@@ -534,6 +707,8 @@ export default function Instanciacao() {
           </Secao>
 
           <Unidades />
+
+          <ChecklistMunicipal />
 
           {!t.soLeitura && (
             <>

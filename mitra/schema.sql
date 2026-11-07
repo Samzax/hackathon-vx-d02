@@ -316,6 +316,20 @@ CREATE TABLE IF NOT EXISTS condicionante (
 );
 CREATE INDEX IF NOT EXISTS condicionante_empresa ON condicionante(empresa_id, status);
 
+-- Checklist da etapa 5: os alvarás e as exigências municipais da sede e de cada unidade. Não há fonte
+-- automática de legislação municipal: quem confirma é a própria empresa, na implantação. local vazio é
+-- a sede; os demais são unidade.nome. Sem linha aqui, o local está pendente.
+CREATE TABLE IF NOT EXISTS exigencia_municipal (
+    id          INTEGER PRIMARY KEY,
+    empresa_id  INTEGER NOT NULL REFERENCES empresa(id),
+    local       TEXT NOT NULL DEFAULT '',        -- '' = sede; senão o nome da unidade
+    situacao    TEXT NOT NULL CHECK (situacao IN ('confirmado', 'nao_se_aplica')),
+    nota        TEXT,                            -- obrigatória em "não se aplica" e na confirmação sem alvará
+    por         TEXT NOT NULL,
+    em          TEXT NOT NULL,
+    UNIQUE (empresa_id, local)
+);
+
 -- Responsável técnico e coordenador do PAEBM. O CPF é dado pessoal: cifrado por campo
 -- (mitra/pessoal.py), mascarado pela API, e ver o CPF inteiro vai para a auditoria.
 CREATE TABLE IF NOT EXISTS responsavel_tecnico (

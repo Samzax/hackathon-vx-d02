@@ -400,6 +400,71 @@ def dados_faltando(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depen
             if visiveis is None or d.ativo in visiveis]
 
 
+# ------------------------------------------------------------------ etapa 5: o checklist municipal
+
+
+class ItemMunicipal(BaseModel):
+    local: str = Field(description="vazio: a sede da empresa; senão o nome da unidade")
+    titulo: str = Field(description="'Sede da empresa' ou o nome da unidade")
+    uf: str | None
+    municipio: str | None
+    alvaras: list[str] = Field(description="os números dos alvarás enviados em Licenças para este local")
+    situacao: str = Field(description="pendente, confirmado ou nao_se_aplica")
+    nota: str | None = Field(description="o que foi entregue, ou por que não se aplica")
+    por: str | None
+    em: str | None
+
+
+class ChecklistMunicipal(BaseModel):
+    pergunta: str = Field(description="a pergunta que cada local responde")
+    itens: list[ItemMunicipal]
+    pendentes: int
+
+
+class RespostaMunicipal(BaseModel):
+    local: str = Field("", max_length=200, description="vazio: a sede; senão o nome da unidade")
+    situacao: str = Field(pattern="^(pendente|confirmado|nao_se_aplica)$",
+                          description="confirmado, nao_se_aplica, ou pendente para reabrir")
+    nota: str | None = Field(None, max_length=1000, description=(
+        "obrigatória em nao_se_aplica e ao confirmar um local sem alvará enviado"))
+
+
+def _checklist(conn, e: Escopo, empresa_id: int) -> ChecklistMunicipal:
+    """A sede e as unidades; a conta presa a unidades vê só as dela (a sede é de quem vê a empresa toda)."""
+    escopo = e.escopo_unidades
+    itens = [ItemMunicipal(**vars(i)) for i in dominio.checklist_municipal(conn, empresa_id)
+             if escopo is None or i.local in escopo]
+    return ChecklistMunicipal(pergunta=dominio.PERGUNTA_MUNICIPAL, itens=itens,
+                              pendentes=sum(1 for i in itens if i.situacao == dominio.PENDENTE))
+
+
+@rota.get("/empresas/{empresa_id}/instanciacao/municipal", response_model=ChecklistMunicipal,
+          summary="Etapa 5: alvarás e exigências municipais da sede e de cada unidade (sem fonte automática)")
+def checklist_municipal(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+    _instanciada(conn, e, empresa_id)
+    return _checklist(conn, e, empresa_id)
+
+
+@rota.put("/empresas/{empresa_id}/instanciacao/municipal", response_model=ChecklistMunicipal,
+          summary="Responder um local do checklist municipal (Diretoria ou Regulatório da própria empresa)")
+def responder_municipal(empresa_id: int, dados: RespostaMunicipal, request: Request,
+                        e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
+    """Confirmar sem alvará enviado para o local pede nota (protocolo, dispensa do município...);
+    "não se aplica" sempre pede o porquê; `pendente` reabre. Fica na auditoria e no histórico da etapa."""
+    _instanciada(conn, e, empresa_id)
+    if not e.ve_tudo:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            "o checklist municipal é respondido pela Diretoria ou pelo Regulatório da empresa")
+    try:
+        dominio.responder_municipal(conn, empresa_id, dados.local, dados.situacao, e.assinante, dados.nota)
+    except dominio.ErroInstanciacao as erro:
+        auditoria.registrar(conn, request, "municipal_resposta", dados.local or "sede",
+                            dados.model_dump(), resultado="recusado")
+        raise _erro(erro) from None
+    auditoria.registrar(conn, request, "municipal_resposta", dados.local or "sede", dados.model_dump())
+    return _checklist(conn, e, empresa_id)
+
+
 # ------------------------------------------------------------------ etapa 7: a primeira conta
 
 
