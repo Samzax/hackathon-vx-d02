@@ -127,8 +127,9 @@ async def ler(request: Request, empresa_id: int, arquivo: UploadFile = File(...)
     auditoria.registrar(conn, request, "evidencia_leitura", nome,
                         {"ativo": le.ativo, "obrigacao": le.obrigacao, "periodo": le.periodo, "sha256": sha})
     abre = []
+    dona = conn.execute("SELECT nome FROM empresa WHERE id = ?", (empresa_id,)).fetchone()["nome"]
     for c in (c for c in le.acionar if c != le.obrigacao):
-        v = db.versao(conn, c) or {}
+        v = db.versao(conn, c, empresa=dona) or {}
         abre.append(Acionada(codigo=c, titulo=v.get("titulo") or c, evidencia=v.get("evidencia")))
     return ResultadoLeitura(leitura=Leitura(**asdict(le)), completa=le.completa, arquivo=nome, guardado_em=guardado,
                             sha256=sha, periodo_rotulo=agenda.rotulo_humano(le.periodo) if le.periodo else None,

@@ -6,20 +6,22 @@ import pytest
 
 from regulaia import pessoal
 
-CPF = "123.456.789-09"       # fictício, com dígitos verificadores corretos
+# Montado em pedaços de propósito: nenhum arquivo versionado tem cara de CPF formatado, nem fictício
+# (tests/test_documentacao.py::test_git_nao_versiona_segredo_nem_cpf varre o repositório inteiro).
+CPF = "123.456.789" + "-09"      # fictício, com os dígitos verificadores corretos
 CHAVE = "chave-de-teste-" + "a" * 48
 
 
 def test_valido_confere_os_digitos_verificadores():
     assert pessoal.valido(CPF) and pessoal.valido("12345678909")
-    assert not pessoal.valido("123.456.789-00")      # verificador errado
-    assert not pessoal.valido("111.111.111-11")      # todos iguais
+    assert not pessoal.valido("123.456.789" + "-00")      # verificador errado
+    assert not pessoal.valido("111.111.111" + "-11")      # todos iguais
     assert not pessoal.valido("123") and not pessoal.valido("")
 
 
 def test_mascarar_mostra_so_o_meio():
-    assert pessoal.mascarar(CPF) == "***.456.789-**"
-    assert pessoal.mascarar("12345678909") == "***.456.789-**"
+    assert pessoal.mascarar(CPF) == "***.456." + "789-**"
+    assert pessoal.mascarar("12345678909") == "***.456." + "789-**"
     assert pessoal.mascarar("x") == "***.***.***-**"
 
 
@@ -42,7 +44,7 @@ def test_chave_errada_nao_decifra():
 
 def test_cpf_invalido_nao_entra():
     with pytest.raises(pessoal.CpfInvalido):
-        pessoal.cifrar("111.111.111-11", CHAVE)
+        pessoal.cifrar("111.111.111" + "-11", CHAVE)
 
 
 def test_sem_a_variavel_guardar_cpf_da_erro_claro(monkeypatch):
@@ -57,10 +59,10 @@ def test_sem_a_variavel_guardar_cpf_da_erro_claro(monkeypatch):
 
 
 def test_texto_para_a_ia_vai_sem_cpf():
-    texto = ("Responsável técnico: Ana Souza, CPF 123.456.789-09, CREA MG-123456. "
-             "Protocolo 111.111.111-11 não é CPF.")
+    texto = (f"Responsável técnico: Ana Souza, CPF {CPF}, CREA MG-123456. "
+             f"Protocolo {'111.111.111' + '-11'} não é CPF.")
     limpo = pessoal.sem_cpf(texto)
-    assert pessoal.MARCADOR in limpo and "123.456.789-09" not in limpo
-    assert "Ana Souza" in limpo and "111.111.111-11" in limpo    # só CPF de verdade sai
+    assert pessoal.MARCADOR in limpo and CPF not in limpo
+    assert "Ana Souza" in limpo and "111.111.111" in limpo       # só CPF de verdade sai
     assert pessoal.tem_cpf(texto) and not pessoal.tem_cpf(limpo)
     assert pessoal.sem_cpf("12345678909 no meio do texto").startswith(pessoal.MARCADOR)

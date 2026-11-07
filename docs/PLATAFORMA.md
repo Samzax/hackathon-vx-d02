@@ -171,9 +171,9 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
       (as 8 rotas, curadoria, token e conta de teste), `test_a_propria_empresa_escreve_nos_dados_dela` e o e2e
       "a curadoria da plataforma só lê os dados da empresa".
 - [ ] O Streamlit (`app.py`) continua de uma empresa só e com as regras antigas de decisão (é a demo).
-- [ ] Obrigação própria ainda tem código global (`obrigacao.codigo` UNIQUE): duas clientes não podem
-      ter cada uma a sua "LO-01". Quando entrar a segunda cliente com licença própria, prefixar o código
-      ou trocar o UNIQUE por (empresa, codigo).
+- [x] Código da obrigação único **por empresa** (migração 0005, seção Instanciação): duas clientes têm
+      cada uma a sua "LO-01" e as normas públicas continuam únicas entre si. Toda busca por código leva a
+      empresa; sem ela, código repetido em duas donas é erro, não escolha ao acaso.
 
 ## Instanciação (tarefa em curso: [TAREFA_INSTANCIACAO.md](TAREFA_INSTANCIACAO.md))
 
@@ -195,18 +195,45 @@ para outra sessão continuar daqui.
     ganharam `empresa_id`; `analisar_ato` perdeu o `readOnlyHint` (chama IA: custo); erros de validação e
     de rede viraram frase legível.
 
-### Em andamento
-- Correções da API da revisão: período de entrega inventado derrubando o painel, gestor delegado vendo o
-  histórico das outras áreas do ativo, conta de demo sem senha em produção, `ano`/`max_length` sem faixa.
+- **Base da instanciação**: domínio e esquema.
+  - **Migração 0005** (`migrations/versions/0005_instanciacao.sql`): tabelas `instanciacao`,
+    `instanciacao_evento`, `unidade`, `licenca`, `condicionante`, `responsavel_tecnico`, `prazo_interno`,
+    `responsavel_padrao`; colunas `ativo.unidade`, `usuario.trocar_senha` e `usuario.unidades` (escopo por
+    unidade). **O código da obrigação deixou de ser UNIQUE global**: índice único sobre
+    `(COALESCE(empresa, ''), codigo)`, então duas clientes têm cada uma a sua "LO-01" e as normas públicas
+    continuam únicas entre si. `tests/test_banco.py` confere a paridade SQLite / Postgres / soma das
+    migrações; banco SQLite antigo é refeito sem o UNIQUE por `db._codigo_por_empresa`.
+  - **Toda busca de obrigação por código leva a empresa** (`db.obrigacao_por_codigo`, `versao`,
+    `historico`, `propor_versao`; as escritas a partir de um ativo derivam a dona do próprio ativo). Código
+    ambíguo entre clientes **erra** em vez de escolher uma dona por acaso. Isso fecha o furo que a revisão
+    achou em `POST /evidencias/registro` (gravava referência a obrigação de outra cliente).
+  - `regulaia/instanciacao.py`: as 8 etapas com estado tirado **dos dados** (`pendente`, `em_andamento`,
+    `pronta`; o percentual vem das etapas), quem fez e quando (`instanciacao_evento`), unidades por
+    empresa, ativos com o cadastro conferido campo a campo, **modelo CSV baixável** e planilha validada
+    **linha a linha com o erro na linha** (importa tudo ou nada), dados que faltam como lista de tarefas
+    com as obrigações que dependem de cada um, e "entrar em operação" aceitando pendência visível.
+  - `regulaia/licencas.py`: o PDF da licença lido pela IA propõe condicionantes **com o trecho literal**,
+    e o Python confere palavra por palavra no texto do PDF — **sem trecho conferido, não entra** (a mesma
+    regra do catálogo). As propostas ficam pendentes; **quem aprova é o Regulatório ou a Diretoria da
+    própria empresa** (a plataforma só lê), que pode corrigir antes de aprovar. Aprovada, vira obrigação
+    própria vigente com código por empresa (`LO-01`, `LO-02`...). A validade da licença vira obrigação de
+    renovação com a antecedência que ela pedir (padrão 120 dias). **CPF nunca vai para a IA**
+    (`pessoal.sem_cpf` no texto enviado).
+  - Testes: `tests/test_instanciacao.py` (18, inclui "duas clientes com a sua própria LO-01"),
+    `tests/test_licencas.py` (16), `tests/test_pessoal.py` (7).
 
 ### Falta
-- Domínio `regulaia/instanciacao.py`: as 8 etapas com estado (`pendente`, `em_andamento`, `pronta`), quem
-  fez e quando; migração **0005** (tabelas `instanciacao`, `instanciacao_evento`, `unidade`, coluna
-  `ativo.unidade`, `usuario.trocar_senha`) — **ainda sem commit**, e com ela o UNIQUE de
-  `obrigacao.codigo` por (empresa, código).
-- Licenças e condicionantes (PDF → propostas com trecho conferido, aprovação pelo Regulatório da própria
-  empresa), responsáveis técnicos com **CPF criptografado** (`REGULAIA_CHAVE_DADOS`, ver "Para a infra"),
-  escopo por unidade, personalização (prazo interno, normas internas), API, front e e2e.
+- API e front de cada etapa (seção 6 da tarefa): rotas com papéis, escopo e auditoria; assistente "Nova
+  empresa", página "Instanciação", envio da licença e aprovação das condicionantes, responsáveis técnicos,
+  unidades e acessos; contrato e `api-tipos.ts` regerados; e2e.
+- Responsáveis técnicos (gravação com CPF cifrado, "ver CPF" auditado, LGPD exportar/apagar) — o módulo de
+  criptografia (`regulaia/pessoal.py`) já está pronto e testado.
+- Escopo por unidade valendo em todas as rotas, no boletim, no calendário e no agente; testes de
+  isolamento como os de empresa.
+- Personalização: prazo interno, normas internas sem licença, responsável padrão por área (tabelas já
+  criadas na 0005).
+- Ferramenta MCP `instanciacao(empresa)` — vai em `agente/ferramentas.py` (depois do merge do "Pergunte à
+  torre", as ferramentas moram lá e o `servidor.py` só embrulha).
 
 ## Para a infra
 

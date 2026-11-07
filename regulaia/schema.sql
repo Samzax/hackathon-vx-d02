@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS ativo (
     nome         TEXT NOT NULL,
     atributos    TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(atributos)),
     responsavel  TEXT,
+    unidade      TEXT,                          -- a operação a que pertence ("Mina Serra Azul"): unidade.nome
     UNIQUE (empresa_id, codigo)
 );
 
@@ -35,9 +36,11 @@ CREATE TABLE IF NOT EXISTS ato (
     sha256         TEXT
 );
 
+-- O código é único por empresa (índice obrigacao_empresa_codigo, abaixo), não global: duas clientes
+-- têm cada uma a sua "LO-01", e as normas públicas (empresa vazia) continuam únicas entre si.
 CREATE TABLE IF NOT EXISTS obrigacao (
     id          INTEGER PRIMARY KEY,
-    codigo      TEXT NOT NULL UNIQUE,           -- OB-01, R95-03...
+    codigo      TEXT NOT NULL,                  -- OB-01, R95-03...
     tipo_ativo  TEXT NOT NULL,
     norma       TEXT,                           -- Res. ANM 220/2025, NR-13...
     area        TEXT,                           -- barragem, emergencia, ambiental, equipamento...
@@ -151,7 +154,9 @@ CREATE TABLE IF NOT EXISTS usuario (
     criado_em      TEXT NOT NULL DEFAULT (datetime('now')),
     ultimo_acesso  TEXT,
     empresa        TEXT,                              -- nome da empresa cliente: só vê o que é dela
-    plataforma     INTEGER NOT NULL DEFAULT 0 CHECK (plataforma IN (0, 1))   -- equipe da RegulaIA (curadoria)
+    plataforma     INTEGER NOT NULL DEFAULT 0 CHECK (plataforma IN (0, 1)),  -- equipe da RegulaIA (curadoria)
+    trocar_senha   INTEGER NOT NULL DEFAULT 0 CHECK (trocar_senha IN (0, 1)),  -- senha provisória: troca no 1º acesso
+    unidades       TEXT NOT NULL DEFAULT '[]'         -- escopo por unidade (JSON); '[]' = todas as da empresa
 );
 
 -- Trilha de auditoria da API: toda escrita, com quem, quando, de onde e o resultado.
@@ -228,3 +233,128 @@ CREATE TABLE IF NOT EXISTS norma_vigencia (
     fonte         TEXT NOT NULL,
     lida_em       TEXT NOT NULL
 );
+
+-- Instanciação (regulaia/instanciacao.py): levar uma cliente nova do zero até a torre funcionando.
+-- Uma por empresa. O estado de cada etapa sai dos dados; quem fez o quê e quando fica em instanciacao_evento.
+CREATE TABLE IF NOT EXISTS instanciacao (
+    empresa_id    INTEGER PRIMARY KEY REFERENCES empresa(id),
+    cnpj          TEXT UNIQUE,                  -- 14 dígitos; vazio: empreendedor pessoa física
+    razao_social  TEXT NOT NULL,
+    ufs           TEXT NOT NULL DEFAULT '[]',   -- UFs em que opera (JSON)
+    no_sigbm      INTEGER NOT NULL DEFAULT 0,   -- o CNPJ tem barragem no SIGBM público
+    criada_por    TEXT NOT NULL,
+    criada_em     TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS instanciacao_evento (
+    id          INTEGER PRIMARY KEY,
+    empresa_id  INTEGER NOT NULL REFERENCES empresa(id),
+    etapa       TEXT NOT NULL,                  -- cadastro, ativos, dados, cobertura, licencas, responsaveis, contas, operacao
+    acao        TEXT NOT NULL,
+    detalhe     TEXT,                           -- JSON
+    por         TEXT NOT NULL,
+    em          TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS instanciacao_evento_empresa ON instanciacao_evento(empresa_id, etapa);
+
+-- A operação da empresa ("Mina Serra Azul", com as barragens e os equipamentos dela). O ativo aponta pelo nome.
+CREATE TABLE IF NOT EXISTS unidade (
+    id          INTEGER PRIMARY KEY,
+    empresa_id  INTEGER NOT NULL REFERENCES empresa(id),
+    nome        TEXT NOT NULL,
+    uf          TEXT,
+    municipio   TEXT,
+    criada_por  TEXT,
+    criada_em   TEXT NOT NULL,
+    UNIQUE (empresa_id, nome)
+);
+
+-- A licença (LP, LI, LO, LAC, outorga, autorização) que a empresa enviou em PDF; o texto lido fica
+-- aqui para o Python conferir o trecho literal de cada condicionante.
+CREATE TABLE IF NOT EXISTS licenca (
+    id            INTEGER PRIMARY KEY,
+    empresa_id    INTEGER NOT NULL REFERENCES empresa(id),
+    tipo          TEXT NOT NULL,                 -- LP, LI, LO, LAC, outorga, autorizacao
+    numero        TEXT NOT NULL,
+    orgao         TEXT,
+    emitida_em    TEXT,
+    validade      TEXT,                          -- AAAA-MM-DD: vira obrigação de renovação
+    renovar_dias  INTEGER NOT NULL DEFAULT 120,  -- quantos dias antes do vencimento pedir a renovação
+    unidade       TEXT,                          -- a que unidade se aplica (vazio: a empresa)
+    ativo_codigo  TEXT,                          -- ou a um ativo
+    arquivo       TEXT,                          -- o nome que as pessoas veem
+    guardado_em   TEXT,                          -- onde o original ficou (pasta ou S3)
+    sha256        TEXT,
+    texto         TEXT,                          -- o texto lido do PDF (conferência do trecho)
+    enviada_por   TEXT NOT NULL,
+    enviada_em    TEXT NOT NULL,
+    UNIQUE (empresa_id, tipo, numero)
+);
+
+-- Condicionante proposta pela IA com o trecho literal conferido pelo Python; quem aprova é o
+-- Regulatório (ou a Diretoria) da própria empresa, e aprovada vira obrigação própria.
+CREATE TABLE IF NOT EXISTS condicionante (
+    id             INTEGER PRIMARY KEY,
+    licenca_id     INTEGER NOT NULL REFERENCES licenca(id),
+    empresa_id     INTEGER NOT NULL REFERENCES empresa(id),
+    titulo         TEXT NOT NULL,
+    prazo          TEXT,
+    periodicidade  TEXT,
+    agenda         TEXT,                         -- a agenda que a torre usa (ver regulaia/agenda.py)
+    evidencia      TEXT,
+    aplica_a       TEXT,                         -- unidade | ativo | empresa
+    alvo           TEXT,                         -- o nome da unidade ou o código do ativo
+    trecho         TEXT NOT NULL,                -- literal, conferido no texto do PDF
+    pagina         INTEGER,
+    status         TEXT NOT NULL DEFAULT 'pendente',   -- pendente | aprovada | rejeitada
+    codigo         TEXT,                         -- a obrigação criada na aprovação
+    proposta_em    TEXT NOT NULL,
+    decidida_por   TEXT,
+    decidida_em    TEXT,
+    nota           TEXT
+);
+CREATE INDEX IF NOT EXISTS condicionante_empresa ON condicionante(empresa_id, status);
+
+-- Responsável técnico e coordenador do PAEBM. O CPF é dado pessoal: cifrado por campo
+-- (regulaia/pessoal.py), mascarado pela API, e ver o CPF inteiro vai para a auditoria.
+CREATE TABLE IF NOT EXISTS responsavel_tecnico (
+    id                INTEGER PRIMARY KEY,
+    empresa_id        INTEGER NOT NULL REFERENCES empresa(id),
+    papel             TEXT NOT NULL,             -- responsavel_tecnico | coordenador_paebm | ...
+    nome              TEXT NOT NULL,
+    cpf_cifrado       TEXT,                      -- Fernet; nunca o CPF em claro
+    cpf_fim           TEXT,                      -- os dígitos do meio, para a máscara
+    registro          TEXT,                      -- conselho (CREA MG-123456)
+    art_numero        TEXT,
+    art_vigencia_ate  TEXT,                      -- ART vencendo vira obrigação
+    unidade           TEXT,
+    ativo_codigo      TEXT,
+    consentimento     TEXT,                      -- JSON: quem, quando, para quê (empreendedor PF)
+    ficticio          INTEGER NOT NULL DEFAULT 0,-- na demo, só CPF fictício e marcado como tal
+    criado_por        TEXT NOT NULL,
+    criado_em         TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS responsavel_tecnico_empresa ON responsavel_tecnico(empresa_id);
+
+-- A empresa pode adiantar o prazo de uma obrigação sem mudar a norma: a torre mostra os dois.
+CREATE TABLE IF NOT EXISTS prazo_interno (
+    empresa_id    INTEGER NOT NULL REFERENCES empresa(id),
+    codigo        TEXT NOT NULL,
+    dias_antes    INTEGER NOT NULL,
+    definido_por  TEXT NOT NULL,
+    definido_em   TEXT NOT NULL,
+    PRIMARY KEY (empresa_id, codigo)
+);
+
+-- Responsável padrão por área: obrigação nova da empresa já nasce com responsável.
+CREATE TABLE IF NOT EXISTS responsavel_padrao (
+    empresa_id    INTEGER NOT NULL REFERENCES empresa(id),
+    area          TEXT NOT NULL,
+    responsavel   TEXT NOT NULL,
+    definido_por  TEXT NOT NULL,
+    definido_em   TEXT NOT NULL,
+    PRIMARY KEY (empresa_id, area)
+);
+
+-- O código da obrigação é único por empresa: COALESCE porque em SQL NULL não é igual a NULL.
+CREATE UNIQUE INDEX IF NOT EXISTS obrigacao_empresa_codigo ON obrigacao (COALESCE(empresa, ''), codigo);

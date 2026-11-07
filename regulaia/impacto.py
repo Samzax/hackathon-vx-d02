@@ -155,14 +155,16 @@ def analisar(conn, roteador: Roteador, identificacao: str, ato_texto: str, empre
         rows = conn.execute("SELECT codigo FROM obrigacao WHERE empresa IS NULL OR empresa = ? ORDER BY codigo",
                             (empresa,))
     codigos = [r["codigo"] for r in rows]
-    vigentes = [v for c in codigos if (v := db.versao(conn, c))]
+    # o código só é único por empresa: a busca da versão vai no mesmo escopo da análise
+    escopo = empresa if empresa is not None else db.QUALQUER
+    vigentes = [v for c in codigos if (v := db.versao(conn, c, empresa=escopo))]
     cands = triagem.candidatas(ato_texto, vigentes)
     analise = Analise(identificacao, cands)
     if not cands:
         analise.motivo = "Nenhuma obrigação do cadastro é citada ou tem termos em comum com o ato (sem IA)."
         return analise
 
-    cadastro = {c.codigo: db.versao(conn, c.codigo) for c in cands}
+    cadastro = {c.codigo: db.versao(conn, c.codigo, empresa=escopo) for c in cands}
     usuario = _mensagem(identificacao, ato_texto, cadastro)
     for camada in (2, 3):
         try:
@@ -186,8 +188,10 @@ def analisar(conn, roteador: Roteador, identificacao: str, ato_texto: str, empre
     return analise
 
 
-def aplicar(conn, analise: Analise, ato_id: int) -> list[int]:
-    """Transforma as mudanças aprovadas em versões pendentes (uma por obrigação)."""
+def aplicar(conn, analise: Analise, ato_id: int, empresa: str | None = None) -> list[int]:
+    """Transforma as mudanças aprovadas em versões pendentes (uma por obrigação). `empresa` é o escopo
+    em que os códigos foram analisados (o mesmo de `analisar`)."""
+    escopo = empresa if empresa is not None else db.QUALQUER
     por_ob: dict[str, dict] = {}
     trechos: dict[str, list[str]] = {}
     for m in analise.aprovadas:
@@ -199,13 +203,13 @@ def aplicar(conn, analise: Analise, ato_id: int) -> list[int]:
     for codigo, campos in por_ob.items():
         if "periodicidade" in campos and "agenda" not in campos:
             # a agenda que a torre usa acompanha a periodicidade nova (regra, não IA)
-            atual = db.versao(conn, codigo)
+            atual = db.versao(conn, codigo, empresa=escopo)
             nova = agenda.agenda_para(campos["periodicidade"], atual["agenda"]) if atual else None
             if nova:
                 campos["agenda"] = nova
         ids.append(db.propor_versao(
             conn, codigo, campos, ato_id=ato_id,
-            trecho=" […] ".join(trechos[codigo]), fonte=analise.ato,
+            trecho=" […] ".join(trechos[codigo]), fonte=analise.ato, empresa=escopo,
         ))
     return ids
 

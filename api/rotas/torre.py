@@ -535,12 +535,16 @@ def historico(codigo: str, empresa_id: int | None = Query(None, description=(
         "restringe ao escopo desta empresa (normas públicas e as dela): é o que o agente preso a uma "
         "empresa manda, para a obrigação própria de outra cliente responder 404 também na plataforma")),
               e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    ob = conn.execute("SELECT empresa, norma FROM obrigacao WHERE codigo = ?", (codigo,)).fetchone()
+    # o código só é único por empresa: resolve no escopo de quem pede (a dela e as públicas)
+    escopo = db.QUALQUER if e.plataforma and empresa_id is None else e.empresa
+    if empresa_id is not None:
+        escopo = empresa_visivel(conn, e, empresa_id)["nome"]
+    try:
+        ob = db.obrigacao_por_codigo(conn, codigo, escopo)
+    except db.ErroCadastro:
+        ob = None
     no_escopo = ob is not None and e.ve_obrigacao(ob["empresa"])
-    if no_escopo and empresa_id is not None:
-        emp = empresa_visivel(conn, e, empresa_id)
-        no_escopo = ob["empresa"] in (None, emp["nome"])
-    h = db.historico(conn, codigo) if no_escopo else []
+    h = db.historico(conn, codigo, empresa=escopo) if no_escopo else []
     if not h:       # obrigação própria de outra cliente: 404, como se não existisse
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"obrigação {codigo} não existe")
     from .regulatorio import CAMPO, _texto

@@ -63,11 +63,44 @@ def conectar(caminho: str | Path = DB_PADRAO):
         if col not in colunas:
             conn.execute(f"ALTER TABLE empresa ADD COLUMN {col} TEXT")
     # multiempresa: bancos criados antes de conta e obrigação terem empresa
+    # e instanciação: a unidade (operação) do ativo e a senha provisória da conta
     for tabela, col, tipo in (("obrigacao", "empresa", "TEXT"), ("usuario", "empresa", "TEXT"),
-                              ("usuario", "plataforma", "INTEGER NOT NULL DEFAULT 0"), ("auditoria", "empresa", "TEXT")):
+                              ("usuario", "plataforma", "INTEGER NOT NULL DEFAULT 0"), ("auditoria", "empresa", "TEXT"),
+                              ("ativo", "unidade", "TEXT"), ("usuario", "trocar_senha", "INTEGER NOT NULL DEFAULT 0"),
+                              ("usuario", "unidades", "TEXT NOT NULL DEFAULT '[]'")):
         if col not in {r["name"] for r in conn.execute(f"PRAGMA table_info({tabela})")}:
             conn.execute(f"ALTER TABLE {tabela} ADD COLUMN {col} {tipo}")
+    _codigo_por_empresa(conn)
     return conn
+
+
+def _codigo_por_empresa(conn) -> None:
+    """Banco criado quando `obrigacao.codigo` era UNIQUE global: refaz a tabela sem esse UNIQUE (duas
+    clientes têm cada uma a sua "LO-01"). No SQLite não há DROP CONSTRAINT: recria e copia."""
+    autoindex = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'obrigacao' "
+        "AND name LIKE 'sqlite_autoindex%'").fetchone()
+    if autoindex is None:
+        return
+    conn.executescript("""
+        PRAGMA foreign_keys = OFF;
+        BEGIN;
+        CREATE TABLE obrigacao_nova (
+            id          INTEGER PRIMARY KEY,
+            codigo      TEXT NOT NULL,
+            tipo_ativo  TEXT NOT NULL,
+            norma       TEXT,
+            area        TEXT,
+            empresa     TEXT
+        );
+        INSERT INTO obrigacao_nova SELECT id, codigo, tipo_ativo, norma, area, empresa FROM obrigacao;
+        DROP TABLE obrigacao;
+        ALTER TABLE obrigacao_nova RENAME TO obrigacao;
+        CREATE UNIQUE INDEX IF NOT EXISTS obrigacao_empresa_codigo
+            ON obrigacao (COALESCE(empresa, ''), codigo);
+        COMMIT;
+        PRAGMA foreign_keys = ON;
+    """)
 
 
 @contextmanager
@@ -88,7 +121,8 @@ def sem_sincronizar(conn):
 def limpar(conn) -> None:
     """Apaga todos os dados (menos o cache de IA), mantendo o arquivo e as conexões abertas."""
     with conn:
-        for tabela in ("evento", "responsavel_obrigacao", "acionamento", "evidencia", "obrigacao_versao", "obrigacao", "ato", "ativo", "empresa"):
+        for tabela in ("evento", "responsavel_obrigacao", "acionamento", "evidencia", "obrigacao_versao", "obrigacao",
+                       "ato", "instanciacao_evento", "instanciacao", "unidade", "ativo", "empresa"):
             conn.execute(f"DELETE FROM {tabela}")
 
 
@@ -150,11 +184,12 @@ def _legivel(v) -> str:
 
 
 def criar_ativo(conn, empresa_id: int, tipo: str, codigo: str, nome: str,
-                atributos: dict, responsavel: str | None = None) -> int:
+                atributos: dict, responsavel: str | None = None, unidade: str | None = None) -> int:
+    """`unidade`: a operação a que o ativo pertence (unidade.nome da mesma empresa)."""
     cur = conn.execute(
-        "INSERT INTO ativo (empresa_id, tipo, codigo, nome, atributos, responsavel) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
-        (empresa_id, tipo, codigo, nome, json.dumps(atributos, ensure_ascii=False), responsavel),
+        "INSERT INTO ativo (empresa_id, tipo, codigo, nome, atributos, responsavel, unidade) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (empresa_id, tipo, codigo, nome, json.dumps(atributos, ensure_ascii=False), responsavel, unidade),
     )
     return cur.lastrowid
 
@@ -237,46 +272,97 @@ def ativo_por_codigo(conn, empresa_id: int, codigo: str) -> dict | None:
     return dict(r) if r else None
 
 
-def _obrigacao_id(conn, codigo: str) -> int:
-    row = conn.execute("SELECT id FROM obrigacao WHERE codigo = ?", (codigo,)).fetchone()
-    if row is None:
+QUALQUER = "*qualquer empresa*"
+"""Busca por código sem filtrar a empresa (radar e curadoria da plataforma). Como o código só é único
+por empresa, a busca assim **erra** se o mesmo código existir em mais de uma dona, em vez de escolher
+uma por acaso: quem chama passa a empresa, ou usa o id da obrigação."""
+
+
+def _obrigacoes_com_codigo(conn, codigo: str, empresa: str | None) -> list[dict]:
+    """As obrigações com esse código visíveis para `empresa` (as dela e as públicas), a dela primeiro.
+    Com `QUALQUER`, todas as donas — e aí duas clientes com a mesma "LO-01" é ambiguidade, não escolha."""
+    rows = [dict(r) for r in conn.execute(
+        "SELECT id, codigo, empresa, norma, tipo_ativo, area FROM obrigacao WHERE codigo = ?", (codigo,))]
+    if empresa == QUALQUER:
+        return rows
+    return sorted((r for r in rows if r["empresa"] in (None, empresa)), key=lambda r: r["empresa"] is None)
+
+
+def obrigacao_por_codigo(conn, codigo: str, empresa: str | None = QUALQUER) -> dict:
+    """A obrigação do código no escopo de `empresa` (a própria dela ou a norma pública)."""
+    achadas = _obrigacoes_com_codigo(conn, codigo, empresa)
+    if not achadas:
         raise ErroCadastro(f"obrigação {codigo} não existe")
-    return row["id"]
+    if len(achadas) > 1 and empresa == QUALQUER:
+        donas = ", ".join(sorted(r["empresa"] or "norma pública" for r in achadas))
+        raise ErroCadastro(f"o código {codigo} existe em mais de uma empresa ({donas}): diga de qual")
+    return achadas[0]
 
 
-def versao(conn, codigo: str, status: str = "vigente") -> dict | None:
+def _obrigacao_id(conn, codigo: str, empresa: str | None = QUALQUER) -> int:
+    return obrigacao_por_codigo(conn, codigo, empresa)["id"]
+
+
+def _empresa_do_ativo(conn, ativo_id: int) -> str:
+    """O nome da dona do ativo: é o escopo de toda busca de obrigação por código a partir do ativo
+    (a condicionante de outra cliente nunca entra na evidência, no acionamento nem na atribuição)."""
+    r = conn.execute("SELECT e.nome FROM ativo a JOIN empresa e ON e.id = a.empresa_id WHERE a.id = ?",
+                     (ativo_id,)).fetchone()
+    if r is None:
+        raise ErroCadastro(f"ativo {ativo_id} não existe")
+    return r["nome"]
+
+
+def _uma(conn, codigo: str, empresa: str | None) -> dict | None:
+    """Como `obrigacao_por_codigo`, mas código que não existe é None (não erro): quem pergunta "qual é a
+    versão vigente de X?" aceita "nenhuma". Ambiguidade continua sendo erro."""
+    achadas = _obrigacoes_com_codigo(conn, codigo, empresa)
+    if len(achadas) > 1 and empresa == QUALQUER:
+        donas = ", ".join(sorted(r["empresa"] or "norma pública" for r in achadas))
+        raise ErroCadastro(f"o código {codigo} existe em mais de uma empresa ({donas}): diga de qual")
+    return achadas[0] if achadas else None
+
+
+def versao(conn, codigo: str, status: str = "vigente", empresa: str | None = QUALQUER) -> dict | None:
+    ob = _uma(conn, codigo, empresa)
+    if ob is None:
+        return None
     row = conn.execute(
         "SELECT v.*, o.codigo FROM obrigacao_versao v JOIN obrigacao o ON o.id = v.obrigacao_id "
-        "WHERE o.codigo = ? AND v.status = ?",
-        (codigo, status),
+        "WHERE o.id = ? AND v.status = ?",
+        (ob["id"], status),
     ).fetchone()
     return dict(row) if row else None
 
 
-def historico(conn, codigo: str) -> list[dict]:
+def historico(conn, codigo: str, empresa: str | None = QUALQUER) -> list[dict]:
     """Todas as versões de uma obrigação, da primeira à mais nova, com o título do ato que a originou."""
+    ob = _uma(conn, codigo, empresa)
+    if ob is None:
+        return []
     rows = conn.execute(
         "SELECT v.*, o.codigo, a.titulo AS ato FROM obrigacao_versao v "
         "JOIN obrigacao o ON o.id = v.obrigacao_id LEFT JOIN ato a ON a.id = v.ato_id "
-        "WHERE o.codigo = ? ORDER BY v.versao",
-        (codigo,),
+        "WHERE o.id = ? ORDER BY v.versao",
+        (ob["id"],),
     ).fetchall()
     return [dict(r) for r in rows]
 
 
 def propor_versao(conn, codigo: str, mudancas: dict, *, ato_id: int | None,
-                  trecho: str | None, fonte: str | None = None) -> int:
+                  trecho: str | None, fonte: str | None = None, empresa: str | None = QUALQUER) -> int:
     """Cria uma versão pendente: cópia da vigente com as mudanças aplicadas.
 
-    Nada muda para a operação até alguém aprovar (decidir()).
+    Nada muda para a operação até alguém aprovar (decidir()). `empresa` é o escopo da busca do código
+    (o mesmo código pode ser de uma cliente e de outra).
     """
     invalidos = set(mudancas) - set(CAMPOS_VERSAO)
     if invalidos:
         raise ErroCadastro(f"campos que não podem mudar: {sorted(invalidos)}")
-    atual = versao(conn, codigo)
+    atual = versao(conn, codigo, empresa=empresa)
     if atual is None:
         raise ErroCadastro(f"{codigo} não tem versão vigente")
-    if versao(conn, codigo, "pendente") is not None:
+    if versao(conn, codigo, "pendente", empresa=empresa) is not None:
         raise ErroCadastro(f"{codigo} já tem uma mudança aguardando decisão")
     if all(atual[c] == v for c, v in mudancas.items()):
         raise ErroCadastro(f"a mudança proposta para {codigo} não altera nada")
@@ -376,7 +462,7 @@ def registrar_evidencia(conn, ativo_id: int, codigo: str, periodo: str, *,
                         arquivo: str | None = None, recebida_em: str | None = None,
                         extraido: dict | None = None) -> int:
     """Grava a comprovação de um período (idempotente por ativo + obrigação + período)."""
-    ob = _obrigacao_id(conn, codigo)
+    ob = _obrigacao_id(conn, codigo, _empresa_do_ativo(conn, ativo_id))
     with conn:
         conn.execute(
             "INSERT INTO evidencia (ativo_id, obrigacao_id, periodo, arquivo, recebida_em, extraido) "
@@ -417,7 +503,7 @@ def entregar(conn, ativo_id: int, codigo: str, periodo: str, *, dia: str, por: s
 def desfazer_entrega(conn, ativo_id: int, codigo: str, periodo: str, por: str | None = None) -> bool:
     with conn:
         n = conn.execute("DELETE FROM evidencia WHERE ativo_id = ? AND obrigacao_id = ? AND periodo = ?",
-                         (ativo_id, _obrigacao_id(conn, codigo), periodo)).rowcount
+                         (ativo_id, _obrigacao_id(conn, codigo, _empresa_do_ativo(conn, ativo_id)), periodo)).rowcount
     if n:
         registrar_evento(conn, ativo_id, codigo, "entrega", f"entrega de {periodo} desfeita", por)
     return bool(n)
@@ -425,7 +511,7 @@ def desfazer_entrega(conn, ativo_id: int, codigo: str, periodo: str, por: str | 
 
 def registrar_evento(conn, ativo_id: int, codigo: str | None, tipo: str, texto: str,
                      por: str | None = None, em: str | None = None) -> None:
-    ob = _obrigacao_id(conn, codigo) if codigo else None
+    ob = _obrigacao_id(conn, codigo, _empresa_do_ativo(conn, ativo_id)) if codigo else None
     with conn:
         conn.execute("INSERT INTO evento (ativo_id, obrigacao_id, tipo, texto, por, em) "
                      "VALUES (?, ?, ?, ?, ?, ?)", (ativo_id, ob, tipo, texto, por, em or agora()))
@@ -433,7 +519,7 @@ def registrar_evento(conn, ativo_id: int, codigo: str | None, tipo: str, texto: 
 
 def atribuir(conn, ativo_id: int, codigo: str, responsavel: str, por: str | None = None) -> None:
     """Quem responde por esta obrigação neste ativo. Vazio volta ao responsável do ativo."""
-    ob = _obrigacao_id(conn, codigo)
+    ob = _obrigacao_id(conn, codigo, _empresa_do_ativo(conn, ativo_id))
     nome = responsavel.strip()
     with conn:
         if nome:
@@ -470,7 +556,7 @@ def acionar(conn, ativo_id: int, codigo: str, dia: str, prazo: str, motivo: str,
         conn.execute(
             "INSERT INTO acionamento (ativo_id, obrigacao_id, dia, prazo, motivo, origem) "
             "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING",
-            (ativo_id, _obrigacao_id(conn, codigo), dia, prazo, motivo, origem))
+            (ativo_id, _obrigacao_id(conn, codigo, _empresa_do_ativo(conn, ativo_id)), dia, prazo, motivo, origem))
 
 
 def encerrar_acionamentos(conn, ativo_id: int, codigo: str, dia: str) -> int:
@@ -478,7 +564,7 @@ def encerrar_acionamentos(conn, ativo_id: int, codigo: str, dia: str) -> int:
     with conn:
         return conn.execute(
             "UPDATE acionamento SET encerrado_em = ? WHERE ativo_id = ? AND obrigacao_id = ? "
-            "AND dia <= ? AND encerrado_em IS NULL", (dia, ativo_id, _obrigacao_id(conn, codigo), dia)).rowcount
+            "AND dia <= ? AND encerrado_em IS NULL", (dia, ativo_id, _obrigacao_id(conn, codigo, _empresa_do_ativo(conn, ativo_id)), dia)).rowcount
 
 
 def acionamentos_abertos(conn, em: str) -> dict[tuple[int, str], list[dict]]:

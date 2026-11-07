@@ -600,10 +600,11 @@ def mudancas(conn, empresa_id: int) -> list[Mudanca]:
         (_nome_da_empresa(conn, empresa_id),)
     ).fetchall()
     ativos = _empresa_ativos(conn, empresa_id)
+    dona = _nome_da_empresa(conn, empresa_id)
     out = []
     for r in rows:
-        pen = db.versao(conn, r["codigo"], "pendente")
-        vig = db.versao(conn, r["codigo"])
+        pen = db.versao(conn, r["codigo"], "pendente", empresa=dona)
+        vig = db.versao(conn, r["codigo"], empresa=dona)
         afetados = [a["codigo"] for a in ativos
                     if any(o.codigo == r["codigo"] and o.pendente for o in db.obrigacoes_do_ativo(conn, a["id"]))]
         out.append(Mudanca(r["id"], r["codigo"], vig["titulo"], db.diferencas(vig, pen),

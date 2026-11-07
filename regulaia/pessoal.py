@@ -23,7 +23,8 @@ import re
 
 MARCADOR = "[CPF REMOVIDO]"
 VARIAVEL = "REGULAIA_CHAVE_DADOS"
-# 000.000.000-00 ou 11 dígitos seguidos
+# ddd.ddd.ddd-dd ou 11 dígitos seguidos (nenhum CPF de exemplo neste repositório, nem fictício:
+# tests/test_documentacao.py recusa arquivo versionado com cara de CPF formatado)
 _CPF = re.compile(r"\b(\d{3})\.?(\d{3})\.?(\d{3})-?(\d{2})\b")
 
 
@@ -58,7 +59,8 @@ def formatar(cpf: str) -> str:
 
 
 def mascarar(cpf: str) -> str:
-    """'123.456.789-09' -> '***.456.789-**': o que a API devolve por padrão."""
+    """O CPF com os três primeiros dígitos e os dois verificadores trocados por '*' (só o miolo
+    aparece): é o que a API devolve por padrão."""
     d = digitos(cpf)
     if len(d) != 11:
         return "***.***.***-**"

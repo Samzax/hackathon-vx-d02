@@ -25,7 +25,8 @@ ESQUEMA_PG = Path(__file__).with_name("schema_pg.sql")
 
 # Tabelas cuja chave é `id`: num INSERT nelas, `lastrowid` vem do RETURNING.
 _COM_ID = {"empresa", "ativo", "ato", "obrigacao", "obrigacao_versao", "evidencia",
-           "acionamento", "evento", "usuario", "auditoria"}
+           "acionamento", "evento", "usuario", "auditoria", "instanciacao_evento", "unidade",
+           "licenca", "condicionante", "responsavel_tecnico"}
 _CRIADOS: set[tuple[str, str | None]] = set()
 _INSERT = re.compile(r"^\s*INSERT\s+INTO\s+(\w+)", re.IGNORECASE)
 
