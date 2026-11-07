@@ -142,16 +142,39 @@ de 64 caracteres, não como chave Fernet. Derive a chave no código, para qualqu
 `Fernet(base64.urlsafe_b64encode(hashlib.sha256(chave.encode()).digest()))`. Sem a variável, a API sobe,
 mas guardar CPF dá erro claro (nada de chave padrão no código).
 
-**Ritmo do Bedrock**: a conta do evento pede menos de 1 pedido por segundo. Nada de subagentes em paralelo:
-um de cada vez, ou nenhum.
+**Ritmo do Bedrock**: a conta do evento pede menos de 1 pedido por segundo. Nada de subagentes do Bedrock
+em paralelo: um de cada vez, ou nenhum (o paralelo fica com o DeepSeek, abaixo).
 
-**Delegar ao DeepSeek (Hermes)**: dá para passar tarefa fechada ao DeepSeek V4.1 Flash pelo Hermes desta
-máquina: `hermes -z "<tarefa>" --in .` (cerca de 2 minutos por chamada). Regras:
-- Uma chamada por vez, com os arquivos nomeados e o que entregar. Bom para: segunda opinião na revisão de
-  um arquivo, rascunho de testes, ler um arquivo grande e resumir.
-- Diga sempre na tarefa: não fazer commit, não mexer em `infra/`, não ler `.env` nem nada em `data/raw/`
-  (lá está o CSV do SIGBM com CPF), não mandar dado pessoal para lugar nenhum.
-- O que ele mudar, você confere no `git diff` e roda ruff e a suíte antes de aceitar. Quem faz commit é você.
+**Delegar ao DeepSeek (Hermes), em paralelo**: o DeepSeek V4.1 Flash roda pelo Hermes desta máquina, pelo
+plano OpenCode Go, fora da AWS: o limite de 1 pedido por segundo é só do Bedrock, então **vários workers do
+DeepSeek podem rodar ao mesmo tempo**. Você (Fable) continua sem subagentes do Bedrock em paralelo.
+
+Chamada (cada worker em segundo plano, com a saída num arquivo de log fora do repositório):
+
+    hermes -z "<tarefa>" --in . -m deepseek-v4.1-flash --provider opencode-go --reasoning max [--worktree]
+
+- **Modelo fixo**: a config do Hermes tem fallback para outro modelo (`mimo-v2.6-flash`) quando o
+  DeepSeek falha. Passe sempre `-m` e `--provider`, e confira no log qual modelo respondeu; trabalho de outro
+  modelo você descarta ou refaz. Se o OpenCode Go limitar as chamadas, diminua o número de workers.
+- **Quem faz o quê**
+  - **Revisão de código: em paralelo, só leitura**, sem `--worktree`. Um worker por área (`regulaia/`, `api/`,
+    `agente/`, `front/src/`), cada um devolvendo os achados com arquivo:linha e o cenário que quebra, sem
+    mudar nada. Você confere cada achado no código antes de ele entrar em `docs/REVISAO_CODIGO.md`: o que
+    não se confirmar, sai.
+  - **Base da instanciação: só você.** Esquema, migração 0005 e o núcleo de `regulaia/instanciacao.py`;
+    todo o resto depende disso, e em paralelo daria conflito.
+  - **Partes sensíveis: só você.** CPF criptografado, isolamento por empresa e por unidade, papéis,
+    auditoria, LGPD (exportar e apagar).
+  - **Folhas: em paralelo, com `--worktree`**, depois que a base estiver com commit (a worktree sai do
+    último commit, então o que não tiver commit não vai junto). Exemplos: páginas do front, validação do
+    modelo CSV, a ferramenta MCP `instanciacao`, rascunhos de teste. Uma tarefa fechada por worker, com os
+    arquivos nomeados e o que entregar; dois workers nunca no mesmo arquivo (`api/openapi.json` e
+    `front/src/lib/api-tipos.ts` você regenera no fim).
+- **Regras em toda tarefa**: não fazer commit nem push, não mexer em `infra/`, não ler `.env` nem nada em
+  `data/raw/` (lá está o CSV do SIGBM com CPF), não mandar dado pessoal para lugar nenhum.
+- **Aceitar**: você lê o diff de cada worker, traz para o checkout principal (uma worktree por vez), roda
+  ruff e a suíte, e só então faz o commit. Worktree aproveitada ou descartada, você remove
+  (`git worktree remove`). Quem faz commit é sempre você.
 
 **Migração 0005**: quando estiver com commit, empurrada e com o CI verde, escreva isso na seção
 "Instanciação" de `docs/PLATAFORMA.md` (a sessão AWS espera para refazer a imagem e o deploy).
