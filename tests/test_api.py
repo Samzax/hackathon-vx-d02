@@ -407,6 +407,35 @@ def test_fir_da_b3_lida_pela_serra_azul_cai_na_b3_da_serra_azul(cliente, outra, 
     assert db.evidencias_do_ativo(conn, outra["ativos"]["B3"]) == []
 
 
+ATO_AGUAS = """PORTARIA FICTÍCIA Nº 9, DE 1º DE NOVEMBRO DE 2026
+(texto inventado para teste) Dispõe sobre o monitoramento da qualidade das águas superficiais e o laudo
+de laboratório acreditado nas licenças de operação de empreendimentos minerários."""
+
+
+def test_analise_de_ato_no_escopo_de_uma_empresa_nao_ve_a_condicionante_da_outra(cliente, outra):
+    """O corpo aceita empresa_id: é o que o agente preso a uma cliente manda. A condicionante LO-01 da
+    Serra Azul entra na análise da plataforma, mas nunca na análise no escopo da Morro Alto."""
+    como(cliente, CURADORIA)
+    toda = cliente.post(_url("/radar/analise"), json={"texto": ATO_AGUAS}).json()
+    assert "LO-01" in [c["codigo"] for c in toda["candidatas"]]
+    escopo = cliente.post(_url("/radar/analise"), json={"texto": ATO_AGUAS, "empresa_id": outra["id"]}).json()
+    assert "LO-01" not in [c["codigo"] for c in escopo["candidatas"]]
+    como(cliente, "diretoria@morroalto.demo")       # cliente não escolhe o escopo de outra: 404
+    r = cliente.post(_url("/radar/analise"), json={"texto": ATO_AGUAS, "empresa_id": outra["serra"]})
+    assert r.status_code == 404
+
+
+def test_historico_com_empresa_id_esconde_a_obrigacao_propria_de_outra(cliente, outra):
+    como(cliente, CURADORIA)
+    assert cliente.get(_url("/obrigacoes/LO-01/historico")).status_code == 200
+    assert cliente.get(_url("/obrigacoes/LO-01/historico"),
+                       params={"empresa_id": outra["serra"]}).status_code == 200
+    assert cliente.get(_url("/obrigacoes/LO-01/historico"),
+                       params={"empresa_id": outra["id"]}).status_code == 404
+    assert cliente.get(_url("/obrigacoes/OB-01/historico"),      # norma pública vale em qualquer escopo
+                       params={"empresa_id": outra["id"]}).status_code == 200
+
+
 def test_norma_publica_decide_a_curadoria_e_obrigacao_propria_decide_a_dona(cliente, outra, cfg):
     conn = db.conectar(cfg.banco)
     lo02 = db.propor_versao(conn, "LO-02", {"prazo": "Até 20 dias após o fim do mês"}, ato_id=None,

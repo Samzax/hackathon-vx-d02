@@ -44,6 +44,43 @@ da correção.
   `LIMIT -1` é erro no Postgres (no SQLite devolve a trilha inteira, ignorando o teto). Correção:
   `Query(200, ge=1, le=1000)`. Teste no mesmo commit do achado 2.
 
+## 4. MCP: `pendencias(ativo=...)` respondia "nenhuma pendência" para ativo atrasado **[corrigido]**
+
+- `agente/servidor.py:89` resolvia o ativo para **id** e mandava no parâmetro `ativo` do painel, que filtra
+  pelo **código** (`api/rotas/torre.py`, `regulaia/torre.py:185`): o filtro nunca casava e a ferramenta
+  devolvia `pendencias: []` e contagem zerada, sem erro nenhum. Cenário: "o que está pendente na B3?" →
+  o agente responde que não há nada, com a B3 atrasada. Achado do worker DeepSeek de `agente/`,
+  conferido e reproduzido. Teste: `test_agente.py::test_pendencias_de_um_ativo_filtram_de_verdade`.
+
+## 5. MCP: agente preso a uma empresa via `REGULAIA_EMPRESA` vazava dado de outra cliente **[corrigido]**
+
+- O token de serviço é plataforma (vê todas), e o pin só filtrava a lista de empresas no cliente MCP:
+  `historico_da_obrigacao` (`agente/servidor.py`) devolvia as versões (com quem decidiu) de obrigação
+  própria de **outra** cliente, e `analisar_ato` analisava contra o catálogo inteiro — candidatas e
+  mudanças com código, título e trecho de condicionante alheia (`api/rotas/regulatorio.py::_analisar`
+  com `empresa=None` para a plataforma).
+- Correção: `GET /obrigacoes/{codigo}/historico` e `POST /radar/analise` ganharam `empresa_id` opcional
+  (restringe às normas públicas e às da empresa; a de outra responde 404), e o agente preso manda sempre.
+  Pin que não casa com nenhuma empresa agora é erro na cara (`agente/cliente.py`), não um agente
+  destravado em silêncio — os ids mudam quando a demo é recriada, então o pin deve ser pelo nome.
+  Testes: `test_pin_de_empresa_esconde_obrigacao_propria_de_outra_cliente`,
+  `test_analise_de_ato_no_escopo_de_uma_empresa_nao_ve_a_condicionante_da_outra`,
+  `test_historico_com_empresa_id_esconde_a_obrigacao_propria_de_outra`.
+
+## 6. MCP: `analisar_ato` anunciava `readOnlyHint` sendo uma chamada paga **[corrigido]**
+
+- A ferramenta chama a IA (gasta dinheiro contra o teto diário `REGULAIA_TETO_DIA_USD`, compartilhado com
+  o radar da plataforma) e grava a resposta no cache (`regulaia/ia.py:_guardar`); com `readOnlyHint=True`,
+  clientes MCP executam sem pedir confirmação. Agora `readOnlyHint=False` (continua não-destrutiva e sem
+  escrever na torre). O custo compartilhado com o job do radar fica como observação abaixo.
+
+## 7. MCP: erro de validação da API virava repr de Python; timeout virava traceback **[corrigido]**
+
+- `agente/cliente.py:_resposta` interpolava o `detail` do 422 cru (lista de dicts) e não tratava corpo
+  não-dict nem `httpx.ReadTimeout`/conexão recusada. Agora o 422 vira "campo: mensagem", e falha de rede
+  vira `ErroTorre` legível. O filtro `ate` de `linha_do_tempo` também aceita "2027" e "2027-12" (antes,
+  "2027" não devolvia nada, por comparação de string). Teste: `test_erro_de_validacao_vira_frase_nao_repr`.
+
 ## Observações (não são erro, ou têm correção planejada em outra tarefa)
 
 - **Código de obrigação é UNIQUE global** (`regulaia/schema.sql`, `db._obrigacao_id`, `db.versao`,

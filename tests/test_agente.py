@@ -45,7 +45,10 @@ def test_ferramentas_sao_so_de_leitura(http):
     nomes = {t.name for t in tools}
     assert {"empresas", "pendencias", "ficha_do_ativo", "mudancas_pendentes", "linha_do_tempo",
             "analisar_ato", "boletim", "cobertura_normativa"} <= nomes
-    assert all(t.annotations.read_only_hint and not t.annotations.destructive_hint for t in tools)
+    # analisar_ato não grava na torre, mas chama a IA (custo + cache): o cliente MCP pede confirmação
+    assert all(t.annotations.read_only_hint for t in tools if t.name != "analisar_ato")
+    assert all(not t.annotations.destructive_hint for t in tools)
+    assert not next(t for t in tools if t.name == "analisar_ato").annotations.read_only_hint
     assert not nomes & {"registrar_entrega", "decidir", "aprovar"}       # decisão é de gente, na torre
 
 
@@ -79,6 +82,38 @@ def test_pendencias_da_demo_com_norma_e_dispositivo(ferramentas):
     fir = next(l for l in p["pendencias"] if l["ativo"] == "B3" and l["obrigacao"] == "R95-01")
     assert fir["status"] == "atrasada" and fir["norma"] == "Res. ANM 95/2022" and fir["dispositivo"]
     assert fir["periodos_faltando"]
+
+
+def test_pendencias_de_um_ativo_filtram_de_verdade(ferramentas):
+    """O painel filtra pelo código do ativo; a ferramenta mandava o id e voltava vazio em silêncio."""
+    p = ferramentas("pendencias", hoje=HOJE, ativo="B3")
+    assert p["pendencias"] and all(l["ativo"] == "B3" for l in p["pendencias"])
+    assert any(l["obrigacao"] == "R95-01" and l["status"] == "atrasada" for l in p["pendencias"])
+    assert p["contagem"]["atrasada"] >= 1
+
+
+def test_pin_de_empresa_esconde_obrigacao_propria_de_outra_cliente(http, tmp_path):
+    """Agente preso a uma empresa: histórico e análise de ato nunca mostram a condicionante de outra."""
+    from mcp.server.mcpserver.exceptions import ToolError
+
+    from regulaia import db
+
+    conn = db.conectar(str(tmp_path / "api.db"))
+    with conn:
+        ob = conn.execute("INSERT INTO obrigacao (codigo, tipo_ativo, norma, empresa) "
+                          "VALUES ('TAC-X-01', 'barragem', 'TAC fictício', 'Mineradora X')").lastrowid
+        conn.execute(
+            "INSERT INTO obrigacao_versao (obrigacao_id, versao, titulo, artigo, aplica_se_a, regra, "
+            "periodicidade, agenda, prazo, vigencia_desde, responsavel, evidencia, fonte, status) "
+            "VALUES (?, 1, 'Caução ambiental do TAC', 'cl. 1', '*', '*', 'Anual', 'anual+0d', '-', "
+            "NULL, 'X', 'Comprovante', 'TAC fictício cl. 1', 'vigente')", (ob,))
+    conn.close()
+    sem_pin = criar_servidor(Torre(http))
+    r = asyncio.run(sem_pin.call_tool("historico_da_obrigacao", {"codigo": "TAC-X-01"}))
+    assert not r.is_error                       # a plataforma (token de serviço) vê
+    preso = criar_servidor(Torre(http, empresa="Mineradora Serra Azul"))
+    with pytest.raises(ToolError, match="Não encontrado"):
+        asyncio.run(preso.call_tool("historico_da_obrigacao", {"codigo": "TAC-X-01"}))
 
 
 def test_ficha_mostra_a_lei_federal_da_zas_na_b2(ferramentas):
@@ -130,7 +165,8 @@ def test_empresa_fixa_prende_o_escopo(http):
     t = Torre(http, empresa="Mineradora Serra Azul")
     assert [e["nome"] for e in t.empresas()] == ["Mineradora Serra Azul"]
     assert t.empresa_id(None) == t.empresas()[0]["id"]
-    with pytest.raises(ErroTorre, match="não encontrada"):
+    # pin que não casa com nada é erro na cara, não um agente destravado em silêncio
+    with pytest.raises(ErroTorre, match="não casa com nenhuma empresa"):
         Torre(http, empresa="Outra Mineração").empresa_id("Outra Mineração")
 
 
@@ -141,6 +177,14 @@ def test_ativo_inexistente_e_token_errado_viram_erro_legivel(http):
     http.headers["Authorization"] = "Bearer outro"
     with pytest.raises(ErroTorre, match="401"):
         Torre(http).empresas()
+
+
+def test_erro_de_validacao_vira_frase_nao_repr(http):
+    """O 422 do FastAPI chega como lista de dicts: o agente traduz para 'campo: mensagem'."""
+    t = Torre(http)
+    with pytest.raises(ErroTorre, match="hoje") as e:
+        t.get(f"/empresas/{t.empresa_id(None)}/painel", hoje="07/11/2026")
+    assert "[{" not in str(e.value)
 
 
 def test_erro_da_torre_e_erro_de_ferramenta(http):

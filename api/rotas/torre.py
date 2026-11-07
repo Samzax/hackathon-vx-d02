@@ -496,9 +496,16 @@ def historico_no_ativo(ativo_id: int, codigo: str, e: Escopo = Depends(regulator
 
 @rota.get("/obrigacoes/{codigo}/historico", response_model=list[VersaoObrigacao],
           summary="Todas as versões de uma obrigação, com a origem e quem decidiu")
-def historico(codigo: str, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+def historico(codigo: str, empresa_id: int | None = Query(None, description=(
+        "restringe ao escopo desta empresa (normas públicas e as dela): é o que o agente preso a uma "
+        "empresa manda, para a obrigação própria de outra cliente responder 404 também na plataforma")),
+              e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     ob = conn.execute("SELECT empresa, norma FROM obrigacao WHERE codigo = ?", (codigo,)).fetchone()
-    h = db.historico(conn, codigo) if ob is not None and e.ve_obrigacao(ob["empresa"]) else []
+    no_escopo = ob is not None and e.ve_obrigacao(ob["empresa"])
+    if no_escopo and empresa_id is not None:
+        emp = empresa_visivel(conn, e, empresa_id)
+        no_escopo = ob["empresa"] in (None, emp["nome"])
+    h = db.historico(conn, codigo) if no_escopo else []
     if not h:       # obrigação própria de outra cliente: 404, como se não existisse
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"obrigação {codigo} não existe")
     from .regulatorio import CAMPO, _texto

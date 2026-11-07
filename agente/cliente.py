@@ -19,6 +19,25 @@ class ErroTorre(ToolError):
     """A API recusou ou não achou: vira resultado de erro da ferramenta, e o modelo explica ao usuário."""
 
 
+def _detalhe(r: httpx.Response) -> str:
+    """O `detail` da API numa frase. O 422 de validação vem como lista de dicts: vira 'campo: mensagem',
+    não a repr de Python, para o modelo entender o que corrigir."""
+    try:
+        corpo = r.json()
+    except ValueError:
+        return r.text[:300]
+    detalhe = corpo.get("detail") if isinstance(corpo, dict) else corpo
+    if isinstance(detalhe, list):
+        partes = []
+        for d in detalhe:
+            if not isinstance(d, dict):
+                continue
+            campo = ".".join(str(x) for x in d.get("loc", []) if x not in ("body", "query", "path"))
+            partes.append(f"{campo}: {d.get('msg', 'inválido')}" if campo else str(d.get("msg", "inválido")))
+        return "; ".join(partes) or str(detalhe)[:300]
+    return str(detalhe)[:300]
+
+
 class Torre:
     def __init__(self, http: httpx.Client, empresa: str | None = None):
         self.http = http
@@ -37,22 +56,26 @@ class Torre:
 
     def _resposta(self, r: httpx.Response) -> Any:
         if r.status_code == 404:
-            raise ErroTorre("Não encontrado (ou fora do escopo deste agente).")
+            raise ErroTorre("Não encontrado: não existe, ou está fora do escopo deste agente.")
         if r.status_code >= 400:
-            try:
-                detalhe = r.json().get("detail")
-            except ValueError:
-                detalhe = r.text[:300]
-            raise ErroTorre(f"A torre recusou ({r.status_code}): {detalhe}")
+            raise ErroTorre(f"A torre recusou ({r.status_code}): {_detalhe(r)}")
         tipo = r.headers.get("content-type", "")
         return r.json() if "json" in tipo else r.text
 
     def get(self, caminho: str, **params) -> Any:
         params = {k: v for k, v in params.items() if v is not None}
-        return self._resposta(self.http.get(PREFIXO + caminho, params=params))
+        try:
+            r = self.http.get(PREFIXO + caminho, params=params)
+        except httpx.HTTPError as e:    # API fora do ar, tempo esgotado: erro legível, não traceback
+            raise ErroTorre(f"A torre não respondeu ({type(e).__name__}): confira a API e tente de novo.") from e
+        return self._resposta(r)
 
     def post(self, caminho: str, corpo: dict) -> Any:
-        return self._resposta(self.http.post(PREFIXO + caminho, json=corpo))
+        try:
+            r = self.http.post(PREFIXO + caminho, json=corpo)
+        except httpx.HTTPError as e:
+            raise ErroTorre(f"A torre não respondeu ({type(e).__name__}): confira a API e tente de novo.") from e
+        return self._resposta(r)
 
     # ------------------------------------------------------------------ escopo
 
@@ -60,6 +83,9 @@ class Torre:
         todas = self.get("/empresas")
         if self.empresa_fixa:
             todas = [e for e in todas if self._mesma(e, self.empresa_fixa)]
+            if not todas:   # pin que não casa não pode destravar o agente em silêncio (ids mudam na demo)
+                raise ErroTorre(f"REGULAIA_EMPRESA={self.empresa_fixa!r} não casa com nenhuma empresa da "
+                                "torre: confira o nome (o id muda quando a demo é recriada).")
         return todas
 
     @staticmethod

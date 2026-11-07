@@ -562,6 +562,24 @@
        "type": "string",
        "title": "Codigo"
       }
+     },
+     {
+      "name": "empresa_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "restringe ao escopo desta empresa (normas públicas e as dela): é o que o agente preso a uma empresa manda, para a obrigação própria de outra cliente responder 404 também na plataforma",
+       "title": "Empresa Id"
+      },
+      "description": "restringe ao escopo desta empresa (normas públicas e as dela): é o que o agente preso a uma empresa manda, para a obrigação própria de outra cliente responder 404 também na plataforma"
      }
     ],
     "responses": {
@@ -3132,6 +3150,18 @@
       "maxLength": 200000,
       "minLength": 20,
       "title": "Texto"
+     },
+     "empresa_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Empresa Id",
+      "description": "analisa no escopo desta empresa (normas públicas e obrigações próprias dela). É o que o agente preso a uma empresa manda; sem ele, a plataforma analisa contra o catálogo inteiro e a cliente contra o dela. Empresa de outra cliente: 404."
      }
     },
     "type": "object",

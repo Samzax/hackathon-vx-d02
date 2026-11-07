@@ -85,8 +85,9 @@ def criar_servidor(torre: Torre) -> MCPServer:
         """O que precisa de ação: contagem por status e cada pendência com norma, dispositivo, vencimento,
         períodos ou dados que faltam e o trecho literal da norma."""
         eid = torre.empresa_id(empresa)
-        ativo_id = torre.ativo(eid, ativo)["id"] if ativo else None
-        p = torre.get(f"/empresas/{eid}/painel", hoje=hoje, ativo=ativo_id)
+        # o painel filtra pelo código do ativo (B3), não pelo id; torre.ativo valida e aceita os dois
+        codigo = torre.ativo(eid, ativo)["codigo"] if ativo else None
+        p = torre.get(f"/empresas/{eid}/painel", hoje=hoje, ativo=codigo)
         quero = set(status or PENDENTES)
         return {"hoje": p["hoje"], "contagem": p["contagem"],
                 "pendencias": [_linha(l) for l in p["linhas"] if l["status"] in quero]}
@@ -131,7 +132,9 @@ def criar_servidor(torre: Torre) -> MCPServer:
     @mcp.tool(annotations=LEITURA)
     def historico_da_obrigacao(codigo: Annotated[str, Field(description="Código da obrigação (ex.: OB-01)")]) -> list[dict]:
         """Todas as versões de uma obrigação: o que mudou, por qual ato, quem decidiu e quando."""
-        return torre.get(f"/obrigacoes/{codigo.strip().upper()}/historico")
+        # agente preso a uma empresa: obrigação própria de outra cliente responde "não encontrado"
+        empresa_id = torre.empresa_id(None) if torre.empresa_fixa else None
+        return torre.get(f"/obrigacoes/{codigo.strip().upper()}/historico", empresa_id=empresa_id)
 
     @mcp.tool(annotations=LEITURA)
     def mudancas_pendentes(empresa: Empresa = None) -> list[dict]:
@@ -150,6 +153,10 @@ def criar_servidor(torre: Torre) -> MCPServer:
         a ZAS da NR-22). 'proposta' marca data que vem de mudança ainda não aprovada."""
         eid = torre.empresa_id(empresa)
         futuras = torre.get(f"/empresas/{eid}/linha-do-tempo", hoje=hoje)
+        if ate and len(ate) == 4:       # "2027" e "2027-12" valem como o fim do ano e do mês
+            ate += "-12-31"
+        elif ate and len(ate) == 7:
+            ate += "-31"
         return [f for f in futuras if not ate or f["dia"] <= ate]
 
     @mcp.tool(annotations=LEITURA)
@@ -199,14 +206,20 @@ def criar_servidor(torre: Torre) -> MCPServer:
                 "analises": [{"ato": a.get("ato"), "candidatas": a.get("candidatas"), "motivo": a.get("motivo"),
                               "mudancas": a.get("mudancas")} for a in r["analises"]]}
 
-    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True,
+    # readOnlyHint=False: não escreve na torre, mas chama a IA (gasta dinheiro e grava a resposta no
+    # cache): o cliente MCP deve pedir confirmação em vez de executar como leitura.
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True,
                                           openWorldHint=True))
     def analisar_ato(texto: Annotated[str, Field(description="Texto integral do ato normativo")],
                      identificacao: Annotated[str | None, Field(description="Ex.: Resolução ANM nº 250/2026")] = None
                      ) -> dict:
         """Analisa um ato contra o catálogo: triagem por regra, IA só nas obrigações candidatas e conferência
-        do Python (data e trecho citados existem no ato). Não grava: mandar para decisão é na torre."""
-        a = torre.post("/radar/analise", {"identificacao": identificacao, "texto": texto})
+        do Python (data e trecho citados existem no ato). Não grava na torre: mandar para decisão é lá.
+        Chama a IA (tem custo); agente preso a uma empresa analisa só contra o catálogo dela."""
+        corpo: dict = {"identificacao": identificacao, "texto": texto}
+        if torre.empresa_fixa:          # nunca a condicionante de outra cliente na análise
+            corpo["empresa_id"] = torre.empresa_id(None)
+        a = torre.post("/radar/analise", corpo)
         return {"ato": a["ato"], "candidatas": a["candidatas"], "motivo": a["motivo"], "confianca": a["confianca"],
                 "mudancas": a["mudancas"], "aprovadas_pela_conferencia": a.get("aprovadas"),
                 "revisao_humana": a["revisao_humana"], "custo_usd": a["custo_usd"]}
