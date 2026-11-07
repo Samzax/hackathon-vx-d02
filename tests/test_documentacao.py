@@ -176,7 +176,7 @@ def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
 
     pacote = {"bs4": "beautifulsoup4", "dotenv": "python-dotenv", "PIL": "pillow",   # módulo -> nome no PyPI
               "botocore": "boto3", "starlette": "fastapi", "pydantic": "fastapi",
-              "multipart": "python-multipart"}                                             # o botocore vem com o boto3
+              "multipart": "python-multipart", "psycopg_pool": "psycopg-pool"}             # o botocore vem com o boto3
     deps = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))["project"]["dependencies"]
     nomes = {d.split(">")[0].split("=")[0].split("<")[0].split("[")[0].strip().lower() for d in deps}
     locais = {"regulaia", "collector", "app", "api"}

@@ -57,7 +57,13 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
 - [x] `docker compose`: postgres + api + job do radar (`python -m api.jobs radar`); `api/Dockerfile`
 - [x] CI em `.github/workflows/ci.yml`: ruff, suíte no SQLite, suíte no Postgres (com migração 2x),
       build das imagens e compose subindo com a API respondendo
-- [ ] Pool de conexões (psycopg_pool) no lugar de uma conexão por requisição
+- [x] Pool de conexões (psycopg_pool) no Postgres (`api/banco.py`): aberto no lifespan, cada requisição pega
+      uma conexão emprestada (o mesmo embrulho de `regulaia/banco.py`, `ConexaoPostgres.sobre`) e devolve no fim,
+      com rollback se ficou transação aberta. Uma conexão por requisição: a sessão, a rota e o cache de IA usam
+      a mesma. `REGULAIA_POOL_MIN` (1), `REGULAIA_POOL_MAX` (5), `REGULAIA_POOL_OCIOSA_S` (600: a que sobra acima
+      do mínimo fecha) e `REGULAIA_POOL_ESPERA_S` (30: pool esgotado responde 503). No SQLite continua uma por
+      requisição. `tests/test_pool.py`: em sequência e em paralelo sem vazar (o pool volta ao mínimo e o
+      `pg_stat_activity` fica vazio quando o app para), requisição que cai no meio não deixa transação aberta.
 
 ### Fase 2 (paralelo, depois da fase 1)
 - [x] 2A front Next.js em `front/`: substitui o Streamlit como interface principal, todas as telas do README.

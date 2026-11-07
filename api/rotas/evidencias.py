@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from regulaia import agenda, db, evidencias, ocr
+from regulaia.ia import Roteador
 
 from .. import armazenamento, auditoria
 from ..banco import conexao, roteador
@@ -102,7 +103,7 @@ def exemplo(nome: str, e: Escopo = Depends(regulatorio)):
 
 @rota.post("/leitura", response_model=ResultadoLeitura, summary="Ler um documento (PDF) sem gravar nada")
 async def ler(request: Request, empresa_id: int, arquivo: UploadFile = File(...), hoje: date | None = None,
-              e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+              e: Escopo = Depends(regulatorio), conn=Depends(conexao), rot: Roteador = Depends(roteador)):
     empresa_visivel(conn, e, empresa_id)
     dados = await arquivo.read(LIMITE_BYTES + 1)
     if len(dados) > LIMITE_BYTES:
@@ -111,7 +112,7 @@ async def ler(request: Request, empresa_id: int, arquivo: UploadFile = File(...)
         lido = ocr.ler(dados)
     except Exception as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, evidencias.por_que_nao_abre(erro)) from None
-    le = evidencias.ler(conn, lido.texto, empresa_id, hoje or hoje_padrao(), roteador(request))
+    le = evidencias.ler(conn, lido.texto, empresa_id, hoje or hoje_padrao(), rot)
     if lido.ocr:
         le.avisos.append(f"o texto de {lido.escaneadas} página(s) escaneada(s) veio do OCR ({lido.ocr}): "
                          "confira ativo, data e números antes de registrar")

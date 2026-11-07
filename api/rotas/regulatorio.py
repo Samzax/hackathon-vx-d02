@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from regulaia import db, demo, impacto, torre
+from regulaia.ia import Roteador
 
 from .. import auditoria
 from ..banco import conexao, roteador
@@ -300,16 +301,12 @@ def _funil(analises: list[dict]) -> Funil | None:
 
 
 @rota.get("/radar", response_model=Radar, summary="O radar do DOU: funil do mês, análises e custo real da IA")
-def radar(e: Escopo = Depends(regulatorio), request: Request = None):
+def radar(e: Escopo = Depends(regulatorio), rot: Roteador = Depends(roteador)):
     analises = _analises()
-    rot = roteador(request)
-    try:
-        gastos = [CustoIA(tarefa=r["tarefa"], n=r["n"], usd=float(r["usd"])) for r in rot.conn.execute(
-            "SELECT tarefa, COUNT(*) AS n, COALESCE(SUM(custo_usd), 0) AS usd FROM analise_ia GROUP BY tarefa "
-            "ORDER BY tarefa").fetchall()]
-        estado = EstadoIA(ligada=rot.ligada, gasto_hoje_usd=float(rot.gasto_hoje()), teto_dia_usd=rot.teto_dia_usd)
-    finally:
-        rot.conn.close()
+    gastos = [CustoIA(tarefa=r["tarefa"], n=r["n"], usd=float(r["usd"])) for r in rot.conn.execute(
+        "SELECT tarefa, COUNT(*) AS n, COALESCE(SUM(custo_usd), 0) AS usd FROM analise_ia GROUP BY tarefa "
+        "ORDER BY tarefa").fetchall()]
+    estado = EstadoIA(ligada=rot.ligada, gasto_hoje_usd=float(rot.gasto_hoje()), teto_dia_usd=rot.teto_dia_usd)
     return Radar(funil=_funil(analises), analises=[_registro(r) for r in analises], custo_ia=gastos,
                  ia_ligada=rot.ligada, ia=estado)
 
@@ -320,8 +317,7 @@ def exemplo(e: Escopo = Depends(regulatorio)):
     return AtoExemplo(identificacao=torre.titulo_do_ato(ATO_EXEMPLO), texto=ATO_EXEMPLO)
 
 
-def _analisar(conn, request: Request, dados: Ato, e: Escopo) -> impacto.Analise:
-    rot = roteador(request)
+def _analisar(conn, rot: Roteador, dados: Ato, e: Escopo) -> impacto.Analise:
     ident = (dados.identificacao or "").strip() or torre.titulo_do_ato(dados.texto)
     try:    # a cliente só analisa contra as normas públicas e as obrigações dela
         return impacto.analisar(conn, rot, ident, dados.texto, empresa=None if e.plataforma else e.empresa)
@@ -350,8 +346,9 @@ def _analise_ato(conn, an: impacto.Analise) -> AnaliseAto:
 
 @rota.post("/radar/analise", response_model=AnaliseAto,
            summary="Teste com um ato: triagem por regra, IA só nas candidatas, conferência do Python")
-def analisar(dados: Ato, request: Request, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
-    an = _analisar(conn, request, dados, e)
+def analisar(dados: Ato, request: Request, e: Escopo = Depends(regulatorio), conn=Depends(conexao),
+             rot: Roteador = Depends(roteador)):
+    an = _analisar(conn, rot, dados, e)
     auditoria.registrar(conn, request, "radar_analise", an.ato[:120],
                         {"mudancas": len(an.mudancas), "custo_usd": an.custo_usd})
     return _analise_ato(conn, an)
@@ -359,8 +356,9 @@ def analisar(dados: Ato, request: Request, e: Escopo = Depends(regulatorio), con
 
 @rota.post("/radar/propor", response_model=Proposta,
            summary="Mandar as mudanças aprovadas pelo Python para a fila de decisão (curadoria)")
-def propor(dados: Ato, request: Request, e: Escopo = Depends(curadoria), conn=Depends(conexao)):
-    an = _analisar(conn, request, dados, e)
+def propor(dados: Ato, request: Request, e: Escopo = Depends(curadoria), conn=Depends(conexao),
+           rot: Roteador = Depends(roteador)):
+    an = _analisar(conn, rot, dados, e)
     if not an.aprovadas:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "nenhuma mudança passou na conferência")
     ident = "upload-" + hashlib.sha256(dados.texto.encode()).hexdigest()[:16]

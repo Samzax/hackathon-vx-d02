@@ -22,6 +22,14 @@ class Config:
     banco: str = field(default_factory=lambda: os.environ.get("REGULAIA_DATABASE_URL") or str(db.DB_PADRAO))
     # cache das respostas de IA: no Postgres fica no mesmo banco; no SQLite, no arquivo de sempre
     banco_cache: str | None = field(default_factory=lambda: os.environ.get("REGULAIA_CACHE_URL"))
+    # Postgres: o pool de conexões da API (no SQLite é uma conexão por requisição). `pool_min` ficam
+    # sempre abertas, até `pool_max` em uso ao mesmo tempo (quem passa disso espera uma ser devolvida),
+    # e a que sobra acima do mínimo fecha depois de `pool_ociosa_s` segundos parada.
+    pool_min: int = field(default_factory=lambda: int(os.environ.get("REGULAIA_POOL_MIN", "1")))
+    pool_max: int = field(default_factory=lambda: int(os.environ.get("REGULAIA_POOL_MAX", "5")))
+    pool_ociosa_s: float = field(default_factory=lambda: float(os.environ.get("REGULAIA_POOL_OCIOSA_S", "600")))
+    # quanto uma requisição espera por uma conexão livre antes de responder 503
+    pool_espera_s: float = field(default_factory=lambda: float(os.environ.get("REGULAIA_POOL_ESPERA_S", "30")))
     # cookie só por HTTPS em produção (atrás do load balancer); local roda em http
     cookie_seguro: bool = field(default_factory=lambda: _bool("REGULAIA_COOKIE_SEGURO", False))
     horas_sessao: int = field(default_factory=lambda: int(os.environ.get("REGULAIA_HORAS_SESSAO", "12")))

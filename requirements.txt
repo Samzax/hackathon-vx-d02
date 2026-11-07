@@ -110,6 +110,8 @@ psycopg==3.3.8
     # via regulaia
 psycopg-binary==3.3.8 ; implementation_name != 'pypy'
     # via psycopg
+psycopg-pool==3.3.3
+    # via regulaia
 pyarrow==26.0.1
     # via streamlit
 pydantic==2.14.3
@@ -173,6 +175,7 @@ typing-extensions==4.16.0
     #   fastapi
     #   opentelemetry-api
     #   psycopg
+    #   psycopg-pool
     #   pydantic
     #   pydantic-core
     #   referencing
