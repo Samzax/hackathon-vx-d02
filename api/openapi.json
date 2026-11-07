@@ -2457,6 +2457,563 @@
     }
    }
   },
+  "/api/v1/instanciacoes": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "As instanciações que a sessão vê, as que ainda não entraram em operação primeiro",
+    "operationId": "listar_api_v1_instanciacoes_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Estado"
+         },
+         "type": "array",
+         "title": "Response Listar Api V1 Instanciacoes Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Criar a empresa e a instanciação dela (curadoria da plataforma)",
+    "operationId": "criar_api_v1_instanciacoes_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Nova"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/api__rotas__instanciacao__Criada"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "As etapas da instanciação, o que falta em cada uma e quem mexeu por último",
+    "operationId": "estado_api_v1_empresas__empresa_id__instanciacao_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Estado"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/instanciacoes/sigbm": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "As barragens do CNPJ no SIGBM público (todas, não só as da PNSB), para escolher quais entram",
+    "operationId": "do_sigbm_api_v1_instanciacoes_sigbm_get",
+    "parameters": [
+     {
+      "name": "cnpj",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "description": "CNPJ formatado ou só os dígitos",
+       "examples": [
+        "00.000.000/0001-00"
+       ],
+       "title": "Cnpj"
+      },
+      "description": "CNPJ formatado ou só os dígitos"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DoSigbm"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/sigbm": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Trazer do SIGBM as barragens escolhidas (curadoria da plataforma)",
+    "operationId": "importar_do_sigbm_api_v1_empresas__empresa_id__instanciacao_sigbm_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EscolhaSigbm"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Estado"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/unidades": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "As unidades (operações) da empresa, com os ativos de cada uma",
+    "operationId": "unidades_api_v1_empresas__empresa_id__unidades_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Unidade"
+         },
+         "title": "Response Unidades Api V1 Empresas  Empresa Id  Unidades Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Criar uma unidade (a própria empresa)",
+    "operationId": "criar_unidade_api_v1_empresas__empresa_id__unidades_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovaUnidade"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Unidade"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/ativos": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Cadastrar um ativo por formulário (a própria empresa)",
+    "operationId": "criar_ativo_api_v1_empresas__empresa_id__instanciacao_ativos_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NovoAtivo"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AtivoCriado"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/instanciacoes/modelo.csv": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "O modelo de planilha para cadastrar ativos em lote",
+    "operationId": "modelo_api_v1_instanciacoes_modelo_csv_get",
+    "parameters": [
+     {
+      "name": "tipo",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(barragem|unidade|equipamento|licenca)$",
+       "default": "barragem",
+       "title": "Tipo"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/planilha": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Conferir e importar a planilha de ativos (a própria empresa): tudo ou nada",
+    "operationId": "planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     },
+     {
+      "name": "conferir",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "description": "só conferir, sem gravar nada",
+       "default": false,
+       "title": "Conferir"
+      },
+      "description": "só conferir, sem gravar nada"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Planilha"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/dados-faltando": {
+   "get": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "O que as regras do catálogo pedem e ninguém informou (lista de tarefas, não bloqueio)",
+    "operationId": "dados_faltando_api_v1_empresas__empresa_id__dados_faltando_get",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/DadoFaltando"
+         },
+         "title": "Response Dados Faltando Api V1 Empresas  Empresa Id  Dados Faltando Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/empresas/{empresa_id}/instanciacao/operacao": {
+   "post": {
+    "tags": [
+     "instanciação"
+    ],
+    "summary": "Entrar em operação: a torre passa a cobrar (a própria empresa; aceita pendência)",
+    "operationId": "entrar_em_operacao_api_v1_empresas__empresa_id__instanciacao_operacao_post",
+    "parameters": [
+     {
+      "name": "empresa_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Empresa Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Operacao"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EmOperacao"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/usuarios": {
    "get": {
     "tags": [
@@ -2499,7 +3056,7 @@
       "content": {
        "application/json": {
         "schema": {
-         "$ref": "#/components/schemas/Criada"
+         "$ref": "#/components/schemas/api__rotas__admin__Criada"
         }
        }
       }
@@ -3192,6 +3749,24 @@
     ],
     "title": "Ativo"
    },
+   "AtivoCriado": {
+    "properties": {
+     "ativo_id": {
+      "type": "integer",
+      "title": "Ativo Id"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo_id",
+     "codigo"
+    ],
+    "title": "AtivoCriado"
+   },
    "Ato": {
     "properties": {
      "identificacao": {
@@ -3290,6 +3865,63 @@
     ],
     "title": "Atributos"
    },
+   "BarragemSigbm": {
+    "properties": {
+     "codigo": {
+      "type": "string",
+      "title": "Codigo",
+      "description": "o código da barragem no SIGBM"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "uf": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uf"
+     },
+     "municipio": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Municipio"
+     },
+     "na_pnsb": {
+      "type": "boolean",
+      "title": "Na Pnsb"
+     },
+     "alertas": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Alertas",
+      "description": "o que o SIGBM já mostra de problema (embargo, emergência, DCE/DCO)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigo",
+     "nome",
+     "uf",
+     "municipio",
+     "na_pnsb",
+     "alertas"
+    ],
+    "title": "BarragemSigbm"
+   },
    "Body_comprovante_api_v1_comprovantes_post": {
     "properties": {
      "arquivo": {
@@ -3317,6 +3949,20 @@
      "arquivo"
     ],
     "title": "Body_ler_api_v1_evidencias_leitura_post"
+   },
+   "Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post": {
+    "properties": {
+     "arquivo": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "Arquivo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "arquivo"
+    ],
+    "title": "Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post"
    },
    "Busca": {
     "properties": {
@@ -3783,19 +4429,6 @@
     ],
     "title": "Contas"
    },
-   "Criada": {
-    "properties": {
-     "id": {
-      "type": "integer",
-      "title": "Id"
-     }
-    },
-    "type": "object",
-    "required": [
-     "id"
-    ],
-    "title": "Criada"
-   },
    "CustoIA": {
     "properties": {
      "tarefa": {
@@ -3818,6 +4451,49 @@
      "usd"
     ],
     "title": "CustoIA"
+   },
+   "DadoFaltando": {
+    "properties": {
+     "ativo": {
+      "type": "string",
+      "title": "Ativo"
+     },
+     "ativo_id": {
+      "type": "integer",
+      "title": "Ativo Id"
+     },
+     "ativo_nome": {
+      "type": "string",
+      "title": "Ativo Nome"
+     },
+     "campo": {
+      "type": "string",
+      "title": "Campo"
+     },
+     "pergunta": {
+      "type": "string",
+      "title": "Pergunta",
+      "description": "o que perguntar a quem preenche"
+     },
+     "obrigacoes": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Obrigacoes",
+      "description": "as obrigações que dependem deste dado"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ativo",
+     "ativo_id",
+     "ativo_nome",
+     "campo",
+     "pergunta",
+     "obrigacoes"
+    ],
+    "title": "DadoFaltando"
    },
    "Decisao": {
     "properties": {
@@ -3968,6 +4644,38 @@
     ],
     "title": "DecisaoRegistrada"
    },
+   "DoSigbm": {
+    "properties": {
+     "cnpj": {
+      "type": "string",
+      "title": "Cnpj"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "exportado_em": {
+      "type": "string",
+      "title": "Exportado Em"
+     },
+     "barragens": {
+      "items": {
+       "$ref": "#/components/schemas/BarragemSigbm"
+      },
+      "type": "array",
+      "title": "Barragens",
+      "description": "todas as do CNPJ, não só as da PNSB"
+     }
+    },
+    "type": "object",
+    "required": [
+     "cnpj",
+     "nome",
+     "exportado_em",
+     "barragens"
+    ],
+    "title": "DoSigbm"
+   },
    "Edicao": {
     "properties": {
      "nome": {
@@ -4018,6 +4726,28 @@
     },
     "type": "object",
     "title": "Edicao"
+   },
+   "EmOperacao": {
+    "properties": {
+     "monitorado_desde": {
+      "type": "string",
+      "title": "Monitorado Desde"
+     },
+     "pendencias": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Pendencias",
+      "description": "as etapas que continuam pendentes (entrar em operação não exige tudo)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "monitorado_desde",
+     "pendencias"
+    ],
+    "title": "EmOperacao"
    },
    "Empresa": {
     "properties": {
@@ -4156,6 +4886,114 @@
     ],
     "title": "EntregaFeita"
    },
+   "EscolhaSigbm": {
+    "properties": {
+     "codigos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Codigos",
+      "description": "os códigos SIGBM das barragens que entram na torre"
+     }
+    },
+    "type": "object",
+    "required": [
+     "codigos"
+    ],
+    "title": "EscolhaSigbm"
+   },
+   "Estado": {
+    "properties": {
+     "empresa_id": {
+      "type": "integer",
+      "title": "Empresa Id"
+     },
+     "empresa": {
+      "type": "string",
+      "title": "Empresa"
+     },
+     "cnpj": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cnpj"
+     },
+     "razao_social": {
+      "type": "string",
+      "title": "Razao Social"
+     },
+     "ufs": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Ufs"
+     },
+     "no_sigbm": {
+      "type": "boolean",
+      "title": "No Sigbm",
+      "description": "o CNPJ tem barragem no SIGBM público"
+     },
+     "etapas": {
+      "items": {
+       "$ref": "#/components/schemas/Etapa"
+      },
+      "type": "array",
+      "title": "Etapas"
+     },
+     "percentual": {
+      "type": "integer",
+      "title": "Percentual",
+      "description": "vem das etapas prontas e em andamento, não de um número inventado"
+     },
+     "em_operacao": {
+      "type": "boolean",
+      "title": "Em Operacao"
+     },
+     "monitorado_desde": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Monitorado Desde",
+      "description": "a partir de quando a torre cobra"
+     },
+     "criada_por": {
+      "type": "string",
+      "title": "Criada Por"
+     },
+     "criada_em": {
+      "type": "string",
+      "title": "Criada Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "empresa_id",
+     "empresa",
+     "cnpj",
+     "razao_social",
+     "ufs",
+     "no_sigbm",
+     "etapas",
+     "percentual",
+     "em_operacao",
+     "monitorado_desde",
+     "criada_por",
+     "criada_em"
+    ],
+    "title": "Estado"
+   },
    "EstadoIA": {
     "properties": {
      "ligada": {
@@ -4229,6 +5067,71 @@
      "teto_dia_usd"
     ],
     "title": "EstadoPergunta"
+   },
+   "Etapa": {
+    "properties": {
+     "etapa": {
+      "type": "string",
+      "title": "Etapa",
+      "description": "cadastro, ativos, dados, cobertura, licencas, responsaveis, contas, operacao"
+     },
+     "titulo": {
+      "type": "string",
+      "title": "Titulo"
+     },
+     "estado": {
+      "type": "string",
+      "title": "Estado",
+      "description": "pendente, em_andamento ou pronta"
+     },
+     "falta": {
+      "type": "string",
+      "title": "Falta",
+      "description": "o que fazer agora, em português; vazio quando a etapa está pronta"
+     },
+     "numeros": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Numeros",
+      "description": "os números da etapa (ativos, propostas, contas...)"
+     },
+     "por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Por",
+      "description": "quem mexeu nela por último"
+     },
+     "em": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Em"
+     }
+    },
+    "type": "object",
+    "required": [
+     "etapa",
+     "titulo",
+     "estado",
+     "falta",
+     "numeros",
+     "por",
+     "em"
+    ],
+    "title": "Etapa"
    },
    "Eu": {
     "properties": {
@@ -5449,6 +6352,78 @@
     ],
     "title": "LinhaPainel"
    },
+   "LinhaPlanilha": {
+    "properties": {
+     "linha": {
+      "type": "integer",
+      "title": "Linha",
+      "description": "o número da linha no arquivo, como a pessoa vê"
+     },
+     "tipo": {
+      "type": "string",
+      "title": "Tipo"
+     },
+     "codigo": {
+      "type": "string",
+      "title": "Codigo"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "unidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Unidade"
+     },
+     "responsavel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responsavel"
+     },
+     "atributos": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Atributos"
+     },
+     "erro": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Erro",
+      "description": "o que está errado nesta linha; vazio: a linha está boa"
+     }
+    },
+    "type": "object",
+    "required": [
+     "linha",
+     "tipo",
+     "codigo",
+     "nome",
+     "unidade",
+     "responsavel",
+     "atributos",
+     "erro"
+    ],
+    "title": "LinhaPlanilha"
+   },
    "Login": {
     "properties": {
      "email": {
@@ -6165,6 +7140,161 @@
     ],
     "title": "NormaNaCobertura"
    },
+   "Nova": {
+    "properties": {
+     "nome": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Nome",
+      "description": "o nome que aparece na torre (único)"
+     },
+     "razao_social": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Razao Social"
+     },
+     "cnpj": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 20
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cnpj",
+      "description": "vazio: empreendedor pessoa física"
+     },
+     "ufs": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Ufs",
+      "description": "UFs em que opera (duas letras)",
+      "default": []
+     },
+     "ficticia": {
+      "type": "boolean",
+      "title": "Ficticia",
+      "description": "empresa de demonstração",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "nome",
+     "razao_social"
+    ],
+    "title": "Nova"
+   },
+   "NovaUnidade": {
+    "properties": {
+     "nome": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Nome",
+      "examples": [
+       "Mina Serra Azul"
+      ]
+     },
+     "uf": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uf"
+     },
+     "municipio": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Municipio"
+     }
+    },
+    "type": "object",
+    "required": [
+     "nome"
+    ],
+    "title": "NovaUnidade"
+   },
+   "NovoAtivo": {
+    "properties": {
+     "tipo": {
+      "type": "string",
+      "title": "Tipo",
+      "description": "barragem, unidade, equipamento ou licenca"
+     },
+     "codigo": {
+      "type": "string",
+      "maxLength": 40,
+      "minLength": 1,
+      "title": "Codigo",
+      "examples": [
+       "B1"
+      ]
+     },
+     "nome": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Nome"
+     },
+     "unidade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Unidade",
+      "description": "a operação a que pertence (crie a unidade antes)"
+     },
+     "responsavel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responsavel",
+      "description": "a área responsável"
+     },
+     "atributos": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Atributos",
+      "description": "os campos do cadastro (ver GET /cadastro/campos)",
+      "default": {}
+     }
+    },
+    "type": "object",
+    "required": [
+     "tipo",
+     "codigo",
+     "nome"
+    ],
+    "title": "NovoAtivo"
+   },
    "ObrigacaoResumo": {
     "properties": {
      "codigo": {
@@ -6332,6 +7462,25 @@
     ],
     "title": "Opcao"
    },
+   "Operacao": {
+    "properties": {
+     "desde": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Desde",
+      "description": "a partir de quando a torre cobra; padrão: hoje"
+     }
+    },
+    "type": "object",
+    "title": "Operacao"
+   },
    "Painel": {
     "properties": {
      "hoje": {
@@ -6418,6 +7567,33 @@
      "rotulo"
     ],
     "title": "PeriodoEntrega"
+   },
+   "Planilha": {
+    "properties": {
+     "linhas": {
+      "items": {
+       "$ref": "#/components/schemas/LinhaPlanilha"
+      },
+      "type": "array",
+      "title": "Linhas"
+     },
+     "importados": {
+      "type": "integer",
+      "title": "Importados",
+      "description": "quantos ativos entraram (0 se alguma linha tem erro)"
+     },
+     "erros": {
+      "type": "integer",
+      "title": "Erros"
+     }
+    },
+    "type": "object",
+    "required": [
+     "linhas",
+     "importados",
+     "erros"
+    ],
+    "title": "Planilha"
    },
    "Proposta": {
     "properties": {
@@ -6846,6 +8022,74 @@
      "temas"
     ],
     "title": "Troca"
+   },
+   "Unidade": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "nome": {
+      "type": "string",
+      "title": "Nome"
+     },
+     "uf": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uf"
+     },
+     "municipio": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Municipio"
+     },
+     "criada_por": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Criada Por"
+     },
+     "criada_em": {
+      "type": "string",
+      "title": "Criada Em"
+     },
+     "ativos": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Ativos",
+      "description": "os ativos da empresa que pertencem a esta unidade",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "nome",
+     "uf",
+     "municipio",
+     "criada_por",
+     "criada_em"
+    ],
+    "title": "Unidade"
    },
    "UsoFerramenta": {
     "properties": {
@@ -7292,6 +8536,36 @@
      "visao"
     ],
     "title": "Visao"
+   },
+   "api__rotas__admin__Criada": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id"
+    ],
+    "title": "Criada"
+   },
+   "api__rotas__instanciacao__Criada": {
+    "properties": {
+     "empresa_id": {
+      "type": "integer",
+      "title": "Empresa Id"
+     },
+     "estado": {
+      "$ref": "#/components/schemas/Estado"
+     }
+    },
+    "type": "object",
+    "required": [
+     "empresa_id",
+     "estado"
+    ],
+    "title": "Criada"
    }
   }
  }

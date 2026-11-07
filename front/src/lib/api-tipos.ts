@@ -804,6 +804,178 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/instanciacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** As instanciações que a sessão vê, as que ainda não entraram em operação primeiro */
+        get: operations["listar_api_v1_instanciacoes_get"];
+        put?: never;
+        /** Criar a empresa e a instanciação dela (curadoria da plataforma) */
+        post: operations["criar_api_v1_instanciacoes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/instanciacao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** As etapas da instanciação, o que falta em cada uma e quem mexeu por último */
+        get: operations["estado_api_v1_empresas__empresa_id__instanciacao_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/instanciacoes/sigbm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** As barragens do CNPJ no SIGBM público (todas, não só as da PNSB), para escolher quais entram */
+        get: operations["do_sigbm_api_v1_instanciacoes_sigbm_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/instanciacao/sigbm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Trazer do SIGBM as barragens escolhidas (curadoria da plataforma) */
+        post: operations["importar_do_sigbm_api_v1_empresas__empresa_id__instanciacao_sigbm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/unidades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** As unidades (operações) da empresa, com os ativos de cada uma */
+        get: operations["unidades_api_v1_empresas__empresa_id__unidades_get"];
+        put?: never;
+        /** Criar uma unidade (a própria empresa) */
+        post: operations["criar_unidade_api_v1_empresas__empresa_id__unidades_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/instanciacao/ativos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cadastrar um ativo por formulário (a própria empresa) */
+        post: operations["criar_ativo_api_v1_empresas__empresa_id__instanciacao_ativos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/instanciacoes/modelo.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** O modelo de planilha para cadastrar ativos em lote */
+        get: operations["modelo_api_v1_instanciacoes_modelo_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/instanciacao/planilha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Conferir e importar a planilha de ativos (a própria empresa): tudo ou nada */
+        post: operations["planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/dados-faltando": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** O que as regras do catálogo pedem e ninguém informou (lista de tarefas, não bloqueio) */
+        get: operations["dados_faltando_api_v1_empresas__empresa_id__dados_faltando_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/instanciacao/operacao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Entrar em operação: a torre passa a cobrar (a própria empresa; aceita pendência) */
+        post: operations["entrar_em_operacao_api_v1_empresas__empresa_id__instanciacao_operacao_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usuarios": {
         parameters: {
             query?: never;
@@ -1113,6 +1285,13 @@ export interface components {
              */
             posicao?: number[] | null;
         };
+        /** AtivoCriado */
+        AtivoCriado: {
+            /** Ativo Id */
+            ativo_id: number;
+            /** Codigo */
+            codigo: string;
+        };
         /** Ato */
         Ato: {
             /**
@@ -1155,6 +1334,27 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** BarragemSigbm */
+        BarragemSigbm: {
+            /**
+             * Codigo
+             * @description o código da barragem no SIGBM
+             */
+            codigo: string;
+            /** Nome */
+            nome: string;
+            /** Uf */
+            uf: string | null;
+            /** Municipio */
+            municipio: string | null;
+            /** Na Pnsb */
+            na_pnsb: boolean;
+            /**
+             * Alertas
+             * @description o que o SIGBM já mostra de problema (embargo, emergência, DCE/DCO)
+             */
+            alertas: string[];
+        };
         /** Body_comprovante_api_v1_comprovantes_post */
         Body_comprovante_api_v1_comprovantes_post: {
             /** Arquivo */
@@ -1162,6 +1362,11 @@ export interface components {
         };
         /** Body_ler_api_v1_evidencias_leitura_post */
         Body_ler_api_v1_evidencias_leitura_post: {
+            /** Arquivo */
+            arquivo: string;
+        };
+        /** Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post */
+        Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post: {
             /** Arquivo */
             arquivo: string;
         };
@@ -1337,11 +1542,6 @@ export interface components {
              */
             empresas: string[];
         };
-        /** Criada */
-        Criada: {
-            /** Id */
-            id: number;
-        };
         /** CustoIA */
         CustoIA: {
             /** Tarefa */
@@ -1350,6 +1550,27 @@ export interface components {
             n: number;
             /** Usd */
             usd: number;
+        };
+        /** DadoFaltando */
+        DadoFaltando: {
+            /** Ativo */
+            ativo: string;
+            /** Ativo Id */
+            ativo_id: number;
+            /** Ativo Nome */
+            ativo_nome: string;
+            /** Campo */
+            campo: string;
+            /**
+             * Pergunta
+             * @description o que perguntar a quem preenche
+             */
+            pergunta: string;
+            /**
+             * Obrigacoes
+             * @description as obrigações que dependem deste dado
+             */
+            obrigacoes: string[];
         };
         /** Decisao */
         Decisao: {
@@ -1400,6 +1621,20 @@ export interface components {
             /** Decidida Em */
             decidida_em: string | null;
         };
+        /** DoSigbm */
+        DoSigbm: {
+            /** Cnpj */
+            cnpj: string;
+            /** Nome */
+            nome: string;
+            /** Exportado Em */
+            exportado_em: string;
+            /**
+             * Barragens
+             * @description todas as do CNPJ, não só as da PNSB
+             */
+            barragens: components["schemas"]["BarragemSigbm"][];
+        };
         /** Edicao */
         Edicao: {
             /** Nome */
@@ -1410,6 +1645,16 @@ export interface components {
             area?: string | null;
             /** Ativa */
             ativa?: boolean | null;
+        };
+        /** EmOperacao */
+        EmOperacao: {
+            /** Monitorado Desde */
+            monitorado_desde: string;
+            /**
+             * Pendencias
+             * @description as etapas que continuam pendentes (entrar em operação não exige tudo)
+             */
+            pendencias: string[];
         };
         /** Empresa */
         Empresa: {
@@ -1460,6 +1705,50 @@ export interface components {
             /** Periodo Rotulo */
             periodo_rotulo: string;
         };
+        /** EscolhaSigbm */
+        EscolhaSigbm: {
+            /**
+             * Codigos
+             * @description os códigos SIGBM das barragens que entram na torre
+             */
+            codigos: string[];
+        };
+        /** Estado */
+        Estado: {
+            /** Empresa Id */
+            empresa_id: number;
+            /** Empresa */
+            empresa: string;
+            /** Cnpj */
+            cnpj: string | null;
+            /** Razao Social */
+            razao_social: string;
+            /** Ufs */
+            ufs: string[];
+            /**
+             * No Sigbm
+             * @description o CNPJ tem barragem no SIGBM público
+             */
+            no_sigbm: boolean;
+            /** Etapas */
+            etapas: components["schemas"]["Etapa"][];
+            /**
+             * Percentual
+             * @description vem das etapas prontas e em andamento, não de um número inventado
+             */
+            percentual: number;
+            /** Em Operacao */
+            em_operacao: boolean;
+            /**
+             * Monitorado Desde
+             * @description a partir de quando a torre cobra
+             */
+            monitorado_desde: string | null;
+            /** Criada Por */
+            criada_por: string;
+            /** Criada Em */
+            criada_em: string;
+        };
         /** EstadoIA */
         EstadoIA: {
             /**
@@ -1485,6 +1774,40 @@ export interface components {
             gasto_hoje_usd: number;
             /** Teto Dia Usd */
             teto_dia_usd: number | null;
+        };
+        /** Etapa */
+        Etapa: {
+            /**
+             * Etapa
+             * @description cadastro, ativos, dados, cobertura, licencas, responsaveis, contas, operacao
+             */
+            etapa: string;
+            /** Titulo */
+            titulo: string;
+            /**
+             * Estado
+             * @description pendente, em_andamento ou pronta
+             */
+            estado: string;
+            /**
+             * Falta
+             * @description o que fazer agora, em português; vazio quando a etapa está pronta
+             */
+            falta: string;
+            /**
+             * Numeros
+             * @description os números da etapa (ativos, propostas, contas...)
+             */
+            numeros: {
+                [key: string]: number;
+            };
+            /**
+             * Por
+             * @description quem mexeu nela por último
+             */
+            por: string | null;
+            /** Em */
+            em: string | null;
         };
         /** Eu */
         Eu: {
@@ -2009,6 +2332,33 @@ export interface components {
              */
             dados_faltando_rotulos: string[];
         };
+        /** LinhaPlanilha */
+        LinhaPlanilha: {
+            /**
+             * Linha
+             * @description o número da linha no arquivo, como a pessoa vê
+             */
+            linha: number;
+            /** Tipo */
+            tipo: string;
+            /** Codigo */
+            codigo: string;
+            /** Nome */
+            nome: string;
+            /** Unidade */
+            unidade: string | null;
+            /** Responsavel */
+            responsavel: string | null;
+            /** Atributos */
+            atributos: {
+                [key: string]: unknown;
+            };
+            /**
+             * Erro
+             * @description o que está errado nesta linha; vazio: a linha está boa
+             */
+            erro: string | null;
+        };
         /** Login */
         Login: {
             /**
@@ -2285,6 +2635,78 @@ export interface components {
              */
             cita_catalogo: string[];
         };
+        /** Nova */
+        Nova: {
+            /**
+             * Nome
+             * @description o nome que aparece na torre (único)
+             */
+            nome: string;
+            /** Razao Social */
+            razao_social: string;
+            /**
+             * Cnpj
+             * @description vazio: empreendedor pessoa física
+             */
+            cnpj?: string | null;
+            /**
+             * Ufs
+             * @description UFs em que opera (duas letras)
+             * @default []
+             */
+            ufs: string[];
+            /**
+             * Ficticia
+             * @description empresa de demonstração
+             * @default false
+             */
+            ficticia: boolean;
+        };
+        /** NovaUnidade */
+        NovaUnidade: {
+            /**
+             * Nome
+             * @example Mina Serra Azul
+             */
+            nome: string;
+            /** Uf */
+            uf?: string | null;
+            /** Municipio */
+            municipio?: string | null;
+        };
+        /** NovoAtivo */
+        NovoAtivo: {
+            /**
+             * Tipo
+             * @description barragem, unidade, equipamento ou licenca
+             */
+            tipo: string;
+            /**
+             * Codigo
+             * @example B1
+             */
+            codigo: string;
+            /** Nome */
+            nome: string;
+            /**
+             * Unidade
+             * @description a operação a que pertence (crie a unidade antes)
+             */
+            unidade?: string | null;
+            /**
+             * Responsavel
+             * @description a área responsável
+             */
+            responsavel?: string | null;
+            /**
+             * Atributos
+             * @description os campos do cadastro (ver GET /cadastro/campos)
+             * @default {}
+             */
+            atributos: {
+                [key: string]: unknown;
+            };
+        };
         /** ObrigacaoResumo */
         ObrigacaoResumo: {
             /** Codigo */
@@ -2334,6 +2756,14 @@ export interface components {
             /** Rotulo */
             rotulo: string;
         };
+        /** Operacao */
+        Operacao: {
+            /**
+             * Desde
+             * @description a partir de quando a torre cobra; padrão: hoje
+             */
+            desde?: string | null;
+        };
         /** Painel */
         Painel: {
             /** Hoje */
@@ -2369,6 +2799,18 @@ export interface components {
             periodo: string;
             /** Rotulo */
             rotulo: string;
+        };
+        /** Planilha */
+        Planilha: {
+            /** Linhas */
+            linhas: components["schemas"]["LinhaPlanilha"][];
+            /**
+             * Importados
+             * @description quantos ativos entraram (0 se alguma linha tem erro)
+             */
+            importados: number;
+            /** Erros */
+            erros: number;
         };
         /** Proposta */
         Proposta: {
@@ -2537,6 +2979,27 @@ export interface components {
             /** Temas */
             temas: components["schemas"]["TemaTroca"][];
         };
+        /** Unidade */
+        Unidade: {
+            /** Id */
+            id: number;
+            /** Nome */
+            nome: string;
+            /** Uf */
+            uf: string | null;
+            /** Municipio */
+            municipio: string | null;
+            /** Criada Por */
+            criada_por: string | null;
+            /** Criada Em */
+            criada_em: string;
+            /**
+             * Ativos
+             * @description os ativos da empresa que pertencem a esta unidade
+             * @default []
+             */
+            ativos: string[];
+        };
         /** UsoFerramenta */
         UsoFerramenta: {
             /** Ferramenta */
@@ -2673,6 +3136,17 @@ export interface components {
              * @example Curadoria RegulaIA (plataforma)
              */
             visao: string;
+        };
+        /** Criada */
+        api__rotas__admin__Criada: {
+            /** Id */
+            id: number;
+        };
+        /** Criada */
+        api__rotas__instanciacao__Criada: {
+            /** Empresa Id */
+            empresa_id: number;
+            estado: components["schemas"]["Estado"];
         };
     };
     responses: never;
@@ -4161,6 +4635,393 @@ export interface operations {
             };
         };
     };
+    listar_api_v1_instanciacoes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Estado"][];
+                };
+            };
+        };
+    };
+    criar_api_v1_instanciacoes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Nova"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["api__rotas__instanciacao__Criada"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    estado_api_v1_empresas__empresa_id__instanciacao_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Estado"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    do_sigbm_api_v1_instanciacoes_sigbm_get: {
+        parameters: {
+            query: {
+                /** @description CNPJ formatado ou só os dígitos */
+                cnpj: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoSigbm"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    importar_do_sigbm_api_v1_empresas__empresa_id__instanciacao_sigbm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EscolhaSigbm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Estado"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unidades_api_v1_empresas__empresa_id__unidades_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Unidade"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_unidade_api_v1_empresas__empresa_id__unidades_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NovaUnidade"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Unidade"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_ativo_api_v1_empresas__empresa_id__instanciacao_ativos_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NovoAtivo"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AtivoCriado"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    modelo_api_v1_instanciacoes_modelo_csv_get: {
+        parameters: {
+            query?: {
+                tipo?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post: {
+        parameters: {
+            query?: {
+                /** @description só conferir, sem gravar nada */
+                conferir?: boolean;
+            };
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_planilha_api_v1_empresas__empresa_id__instanciacao_planilha_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Planilha"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dados_faltando_api_v1_empresas__empresa_id__dados_faltando_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DadoFaltando"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    entrar_em_operacao_api_v1_empresas__empresa_id__instanciacao_operacao_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Operacao"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmOperacao"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     contas_api_v1_usuarios_get: {
         parameters: {
             query?: never;
@@ -4200,7 +5061,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Criada"];
+                    "application/json": components["schemas"]["api__rotas__admin__Criada"];
                 };
             };
             /** @description Validation Error */
