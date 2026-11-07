@@ -125,11 +125,9 @@ aproveitar, refaça o que não estiver bom): `regulaia/campos.py` (novo), `migra
 e `.sql` (novos), e mudanças em `regulaia/schema.sql`, `regulaia/schema_pg.sql`, `regulaia/db.py`,
 `regulaia/banco.py` e `api/cadastro.py`.
 
-**Mudanças de outra sessão (AWS), sem commit, que não são suas**: `infra/`, `api/Dockerfile`,
-`pyproject.toml`, `uv.lock`, `tests/test_infra.py`. Não reverta nem inclua nos seus commits: faça
-`git commit -- <seus caminhos>`. A dependência `cryptography` precisa entrar no `pyproject.toml`; enquanto a
-sessão AWS não tiver feito commit desses dois arquivos (confira com `git status`), deixe essa parte para
-depois e siga com o resto.
+**Mudanças de outra sessão (AWS), sem commit, que não são suas**: `infra/`, `api/Dockerfile` e
+`tests/test_infra.py`. Não reverta nem inclua nos seus commits: faça `git commit -- <seus caminhos>`.
+`pyproject.toml` e `uv.lock` estão livres: a dependência `cryptography` entra normalmente (`uv add`).
 
 **Ordem**
 1. **Revisão de código da base** (só leitura primeiro): `regulaia/`, `api/`, `agente/`, `front/src/`.
