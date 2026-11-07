@@ -26,10 +26,11 @@ _PORTARIAS = _MTE + "/assuntos/inspecao-do-trabalho/seguranca-e-saude-no-trabalh
 FONTES: dict[str, tuple[str, str]] = {
     "res95_2022.html": ("Res. ANM 95/2022 (texto consolidado)", _ANMLEGIS.format(numero=95, ano=2022)),
     "res220_2025.html": ("Res. ANM 220/2025 (texto consolidado, com a Res. 245/2026)", _ANMLEGIS.format(numero=220, ano=2025)),
-    # O Planalto derruba conexões que não vêm de navegador: se o download falhar, abrir a URL no navegador e
-    # salvar a página com este nome (o teste confere os trechos em qualquer das duas versões)
-    "lei_12334_2010.html": ("Lei 12.334/2010 (PNSB, texto compilado com a Lei 14.066/2020)",
-                            "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12334.htm"),
+    # O Planalto derruba conexões que não vêm de navegador; a Câmara serve o mesmo texto consolidado, com as
+    # notas de redação (regulaia/vigencia.py tira as notas e o que está riscado antes de conferir)
+    "lei_12334_2010_camara.html": ("Lei 12.334/2010 (PNSB, texto atualizado da Câmara, com a Lei 15.355/2026)",
+                                   "https://www2.camara.leg.br/legin/fed/lei/2010/"
+                                   "lei-12334-20-setembro-2010-608607-normaatualizada-pl.html"),
     "lei_mg_23291_2019.html": ("Lei MG 23.291/2019 (política estadual de segurança de barragens, texto atualizado)",
                                "https://www.almg.gov.br/legislacao-mineira/texto/LEI/23291/2019/"),
     "dec_mg_48078_2020.html": ("Decreto MG 48.078/2020 (PAE, texto atualizado)",

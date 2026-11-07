@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from regulaia import normas
+from regulaia import normas, vigencia
 from regulaia.impacto import _limpo
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -20,7 +20,7 @@ FONTES = {
     "cadastro/res95_2022.csv": ["res95_2022.html"],
     "cadastro/dec_mg_48078.csv": ["dec_mg_48078_2020.html"],
     "cadastro/dec_mg_48140.csv": ["dec_mg_48140_2021.html"],
-    "cadastro/lei12334.csv": ["lei_12334_2010.html"],
+    "cadastro/lei12334.csv": ["lei_12334_2010_camara.html"],
     "cadastro/lei_mg_23291.csv": ["lei_mg_23291_2019.html"],
     "cadastro/nr13.csv": ["nr-13-atualizada-2023-b.pdf"],
     "cadastro/nr22.csv": [NR22],
@@ -34,6 +34,8 @@ def _paragrafos(nome: str) -> list[str]:
     caminho = NORMAS / nome
     if not caminho.exists():
         pytest.skip(f"{nome} não baixado")
+    if nome.endswith("_camara.html"):
+        return vigencia.paragrafos_do_texto(caminho.read_text(encoding="utf-8"))
     return normas.paragrafos_anmlegis(caminho) if nome.endswith(".html") else normas.paragrafos_pdf_nr(caminho)
 
 
