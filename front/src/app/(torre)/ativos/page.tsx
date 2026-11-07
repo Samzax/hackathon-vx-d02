@@ -35,7 +35,7 @@ function cn(status: string) {
 
 // ------------------------------------------------------------------ ficha
 
-function Pendencia({ l, onEntregar }: { l: Linha; onEntregar: (l: Linha) => void }) {
+function Pendencia({ l, onEntregar }: { l: Linha; onEntregar?: (l: Linha) => void }) {
   const soData = l.dados_faltando.length === 1 && l.dados_faltando[0] === ULTIMA_EXECUCAO;
   const herdada = !!(l.nota && l.ultima_rotulo && l.nota.includes(dataBR(l.ultima)));
   return (
@@ -63,7 +63,7 @@ function Pendencia({ l, onEntregar }: { l: Linha; onEntregar: (l: Linha) => void
           <blockquote className="mt-1 border-l-2 border-borda-forte pl-3 text-[13px] italic text-texto-2">“{l.trecho}”</blockquote>
         )}
       </div>
-      {(!l.dados_faltando.length || soData) && (
+      {onEntregar && (!l.dados_faltando.length || soData) && (
         <div className="shrink-0">
           <Botao tamanho="p" icone={<Check className="size-3.5" />} onClick={() => onEntregar(l)}>Registrar entrega</Botao>
         </div>
@@ -200,7 +200,7 @@ function Ficha({ ativoId, abaInicial }: { ativoId: number; abaInicial: Aba }) {
       </div>
       <div className="pt-4">
         {aba === "pendencias" && (ruins.length ? (
-          <ul className="space-y-1">{ruins.map((l) => <Pendencia key={l.codigo} l={l} onEntregar={setAlvo} />)}</ul>
+          <ul className="space-y-1">{ruins.map((l) => <Pendencia key={l.codigo} l={l} onEntregar={t.soLeitura ? undefined : setAlvo} />)}</ul>
         ) : <Aviso tipo="sucesso">Nada atrasado, faltando ou vencendo neste ativo.</Aviso>)}
 
         {aba === "obrigacoes" && (
@@ -219,7 +219,7 @@ function Ficha({ ativoId, abaInicial }: { ativoId: number; abaInicial: Aba }) {
         {aba === "historico" && <Eventos eventos={eventos} vazio="Nenhuma entrega, comentário ou mudança de cadastro registrada neste ativo." />}
         {aba === "cadastro" && (
           <div className="space-y-4">
-            {t.diretoria && <AreaResponsavel key={`${a.id}-${a.responsavel}`} ativo={a} />}
+            {t.diretoria && !t.soLeitura && <AreaResponsavel key={`${a.id}-${a.responsavel}`} ativo={a} />}
             <EditorCadastro key={a.id} ativo={a} faltando={faltaCad} />
           </div>
         )}

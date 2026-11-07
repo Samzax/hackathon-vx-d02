@@ -111,7 +111,7 @@ export function Calendario({ ativos }: { ativos: string[] }) {
                     <p><Etiqueta tom={s.tom}>{s.rotulo}</Etiqueta> <strong>{x.ativo}</strong> · {curto(x.titulo, 80)}</p>
                     <p className="text-xs text-texto-2">{x.periodo_rotulo} · {x.responsavel ?? "sem responsável"}</p>
                   </div>
-                  {!x.entregue && x.ativo_id && (
+                  {!x.entregue && x.ativo_id && !t.soLeitura && (
                     <Botao tamanho="p" icone={<Check className="size-3.5" />}
                       onClick={() => setAlvo({ ativo_id: x.ativo_id, ativo: x.ativo, codigo: x.codigo, titulo: x.titulo, status: x.status })}>
                       Registrar entrega
@@ -123,7 +123,7 @@ export function Calendario({ ativos }: { ativos: string[] }) {
           </ul>
           {!doDia.length && <p className="py-2 text-sm text-texto-2">Nenhum vencimento neste dia.</p>}
         </Cartao>
-      ) : <p className="mt-2 text-xs text-texto-3">Clique num dia para ver os vencimentos e registrar a entrega.</p>}
+      ) : <p className="mt-2 text-xs text-texto-3">Clique num dia para ver os vencimentos{t.soLeitura ? "" : " e registrar a entrega"}.</p>}
 
       {!!venc.data?.length && (
         <Expansivel className="mt-3" resumo={<span className="font-medium">Lista dos {venc.data.length} vencimentos de {MESES[m - 1]}/{ano}</span>}>

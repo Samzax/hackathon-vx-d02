@@ -84,9 +84,9 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
         como variáveis CSS (`globals.css`), mapa Leaflet com ladrilhos do OpenStreetMap, Gantt em SVG,
         usável no celular (menu em gaveta, tabelas com rolagem).
       - Testes: vitest (formatação, cliente da API, status, markdown) e Playwright (`front/e2e/`): a API de
-        verdade num SQLite novo servindo o `out/`, cinco cenários (entrar na demo e ver as 4 atrasadas,
-        registrar uma entrega, gestor só com a área dele, curadoria aprovando a Res. 245, TI só com contas e
-        auditoria). CI: jobs `front` (tipos, lint, typecheck, vitest, build) e `front-e2e`.
+        verdade num SQLite novo servindo o `out/`, seis cenários (entrar na demo e ver as 4 atrasadas,
+        registrar uma entrega, gestor só com a área dele, curadoria aprovando a Res. 245, a curadoria só lendo
+        os dados da empresa, TI só com contas e auditoria). CI: jobs `front` (tipos, lint, typecheck, vitest, build) e `front-e2e`.
       - Em aberto: o Streamlit (`app.py`) continua na `main` até a troca; "Pergunte à torre" (2C) ainda não.
 - [x] 2B AWS CDK (`infra/`, commit 49c404b): ALB + ECS Fargate (API e front na mesma origem, migração no start),
       RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
@@ -133,9 +133,20 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
 - [x] Conta da curadoria na demo: `curadoria@regulaia.demo` (Regulatório da plataforma). A conta de teste
       ganhou a visão "Curadoria RegulaIA (plataforma)".
 - [x] Testes de isolamento em `tests/test_api.py` (segunda cliente com B1, B3 e L1 e a mesma área).
-- [ ] Em aberto: a plataforma (curadoria, token de serviço) ainda pode registrar entrega, comentar e
-      mexer no cadastro de qualquer cliente, como suporte. Se isso deve ser só leitura, fechar nas rotas
-      de escrita da torre.
+- [x] Decisão do usuário (07/11): **nos dados operacionais da cliente a plataforma só lê.** Quem entrega,
+      comenta e corrige o cadastro é a própria empresa. `seguranca.da_empresa` fecha com 403 ("a equipe
+      RegulaIA só lê os dados da empresa") para a curadoria, o token de serviço e a conta de teste olhando
+      como a curadoria: `POST /comprovantes`, `POST` e `DELETE /entregas`, `POST /atribuicoes`, `POST
+      /comentarios`, `PATCH /ativos/{id}/atributos`, `PUT /ativos/{id}/responsavel`, `POST /evidencias/registro`.
+      `POST /evidencias/leitura` (ler o PDF sem gravar) continua aberta. Decisão de obrigação própria (condicionante)
+      é só da dona: a plataforma não aprova nem rejeita. A plataforma continua escrevendo o que é dela: decisão de
+      norma pública, radar, descoberta e curadoria, contas (TI da plataforma) e importação do SIGBM.
+      `Eu.so_leitura` diz ao front, que esconde os botões de escrita (entrega, cadastro, área do ativo,
+      atribuição, comentário, registro de evidência) e mostra "visão da plataforma: só leitura". O agente MCP
+      já era só leitura: `test_nenhuma_ferramenta_escreve_na_torre` chama todas as ferramentas e confere que só
+      sai GET (e a análise de ato, que não grava). Testes: `test_plataforma_so_le_os_dados_operacionais_da_empresa`
+      (as 8 rotas, curadoria, token e conta de teste), `test_a_propria_empresa_escreve_nos_dados_dela` e o e2e
+      "a curadoria da plataforma só lê os dados da empresa".
 - [ ] O Streamlit (`app.py`) continua de uma empresa só e com as regras antigas de decisão (é a demo).
 - [ ] Obrigação própria ainda tem código global (`obrigacao.codigo` UNIQUE): duas clientes não podem
       ter cada uma a sua "LO-01". Quando entrar a segunda cliente com licença própria, prefixar o código

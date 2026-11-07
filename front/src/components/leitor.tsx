@@ -132,11 +132,15 @@ export function LeitorDeDocumento() {
           )}
           {le.problemas?.map((p) => <Aviso key={p} tipo="atencao">{maiuscula(p)}</Aviso>)}
           {le.avisos?.map((a) => <Aviso key={a} tipo="info">{maiuscula(a)}</Aviso>)}
-          {leitura.completa && !alheio && (
+          {leitura.completa && !alheio && (t.soLeitura ? (
+            <p className="text-[13px] text-texto-2" data-testid="leitura-so-leitura">
+              Visão da plataforma: a leitura fica só na tela. Quem registra a evidência é a própria empresa.
+            </p>
+          ) : (
             <Botao variante="primario" carregando={registrar.isPending} onClick={() => registrar.mutate(leitura)}>
               Registrar evidência: {oQue(leitura)}
             </Botao>
-          )}
+          ))}
         </div>
       )}
     </div>

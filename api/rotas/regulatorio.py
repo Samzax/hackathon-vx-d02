@@ -19,7 +19,7 @@ from regulaia.ia import Roteador
 
 from .. import auditoria
 from ..banco import conexao, roteador
-from ..seguranca import Escopo, curadoria, decide_normas, empresa_visivel, regulatorio
+from ..seguranca import SO_LEITURA, Escopo, curadoria, decide_normas, empresa_visivel, regulatorio
 
 rota = APIRouter(tags=["regulatório"])
 
@@ -280,7 +280,8 @@ def decidir(versao_id: int, dados: Decisao, request: Request, e: Escopo = Depend
         auditoria.registrar(conn, request, "decisao", str(versao_id), dados.model_dump(), resultado="recusado")
         motivo = ("mudança de norma pública: quem aprova é a curadoria da RegulaIA, uma vez para todas as clientes"
                   if r["empresa"] is None else
-                  f"obrigação própria da {r['empresa']}: quem aprova é o Regulatório ou a Diretoria dela")
+                  f"obrigação própria da {r['empresa']}: quem aprova ou rejeita é o Regulatório ou a Diretoria dela"
+                  + (f" ({SO_LEITURA})" if e.so_leitura else ""))
         raise HTTPException(status.HTTP_403_FORBIDDEN, motivo)
     try:
         db.decidir(conn, versao_id, aprovar=dados.aprovar, por=e.assinante, correcoes=dados.correcoes)

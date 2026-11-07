@@ -1,7 +1,8 @@
 """Leitor de evidências: o PDF da operação vira baixa na obrigação certa.
 
 Dois passos, para uma pessoa conferir antes de gravar: `leitura` lê e devolve o que achou
-(ativo, documento, período, gatilhos); `registro` grava a leitura conferida."""
+(ativo, documento, período, gatilhos); `registro` grava a leitura conferida. Ler é aberto a quem vê
+a empresa; registrar é só da própria empresa (a plataforma só lê)."""
 
 from __future__ import annotations
 
@@ -19,7 +20,7 @@ from regulaia.ia import Roteador
 from .. import armazenamento, auditoria
 from ..banco import conexao, roteador
 from ..config import hoje_padrao
-from ..seguranca import Escopo, empresa_visivel, regulatorio
+from ..seguranca import Escopo, da_empresa, empresa_visivel, regulatorio
 
 rota = APIRouter(prefix="/evidencias", tags=["evidências"])
 LIMITE_BYTES = 20 * 1024 * 1024
@@ -136,7 +137,7 @@ async def ler(request: Request, empresa_id: int, arquivo: UploadFile = File(...)
 
 @rota.post("/registro", status_code=201, response_model=Registrada,
            summary="Gravar a leitura conferida: dá baixa e abre o que o documento acionou")
-def registrar(dados: Registro, request: Request, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
+def registrar(dados: Registro, request: Request, e: Escopo = Depends(da_empresa), conn=Depends(conexao)):
     _pode(conn, e, dados.leitura.empresa_id, dados.leitura.ativo)
     le = evidencias.Leitura(**dados.leitura.model_dump())
     try:

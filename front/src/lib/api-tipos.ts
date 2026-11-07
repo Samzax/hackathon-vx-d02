@@ -1365,6 +1365,11 @@ export interface components {
              * @description age como a equipe da RegulaIA (curadoria das normas públicas)
              */
             plataforma: boolean;
+            /**
+             * So Leitura
+             * @description nos dados operacionais das clientes (entrega, comprovante, evidência, comentário, atribuição, cadastro e responsável do ativo) a sessão só lê
+             */
+            so_leitura: boolean;
             /** Visao */
             visao: string;
             /**

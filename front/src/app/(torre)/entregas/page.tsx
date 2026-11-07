@@ -156,7 +156,7 @@ function Uma({ l, onFeito }: { l: Linha; onFeito: () => void }) {
       {l.nota && <p className="mt-1 text-sm">{maiuscula(l.nota)}.</p>}
       {l.trecho && <blockquote className="mt-2 border-l-2 border-borda-forte pl-3 text-[13px] italic text-texto-2">“{curto(l.trecho, 400)}”</blockquote>}
 
-      <div className="mt-4 grid gap-5 md:grid-cols-3">
+      {!t.soLeitura && <div className="mt-4 grid gap-5 md:grid-cols-3">
         <div>
           <p className="mb-2 text-[13px] font-semibold">Registrar entrega</p>
           {l.dados_faltando.some((c) => c !== "ultima_execucao") ? (
@@ -181,12 +181,12 @@ function Uma({ l, onFeito }: { l: Linha; onFeito: () => void }) {
           <AreaTexto value={texto} onChange={(e) => setTexto(e.target.value)} rows={3} placeholder="ex.: laudo com a consultoria, chega dia 20" aria-label="Comentário" />
           <Botao type="submit" icone={<MessageSquare className="size-4" />} disabled={!texto.trim()} carregando={acoes.pendente}>Comentar</Botao>
         </form>
-      </div>
+      </div>}
 
       <div className="mt-5 border-t border-borda pt-4">
         <p className="mb-3 text-[13px] font-semibold">Histórico</p>
         <HistoricoDaObrigacao ativoId={l.ativo_id!} codigo={l.codigo} />
-        {manuais.length > 0 && escolhidaDesfazer && (
+        {!t.soLeitura && manuais.length > 0 && escolhidaDesfazer && (
           <div className="mt-4 flex flex-wrap items-end gap-2">
             <CampoSelecao rotulo="Desfazer uma entrega manual" value={escolhidaDesfazer.periodo} onChange={(e) => setDesfazer(e.target.value)} className="w-64">
               {manuais.map((e) => <option key={e.id} value={e.periodo}>{e.periodo_rotulo}</option>)}
@@ -249,7 +249,9 @@ function Entregas() {
   return (
     <>
       <Titulo sobre="Operação" titulo="Entregas">
-        Selecione uma ou várias linhas para registrar, passar para outra área ou comentar. Tudo fica no histórico.
+        {t.soLeitura
+          ? "Selecione uma linha para ver o histórico. Quem registra, passa para outra área e comenta é a própria empresa."
+          : "Selecione uma ou várias linhas para registrar, passar para outra área ou comentar. Tudo fica no histórico."}
       </Titulo>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -327,7 +329,7 @@ function Entregas() {
       )}
 
       <div className="mt-4">
-        {escolhidas.length > 1 && <Varias linhas={escolhidas} onFeito={() => setSel(new Set())} />}
+        {escolhidas.length > 1 && !t.soLeitura && <Varias linhas={escolhidas} onFeito={() => setSel(new Set())} />}
         {escolhidas.length === 1 && <Uma key={chave(escolhidas[0]!)} l={escolhidas[0]!} onFeito={() => setSel(new Set())} />}
       </div>
 

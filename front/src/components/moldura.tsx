@@ -15,7 +15,7 @@ import { RES_220, ZAS, useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
 import { Dialogo } from "./dialogo";
 import { ImportarSigbm } from "./importar-sigbm";
-import { Aviso, Botao, Entrada, Selecao, cx, mensagem } from "./ui";
+import { Aviso, Botao, Entrada, Etiqueta, Selecao, cx, mensagem } from "./ui";
 
 const PAPEL: Record<string, string> = { admin: "TI", diretoria: "Diretoria", regulatorio: "Regulatório", gestor: "Gestor de área" };
 
@@ -282,6 +282,13 @@ function Cabecalho() {
             {t.eu.visao}
             {ativos.data ? ` · ${plural(ativos.data.length, "ativo", "ativos")}` : ""}
           </p>
+          {t.soLeitura && (
+            <p className="mt-1" data-testid="so-leitura">
+              <Etiqueta title="A equipe RegulaIA acompanha a empresa, mas quem registra entrega, comenta e corrige o cadastro é a própria empresa.">
+                visão da plataforma: só leitura
+              </Etiqueta>
+            </p>
+          )}
         </div>
       </div>
       {viajando && (
