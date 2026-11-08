@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
@@ -28,7 +29,7 @@ from . import agenda as agenda_, db, pessoal, regras
 from .impacto import _limpo
 from .instanciacao import LICENCAS, RENOVACAO_PADRAO, TIPOS_LICENCA, registrar
 
-VERSAO_PROMPT = "condicionantes-v1"
+VERSAO_PROMPT = "condicionantes-v2"
 PENDENTE, APROVADA, REJEITADA = "pendente", "aprovada", "rejeitada"
 
 SISTEMA = """Você é analista de conformidade regulatória no Brasil e lê uma LICENÇA AMBIENTAL (ou
@@ -44,7 +45,8 @@ Para cada condicionante:
 - "prazo": quando, em texto curto, como a licença diz (ex.: "Até 30 dias após o fim do trimestre").
 - "evidencia": o documento que comprova (ex.: "Laudo de laboratório acreditado").
 - "aplica_a": "empresa", "unidade" ou "ativo" — a que a condicionante se refere.
-- "alvo": o nome da unidade ou o código do ativo, se a licença disser; senão null.
+- "alvo": o código do ativo ou o nome da unidade, como estão no CADASTRO DA EMPRESA no fim do texto,
+  quando a licença se refere a um deles (mesmo que com outro nome); senão null.
 - "numero": o número da condicionante na licença, se houver (ex.: "3.1"); senão null.
 - "trecho": cópia literal, palavra por palavra, do texto da licença que cria a obrigação. Curto: a
   frase que obriga, não a página inteira. Escape as aspas no JSON.
@@ -89,6 +91,37 @@ class Leitura:
 
 
 # ------------------------------------------------------------------ conferência
+
+
+def _chave(nome: str) -> str:
+    """Nome comparável: sem acento, sem diferença de caixa e de espaços ("BARRAGEM  B2" = "Barragem B2")."""
+    sem_acento = unicodedata.normalize("NFKD", nome or "").encode("ascii", "ignore").decode()
+    return " ".join(sem_acento.casefold().split())
+
+
+def resolver_alvo(p: Proposta, unidades: set[str], ativos: dict[str, str]) -> None:
+    """A licença cita a barragem pelo nome ("Barragem B2"); a torre a conhece pelo código ("SIGBM-8694").
+    Troca o nome pelo código (ou pela grafia cadastrada da unidade) quando bate um só, sem acento e sem
+    caixa. Ambíguo ou desconhecido fica como veio, e a conferência recusa."""
+    alvo = (p.alvo or "").strip()
+    if not alvo:
+        return
+    if p.aplica_a == "ativo" and alvo not in ativos:
+        achados = {codigo for codigo, nome in ativos.items() if _chave(alvo) in (_chave(codigo), _chave(nome))}
+        if len(achados) == 1:
+            p.alvo = achados.pop()
+    elif p.aplica_a == "unidade" and alvo not in unidades:
+        achadas = {u for u in unidades if _chave(u) == _chave(alvo)}
+        if len(achadas) == 1:
+            p.alvo = achadas.pop()
+
+
+def _cadastro_para_ia(unidades: set[str], ativos: dict[str, str]) -> str:
+    """O que a empresa tem cadastrado, para a IA apontar o alvo pelo código. Só código e nome: nada pessoal."""
+    linhas = ["", "---", "CADASTRO DA EMPRESA (use estes códigos e nomes no campo \"alvo\"):"]
+    linhas += [f"- ativo {codigo}: {nome}" for codigo, nome in sorted(ativos.items())] or ["- nenhum ativo"]
+    linhas += [f"- unidade {u}" for u in sorted(unidades)]
+    return "\n".join(linhas)
 
 
 def conferir(p: Proposta, texto: str, unidades: set[str], ativos: set[str]) -> str | None:
@@ -211,10 +244,11 @@ def ler(conn, roteador, empresa_id: int, texto: str, paginas: list[str] | None =
         return le
     unidades = {u["nome"] for u in conn.execute(
         "SELECT nome FROM unidade WHERE empresa_id = ?", (empresa_id,))}
-    ativos = {a["codigo"] for a in db.ativos(conn, empresa_id)}
+    ativos = {a["codigo"]: a["nome"] for a in db.ativos(conn, empresa_id)}
     limpo = pessoal.sem_cpf(texto)
     try:
-        r = roteador.pedir_json("condicionantes", 3, SISTEMA, limpo[:60000], VERSAO_PROMPT, max_tokens=8000)
+        r = roteador.pedir_json("condicionantes", 3, SISTEMA, limpo[:60000] + _cadastro_para_ia(unidades, ativos),
+                                VERSAO_PROMPT, max_tokens=8000)
     except Exception as erro:
         le.problemas.append(f"leitura indisponível: {str(erro)[:160]}")
         return le
@@ -235,7 +269,8 @@ def ler(conn, roteador, empresa_id: int, texto: str, paginas: list[str] | None =
             numero=(str(d["numero"]) if d.get("numero") else None),
             trecho=str(d.get("trecho") or ""),
         )
-        p.reprovada = conferir(p, texto, unidades, ativos)
+        resolver_alvo(p, unidades, ativos)
+        p.reprovada = conferir(p, texto, unidades, set(ativos))
         if p.reprovada is None and paginas:
             p.pagina = _pagina_do_trecho(p.trecho, paginas)
         le.propostas.append(p)

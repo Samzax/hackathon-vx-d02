@@ -124,6 +124,47 @@ def test_proposta_sem_trecho_na_licenca_nao_entra(com_licenca):
     assert evento["agenda"] == "evento"                   # "Por evento": gatilho, sem prazo inventado
 
 
+def _uma(aplica_a: str, alvo: str) -> dict:
+    return {"titulo": "Monitorar a qualidade das águas superficiais", "periodicidade": "Trimestral",
+            "aplica_a": aplica_a, "alvo": alvo, "numero": "1",
+            "trecho": "Monitorar trimestralmente a qualidade das águas superficiais a montante e a jusante"}
+
+
+def test_barragem_citada_pelo_nome_vira_o_codigo_do_cadastro(com_licenca):
+    """Barragem vinda do SIGBM: a licença diz "Barragem B2", a torre conhece "SIGBM-8694"."""
+    conn, eid, _ = com_licenca
+    inst.criar_ativo(conn, eid, tipo="barragem", codigo="SIGBM-8694", nome="BARRAGEM B2", por="Curadoria Mitra")
+    ia = IAFalsa({"condicionantes": [_uma("ativo", "Barragem  B2"), _uma("ativo", "sigbm-8694")]})
+    le = licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, TEXTO_LICENCA)
+    assert [p.reprovada for p in le.propostas] == [None, None]
+    assert [p.alvo for p in le.propostas] == ["SIGBM-8694", "SIGBM-8694"]
+
+
+def test_nome_ambiguo_ou_desconhecido_continua_recusado(com_licenca):
+    conn, eid, _ = com_licenca
+    inst.criar_ativo(conn, eid, tipo="barragem", codigo="SIGBM-1", nome="Barragem Sul", por="Curadoria Mitra")
+    inst.criar_ativo(conn, eid, tipo="barragem", codigo="SIGBM-2", nome="BARRAGEM SUL", por="Curadoria Mitra")
+    ia = IAFalsa({"condicionantes": [_uma("ativo", "Barragem Sul"), _uma("ativo", "Barragem Norte")]})
+    le = licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, TEXTO_LICENCA)
+    assert [p.reprovada for p in le.propostas] == [
+        "a empresa não tem o ativo 'Barragem Sul'", "a empresa não tem o ativo 'Barragem Norte'"]
+
+
+def test_unidade_com_outra_grafia_vira_a_cadastrada(com_licenca):
+    conn, eid, _ = com_licenca
+    ia = IAFalsa({"condicionantes": [_uma("unidade", "MINA NOVA")]})
+    [p] = licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, TEXTO_LICENCA).propostas
+    assert p.reprovada is None and p.alvo == "Mina Nova"
+
+
+def test_a_ia_recebe_os_codigos_do_cadastro(com_licenca):
+    conn, eid, _ = com_licenca
+    ia = IAFalsa(RESPOSTA)
+    licencas.ler(conn, Roteador(conn, provedores={"anthropic": ia}), eid, TEXTO_LICENCA)
+    [enviado] = ia.chamadas
+    assert "- ativo L1: LO da Mina Nova" in enviado and "- unidade Mina Nova" in enviado
+
+
 def test_dado_pessoal_nunca_vai_para_a_ia(com_licenca):
     """O texto da licença pode trazer o CPF do responsável técnico: a IA recebe com marcador."""
     conn, eid, _ = com_licenca
