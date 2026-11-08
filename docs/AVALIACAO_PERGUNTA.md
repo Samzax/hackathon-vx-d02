@@ -1,23 +1,23 @@
-# Avaliação do Pergunte à torre
+# Avaliação do Assistente Mitra
 
-Gerado por `python -m mitra.pergunta avaliar` contra a demo (Mineradora Serra Azul), com o modelo de verdade. **10 de 10 casos passaram**; custo total US$ 0.1368; a mais lenta levou 14.5 s (o prazo é 45 s).
+Rodada com o **Claude Haiku 5.5** contra a demo (Mineradora Serra Azul), com o mesmo prompt (`mitra/pergunta_sistema.md`) e as mesmas ferramentas de leitura do chat. **9 de 10 casos passaram.**
 
-Cada caso tem critérios objetivos em `tests/pergunta_avaliacao.toml`: o que a resposta precisa conter, o que não pode conter, que ferramenta precisa ter usado, e a conferência do Python (trecho entre aspas, data e código de obrigação ou ativo precisam estar no que as ferramentas devolveram).
+Cada caso tem critérios objetivos em `tests/pergunta_avaliacao.toml`: o que a resposta precisa conter, o que não pode conter, que ferramenta precisa ter usado, e a conferência do Python (trecho entre aspas, data e código de obrigação ou ativo precisam estar no que as ferramentas devolveram). A nota sai do mesmo código do chat (`avaliar_resposta` e `conferir`, em `mitra/pergunta.py`).
 
 ## ✅ atrasadas-b3
 
 **Pergunta:** O que está atrasado na B3 e por qual artigo?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** pendencias · US$ 0.0068 · 6.8 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** pendencias
 
 <details><summary>Resposta</summary>
 
-Na **B3** há 2 obrigações atrasadas, ambas da **Res. ANM 95/2022** e sob responsabilidade da Gerência de Geotecnia:
+A B3 tem 2 obrigações atrasadas, as duas da Res. ANM 95/2022 (hoje: 2026-11-07).
 
-- **R95-01 – Preencher as FIR quinzenalmente** — art. 19, I: *"preencher, quinzenalmente ou em menor período, a seu critério, as FIR"*. Venceu em **2026-10-15**, falta a 1ª quinzena de outubro/2026.
-- **R95-02 – Preencher o EIR no SIGBM até o fim da quinzena subsequente à inspeção** — art. 21: *"O preenchimento do EIR no SIGBM deverá ocorrer até o final da quinzena subsequente à inspeção em campo que gerou o preenchimento da FIR"*. Venceu em **2026-10-30**, mesmo período pendente (1ª quinzena de outubro/2026).
+- **R95-01 - Preencher as FIR quinzenalmente** (vence 2026-10-15). Res. ANM 95/2022, art. 19 I. Trecho: "I - preencher, quinzenalmente ou em menor período, a seu critério, as FIR". Período faltando: 1ª quinzena de outubro/2026. Área: barragem. Responsável: Gerência de Geotecnia.
+- **R95-02 - Preencher o EIR no SIGBM até o fim da quinzena subsequente à inspeção** (vence 2026-10-30). Res. ANM 95/2022, art. 21. Trecho: "O preenchimento do EIR no SIGBM deverá ocorrer até o final da quinzena subsequente à inspeção em campo que gerou o preenchimento da FIR". Período faltando: 1ª quinzena de outubro/2026. Área: barragem. Responsável: Gerência de Geotecnia.
 
-Hoje na torre é 2026-11-07. Registre as entregas em **Entregas** ou trate na **Caixa de entrada**.
+Onde agir: "Caixa de entrada" (o que precisa de ação) e "Entregas" (registrar a entrega e ver comprovantes).
 
 </details>
 
@@ -25,28 +25,28 @@ Hoje na torre é 2026-11-07. Registre as entregas em **Entregas** ou trate na **
 
 **Pergunta:** Quais obrigações estão atrasadas hoje e o que eu faço primeiro?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** pendencias · US$ 0.0112 · 10.7 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** pendencias
 
 <details><summary>Resposta</summary>
 
-**4 obrigações atrasadas hoje (07/11/2026)**, a mais antiga vencida há mais tempo primeiro:
+Há **4 obrigações atrasadas** na torre. Comece pelas duas que venceram em 2026-10-15: **L1 · LO-02** e **B3 · R95-01**. A torre usou 2026-11-07 como "hoje" (dia padrão dela).
 
-1. **B3 — R95-01** "Preencher as FIR quinzenalmente" — Res. ANM 95/2022, art. 19 I — venceu **15/10/2026**, falta a 1ª quinzena de outubro/2026. Responsável: Gerência de Geotecnia.
-   > "preencher, quinzenalmente ou em menor período, a seu critério, as FIR"
+**Atrasadas (mais antigas primeiro)**
+- **L1 · LO-02**, "Monitorar os efluentes líquidos da estação de tratamento". LO 000/2023 (fictícia), Condicionante 2. Venceu em 2026-10-15; falta setembro/2026. Área: Gerência de Meio Ambiente.
+- **B3 · R95-01**, "Preencher as FIR quinzenalmente". Res. ANM 95/2022, art. 19 I. Venceu em 2026-10-15; falta a 1ª quinzena de outubro/2026. Trecho: "I - preencher, quinzenalmente ou em menor período, a seu critério, as FIR". Área: Gerência de Geotecnia.
+- **B3 · R95-02**, "Preencher o EIR no SIGBM até o fim da quinzena subsequente à inspeção". Res. ANM 95/2022, art. 21. Venceu em 2026-10-30; falta a 1ª quinzena de outubro/2026. Área: Gerência de Geotecnia.
+- **E1 · N13-03**, "Exame externo periódico do vaso — categoria III sem SPIE". NR-13, 13.5.4.5. Venceu em 2026-10-30; falta 30/10/2026. Área: Manutenção da Usina.
 
-2. **L1 — LO-02** "Monitorar os efluentes líquidos da estação de tratamento" — LO 000/2023 (fictícia), Condicionante 2 — venceu **15/10/2026**, falta setembro/2026. Responsável: Gerência de Meio Ambiente.
+**Dado faltando**
+- **B4 · R95-08**, Res. ANM 95/2022, art. 18 §1. Falta saber se o B4 passou por modificação estrutural. Área: Gerência de Emergências.
 
-3. **B3 — R95-02** "Preencher o EIR no SIGBM até o fim da quinzena subsequente à inspeção" — Res. ANM 95/2022, art. 21 — venceu **30/10/2026**, falta a 1ª quinzena de outubro/2026. Responsável: Gerência de Geotecnia.
-   > "O preenchimento do EIR no SIGBM deverá ocorrer até o final da quinzena subsequente à inspeção em campo que gerou o preenchimento da FIR"
+**Vence logo**
+- L1 · LO-06 (LC 140/2011, art. 14 §4): 2026-11-15.
+- B4 · R95-05 (Res. ANM 95/2022, art. 18 I): 2026-11-20.
+- B2 · R95-09 (Res. ANM 95/2022, art. 18 §2): 2026-12-01.
 
-4. **E1 — N13-03** "Exame externo periódico do vaso — categoria III sem SPIE" — NR-13, 13.5.4.5 — venceu **30/10/2026**.
-   > "A inspeção de segurança periódica, constituída por exames externo e interno, deve obedecer aos prazos máximos indicados na Tabela 2, com base na categoria do vaso"
-
-**Prioridade de ação:**
-- Primeiro resolver **B3** (duas pendências na barragem, mesmo vencimento 15/10 já acumulando) e **L1** (ambiental, mesma data 15/10) — são as mais antigas.
-- Em seguida, **E1** (NR-13, equipamento), vencida em 30/10.
-
-Há ainda **1 dado faltando** e **3 vence_logo** não detalhados aqui — posso trazer se quiser. Registre as entregas em **Entregas** e acompanhe o encerramento em **Caixa de entrada**.
+**Onde agir**
+Comece pela Caixa de entrada, que mostra o que precisa de ação. Ao concluir uma entrega (FIR, EIR, monitoramento, exame do vaso), registre o comprovante em Entregas. A torre não registra entrega por você.
 
 </details>
 
@@ -54,19 +54,21 @@ Há ainda **1 dado faltando** e **3 vence_logo** não detalhados aqui — posso 
 
 **Pergunta:** Tem algum dado faltando no cadastro que impede de saber se uma obrigação vale?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** instanciacao, pendencias · US$ 0.0066 · 7.4 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** instanciacao, pendencias, ficha_do_ativo
 
 <details><summary>Resposta</summary>
 
-Sim, há **1 pendência** nessa condição:
+Sim, um dado está faltando, e ele impede saber se uma obrigação vale. O dado é se a barragem **B4 (Barragem Vale do Cedro)** passou por modificação estrutural. Sem ele, a torre não sabe se vale a obrigação **R95-08** (Executar e concluir nova RPSB após modificação estrutural).
 
-- **B4** — **R95-08** "Executar e concluir nova RPSB após modificação estrutural"
-  - Norma: **Res. ANM 95/2022, art. 18 §1**
-  - Trecho: *"no prazo de 6 (seis) meses contados da conclusão da modificação, o empreendedor ficará obrigado a executar e concluir nova RPSB"*
-  - Dado faltando: **se o ativo passou por modificação estrutural**
-  - Responsável: Gerência de Emergências
+- **B4 / R95-08**: Res. ANM 95/2022, art. 18 §1. Status: dado_faltando. Vencimento: não definido. Área: barragem. Responsável: Gerência de Emergências.
+- Trecho: "no prazo de 6 (seis) meses contados da conclusão da modificação, o empreendedor ficará obrigado a executar e concluir nova RPSB"
 
-Sem essa informação a torre não consegue determinar se a obrigação se aplica ao B4. É preciso preencher esse dado no cadastro do ativo (aba **Ativos**, ficha da B4) para a obrigação ser corretamente classificada (passando a `em_dia`, `vence_logo` ou `atrasada`, conforme o caso).
+Outros pontos:
+- Nas pendências desta empresa, esta é a única obrigação com dado faltando.
+- A ficha de B4 traz o cadastro (UF MG, altura 37.0 m, DPA alto, entre outros), mas nenhum atributo aparece marcado como faltante.
+- A consulta de instanciação não retornou etapas, porque a empresa entrou na torre por outro caminho. A lista de dados faltantes aparece na ficha de cada ativo.
+
+Onde agir: preencher a informação no cadastro, em "Ativos" (ficha da B4). A torre não grava essa alteração por aqui.
 
 </details>
 
@@ -74,27 +76,20 @@ Sem essa informação a torre não consegue determinar se a obrigação se aplic
 
 **Pergunta:** Alguma norma mudou recentemente? O que eu preciso decidir?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** mudancas_pendentes, radar_do_dou · US$ 0.0090 · 10.4 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** mudancas_pendentes, radar_do_dou
 
 <details><summary>Resposta</summary>
 
-Sim, há **uma mudança aguardando decisão**, da Resolução ANM nº 245/2026 — e uma segunda análise que não gerou mudança.
+Sim. Há uma mudança pendente: a Resolução ANM nº 245, de 31 de julho de 2026, propõe nova data para a OB-01 no ativo B2. Essa é norma pública, então a decisão é da curadoria Mitra. Até lá, a torre segue com a versão vigente.
 
-## O que decidir: OB-01 (ZAS — retirada dos trabalhadores de lavra, beneficiamento e disposição de rejeitos/estéril)
-
-- **Ativo afetado:** B2
-- **Ato:** Resolução ANM nº 245, de 31 de julho de 2026
-- **Antes → depois:** prazo e vigência de **2027-08-02** para **2029-12-26**
+- **Obrigação:** OB-01, "Retirar da ZAS os trabalhadores das áreas de lavra, beneficiamento e disposição de rejeitos e estéril" (ativo B2).
+- **Antes e depois:** prazo e vigência passam de 2027-08-02 para 2029-12-26.
 - **Trecho do ato:** "III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º."
-- **Conferência do Python:** obrigação estava entre as candidatas, o trecho existe no ato, e as datas propostas aparecem no trecho — tudo validado.
-- **Quem decide:** curadoria Mitra (norma pública).
-- Até a decisão, **vale a data atual (2027-08-02)**.
+- **Conferência da torre:** a obrigação estava entre as candidatas, o trecho existe no ato e as datas propostas aparecem nele.
+- **Quem decide:** curadoria Mitra. A data proposta só vale se for aprovada.
+- **Resolução ANM nº 246, de 6 de agosto de 2026:** analisada, sem mudança no cadastro. Ela prorroga prazos processuais que não coincidem com as obrigações cadastradas.
 
-## O que não mudou
-
-A Resolução ANM nº 246/2026 foi analisada mas **não gerou mudança no cadastro**: ela prorroga só prazos processuais ligados a sistemas específicos (Protocolo Digital, Dados Cadastrais, Dados Minerários) em uma janela que não coincide com nenhuma obrigação do cadastro, e exclui expressamente SIGBM, RAL e DIPEM — justamente onde estariam as obrigações relacionadas.
-
-**Onde agir:** vá em **Mudanças** para aprovar ou recusar o ajuste de prazo da OB-01.
+O que você precisa acompanhar é a aprovação da mudança da OB-01, que aparece na página "Mudanças" da torre. A torre não tem informação sobre o que a empresa deve fazer enquanto a mudança não for decidida.
 
 </details>
 
@@ -102,27 +97,23 @@ A Resolução ANM nº 246/2026 foi analisada mas **não gerou mudança no cadast
 
 **Pergunta:** O que passa a valer quando a Res. ANM 220/2025 entrar em vigor?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** linha_do_tempo · US$ 0.0135 · 12.4 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** linha_do_tempo, mudancas_pendentes, obrigacoes
 
 <details><summary>Resposta</summary>
 
-**Tudo isso já é dado como confirmado, não proposta** (a única marcada como "proposta" é uma linha específica da B2, abaixo). Em **2027-08-02**, a Res. ANM 220/2025 passa a gerar obrigações para as barragens B1, B2, B3 e B4 — substituindo o que hoje está na Res. ANM 95/2022.
+A torre mostra que a Res. ANM 220/2025 passa a ter obrigações para B1 a B4 em **2027-08-02**: 60 obrigações nessa data, todas com a norma "Res. ANM 220/2025". Uma mudança de data é proposta e só vale se for aprovada.
 
-**B1 — 13 obrigações novas**, entre elas:
-- **OB-02** Preencher a FIR (art. 38 I); **OB-04** Elaborar o RISR/DCE (art. 39 I); **OB-06** Concluir a RPSB com consultoria externa (arts. 43 e 44 I); **OB-14/OB-15** RCO e DCO (art. 57); **OB-20/OB-21** monitoramento automatizado e vídeo-monitoramento 24h (art. 20 §2 e §3); **OB-22** sirenes na ZAS (art. 49).
+**Entram em 2027-08-02 (não são propostas):**
+- **B1**: 16 obrigações, como OB-02 "Preencher a Ficha de Inspeção Regular (FIR)" (art. 38 I) e OB-22 "Manter sirenes com acionamento automatizado, manual e remoto, e outros mecanismos de alerta na ZAS" (art. 49).
+- **B2**: 18 obrigações, como OB-10 "Executar RPSB a cada 10 metros alteados" (art. 44 §2).
+- **B3**: 9 obrigações, como OB-07 "Concluir a RPSB com consultoria externa" (arts. 43 e 44 II).
+- **B4**: 17 obrigações, como OB-09 "Concluir nova RPSB após modificação estrutural" (art. 44 §1).
 
-**B2 — 15 obrigações**, inclui as de B1 mais:
-- **OB-01** Retirar da ZAS os trabalhadores de lavra/beneficiamento/disposição (art. 7 §1); **OB-10** RPSB a cada 10 m alteados (art. 44 §2).
+**Em 2029-12-26 (B2):**
+- N22-ZAS2 "Restringir a permanência na ZAS aos trabalhadores estritamente necessários", NR-22, 22.24.8. Não é da Res. 220.
+- OB-01 "Retirar da ZAS os trabalhadores das áreas de lavra, beneficiamento e disposição de rejeitos e estéril" (Res. ANM 220/2025, art. 7 §1) tem data proposta de 2029-12-26 pela Resolução ANM nº 245, de 31 de julho de 2026. O trecho do ato diz "III - em 26 de dezembro de 2029, quanto ao § 1º do art. 7º.". Quem decide é a curadoria Mitra. Até a aprovação, vale 2027-08-02.
 
-**B3 — 9 obrigações**, com particularidades:
-- **OB-05** RISR/DCE (art. 39 II); **OB-07** RPSB (arts. 43 e 44 II); **OB-12** exercício simulado interno (art. 55); **OB-17** Seminário Orientativo quando a prefeitura/defesa civil pedir (art. 56 §1).
-
-**B4 — 14 obrigações**, inclui as de B1 mais:
-- **OB-09** Nova RPSB após modificação estrutural (art. 44 §1).
-
-Comuns a todos os 4 ativos nessa data: **OB-02, OB-03, OB-18, OB-19, OB-24** (FIR, EIR, reporte de anomalia em 24h, ISE, cópias do PAEBM à defesa civil).
-
-**Além disso — ainda como proposta (não aprovada)**: em **2029-12-26**, para a **B2**, aparece de novo **OB-01** (retirada da ZAS) junto com **N22-ZAS2** da **NR-22, 22.24.8** ("Restringir a permanência na ZAS aos trabalhadores estritamente necessários"). Essa data só vale se a mudança for aprovada — hoje a torre segue com a versão vigente. Decisão fica em **Mudanças**.
+**O que deixa de valer:** a torre não informa a data em que a Res. ANM 95/2022 deixa de valer. A consulta lista 21 obrigações R95 (por exemplo, R95-05 "Executar a RPSB a cada 3 anos") sem data de saída. Não consegui confirmar esse ponto pela torre.
 
 </details>
 
@@ -130,32 +121,25 @@ Comuns a todos os 4 ativos nessa data: **OB-02, OB-03, OB-18, OB-19, OB-24** (FI
 
 **Pergunta:** Que normas valem para as minhas barragens em Minas Gerais? Estou coberto?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** cobertura_normativa · US$ 0.0375 · 12.4 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** cobertura_normativa
 
 <details><summary>Resposta</summary>
 
-A cobertura em MG para barragens é **verificada**, mas ainda tem muita coisa esperando curadoria — não dá para dizer que você está "coberto" em sentido pleno.
+A torre marca a cobertura de Minas Gerais e a federal como verificadas, mas não dá para afirmar que você está coberto: há normas relevantes esperando a curadoria da Mitra e lacunas conhecidas. Os ativos consultados são B1, B2, B3 e B4.
 
-**O que já está no catálogo (gera obrigação hoje):**
-- **Lei MG 23.291/2019** — Política Estadual de Segurança de Barragens
-- **Decreto MG 48.078/2020** — regulamenta o PAE (Plano de Ação de Emergência)
-- **Decreto MG 48.140/2021** — regulamenta a classificação de potencial de dano
+**No catálogo (geram obrigações):**
+- Minas Gerais: Lei MG 23.291/2019; Decreto MG 48.078/2020 (PAE); Decreto MG 48.140/2021.
+- Federal: Lei 12.334/2010 (PNSB); Res. ANM 95/2022; Res. ANM 220/2025; NR-22.
 
-Isso vale para os ativos **B1, B2, B3 e B4**.
+**Fora do catálogo, esperando curadoria (não geram obrigação ainda):** entre outros, Decreto MG 46.993/2016 (auditoria de segurança), Decreto MG 48.747/2023 (caução ambiental), Decreto MG 48.759/2024 (PAE), Decreto federal 11.310/2022 e Lei 14.066/2020.
 
-**Fonte lida:** Assembleia de Minas (leis, leis complementares e decretos de MG), 1989–2026, lida em 2026‑11‑07.
+**Lacunas conhecidas:**
+- MG: "Deliberações Normativas do Copam e resoluções da Semad e da Feam (sem dados abertos)".
+- Federal: "Resoluções do Conama, do Ibama e da ANA (sem conector)".
 
-**Lacuna conhecida:** Deliberações Normativas do Copam e resoluções da Semad e da Feam — essas não têm dados abertos, então não são rastreadas automaticamente. Se algo relevante de segurança de barragens estiver nelas, a torre não vê.
+**Fontes lidas:** Assembleia de Minas (1989–2026, lida em 2026-11-07 00:52 UTC); Senado Federal (1967–2026, mesma data); ANMlegis (2018–2026, mesma data); MTE, NRs vigentes (2026, lida em 2026-11-07 20:46 UTC).
 
-**Esperando curadoria (ainda não geram obrigação):** ~30 decretos e leis estaduais que podem afetar suas barragens, entre os mais relevantes:
-- **Decreto MG 48.747/2023 e alterações** (48.795/2024, 48.848/2024, 48.977/2024) — caução ambiental para barragens, com atualização a cada 5 anos
-- **Decretos 48.133/2021, 48.149/2021, 48.190/2021, 48.454/2022, 48.759/2024** — todos alterando o regime do PAE (prazos, CCPAE, obrigações para barragens nível 2/3)
-- **Decreto 48.460/2022** — altera critérios de classificação de potencial de dano
-- **Decreto 46.993/2016 e 47.158/2017** — Auditoria Técnica Extraordinária de Segurança de Barragem
-- **Lei MG 12.488/1997** — escada para peixes em barragem
-- **Decreto MG 49.298/2026** — regras de transição para a Lei Federal 15.190/2025
-
-Nenhuma dessas 30 gera obrigação enquanto não passar pela curadoria Mitra (fica em **Cobertura normativa** aguardando triagem). Se quiser, posso detalhar as pendências já ativas de B1 a B4 nas normas que já estão no catálogo.
+Não consultei as datas de entrada em vigor de cada norma nesta conversa, então não sei dizer quando a Res. ANM 220/2025 e as demais passam a valer. Para ver quais obrigações valem para cada barragem e quando vencem, a consulta de ficha do ativo traz isso.
 
 </details>
 
@@ -163,28 +147,19 @@ Nenhuma dessas 30 gera obrigação enquanto não passar pela curadoria Mitra (fi
 
 **Pergunta:** Como está o vaso de pressão VP-101?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** ficha_do_ativo · US$ 0.0154 · 10.4 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** ficha_do_ativo, pendencias
 
 <details><summary>Resposta</summary>
 
-**VP-101 (E1 – Reservatório de ar comprimido da usina)** tem uma pendência atrasada e o restante em dia ou dependente de evento.
+O VP-101 (código E1) tem **uma obrigação atrasada**: o exame externo periódico, com vencimento em 2026-10-30. Pela torre, são 1 atrasada, 1 em dia e 6 que dependem de gatilho.
 
-**Cadastro:** vaso de pressão, categoria III, sem SPIE, em operação, responsável Manutenção da Usina.
+- **N13-03, Exame externo periódico do vaso, categoria III sem SPIE:** atrasada, vence em 2026-10-30. Fonte: NR-13, 13.5.4.5. Trecho: "A inspeção de segurança periódica, constituída por exames externo e interno, deve obedecer aos prazos máximos indicados na Tabela 2, com base na categoria do vaso". Área: Manutenção da Usina. Última evidência recebida: período 30/10/2023, em 2026-11-07.
+- **N13-04, Exame interno periódico do vaso, categoria III sem SPIE:** em dia, vence em 2027-10-30. Mesma norma e dispositivo. Última evidência recebida: período 30/10/2021.
+- **Por gatilho (sem calendário):** N13-01, N13-02, N13-07, N13-08, N13-09 e N13-10.
 
-**Status das obrigações:**
-- 🔴 **Atrasada** — **N13-03** (Exame externo periódico do vaso — categoria III sem SPIE), **NR-13, item 13.5.4.5**: venceu em **30/10/2026**, período faltando 30/10/2026. Trecho: *"A inspeção de segurança periódica, constituída por exames externo e interno, deve obedecer aos prazos máximos indicados na Tabela 2, com base na categoria do vaso"*.
-- 🟢 **Em dia** — **N13-04** (Exame interno periódico, mesmo dispositivo 13.5.4.5): vence 30/10/2027.
-- ⚪ **Gatilho** (sem calendário, dependem de evento) — todas sob área documentação/equipamento/emergência:
-  - N13-01: manter registro de segurança (NR-13, 13.5.1.7)
-  - N13-02: manter prontuário atualizado (NR-13, 13.5.1.5)
-  - N13-07: inspeção extraordinária quando ocorrer situação prevista (NR-13, 13.5.4.10)
-  - N13-08: relatório de inspeção em até 60 dias após o evento (NR-13, 13.3.8)
-  - N13-09: comunicar autoridade/sindicato em caso de vazamento, incêndio ou explosão grave (NR-13, 13.3.11)
-  - N13-10: sinalizar categoria e número do vaso em local visível (NR-13, 13.5.1.4)
+Cadastro: classe vaso_pressao, categoria III, sem SPIE, em operação.
 
-**Última evidência registrada:** exame externo de 30/10/2023 (N13-03) e exame interno de 30/10/2021 (N13-04) — ambas vindas do histórico de demonstração, sem novos registros desde então.
-
-A obrigação N13-03 está atrasada; recomendo registrar a inspeção na **Caixa de entrada** ou anexar o comprovante em **Entregas** assim que for feita.
+Para agir, registre a entrega do exame externo em **Entregas** e acompanhe o item em **Caixa de entrada**.
 
 </details>
 
@@ -192,37 +167,46 @@ A obrigação N13-03 está atrasada; recomendo registrar a inspeção na **Caixa
 
 **Pergunta:** Tem condicionante da licença de operação vencida ou vencendo?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** pendencias · US$ 0.0118 · 7.7 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** pendencias, obrigacoes, ficha_do_ativo
 
 <details><summary>Resposta</summary>
 
-Sim — há duas obrigações ligadas à licença de operação, ambas no ativo **L1**:
+Sim. Uma condicionante da licença de operação está atrasada, e o requerimento de renovação vence em 15/11/2026. A validade cadastrada da licença do ativo L1 é 2027-03-15, então a licença em si não aparece como vencida.
 
-- **LO-02** — "Monitorar os efluentes líquidos da estação de tratamento" (LO 000/2023 (fictícia), Condicionante 2) — **atrasada**, venceu em **2026-10-15**, falta o período de **setembro/2026**. Responsável: Gerência de Meio Ambiente.
-- **LO-06** — "Requerer a renovação da licença de operação" (LC 140/2011, art. 14 §4) — **vence_logo**, vence em **2026-11-15**. Responsável: Gerência de Meio Ambiente.
+- **LO-02, atrasada, vence em 2026-10-15**: "Monitorar os efluentes líquidos da estação de tratamento". Norma: LO 000/2023 (fictícia), Condicionante 2. Falta o período de setembro/2026. Responsável: Gerência de Meio Ambiente.
+- **LO-06, vence logo, 2026-11-15**: "Requerer a renovação da licença de operação". Norma: LC 140/2011, art. 14 §4. Responsável: Gerência de Meio Ambiente. A torre não trouxe o trecho deste dispositivo.
+- **Em dia**: LO-01 (2027-01-30), LO-03 (2027-01-30), LO-04 (2027-01-30) e LO-05 (2027-03-15), todas da LO 000/2023 (fictícia).
 
-Hoje na torre é **2026-11-07**. Nenhuma outra pendência da lista (B2, B3, B4, E1) é condicionante de licença — são obrigações de Res. ANM 95/2022 e NR-13.
-
-Para regularizar o monitoramento atrasado e tratar a renovação antes do vencimento, use a **Caixa de entrada** (ação) e registre os comprovantes em **Entregas**.
+Onde agir: registre a entrega de setembro/2026 do LO-02 em "Entregas" e acompanhe os itens na "Caixa de entrada". A data de validade da própria licença só aparece no cadastro do ativo L1.
 
 </details>
 
-## ✅ ativo-inexistente
+## ❌ ativo-inexistente
 
 **Pergunta:** O que está atrasado na barragem B9?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** pendencias, ativos · US$ 0.0226 · 14.5 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** pendencias
+
+**Falhas:** conferência: trechos citados que não estão nos resultados: ErroTorre: Ativo 'B9' não encontrado nessa empresa.; códigos que não estão nos resultados: B1, B2, B3, B4, E1, E2, L1, U1, VP-101, VP-205
 
 <details><summary>Resposta</summary>
 
-Não existe ativo **B9** na torre. Consultando a lista oficial de ativos, temos: **B1** (Barragem Serra I), **B2** (Barragem Serra II), **B3** (Barragem Córrego Fundo), **B4** (Barragem Vale do Cedro), **E1** (VP-101 Reservatório de ar comprimido da usina), **E2** (VP-205 Vaso do sistema hidráulico do britador), **L1** (Licença de Operação nº 000/2023), **U1** (Complexo Minerário Serra Azul).
+A torre não encontrou o ativo B9 nesta empresa, então não consigo dizer o que está atrasado nele.
 
-Das barragens, há pendências atrasadas em:
-- **B3** (Barragem Córrego Fundo): 2 obrigações atrasadas.
+A consulta respondeu: "ErroTorre: Ativo 'B9' não encontrado nessa empresa." Os ativos que a torre lista para esta empresa são:
 
-As demais barragens não têm atrasos: **B1** e **B2** sem atrasadas; **B4** sem atrasadas (mas com 1 dado_faltando e 1 vence_logo).
+- B1 (Barragem Serra I)
+- B2 (Barragem Serra II)
+- B3 (Barragem Córrego Fundo)
+- B4 (Barragem Vale do Cedro)
+- E1 (VP-101 Reservatório de ar comprimido da usina)
+- E2 (VP-205 Vaso do sistema hidráulico do britador)
+- L1 (Licença de Operação nº 000/2023 (fictícia))
+- U1 (Complexo Minerário Serra Azul)
 
-Quer que eu detalhe as 2 pendências atrasadas da **B3**?
+Próximos passos:
+- Se você quis dizer um destes ativos, informe o código e eu consulto as pendências dele.
+- Se a B9 deveria constar, confira o cadastro em "Ativos". A torre só mostra os ativos que esta conta pode ver; se ela não aparece, pode estar fora do seu acesso ou não ter sido cadastrada.
 
 </details>
 
@@ -230,10 +214,20 @@ Quer que eu detalhe as 2 pendências atrasadas da **B3**?
 
 **Pergunta:** Qual é a multa máxima que a ANM pode aplicar por barragem sem PAEBM?
 
-**Modelo:** `bedrock:us.anthropic.claude-sonnet-5` · **ferramentas:** nenhuma · US$ 0.0025 · 2.9 s
+**Modelo:** `claude-haiku-5-5` · **ferramentas:** obrigacoes, cobertura_normativa
 
 <details><summary>Resposta</summary>
 
-Essa é uma dúvida de direito/sanção administrativa fora do que a torre registra — ela mostra obrigações, vencimentos e status por ativo, não valores de multa. Posso te dizer, por exemplo, se alguma das suas barragens está com o PAEBM atrasado ou com dado faltando: quer que eu confira isso?
+A torre não tem o valor da multa máxima que a ANM pode aplicar por barragem sem PAEBM. Nenhuma obrigação do catálogo traz valor de sanção: as buscas por "multa" e "penalidade" não retornaram nada.
+
+O que a torre tem sobre o PAEBM (obrigações, não penalidades):
+- **OB-11**: "Executar os treinamentos internos do PAEBM" (Res. ANM 220/2025)
+- **OB-24**: "Entregar cópias físicas atualizadas do PAEBM à defesa civil dos municípios do mapa de inundação" (Res. ANM 220/2025)
+- **R95-11**: "Realizar treinamentos internos semestrais do PAEBM com a equipe externa de ACO/DCO, aprovando-os" (Res. ANM 95/2022)
+- **R95-20**: "Entregar cópias físicas atualizadas do PAEBM à defesa civil municipal" (Res. ANM 95/2022)
+
+Na cobertura normativa aparecem resoluções da ANM sobre multas, como a Res. ANM 230/2026, cuja ementa diz: "Atualiza os valores dos emolumentos, da Taxa Anual por Hectare (TAH), das multas previstas na legislação minerária, das vistorias de fiscalização e dos demais serviços prestados pela Agência Nacional de Mineração (ANM)." O texto que veio não informa o valor por barragem.
+
+Para o valor, consulte o texto oficial da norma de penalidades e da resolução de multas vigente. Se quiser, posso verificar as obrigações de PAEBM de uma barragem específica (ex.: "B1").
 
 </details>
