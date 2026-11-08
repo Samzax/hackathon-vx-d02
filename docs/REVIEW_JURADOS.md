@@ -106,4 +106,10 @@ Atualizado a cada commit, pela ordem da lista.
 | S6 | Feito (`914613b`): subtítulos curtos em Licenças, Radar, Usuários e Normas candidatas; "Outorga", "Autorização", "Alvará" |
 | S7 | Feito: a conta de quem compra no slide 7, marcada como hipótese |
 | P1 | Feito em parte (`914613b`): "Cadastro incompleto" e "Revisões pendentes". "Atrasada" fica no singular porque é também o status de cada obrigação |
-| P2–P8 | A fazer |
+| P2 | Não feito: "Por gatilho" é o nome do status em toda a torre e nos docs; trocar só o cartão criaria dois nomes para a mesma coisa |
+| P3 | Feito (`be9f652`): `.gitattributes` com `eol=lf` para `api-tipos.ts`; `tipos:conferir` passa no Windows |
+| P4 | Feito (`be9f652`): botão "Escolher arquivo" e o nome do arquivo, sem o texto nativo cortado |
+| P5 | Feito (`be9f652`): citação "> …" do Assistente vira citação, no item da lista ou solta |
+| P6 | Não feito: responsável com ART vira obrigação (`mitra/responsaveis.py`) e licença nova cria condicionantes, então semear os dois muda os números da Caixa que o pitch cita e o teste confere. Fica para depois do evento |
+| P7 | Feito (`be9f652`): "Visão da plataforma: só leitura" |
+| P8 | Decisão do time (README em inglês) |
