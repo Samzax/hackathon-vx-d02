@@ -1,4 +1,4 @@
-# Mitra — regulatory control tower
+# Mitra: Regulatory Control Tower
 
 Mitra is a regulatory-control platform for operational assets. It brings obligations, deadlines, supporting evidence, regulatory changes, and audit history into one workspace so each responsible person can act on what needs attention. Mining is the first vertical; the underlying asset model also supports healthcare, construction, telecommunications and other regulated operations.
 
