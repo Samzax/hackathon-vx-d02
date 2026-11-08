@@ -310,7 +310,7 @@ function Cabecalho() {
       {t.soLeitura && (
         <p className="mb-3" data-testid="so-leitura">
           <Etiqueta title="A equipe Mitra acompanha a empresa, mas quem registra entrega, comenta e corrige o cadastro é a própria empresa.">
-            visão da plataforma: só leitura
+            Visão da plataforma: só leitura
           </Etiqueta>
         </p>
       )}

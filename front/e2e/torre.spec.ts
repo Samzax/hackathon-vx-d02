@@ -151,7 +151,7 @@ test("a curadoria da plataforma só lê os dados da empresa", async ({ page }) =
   await entrarNaDemo(page);
   await expect(page.getByTestId("so-leitura")).toHaveCount(0);
   await verComo(page, "Curadoria Mitra (plataforma)");
-  await expect(page.getByTestId("so-leitura")).toHaveText("visão da plataforma: só leitura");
+  await expect(page.getByTestId("so-leitura")).toHaveText("Visão da plataforma: só leitura");
 
   // vê as mesmas 4 atrasadas, sem o botão de registrar
   const atrasadas = page.getByTestId("grupo-atrasada");

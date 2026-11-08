@@ -1,7 +1,7 @@
 // O boletim e o plano de transição vêm da API em Markdown simples (títulos, listas, negrito).
 // Este leitor cobre só isso, sem HTML cru: o texto é sempre texto.
 
-export type Trecho = { tipo: "texto" | "negrito" | "italico" | "codigo"; texto: string };
+export type Trecho = { tipo: "texto" | "negrito" | "italico" | "codigo" | "citacao"; texto: string };
 export type Bloco =
   | { tipo: "titulo"; nivel: number; trechos: Trecho[] }
   | { tipo: "lista"; itens: { nivel: number; trechos: Trecho[] }[] }
@@ -33,6 +33,7 @@ export function lerMarkdown(md: string): Bloco[] {
     const linha = bruta.trimEnd();
     const titulo = /^(#{1,6})\s+(.*)$/.exec(linha);
     const item = /^(\s*)[-*]\s+(.*)$/.exec(linha);
+    const citacao = /^\s*>\s?(.*)$/.exec(linha);
     if (!linha.trim()) {
       fechar();
     } else if (titulo) {
@@ -48,7 +49,11 @@ export function lerMarkdown(md: string): Bloco[] {
     } else if (/^\s{2,}\S/.test(linha) && blocos.at(-1)?.tipo === "lista" && !paragrafo.length) {
       // continuação de um item ("  - antes: ..." já é item; texto solto recuado junta no anterior)
       const lista = blocos.at(-1) as Extract<Bloco, { tipo: "lista" }>;
-      lista.itens.at(-1)!.trechos.push({ tipo: "texto", texto: " " }, ...trechos(linha.trim()));
+      lista.itens.at(-1)!.trechos.push(...(citacao ? [{ tipo: "citacao" as const, texto: citacao[1]! }]
+        : [{ tipo: "texto" as const, texto: " " }, ...trechos(linha.trim())]));
+    } else if (citacao) {
+      fechar();
+      blocos.push({ tipo: "paragrafo", trechos: [{ tipo: "citacao", texto: citacao[1]! }] });
     } else {
       paragrafo.push(linha.trim());
     }

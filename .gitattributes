@@ -2,5 +2,6 @@
 *.zip binary
 *.db binary
 Dockerfile text eol=lf
+front/src/lib/api-tipos.ts text eol=lf
 .dockerignore text eol=lf
 *.png binary

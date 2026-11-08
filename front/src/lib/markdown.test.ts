@@ -26,6 +26,13 @@ describe("markdown do boletim", () => {
     expect(lista.itens.map((i) => i.nivel)).toEqual([0, 1, 0]);
   });
 
+  it("citação vira citação, no item da lista ou solta, sem o sinal de maior", () => {
+    const b = lerMarkdown('- **R95-01** venceu em 15/10/2026\n  > "I - preencher as FIR"\n\n> trecho solto');
+    const lista = b[0] as Extract<(typeof b)[number], { tipo: "lista" }>;
+    expect(lista.itens[0]!.trechos.at(-1)).toEqual({ tipo: "citacao", texto: '"I - preencher as FIR"' });
+    expect(b[1]).toEqual({ tipo: "paragrafo", trechos: [{ tipo: "citacao", texto: "trecho solto" }] });
+  });
+
   it("não interpreta HTML: o texto continua texto", () => {
     const b = lerMarkdown("<script>alert(1)</script>");
     expect(b).toEqual([{ tipo: "paragrafo", trechos: [{ tipo: "texto", texto: "<script>alert(1)</script>" }] }]);

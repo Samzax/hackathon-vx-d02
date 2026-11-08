@@ -8,6 +8,7 @@ function Linha({ trechos }: { trechos: Trecho[] }) {
         t.tipo === "negrito" ? <strong key={i}>{t.texto}</strong>
           : t.tipo === "italico" ? <em key={i}>{t.texto}</em>
             : t.tipo === "codigo" ? <code key={i} className="rounded bg-fundo-3 px-1 text-[0.9em]">{t.texto}</code>
+              : t.tipo === "citacao" ? <span key={i} className="mt-1 block border-l-2 border-borda-forte pl-2 text-texto-2">{t.texto}</span>
               : <span key={i}>{t.texto}</span>,
       )}
     </>

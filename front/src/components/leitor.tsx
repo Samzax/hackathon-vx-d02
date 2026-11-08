@@ -66,9 +66,15 @@ export function LeitorDeDocumento() {
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         <Campo rotulo="Documento em PDF" htmlFor={idArquivo}>
-          <input id={idArquivo} type="file" accept="application/pdf,.pdf"
-            onChange={(e) => { setArquivo(e.target.files?.[0] ?? null); setLeitura(null); }}
-            className="text-sm file:mr-3 file:rounded-md file:border file:border-borda-forte file:bg-fundo file:px-3 file:py-1.5 file:text-sm file:text-texto" />
+          <div className="flex h-9 min-w-0 items-center gap-2">
+            <input id={idArquivo} type="file" accept="application/pdf,.pdf" className="peer sr-only"
+              onChange={(e) => { setArquivo(e.target.files?.[0] ?? null); setLeitura(null); }} />
+            <label htmlFor={idArquivo}
+              className="inline-flex h-9 shrink-0 cursor-pointer items-center rounded-md border border-borda-forte bg-fundo px-3 text-sm text-texto hover:bg-fundo-2 peer-focus-visible:ring-2 peer-focus-visible:ring-marca">
+              Escolher arquivo
+            </label>
+            <span className="truncate text-sm text-texto-2" title={arquivo?.name}>{arquivo ? arquivo.name : "Nenhum arquivo"}</span>
+          </div>
         </Campo>
         <Campo rotulo="…ou um documento de exemplo" htmlFor={idExemplo}>
           <Selecao id={idExemplo} value={exemplo} disabled={!!arquivo} onChange={(e) => { setExemplo(e.target.value); setLeitura(null); }}>
