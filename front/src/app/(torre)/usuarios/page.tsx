@@ -136,7 +136,7 @@ export default function Usuarios() {
   const c = contas.data!;
   return (
     <>
-      <Titulo sobre="Administração" titulo="Usuários e acessos">
+      <Titulo titulo="Usuários e acessos">
         O papel define o que cada pessoa vê, e a Diretoria decide a área de cada ativo. A TI administra contas e não vê
         dado regulatório.
       </Titulo>

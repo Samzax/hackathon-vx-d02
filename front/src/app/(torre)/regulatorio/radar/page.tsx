@@ -160,7 +160,7 @@ export default function Radar() {
   const r = radar.data;
   return (
     <>
-      <Titulo sobre="Regulatório" titulo="Radar do DOU">
+      <Titulo titulo="Radar do DOU">
         Todo dia o radar lê o Diário Oficial: regra primeiro, análise só no que sobra, e uma pessoa aprova.
       </Titulo>
       {radar.isLoading && <Carregando linhas={4} />}

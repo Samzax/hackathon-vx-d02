@@ -397,7 +397,7 @@ export default function Licencas() {
 
   return (
     <>
-      <Titulo sobre="Regulatório" titulo="Licenças">
+      <Titulo titulo="Licenças">
         Cada condicionante sai do PDF com o trecho literal e só vira obrigação quando alguém da empresa aprova.
       </Titulo>
 

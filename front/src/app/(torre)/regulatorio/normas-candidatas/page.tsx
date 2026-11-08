@@ -176,7 +176,7 @@ function Fila() {
 export default function NormasCandidatas() {
   return (
     <>
-      <Titulo sobre="Curadoria Mitra" titulo="Normas candidatas">
+      <Titulo titulo="Normas candidatas">
         Normas já publicadas que a busca nas fontes oficiais achou para os ativos da carteira. A aprovada segue para a extração
         das obrigações e vale para todas as clientes.
       </Titulo>
