@@ -12,7 +12,6 @@ import { useTorre } from "@/lib/torre";
 
 type Analise = Esquemas["AnaliseAto"];
 
-const TAREFA: Record<string, string> = { impacto: "análise de impacto de atos", extrator: "extração de obrigações de normas" };
 const GUARDA = "mitra_analise_teste";
 
 function Funil({ f }: { f: Esquemas["Funil"] }) {
@@ -28,8 +27,7 @@ function Funil({ f }: { f: Esquemas["Funil"] }) {
         {passos.map((p) => <Numero key={p.rotulo} valor={p.valor} rotulo={p.rotulo} dica={p.dica} />)}
       </div>
       <p className="mt-2 text-xs text-texto-2">
-        Filtro por órgão e tipo de ato é regra, sem custo. Só os normativos seguem para análise, e só com as obrigações que a
-        triagem considerou candidatas. Fonte: {f.fonte}.
+        Fonte: Documento mensal do DOU, Seção 1 (dados abertos da Imprensa Nacional), agosto de 2026.
       </p>
     </>
   );
@@ -160,30 +158,12 @@ export default function Radar() {
   const r = radar.data;
   return (
     <>
-      <Titulo titulo="Radar do DOU">
-        Todo dia o radar lê o Diário Oficial: regra primeiro, análise só no que sobra, e uma pessoa aprova.
-      </Titulo>
+      <Titulo titulo="Radar do DOU" />
       {radar.isLoading && <Carregando linhas={4} />}
       {radar.error && <ErroCarga erro={radar.error} onTentar={() => radar.refetch()} />}
       {r && (
         <>
           {r.funil ? <Funil f={r.funil} /> : <Aviso tipo="info">O funil do mês ainda não foi medido.</Aviso>}
-
-          <Secao titulo="Custo real das análises" className="mt-8"
-            descricao="Cada resposta fica em cache e não é paga de novo: a mesma pergunta nunca custa duas vezes.">
-            {r.custo_ia.length ? (
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {r.custo_ia.map((g) => (
-                  <li key={g.tarefa}><Numero valor={usd(g.usd, 3)} rotulo={TAREFA[g.tarefa] ?? g.tarefa} dica={plural(g.n, "chamada", "chamadas")} /></li>
-                ))}
-              </ul>
-            ) : <p className="text-sm text-texto-2">Nenhuma análise registrada ainda.</p>}
-            {r.ia.ligada && (
-              <p className="mt-2 text-xs text-texto-3">
-                Análise automática ativa · gasto hoje {usd(r.ia.gasto_hoje_usd, 4)}{r.ia.teto_dia_usd ? ` de ${usd(r.ia.teto_dia_usd, 2)} por dia` : ""}.
-              </p>
-            )}
-          </Secao>
 
           <Secao titulo="Atos analisados" className="mt-8">
             <ul className="space-y-3">
