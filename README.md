@@ -1,5 +1,9 @@
 # Mitra: Regulatory Control Tower
 
+[![CI](https://github.com/Samzax/hackathon-vx-d02/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Samzax/hackathon-vx-d02/actions/workflows/ci.yml) [![Deploy](https://github.com/Samzax/hackathon-vx-d02/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/Samzax/hackathon-vx-d02/actions/workflows/deploy.yml)
+
+**Live demo:** <https://d2aseby2fenqd6.cloudfront.net> (AWS: CloudFront, Fargate, RDS, Bedrock; redeployed on every push to `main`)
+
 Mitra is a regulatory-control platform for operational assets. It brings obligations, deadlines, supporting evidence, regulatory changes, and audit history into one workspace so each responsible person can act on what needs attention. Mining is the first vertical; the underlying asset model also supports healthcare, construction and other regulated operations.
 
 ![Mitra inbox: overdue items, missing data, upcoming deadlines, and the action that resolves each item](docs/img/torre_hoje.png)
