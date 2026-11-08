@@ -92,6 +92,7 @@ test("registrar uma entrega tira a obrigação das atrasadas", async ({ page }) 
   const dialogo = page.getByRole("dialog");
   await expect(dialogo).toContainText("B3 · Preencher as FIR quinzenalmente");
   await expect(dialogo.getByTestId("periodo-comprovado")).toHaveText("1ª quinzena de outubro/2026");
+  await expect(dialogo.getByText("Arraste e solte um arquivo aqui")).toBeVisible();
   await dialogo.getByLabel("Observação").fill("FIR anexada pela consultoria");
   await dialogo.getByRole("button", { name: "Registrar entrega" }).click();
 
@@ -104,6 +105,34 @@ test("registrar uma entrega tira a obrigação das atrasadas", async ({ page }) 
   await page.goto("/ativos/?id=3");
   await page.getByRole("tab", { name: "Histórico" }).click();
   await expect(page.getByTestId("ficha")).toContainText("FIR anexada pela consultoria");
+});
+
+test("modal da obrigação alinha entrega e responsável", async ({ page }) => {
+  await entrarNaDemo(page);
+  await page.goto("/entregas/?status=atrasada");
+  await page.getByTestId("tabela-entregas").locator("tbody tr").first().click();
+
+  const acoes = page.getByRole("dialog").getByTestId("acoes-obrigacao");
+  await expect(acoes.locator("p").filter({ hasText: /^Registrar entrega$/ })).toBeVisible();
+  await expect(acoes.locator("p").filter({ hasText: /^Responsável$/ })).toBeVisible();
+  const medidas = await acoes.evaluate((elemento) => {
+    const titulo = (texto: string) => [...elemento.querySelectorAll("p")].find((p) => p.textContent === texto)?.getBoundingClientRect();
+    const acoes = elemento.getBoundingClientRect();
+    const campos = elemento.querySelector('[data-testid="campos-entrega"]')?.getBoundingClientRect();
+    return {
+      topoEntrega: titulo("Registrar entrega")?.top,
+      topoResponsavel: titulo("Responsável")?.top,
+      larguraAcoes: acoes.width,
+      larguraCampos: campos?.width,
+    };
+  });
+
+  expect(Math.abs(medidas.topoEntrega! - medidas.topoResponsavel!)).toBeLessThanOrEqual(1);
+  expect(medidas.larguraCampos).toBeCloseTo(medidas.larguraAcoes, 0);
+
+  await acoes.getByLabel("Observação").fill("FIR registrada no modal");
+  await acoes.getByRole("button", { name: "Registrar entrega" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Entrega registrada" })).toBeVisible();
 });
 
 test("gestor vê só os ativos da área dele", async ({ page }) => {

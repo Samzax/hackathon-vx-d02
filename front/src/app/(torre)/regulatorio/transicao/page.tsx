@@ -154,12 +154,11 @@ export default function Transicao() {
   const faltam = Math.max(0, diasEntre(t.hoje, RES_220));
   return (
     <>
-      <Titulo sobre="Regulatório" titulo="Transição e linha do tempo" />
+      <Titulo titulo="Transição e linha do tempo" />
       <div className="grid gap-4 sm:grid-cols-[220px_1fr] sm:items-center">
         <Numero valor={faltam} rotulo="Dias até a Res. ANM 220/2025" />
         <p className="text-sm text-texto-2">
-          Em <strong className="text-texto">{dataBR(RES_220)}</strong> a Res. ANM 95/2022 deixa de valer e a Res. ANM 220/2025 entra. Para cada
-          barragem: o que sai, o que entra e o que já precisa ser preparado.
+          Em <strong className="text-texto">{dataBR(RES_220)}</strong>, a Res. ANM 95/2022 é substituída pela Res. ANM 220/2025.
         </p>
       </div>
       <Secao titulo="O que muda em cada ativo" className="mt-8"><Trocas /></Secao>

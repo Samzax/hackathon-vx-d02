@@ -53,7 +53,7 @@ export default function ComoFunciona() {
 
   return (
     <>
-      <Titulo sobre="Sobre" titulo="Como funciona">Dois caminhos para a mesma torre, com os números desta demo.</Titulo>
+      <Titulo titulo="Como funciona">Dois caminhos para a mesma torre, com os números desta demo.</Titulo>
       <Cartao className="p-4 sm:p-6">
         <div className="grid gap-6 md:grid-cols-3" role="list" aria-label="Fluxo da torre">
           <div role="listitem">

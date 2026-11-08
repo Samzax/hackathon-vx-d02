@@ -30,7 +30,7 @@ export const ROTULO_FERRAMENTA: Record<string, string> = {
   linha_do_tempo: "linha do tempo",
   boletim: "boletim",
   cobertura_normativa: "cobertura normativa",
-  radar_do_dou: "radar do DOU",
+  radar_do_dou: "radar",
 };
 
 export const MAX_HISTORICO = 8;

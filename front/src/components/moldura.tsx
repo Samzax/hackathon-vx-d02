@@ -55,7 +55,7 @@ function useGrupos(): Grupo[] {
     ], dica: "Obrigações, ativos e entregas do dia a dia" },
     { titulo: "Regulatório", itens: [
       { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca" },
-      { href: "/regulatorio/radar/", rotulo: "Radar do DOU", icone: <IconeRadar className="size-4" /> },
+      { href: "/regulatorio/radar/", rotulo: "Radar", icone: <IconeRadar className="size-4" /> },
       { href: "/regulatorio/transicao/", rotulo: "Transição e linha do tempo", icone: <CalendarRange className="size-4" /> },
       { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" /> },
       ...(t.plataforma ? [{ href: "/regulatorio/normas-candidatas/", rotulo: "Normas candidatas", icone: <FileSearch className="size-4" />,

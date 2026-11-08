@@ -124,7 +124,7 @@ export const TITULOS_DICAS: Record<string, string> = {
   "Licenças": "Licenças de operação e condicionantes de segurança",
   "Responsáveis e unidades": "Cadastro dos responsáveis técnicos e unidades operacionais",
   "Mudanças": "Mudanças normativas que afetam suas obrigações",
-  "Radar do DOU": "Monitoramento das publicações no Diário Oficial da União",
+  "Radar": "Monitoramento das publicações no Diário Oficial da União",
   "Transição e linha do tempo": "Cronologia e prazos de transição entre normas",
   "Cobertura normativa": "Normas que se aplicam à sua empresa e ativos",
   "Normas candidatas": "Normas em análise para inclusão no monitoramento",
@@ -132,12 +132,11 @@ export const TITULOS_DICAS: Record<string, string> = {
   "Como funciona": "Explicação sobre o funcionamento da torre de controle regulatória",
 };
 
-export function Titulo({ sobre, titulo, acoes, children, dica }: { sobre?: string; titulo: string; acoes?: React.ReactNode; children?: React.ReactNode; dica?: string }) {
+export function Titulo({ titulo, acoes, children, dica }: { titulo: string; acoes?: React.ReactNode; children?: React.ReactNode; dica?: string }) {
   const Descricao = dica ?? TITULOS_DICAS[titulo];
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
-        {sobre && <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-texto-3">{sobre}</p>}
         <h1 className="text-2xl font-semibold tracking-tight">
           {titulo}
           {Descricao && (

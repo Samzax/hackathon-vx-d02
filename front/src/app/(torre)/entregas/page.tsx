@@ -92,7 +92,7 @@ function EscolhaArea({ valor, onMudar, rotulo }: { valor: string; onMudar: (v: s
   const areas = useAreas();
   const lista = areas.data?.areas ?? [];
   return (
-    <Campo rotulo={rotulo} dica="Uma área da empresa, uma pessoa ou uma consultoria.">
+    <Campo rotulo={rotulo}>
       <Entrada list="areas-da-empresa" value={valor} onChange={(e) => onMudar(e.target.value)} placeholder="nome, área ou consultoria" aria-label={rotulo} />
       <datalist id="areas-da-empresa">{lista.map((a) => <option key={a} value={a} />)}</datalist>
     </Campo>
@@ -142,7 +142,6 @@ function DetalheDaEntrega({ l, aberto, onFechar, onFeito }: { l: Linha | null; a
   const acoes = useAcoes();
   const [aba, setAba] = useState<AbaDetalhe>("detalhes");
   const [para, setPara] = useState("");
-  const [texto, setTexto] = useState("");
   const [desfazer, setDesfazer] = useState("");
   const hist = useQuery({
     queryKey: [...t.chave, "historico", l?.ativo_id, l?.codigo],
@@ -169,18 +168,15 @@ function DetalheDaEntrega({ l, aberto, onFechar, onFeito }: { l: Linha | null; a
           {l.nota && <p className="mt-1 text-sm">{maiuscula(l.nota)}.</p>}
           {l.trecho && <blockquote className="mt-2 border-l-2 border-borda-forte pl-3 text-[13px] italic text-texto-2">“{curto(l.trecho, 400)}”</blockquote>}
 
-          {!t.soLeitura && <div className="mt-4 grid gap-5 md:grid-cols-3">
-            <div>
-              <p className="mb-2 text-[13px] font-semibold">Registrar entrega</p>
-              {l.dados_faltando.some((c) => c !== "ultima_execucao") ? (
+          {!t.soLeitura && <div className="mt-4 grid items-start gap-x-5 gap-y-4 md:grid-cols-2" data-testid="acoes-obrigacao">
+            {l.dados_faltando.some((c) => c !== "ultima_execucao") ? (
+              <section className="order-1 space-y-3 md:order-none md:col-start-1 md:row-start-1">
+                <p className="text-[13px] font-semibold">Registrar entrega</p>
                 <p className="text-sm text-texto-2">Falta no cadastro: {l.dados_faltando_rotulos.join("; ")}. Complete na ficha do ativo antes.</p>
-              ) : <FormEntrega key={chave(l)} alvo={l} onFeito={onFeito} />}
-            </div>
-            <form className="space-y-2" onSubmit={async (e) => { e.preventDefault(); await acoes.atribuir([l], para.trim(), `${l.ativo} · ${l.codigo} agora com ${para.trim()}`); setPara(""); }}>
+              </section>
+            ) : <FormEntrega key={chave(l)} alvo={l} onFeito={onFeito} emModal />}
+            <form className="order-2 space-y-2 md:order-none md:col-start-2 md:row-start-1" onSubmit={async (e) => { e.preventDefault(); await acoes.atribuir([l], para.trim(), `${l.ativo} · ${l.codigo} agora com ${para.trim()}`); setPara(""); }}>
               <p className="text-[13px] font-semibold">Responsável</p>
-              <p className="text-xs text-texto-2">
-                Hoje: {l.responsavel ?? "ninguém"}{l.responsavel_proprio ? " (só desta obrigação)" : l.responsavel ? " (o do ativo)" : ""}
-              </p>
               <EscolhaArea rotulo="Passar para" valor={para} onMudar={setPara} />
               <div className="flex flex-wrap gap-2">
                 <Botao type="submit" icone={<UserRound className="size-4" />} disabled={!para.trim()} carregando={acoes.pendente}>Atribuir</Botao>
@@ -188,11 +184,6 @@ function DetalheDaEntrega({ l, aberto, onFechar, onFeito }: { l: Linha | null; a
                   <Botao onClick={() => acoes.atribuir([l], "", `${l.ativo} · ${l.codigo} voltou ao responsável do ativo`)}>Voltar ao do ativo</Botao>
                 )}
               </div>
-            </form>
-            <form className="space-y-2" onSubmit={async (e) => { e.preventDefault(); await acoes.comentar([l], texto.trim()); setTexto(""); }}>
-              <p className="text-[13px] font-semibold">Comentário</p>
-              <AreaTexto value={texto} onChange={(e) => setTexto(e.target.value)} rows={3} placeholder="ex.: laudo com a consultoria, chega dia 20" aria-label="Comentário" />
-              <Botao type="submit" icone={<MessageSquare className="size-4" />} disabled={!texto.trim()} carregando={acoes.pendente}>Comentar</Botao>
             </form>
           </div>}
         </div>}

@@ -312,7 +312,7 @@ export default function ResponsaveisEUnidades() {
   const t = useTorre();
   return (
     <>
-      <Titulo sobre="Empresa" titulo="Responsáveis e unidades">
+      <Titulo titulo="Responsáveis e unidades">
         Quem responde tecnicamente pela operação, as unidades com os ativos de cada uma e as regras que a empresa
         dá a si mesma. O CPF aparece sempre mascarado; ver o número inteiro fica registrado na auditoria.
         {t.soLeitura ? " A equipe Mitra acompanha esta tela só para leitura." : ""}

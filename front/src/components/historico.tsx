@@ -76,8 +76,8 @@ export function HistoricoDaObrigacao({ ativoId, codigo }: { ativoId: number; cod
         <Evidencias evidencias={h.data!.evidencias} />
       </div>
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-texto-3">Comentários e atribuições</p>
-        <Eventos eventos={h.data!.eventos} vazio="Nenhum comentário ou atribuição." />
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-texto-3">Atribuições</p>
+        <Eventos eventos={h.data!.eventos} vazio="Nenhuma atribuição registrada." />
       </div>
     </div>
   );

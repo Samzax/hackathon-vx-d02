@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Check } from "lucide-react";
+import { Check, Upload } from "lucide-react";
 import { useId, useState } from "react";
 import { api, dados } from "@/lib/api";
 import { type Linha, useEntregar } from "@/lib/consultas";
@@ -9,19 +9,21 @@ import { GATILHO } from "@/lib/status";
 import { useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
 import { Dialogo } from "./dialogo";
-import { AreaTexto, Aviso, Botao, Campo, CampoEntrada, Selo, mensagem } from "./ui";
+import { AreaTexto, Aviso, Botao, Campo, CampoEntrada, Selo, cx, mensagem } from "./ui";
 import { LinkOficial } from "./link-oficial";
 
 export type AlvoEntrega = Pick<Linha, "ativo_id" | "ativo" | "codigo" | "titulo" | "status"> &
   Partial<Pick<Linha, "dispositivo" | "norma_link" | "evidencia" | "pendente" | "agenda">>;
 
 /** Registrar a entrega: dia, o período que ela comprova (a API diz qual), comprovante opcional e observação. */
-export function FormEntrega({ alvo, onFeito, idForm }: { alvo: AlvoEntrega; onFeito?: () => void; idForm?: string }) {
+export function FormEntrega({ alvo, onFeito, idForm, emModal = false }:
+  { alvo: AlvoEntrega; onFeito?: () => void; idForm?: string; emModal?: boolean }) {
   const t = useTorre();
   const avisar = useAvisar();
   const [dia, setDia] = useState(t.hoje);
   const [obs, setObs] = useState("");
   const [arquivo, setArquivo] = useState<File | null>(null);
+  const [arrastandoArquivo, setArrastandoArquivo] = useState(false);
   const idArquivo = useId();
   const idObs = useId();
   const entregar = useEntregar();
@@ -43,8 +45,7 @@ export function FormEntrega({ alvo, onFeito, idForm }: { alvo: AlvoEntrega; onFe
     });
   };
 
-  return (
-    <form id={idForm} onSubmit={enviar} className="space-y-3">
+  const camposIniciais = <>
       {alvo.agenda === "evento" && alvo.status === GATILHO && (
         <p className="text-[13px] text-texto-2">Obrigação por gatilho: registre quando o evento acontecer.</p>
       )}
@@ -56,9 +57,37 @@ export function FormEntrega({ alvo, onFeito, idForm }: { alvo: AlvoEntrega; onFe
         </strong>
       </p>
       {periodo.error && <Aviso tipo="atencao">{mensagem(periodo.error)}.</Aviso>}
-      <Campo rotulo="Comprovante (opcional)" htmlFor={idArquivo} dica="Fica guardado com o registro (pasta da torre ou S3). Até 20 MB.">
-        <input id={idArquivo} type="file" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
-          className="text-sm file:mr-3 file:rounded-md file:border file:border-borda-forte file:bg-fundo file:px-3 file:py-1.5 file:text-sm file:text-texto" />
+  </>;
+
+  const camposFinais = <>
+      <Campo rotulo="Comprovante (opcional)" htmlFor={idArquivo}>
+        <label
+          htmlFor={idArquivo}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setArrastandoArquivo(true);
+          }}
+          onDragLeave={() => setArrastandoArquivo(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setArrastandoArquivo(false);
+            setArquivo(e.dataTransfer.files?.[0] ?? null);
+          }}
+          className={cx(
+            "flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed px-4 py-5 text-center transition-colors",
+            arrastandoArquivo ? "border-marca bg-marca-suave" : "border-borda-forte bg-fundo-2 hover:border-marca hover:bg-marca-suave",
+          )}
+        >
+          <Upload className="size-4 text-texto-2" aria-hidden="true" />
+          <span className="text-sm font-medium text-texto">{arquivo?.name ?? "Arraste e solte um arquivo aqui"}</span>
+          <span className="text-[13px] text-texto-2">{arquivo ? "Selecione outro arquivo" : "ou selecione do computador"}</span>
+        </label>
+        <input
+          id={idArquivo}
+          type="file"
+          onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
+          className="sr-only"
+        />
       </Campo>
       <Campo rotulo="Observação" htmlFor={idObs}>
         <AreaTexto id={idObs} value={obs} onChange={(e) => setObs(e.target.value)} rows={2} placeholder="ex.: laudo entregue pela consultoria" />
@@ -69,6 +98,26 @@ export function FormEntrega({ alvo, onFeito, idForm }: { alvo: AlvoEntrega; onFe
           Registrar entrega
         </Botao>
       )}
+  </>;
+
+  if (emModal) {
+    return (
+      <form id={idForm} onSubmit={enviar} className="contents">
+        <section className="order-1 space-y-3 md:order-none md:col-start-1 md:row-start-1">
+          <p className="text-[13px] font-semibold">Registrar entrega</p>
+          {camposIniciais}
+        </section>
+        <section className="order-3 space-y-3 md:order-none md:col-span-2 md:row-start-2" data-testid="campos-entrega">
+          {camposFinais}
+        </section>
+      </form>
+    );
+  }
+
+  return (
+    <form id={idForm} onSubmit={enviar} className="space-y-3">
+      {camposIniciais}
+      {camposFinais}
     </form>
   );
 }

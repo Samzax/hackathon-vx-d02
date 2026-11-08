@@ -128,7 +128,7 @@ export default function Cobertura() {
   const cobertura = useCobertura();
   return (
     <>
-      <Titulo sobre="Regulatório" titulo="Cobertura normativa">
+      <Titulo titulo="Cobertura normativa">
         Que normas valem para estes ativos, por jurisdição e tipo de ativo: o que já está no catálogo, até onde
         cada fonte oficial foi lida, o que a plataforma sabe que não cobre e as normas já publicadas que ainda esperam a curadoria
         Mitra. Jurisdição sem fonte automática aparece como cobertura não verificada, nunca como coberta.

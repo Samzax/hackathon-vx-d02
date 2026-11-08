@@ -291,7 +291,7 @@ export default function NovaEmpresa() {
 
   return (
     <>
-      <Titulo sobre="Curadoria Mitra" titulo="Nova empresa">
+      <Titulo titulo="Nova empresa">
         Do contrato à torre no ar: a curadoria cria a empresa, traz as barragens do SIGBM e abre a primeira conta.
         O resto — ativos, licenças, responsáveis — é da própria empresa: nos dados operacionais a plataforma só lê.
       </Titulo>

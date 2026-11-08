@@ -51,7 +51,7 @@ export default function Mercado() {
 
   return (
     <>
-      <Titulo sobre="Sobre" titulo="Mercado">Quem precisa disso, pelos dados públicos do SIGBM.</Titulo>
+      <Titulo titulo="Mercado">Quem precisa disso, pelos dados públicos do SIGBM.</Titulo>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="mercado">
         <Numero valor={numero(d.barragens_mineracao)} rotulo="Barragens de mineração" />
         <Numero valor={numero(d.empresas)} rotulo="Empresas responsáveis" />

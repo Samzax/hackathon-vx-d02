@@ -673,7 +673,7 @@ export default function Instanciacao() {
 
   return (
     <>
-      <Titulo sobre="Empresa" titulo="Instanciação">
+      <Titulo titulo="Instanciação">
         Como a empresa entrou na torre: as oito etapas, o que falta em cada uma e o que ainda depende de alguém.
       </Titulo>
 

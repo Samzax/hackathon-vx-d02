@@ -239,7 +239,7 @@ export default function Mudancas() {
   const mudancas = useMudancas();
   return (
     <>
-      <Titulo sobre="Regulatório" titulo="Mudanças">
+      <Titulo titulo="Mudanças">
         Mudanças propostas a partir de fontes oficiais
       </Titulo>
       {mudancas.isLoading && <Carregando linhas={4} />}
@@ -250,7 +250,7 @@ export default function Mudancas() {
       <div className="space-y-4">{mudancas.data?.map((m) => <CartaoMudanca key={m.versao_id} m={m} />)}</div>
 
       <Secao titulo="Decisões registradas" className="mt-10"><Decisoes /></Secao>
-      <Secao titulo="Histórico de uma obrigação" descricao="Por que este prazo é este? Cada versão com a origem, o trecho que a sustenta e quem decidiu." className="mt-10">
+      <Secao titulo="Histórico de Obrigação" className="mt-10">
         <HistoricoDeObrigacao />
       </Secao>
     </>
