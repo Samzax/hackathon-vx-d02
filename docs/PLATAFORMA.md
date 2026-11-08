@@ -89,7 +89,7 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
 - [x] 2B AWS CDK (`infra/`, commit 49c404b): ALB + ECS Fargate (API e front na mesma origem, migração no start),
       RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
       06:00 BRT), Secrets Manager, CloudWatch com 3 alarmes, sem NAT. `tests/test_infra.py` confere a pilha;
-      `npx aws-cdk@2 synth` sem aviso. Deploy na conta do evento feito em 7/11/2026 (https://d2aseby2fenqd6.cloudfront.net).
+      `npx aws-cdk@2 synth` sem aviso. Deploy na conta do evento feito em 7/11/2026; refeito em 8/11/2026 na conta nova do evento (https://d1wj3tlr6ee301.cloudfront.net).
 - [x] 2C servidor MCP (`agente/`): 13 ferramentas de leitura sobre a API com o token de serviço,
       `MITRA_EMPRESA` prende o escopo numa cliente, erro da API vira erro de ferramenta legível; stdio e
       streamable HTTP. `tests/test_agente.py` contra a API real; conferido com um cliente MCP de verdade (stdio).
