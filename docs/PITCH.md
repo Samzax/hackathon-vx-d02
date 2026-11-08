@@ -50,17 +50,16 @@ Como o tempo está dividido, e qual critério cada parte carrega:
 
 Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é ao vivo. Cada linha abaixo é um corte do vídeo.
 
-- **0:00 Caixa de entrada.** 8 ativos, 72 obrigações de 5 normas; 4 atrasadas, 1 dado faltando, 3 vencendo, cada pendência com o botão que resolve. **Narração:** "Uma mineradora fictícia, com barragens, vasos de pressão e licença. O que precisa de ação, por ativo, sem ninguém ler norma."
+- **0:00 Caixa de entrada.** 8 ativos, 131 obrigações de 11 normas; 4 atrasadas, 1 dado faltando, 3 vencendo, cada pendência com o botão que resolve. **Narração:** "Uma mineradora fictícia, com barragens, vasos de pressão e licença. O que precisa de ação, por ativo, sem ninguém ler norma."
 - **0:20 Documento de campo.** Ler `FIR_B2_2026-11-1Q_anomalia.pdf`: aparece o alerta vermelho. **Narração:** "A ficha de inspeção chega em PDF. A regra lê barragem, documento e data, sem IA. A anomalia obriga uma inspeção especial em 24 horas, e a torre abre essa obrigação."
-- **0:45 Mudança de norma.** **Decidir →** na caixa abre **Mudanças**: antes e depois da OB-01, clicar em **Aprovar**. **Narração:** "O radar achou a Resolução 245 e propôs a mudança, com o trecho do ato. Mudou uma obrigação; as outras 23 ficaram iguais. Só vale depois que alguém aprova."
+- **0:45 Mudança de norma.** **Decidir →** na caixa abre **Mudanças**: antes e depois da OB-01. Na Diretoria não há botão de aprovar, porque norma pública é decidida pela curadoria da Mitra: trocar a persona para **Curadoria Mitra** e clicar em **Aprovar**. **Narração:** "O radar achou a Resolução 245 e propôs a mudança, com o trecho do ato. Mudou uma obrigação; as outras 23 ficaram iguais. A curadoria da Mitra aprova uma vez, e vale para todas as clientes."
 - **1:10 Transição.** Botão **Res. 220**: a torre vira para 02/08/2027 e cobra pela norma nova. **Narração:** "No dia da troca, a torre já cobra pela norma nova e não perde o que foi feito pela antiga."
 - **1:30 Radar e gestor.** Funil 7.884 atos → 825 da ANM → 2 para a IA → 1 muda o cadastro; trocar para *Manutenção da Usina*. **Narração:** "Um mês inteiro do Diário Oficial virou duas chamadas de IA. E cada gestor vê só os ativos dele."
 
 ## 6 · Por que dá para confiar (3:15 – 3:45)
 
-- **Na tela:** quatro números: 99,97% · US$ 0,065 · 66 trechos · mais de 170 testes.
-- **Fala:** "Regra antes de IA: 99,97% do Diário Oficial nunca chega ao modelo. Quando chega, a IA propõe, o Python confere se o trecho existe no ato e se a data está no trecho, e uma pessoa aprova. Cada análise custou menos de meio centavo de dólar; cadastrar a Resolução 95 inteira custou US$ 0,065. Um teste confere os 66 trechos do cadastro contra o texto oficial, e a demo roda sem internet."
-- Só se o adaptador do Bedrock estiver pronto no domingo: acrescentar "e a IA roda na conta AWS da própria mineradora".
+- **Na tela:** quatro números: 99,97% · US$ 0,065 · 66 trechos · mais de 500 testes.
+- **Fala:** "Regra antes de IA: 99,97% do Diário Oficial nunca chega ao modelo. Quando chega, a IA propõe, uma conferência automática verifica se o trecho existe no ato e se a data está no trecho, e uma pessoa aprova. Cada análise custou menos de meio centavo de dólar; cadastrar a Resolução 95 inteira custou US$ 0,065. Um teste confere os 66 trechos do cadastro contra o texto oficial. No ar, a IA roda no Amazon Bedrock, dentro da conta AWS: a mineradora pode usar a própria conta, e os documentos dela não saem de casa."
 
 ## 7 · Mercado e modelo (3:45 – 4:15)
 

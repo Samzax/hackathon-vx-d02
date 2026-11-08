@@ -4,7 +4,7 @@ Antes de começar, suba a API e o front conforme o [README](../README.md). Em `h
 
 ## 1. Caixa de entrada (60 s)
 
-- **Fala:** "A Serra Azul tem 8 ativos e 131 obrigações vindas de 9 normas: a lei federal de segurança de barragens, a lei de Minas e seus dois decretos, as Res. 95 e 220 da ANM, a NR-13, a NR-22 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que precisa de ação, por ativo."
+- **Fala:** "A Serra Azul tem 8 ativos e 131 obrigações vindas de 11 normas: a lei federal de segurança de barragens, a lei de Minas e seus dois decretos, as Res. 95 e 220 da ANM, a NR-3, a NR-13, a NR-22, a LC 140 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que precisa de ação, por ativo."
 - Apontar os números do topo: 4 atrasadas, 1 dado faltando, 3 vencendo. Embaixo, a lista do que precisa de decisão ou ação: a mudança da Res. 245 aguardando aprovação, as atrasadas, o dado faltando e o que vence, cada linha com o botão que resolve (**Registrar entrega**, **Completar cadastro**, **Decidir →**).
 - Em **Chegou um documento da operação?**, escolher `FIR_B3_2026-10-1Q.pdf` e clicar em **Ler documento**.
   - **Fala:** "A regra leu ativo, documento e data. A IA não foi chamada."
@@ -19,11 +19,11 @@ Antes de começar, suba a API e o front conforme o [README](../README.md). Em `h
 
 ## 2. Mudanças (45 s)
 
-- Na caixa de entrada, clicar em **Decidir →** (abre **Regulatório**, **Mudanças**).
+- Na caixa de entrada, clicar em **Decidir →** (abre **Regulatório**, **Mudanças**). Na Diretoria o cartão diz quem decide e não mostra botão: norma pública é decidida pela curadoria da Mitra, uma vez para todas as clientes.
 - **Fala:** "Em 31/7 saiu a Res. ANM 245. O radar achou o ato e propôs uma mudança. Ela não vale até alguém aprovar."
-- Mostrar o antes/depois da OB-01 (art. 7 §1: quem trabalha na lavra e no beneficiamento sai da ZAS; prazo 2027 → 26/12/2029), o trecho do ato e a linha "conferido pelo Python".
-- **Fala:** "Mudou uma obrigação. As outras 23 da Res. 220 ficaram iguais." (Está na linha em negrito do cartão, contada pelo Python, não pela IA.)
-- Clicar em **Aprovar**.
+- Mostrar o antes/depois da OB-01 (art. 7 §1: quem trabalha na lavra e no beneficiamento sai da ZAS; prazo 2027 → 26/12/2029), o trecho do ato e o quadro **Conferência automática**.
+- **Fala:** "Mudou uma obrigação. As outras 23 da Res. 220 ficaram iguais." (Está na linha em negrito do cartão, contada pela regra, não pela IA.)
+- Trocar a persona para **Curadoria Mitra** e clicar em **Aprovar**. **Fala:** "A curadoria da Mitra aprova uma vez, e vale para todas as clientes."
 
 ## 3. Transição e linha do tempo (45 s)
 
@@ -41,11 +41,11 @@ Antes de começar, suba a API e o front conforme o [README](../README.md). Em `h
 
 | Pergunta | Resposta curta |
 |---|---|
-| E se a IA errar? | O Python confere o trecho, o dispositivo e as datas. Uma pessoa aprova. Nada muda sozinho |
+| E se a IA errar? | Uma conferência automática verifica o trecho, o dispositivo e as datas. Uma pessoa aprova. Nada muda sozinho |
 | Funciona sem internet? | Sim. A demo roda do cache (`data/cache_ia_demo.json`) e sem chave |
 | Serve para outra coisa além de barragem? | O motor é "ativo + obrigação + agenda + evidência": já roda vaso de pressão, unidade e licença |
 | Quanto custa cadastrar uma norma nova? | A extração da Res. 95 inteira custou US$ 0,065. A NR-13, US$ 0,045 |
-| Qual o tamanho do mercado? | **Sobre**, **Mercado**: 461 barragens de 126 empresas na PNSB (SIGBM). Preço e adoção são premissas que dá para mudar na hora |
+| Qual o tamanho do mercado? | Na persona **Curadoria Mitra**, **Sobre**, **Mercado**: 461 barragens de 126 empresas na PNSB (SIGBM). Preço e adoção são premissas que dá para mudar na hora |
 | Como sei que o cadastro está certo? | Cada obrigação da Res. 220 cita o parágrafo que a cria, e um teste confere o trecho contra o texto oficial. A conferência achou um "≥" que virava ">" no site da ANM e nove obrigações que faltavam |
 | E se a pessoa fechar a tela depois do alerta? | A torre não esquece. Registrar a FIR com anomalia abre a ISE da B2 com prazo de 24 h, e ela fica vermelha no painel e no boletim. Só o relatório da ISE (`Relatorio_ISE_B2_2026-11-06.pdf`) a encerra |
 | Quando a norma muda, o leitor de documentos muda junto? | Sim. Botão **Res. 220** na barra lateral, depois `FIR_B2_2027-08-1Q_Res220_EC3.pdf`. Pela Res. 95 a ISE vinha de pontuação 10. Pela Res. 220 (art. 42) vem de EC1, EC3, EC4 ou EC5 = 5. O alerta cita o artigo novo, e EC2 = 5 sozinho não dispara |

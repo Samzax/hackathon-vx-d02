@@ -14,6 +14,21 @@ def _linhas(caminho: Path) -> int:
         return len(list(csv.DictReader(f)))
 
 
+def _catalogo_mineracao() -> tuple[int, int]:
+    """Obrigações e normas do catálogo da mineração (saúde e obras são outras verticais)."""
+    linhas = 0
+    normas = {"Res. ANM 220/2025"}                  # seed_obligations.csv não tem a coluna norma
+    for p in [RAIZ / "seed_obligations.csv", *sorted((RAIZ / "cadastro").glob("*.csv"))]:
+        if p.name in ("saude.csv", "nr18.csv", "nr35.csv"):
+            continue
+        with open(p, encoding="utf-8", newline="") as f:
+            for r in csv.DictReader(f):
+                linhas += 1
+                if r.get("norma"):
+                    normas.add(r["norma"])
+    return linhas, len(normas)
+
+
 def test_numeros_do_cadastro_na_documentacao():
     res220 = _linhas(RAIZ / "seed_obligations.csv")
     cadastro = list((RAIZ / "cadastro").glob("*.csv"))
@@ -21,7 +36,7 @@ def test_numeros_do_cadastro_na_documentacao():
     mineracao = res220 + sum(_linhas(p) for p in cadastro if p.name not in ("saude.csv", "nr18.csv", "nr35.csv"))
     roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
     arquitetura = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
-    assert f"8 ativos e {mineracao} obrigações" in roteiro
+    assert f"8 ativos e {mineracao} obrigações vindas de {_catalogo_mineracao()[1]} normas" in roteiro
     assert f"as {res220} da Res. 220/2025" in arquitetura
     assert f"Cada uma das {res220} obrigações" in arquitetura
     assert f"outras {res220 - 1} da Res. 220" in roteiro
@@ -191,11 +206,13 @@ def test_numeros_do_pitch_saem_dos_dados():
     # números da demo
     conn = db.conectar(":memory:")
     demo.montar(conn)
-    n = Counter(l.status for l in torre.painel(conn, 1, date(2026, 11, 7), date(2026, 5, 1)))
+    linhas = torre.painel(conn, 1, date(2026, 11, 7), date(2026, 5, 1))
+    n = Counter(l.status for l in linhas)
     assert (f"{n[agenda.ATRASADA]} atrasadas, {n[torre.DADO_FALTANDO]} dado faltando, "
             f"{n[agenda.VENCE_LOGO]} vencendo") in pitch
     ativos = conn.execute("SELECT COUNT(*) FROM ativo").fetchone()[0]
-    assert f"{ativos} ativos, 72 obrigações de 5 normas" in pitch
+    obrigacoes, normas = _catalogo_mineracao()
+    assert f"{ativos} ativos, {obrigacoes} obrigações de {normas} normas" in pitch
     for trecho in ("7.884 atos → 825 da ANM → 2 para a IA → 1 muda o cadastro", "99,97%", "US$ 0,065",
                    "os 66 trechos", "menos de meio centavo de dólar"):
         assert trecho in pitch, trecho
@@ -216,10 +233,10 @@ def test_numeros_do_pitch_saem_dos_dados():
     assert f"{fisc['ano']}: {fisc['autos_de_embargo']} autos de embargo. Fonte: ANM" in pitch
     assert f"pelos {faixas['2 a 4']['grupos'] + faixas['5 a 9']['grupos']} grupos que têm de 2 a 9" in pitch
 
-    # "mais de 170 testes" no slide 6 (funções de teste, sem contar os casos parametrizados)
+    # "mais de 500 testes" no slide 6 (funções de teste, sem contar os casos parametrizados)
     testes = sum(len(re.findall(r"^def test_", f.read_text(encoding="utf-8"), re.M))
                  for f in (RAIZ / "tests").glob("test_*.py"))
-    assert "mais de 170 testes" in pitch and testes > 170, testes
+    assert "mais de 500 testes" in pitch and testes > 500, testes
 
 
 
