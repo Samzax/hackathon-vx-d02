@@ -94,8 +94,6 @@ The fictional Serra Azul mining company contains eight assets and a regulatory c
 
 The featured regulatory scenario shows how a new ANM act changes only the affected obligation and preserves the rest of the catalogue.
 
-![Regulatory change review with source excerpt and proposed deadline](docs/img/torre_mudancas.png)
-
 ## Architecture and AWS
 
 The Next.js frontend communicates exclusively with the API; FastAPI can serve the static build in the same origin.

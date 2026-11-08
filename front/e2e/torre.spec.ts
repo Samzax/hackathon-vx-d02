@@ -148,7 +148,8 @@ test("gestor vê só os ativos da área dele", async ({ page }) => {
   await entrarNaDemo(page);
   await verComo(page, "Gerência de Meio Ambiente");
   await expect(numero(page, "Atrasada")).toContainText("1");
-  await expect(page.getByTestId("grupo-atrasada")).toContainText("L1 · Monitorar os efluentes");
+  await expect(page.getByTestId("grupo-atrasada")).toContainText("L1");
+  await expect(page.getByTestId("grupo-atrasada")).toContainText("Monitorar os efluentes");
   await expect(page.getByTestId("grupo-atrasada")).not.toContainText("B3");
 
   // a Auditoria é da Diretoria, do Regulatório e da TI
