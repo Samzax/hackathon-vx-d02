@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  BookCheck, Building2, CalendarRange, ChartColumn, ClipboardList, FileBadge, FileSearch, Gavel, History, IdCard, Inbox, ListChecks, LogOut, Map, Menu,
+  BookCheck, Building2, CalendarRange, ChartColumn, ChevronDown, ClipboardList, FileBadge, FileSearch, Gavel, History, IdCard, Inbox, ListChecks, LogOut, Map, Menu,
   MessageSquareText, Moon, PanelLeftClose,
   PanelLeftOpen, Plus, Radar as IconeRadar, RotateCcw, ScrollText, Sun, Users, Workflow, X,
 } from "lucide-react";
@@ -24,8 +24,8 @@ function rotuloVisao(visao: string): string {
   return visao === "Diretoria (todos os ativos)" ? "Diretoria" : visao;
 }
 
-type Item = { href: string; rotulo: string; icone: React.ReactNode; contador?: number; tom?: "perigo" | "marca" };
-type Grupo = { titulo: string; itens: Item[] };
+type Item = { href: string; rotulo: string; icone: React.ReactNode; contador?: number; tom?: "perigo" | "marca"; dica?: string };
+type Grupo = { titulo: string; itens: Item[]; dica?: string };
 
 function eCuradoriaMitra(plataforma: boolean, papel: string): boolean {
   return plataforma && papel === "regulatorio";
@@ -38,39 +38,39 @@ function useGrupos(): Grupo[] {
   const condicionantes = useCondicionantes("pendente");
   if (t.ti) {
     return [{ titulo: "Administração", itens: [
-      { href: "/usuarios/", rotulo: "Usuários e acessos", icone: <Users className="size-4" /> },
-      { href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> },
-    ] }];
+      { href: "/usuarios/", rotulo: "Usuários e acessos", icone: <Users className="size-4" />, dica: "Gerencie usuários e permissões de acesso" },
+      { href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" />, dica: "Registro de todas as ações realizadas no sistema" },
+    ], dica: "Configurações administrativas do sistema" }];
   }
   const curadoria = eCuradoriaMitra(t.plataforma, t.eu.papel_efetivo);
   const grupos: Grupo[] = [
     { titulo: "Operação", itens: [
-      { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" /> },
-      { href: "/ativos/", rotulo: "Ativos", icone: t.empresa?.setor === "saude" ? <ListChecks className="size-4" /> : <Map className="size-4" /> },
-      { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" /> },
-      { href: "/pergunte/", rotulo: "Pergunte à torre", icone: <MessageSquareText className="size-4" /> },
-    ] },
+      { href: "/caixa/", rotulo: "Caixa de entrada", icone: <Inbox className="size-4" />, dica: "Obrigações que precisam de entrega ou atenção imediata" },
+      { href: "/ativos/", rotulo: "Ativos", icone: t.empresa?.setor === "saude" ? <ListChecks className="size-4" /> : <Map className="size-4" />, dica: "Barragens, equipamentos e instalações monitoradas" },
+      { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" />, dica: "Todas as entregas e registros já realizadas" },
+      { href: "/pergunte/", rotulo: "Pergunte à torre", icone: <MessageSquareText className="size-4" />, dica: "Faça perguntas e receba respostas sobre regulamentações" },
+    ], dica: "Módulos operacionais do dia a dia" },
     { titulo: "Regulatório", itens: [
-      { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca" },
-      { href: "/regulatorio/radar/", rotulo: "Radar do DOU", icone: <IconeRadar className="size-4" /> },
-      { href: "/regulatorio/transicao/", rotulo: "Transição e linha do tempo", icone: <CalendarRange className="size-4" /> },
-      { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" /> },
+      { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca", dica: "Mudanças normativas que afetam suas obrigações" },
+      { href: "/regulatorio/radar/", rotulo: "Radar do DOU", icone: <IconeRadar className="size-4" />, dica: "Monitoramento das publicações no Diário Oficial da União" },
+      { href: "/regulatorio/transicao/", rotulo: "Transição e linha do tempo", icone: <CalendarRange className="size-4" />, dica: "Cronologia e prazos de transição entre normas" },
+      { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" />, dica: "Normas que se aplicam à sua empresa e ativos" },
       ...(t.plataforma ? [{ href: "/regulatorio/normas-candidatas/", rotulo: "Normas candidatas", icone: <FileSearch className="size-4" />,
-        contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const }] : []),
-    ] },
+        contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const, dica: "Normas em análise para inclusão no monitoramento" }] : []),
+    ], dica: "Módulos de conformidade normativa e regulatória" },
     { titulo: "Empresa", itens: [
       ...(t.plataforma ? [{ href: "/nova-empresa/", rotulo: "Nova empresa", icone: <Building2 className="size-4" /> }] : []),
-      { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" /> },
+      { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" />, dica: "Configuração dos parâmetros e regras da sua empresa" },
       { href: "/licencas/", rotulo: "Licenças e condicionantes", icone: <FileBadge className="size-4" />,
-        contador: condicionantes.data?.length || undefined, tom: "marca" },
-      { href: "/responsaveis/", rotulo: "Responsáveis e unidades", icone: <IdCard className="size-4" /> },
-    ] },
+        contador: condicionantes.data?.length || undefined, tom: "marca", dica: "Licenças de operação e condicionantes de segurança" },
+      { href: "/responsaveis/", rotulo: "Responsáveis e unidades", icone: <IdCard className="size-4" />, dica: "Cadastro dos responsáveis técnicos e unidades operacionais" },
+    ], dica: "Cadastro e configuração da empresa e responsáveis" },
     ...(curadoria ? [{ titulo: "Sobre", itens: [
-      { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" /> },
-      { href: "/sobre/como-funciona/", rotulo: "Como funciona", icone: <Workflow className="size-4" /> },
-    ] }] : []),
+      { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" />, dica: "Informações sobre o mercado e regulamentações do setor" },
+      { href: "/sobre/como-funciona/", rotulo: "Como funciona", icone: <Workflow className="size-4" />, dica: "Explicação sobre o funcionamento da torre de controle" },
+    ], dica: "Informações e documentação sobre o sistema" }] : []),
   ];
-  if (t.veTudo) grupos.push({ titulo: "Administração", itens: [{ href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> }] });
+  if (t.veTudo) grupos.push({ titulo: "Administração", itens: [{ href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" />, dica: "Registro de todas as ações realizadas no sistema" }], dica: "Configurações administrativas do sistema" });
   return grupos;
 }
 
@@ -119,9 +119,12 @@ export function useTema() {
 }
 
 export function Logo({ className }: { className?: string }) {
-  const { tema } = useTema();
-  // eslint-disable-next-line @next/next/no-img-element -- SVG da marca, sem otimização no export estático
-  return <img src={tema === "escuro" ? "/logo_escuro.svg" : "/logo_claro.svg"} alt="Mitra" width={150} height={32} className={className} />;
+  // As duas imagens ficam no DOM para a troca ser instantânea e independente do primeiro render.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <span className={cx("logo-tematica inline-flex", className)} aria-label="Mitra">
+    <img src="/logo_escuro.svg" alt="Mitra" width={150} height={30} className="logo-claro" />
+    <img src="/logo_escuro.svg" alt="" width={150} height={30} className="logo-escuro" aria-hidden="true" />
+  </span>;
 }
 
 // ------------------------------------------------------------------ menu
@@ -145,7 +148,7 @@ function Navegacao({ onNavegar }: { onNavegar?: () => void }) {
                     aria-current={ativo ? "page" : undefined}
                     className={cx(
                       "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm",
-                      ativo ? "bg-marca-suave font-semibold text-marca" : "text-texto-2 hover:bg-fundo-3 hover:text-texto",
+                      ativo ? "bg-marca-suave font-semibold text-marca" : "text-texto-2 hover:bg-fundo-3",
                     )}
                   >
                     {i.icone}
@@ -195,11 +198,35 @@ function Controles() {
         { rotulo: "ZAS", dia: ZAS, dica: `${dataBR(ZAS)}: dia seguinte ao prazo da ZAS (ANM e NR-22)` },
       ];
 
+  function MenuVisao() {
+    const [aberto, setAberto] = useState(false);
+    return (
+      <div className="relative">
+        <button type="button" className="flex h-9 w-full items-center justify-between rounded-md border border-[#1d6975] bg-[#134552] px-2.5 text-left text-sm text-white shadow-sm hover:bg-[#195866] hover:text-[#0e7c86]"
+          aria-haspopup="listbox" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
+          <span className="truncate">{t.eu.visao}</span><ChevronDown className={cx("size-4 shrink-0 transition-transform", aberto && "rotate-180")} />
+        </button>
+        {aberto && (
+          <ul role="listbox" aria-label="Quem está olhando" className="absolute left-0 right-0 z-50 mt-1 max-h-56 overflow-auto rounded-md border border-[#1d6975] bg-[#134552] p-1 text-sm text-white shadow-xl">
+            {t.eu.visoes.map((visao) => (
+              <li key={visao} role="option" aria-selected={visao === t.eu.visao}>
+                <button type="button" className={cx("w-full rounded px-2 py-2 text-left hover:bg-[#195866] hover:text-[#0e7c86]", visao === t.eu.visao && "bg-[#0e7c86] font-semibold")}
+                  onClick={() => { setAberto(false); trocarVisao.mutate(visao); }}>
+                  {visao}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3 text-sm">
-      <div className="rounded-lg border border-borda bg-fundo px-3 py-2.5">
-        <p className="font-semibold leading-tight">{t.eu.nome}</p>
-        <p className="mt-0.5 text-xs text-texto-2">
+      <div className="rounded-lg border border-[#1d4a51] bg-[#134552] px-3 py-2.5 text-[#cfe3e8]">
+        <p className="font-semibold leading-tight text-white">{t.eu.nome}</p>
+        <p className="mt-0.5 text-xs text-[#cfe3e8]">
           {PAPEL[t.eu.papel] ?? t.eu.papel}
           {t.eu.area ? ` · ${t.eu.area}` : ""}
           {t.eu.teste ? " · Teste" : ""}

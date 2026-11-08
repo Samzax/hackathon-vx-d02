@@ -68,12 +68,39 @@ export function Cartao({ className, children, ...resto }: React.HTMLAttributes<H
   );
 }
 
-export function Titulo({ sobre, titulo, acoes, children }: { sobre?: string; titulo: string; acoes?: React.ReactNode; children?: React.ReactNode }) {
+const TITULOS_DICAS: Record<string, string> = {
+  "Caixa de entrada": "Central de obrigações que precisam de entrega ou atenção imediata",
+  "Ativos": "Barragens, equipamentos e instalações monitoradas",
+  "Entregas": "Histórico de todas as entregas e registros já realizados",
+  "Pergunte à torre": "Faça perguntas e receba respostas sobre regulamentações e conformidade",
+  "Auditoria": "Registro de todas as ações realizadas no sistema",
+  "Usuários e acessos": "Gerencie usuários e permissões de acesso",
+  "Instanciação": "Configuração dos parâmetros e regras da sua empresa",
+  "Licenças": "Licenças de operação e condicionantes de segurança",
+  "Responsáveis e unidades": "Cadastro dos responsáveis técnicos e unidades operacionais",
+  "Mudanças": "Mudanças normativas que afetam suas obrigações",
+  "Radar do DOU": "Monitoramento das publicações no Diário Oficial da União",
+  "Transição e linha do tempo": "Cronologia e prazos de transição entre normas",
+  "Cobertura normativa": "Normas que se aplicam à sua empresa e ativos",
+  "Normas candidatas": "Normas em análise para inclusão no monitoramento",
+  "Mercado": "Informações sobre o mercado e regulamentações do setor",
+  "Como funciona": "Explicação sobre o funcionamento da torre de controle regulatória",
+};
+
+export function Titulo({ sobre, titulo, acoes, children, dica }: { sobre?: string; titulo: string; acoes?: React.ReactNode; children?: React.ReactNode; dica?: string }) {
+  const Descricao = dica ?? TITULOS_DICAS[titulo];
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
         {sobre && <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-texto-3">{sobre}</p>}
-        <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {titulo}
+          {Descricao && (
+            <span className="ml-1 align-middle inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-borda-forte text-[9px] text-texto-2" title={Descricao}>
+              ?
+            </span>
+          )}
+        </h1>
         {children && <div className="mt-1 max-w-3xl text-sm text-texto-2">{children}</div>}
       </div>
       {acoes && <div className="flex flex-wrap gap-2">{acoes}</div>}
@@ -81,13 +108,34 @@ export function Titulo({ sobre, titulo, acoes, children }: { sobre?: string; tit
   );
 }
 
-export function Secao({ titulo, descricao, acoes, children, className, id }:
-  { titulo: React.ReactNode; descricao?: React.ReactNode; acoes?: React.ReactNode; children: React.ReactNode; className?: string; id?: string }) {
+const SECOES_DICAS: Record<string, string> = {
+  "Responsáveis técnicos": "Cadastro das pessoas responsáveis pela operação e segurança",
+  "Unidades": "Operações da empresa e os ativos de cada uma",
+  "Obrigações": "Lista de todas as obrigações regulatórias da empresa",
+  "Pendentes": "Obrigações que ainda não foram entregues",
+  "Entregues": "Obrigações que já foram entregues",
+  "Histórico": "Registro de todas as ações e alterações",
+  "Configurações": "Configurações do sistema e preferências",
+  "Relatórios": "Relatórios gerados pelo sistema",
+  "Documentos": "Documentos e arquivos relacionados",
+  "Notificações": "Notificações e alertas importantes",
+};
+
+export function Secao({ titulo, descricao, acoes, children, className, id, dica }:
+  { titulo: React.ReactNode; descricao?: React.ReactNode; acoes?: React.ReactNode; children: React.ReactNode; className?: string; id?: string; dica?: string }) {
+  const Descricao = dica ?? (typeof titulo === "string" ? SECOES_DICAS[titulo] : undefined);
   return (
     <section className={cx("mt-8 first:mt-0", className)} id={id} aria-labelledby={id ? `${id}-titulo` : undefined}>
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 id={id ? `${id}-titulo` : undefined} className="text-base font-semibold">{titulo}</h2>
+          <h2 id={id ? `${id}-titulo` : undefined} className="text-base font-semibold">
+            {titulo}
+            {Descricao && (
+              <span className="ml-1 align-middle inline-flex items-center justify-center w-3 h-3 rounded-full bg-borda-forte text-[8px] text-texto-2" title={Descricao}>
+                ?
+              </span>
+            )}
+          </h2>
           {descricao && <p className="mt-0.5 max-w-3xl text-[13px] text-texto-2">{descricao}</p>}
         </div>
         {acoes && <div className="flex flex-wrap gap-2">{acoes}</div>}
@@ -269,12 +317,27 @@ export function Expansivel({ resumo, children, aberto, className, onToggle }:
   );
 }
 
+const STATUS_DICAS: Record<string, string> = {
+  "atrasada": "Obrigações com prazo vencido que precisam de atenção imediata",
+  "dado_faltando": "Obrigações com dados incompletos ou não informados",
+  "vence_logo": "Obrigações que vencem em até 30 dias",
+  "gatilho": "Obrigações acionadas por um evento ou condição específica",
+  "em_dia": "Obrigações que estão em conformidade e dentro do prazo",
+};
+
 export function Numero({ valor, rotulo, status, href, dica }: { valor: number | string; rotulo: string; status?: string; href?: string; dica?: string }) {
+  const Descricao = dica ?? (status ? STATUS_DICAS[status] : undefined);
   const corpo = (
     <>
-      <span className="text-[13px] font-medium text-texto-2">{rotulo}</span>
+      <span className="flex items-center gap-1 text-[13px] font-medium text-texto-2">
+        {rotulo}
+        {Descricao && (
+          <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-borda-forte text-[8px] text-texto-2" title={Descricao}>
+            ?
+          </span>
+        )}
+      </span>
       <span className="num text-3xl font-semibold leading-tight">{valor}</span>
-      {dica && <span className="text-xs text-texto-3">{dica}</span>}
     </>
   );
   const classe = cx(
