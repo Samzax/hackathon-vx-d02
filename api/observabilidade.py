@@ -11,6 +11,9 @@ import uuid
 from starlette.middleware.base import BaseHTTPMiddleware
 
 log = logging.getLogger("mitra.api")
+# o handler fica na raiz "mitra": os módulos do domínio (mitra.ia, mitra.descoberta...) saem no mesmo JSON
+# do CloudWatch; sem isso o aviso de modelo recusado pelo Bedrock não aparecia em lugar nenhum
+raiz = logging.getLogger("mitra")
 
 
 class _Json(logging.Formatter):
@@ -23,13 +26,14 @@ class _Json(logging.Formatter):
 
 
 def configurar_logs() -> None:
-    if log.handlers:
+    if any(getattr(h, "mitra_json", False) for h in raiz.handlers):
         return
     h = logging.StreamHandler(sys.stdout)
     h.setFormatter(_Json())
-    log.addHandler(h)
-    log.setLevel(logging.INFO)
-    log.propagate = False
+    h.mitra_json = True
+    raiz.addHandler(h)
+    raiz.setLevel(logging.INFO)
+    raiz.propagate = False
 
 
 class RequestId(BaseHTTPMiddleware):
