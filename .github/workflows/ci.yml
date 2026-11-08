@@ -14,6 +14,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  commits:
+    # Conventional Commits nos commits novos deste push/PR (o mesmo .githooks/commit-msg do clone)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Confere as mensagens
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          # branch novo ou force-push (base fora do histórico): não há faixa para conferir
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null || ! git merge-base --is-ancestor "$BASE" "$HEAD_SHA"; then
+            echo "Sem base comparável; nada a conferir."; exit 0
+          fi
+          falhou=0
+          for c in $(git rev-list --no-merges "$BASE..$HEAD_SHA"); do
+            git log -1 --format=%B "$c" > /tmp/msg
+            bash .githooks/commit-msg /tmp/msg || { echo "  ↳ commit $c"; falhou=1; }
+          done
+          exit $falhou
+
   lint:
     runs-on: ubuntu-latest
     steps:

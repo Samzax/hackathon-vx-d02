@@ -36,3 +36,4 @@ The primary user experience is the **Caixa de Entrada**, which brings together p
 - Backend checks: from the repository root, run relevant tests with `uv run pytest`.
 - Do not edit generated API types manually; regenerate them from the API schema when needed.
 - Update tests whenever a visible label, accessibility label or access rule changes.
+- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/): `<type>(<optional scope>): <description>`, with type one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert` (description may be in Portuguese). Enable the local check once per clone with `git config core.hooksPath .githooks`; CI runs the same check on new commits.

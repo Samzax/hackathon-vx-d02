@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Conventional Commits: <tipo>(<escopo opcional>)!: <descrição>
+# Ativar uma vez por clone:  git config core.hooksPath .githooks
+# O CI roda este mesmo arquivo em cada commit novo (job "commits").
+set -euo pipefail
+
+arquivo="$1"
+# primeira linha que não é comentário
+titulo=$(grep -v '^#' "$arquivo" | sed -n '/[^[:space:]]/{p;q;}')
+
+# merges, reverts e fixup!/squash! gerados pelo próprio git passam
+if [[ "$titulo" =~ ^(Merge|Revert\ \"|fixup!|squash!|amend!) ]]; then
+  exit 0
+fi
+
+tipos='feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert'
+padrao="^($tipos)(\([a-z0-9._/-]+\))?!?: [^[:space:]].*"
+
+if [[ ! "$titulo" =~ $padrao ]]; then
+  cat >&2 <<EOF
+✗ Mensagem fora do padrão Conventional Commits:
+    $titulo
+
+  Formato: <tipo>(<escopo>): <descrição>     (escopo é opcional; "!" marca quebra)
+  Tipos:   ${tipos//|/, }
+  Exemplos:
+    feat(radar): cobre saúde/Anvisa
+    fix(ci): trava do preparo com chave própria
+    docs: README com o Claude Haiku 5.5
+EOF
+  exit 1
+fi
