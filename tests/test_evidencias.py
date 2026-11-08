@@ -94,7 +94,7 @@ def test_ia_completa_o_ativo_quando_a_regra_nao_acha(conn):
     le = ev.ler(conn, texto, 1, HOJE, roteador=_IA({"ativo": "B3", "data": None}))
     assert (le.ativo, le.periodo, le.metodo) == ("B3", "2026-10-1Q", "ia")
     assert le.completa                                # deduzir o ativo não bloqueia...
-    assert any(a.startswith("o ativo B3 foi deduzido pela IA") for a in le.avisos)   # ...mas fica dito
+    assert any(a.startswith("o ativo B3 foi deduzido pela leitura automática") for a in le.avisos)   # ...mas fica dito
 
 
 def test_ativo_lido_pela_regra_nao_ganha_aviso_de_ia(conn):

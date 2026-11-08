@@ -310,7 +310,7 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
             if le.ativo is None and ia.get("ativo") in {a["codigo"] for a in ativos}:
                 le.ativo = ia["ativo"]
                 # o documento não diz qual é o ativo com todas as letras: quem registra precisa saber que foi dedução
-                le.avisos.append(f"o ativo {le.ativo} foi deduzido pela IA, porque o documento não cita o código "
+                le.avisos.append(f"o ativo {le.ativo} foi deduzido pela leitura automática, porque o documento não cita o código "
                                  "nem o nome inteiro de um ativo só: confira antes de registrar")
             if d is None and ia.get("data"):
                 try:
@@ -318,7 +318,7 @@ def ler(conn, texto: str, empresa_id: int, hoje: date, roteador=None) -> Leitura
                     if proposta in datas(texto):        # a IA não inventa data: tem de estar no texto
                         d = proposta
                     else:
-                        le.problemas.append(f"a data {proposta:%d/%m/%Y} indicada pela IA não está no documento")
+                        le.problemas.append(f"a data {proposta:%d/%m/%Y} indicada pela leitura automática não está no documento")
                 except ValueError:
                     pass
             if tipo is None and ia.get("documento"):
