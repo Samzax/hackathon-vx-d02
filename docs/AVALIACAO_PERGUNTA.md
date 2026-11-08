@@ -1,6 +1,6 @@
 # Avaliação do Assistente Mitra
 
-Rodada com o **Claude Haiku 5.5** contra a demo (Mineradora Serra Azul), com o mesmo prompt (`mitra/pergunta_sistema.md`) e as mesmas ferramentas de leitura do chat. **9 de 10 casos passaram.**
+Rodada com o **Claude Haiku 5.5** contra a demo (Mineradora Serra Azul), com o mesmo prompt (`mitra/pergunta_sistema.md`) e as mesmas ferramentas de leitura do chat. **10 de 10 casos passaram.**
 
 Cada caso tem critérios objetivos em `tests/pergunta_avaliacao.toml`: o que a resposta precisa conter, o que não pode conter, que ferramenta precisa ter usado, e a conferência do Python (trecho entre aspas, data e código de obrigação ou ativo precisam estar no que as ferramentas devolveram). A nota sai do mesmo código do chat (`avaliar_resposta` e `conferir`, em `mitra/pergunta.py`).
 
@@ -112,13 +112,11 @@ Onde agir: na aba Transição e linha do tempo, para o quadro completo; na aba M
 
 </details>
 
-## ❌ cobertura-mg
+## ✅ cobertura-mg
 
 **Pergunta:** Que normas valem para as minhas barragens em Minas Gerais? Estou coberto?
 
 **Modelo:** `claude-haiku-5-5` · **ferramentas:** cobertura_normativa
-
-**Falhas:** não devia dizer: totalmente coberto
 
 <details><summary>Resposta</summary>
 

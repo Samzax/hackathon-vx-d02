@@ -47,7 +47,8 @@ ferramentas = [["linha_do_tempo", "pendencias"]]
 id = "cobertura-mg"
 pergunta = "Que normas valem para as minhas barragens em Minas Gerais? Estou coberto?"
 contem = ["Lei MG 23.291/2019", ["Copam", "COPAM"], ["curadoria", "Curadoria"]]
-nao_contem = ["totalmente coberto", "cobertura completa"]
+# afirmações de cobertura total; "não está totalmente coberto" (a resposta certa) não pode reprovar
+nao_contem = ["você está coberto", "você está totalmente coberto", "cobertura completa"]
 ferramentas = ["cobertura_normativa"]
 
 [[caso]]
