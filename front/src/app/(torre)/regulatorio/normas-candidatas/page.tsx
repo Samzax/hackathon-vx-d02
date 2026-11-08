@@ -60,7 +60,7 @@ function CartaoNorma({ n, decide }: { n: NormaCandidata; decide: boolean }) {
         <div className="mt-3 space-y-1.5 rounded-md bg-fundo-2 px-4 py-3 text-[13px]" data-testid="triagem">
           <p className="flex items-center gap-1.5 font-semibold">
             <Bot className="size-4 text-marca" aria-hidden />
-            A IA {t.relevante ? "achou relevante" : "achou irrelevante"}
+            A triagem {t.relevante ? "achou relevante" : "achou irrelevante"}
             {t.tipos_ativo.length > 0 && ` para ${t.tipos_ativo.map((x) => (TIPO_ATIVO[x] ?? x).toLowerCase()).join(" e ")}`}
           </p>
           {t.deveres && <p><span className="font-semibold">Deveres:</span> {t.deveres}</p>}
@@ -71,7 +71,7 @@ function CartaoNorma({ n, decide }: { n: NormaCandidata; decide: boolean }) {
             {t.custo_usd > 0 ? ` · US$ ${numero(t.custo_usd, 4)}` : ""}
           </p>
         </div>
-      ) : <p className="mt-3 text-[13px] text-texto-2">Ainda não passou pela triagem da IA.</p>}
+      ) : <p className="mt-3 text-[13px] text-texto-2">Ainda não passou pela triagem.</p>}
 
       {n.decidida_por && (
         <p className="mt-3 text-[13px] text-texto-2">
@@ -84,7 +84,7 @@ function CartaoNorma({ n, decide }: { n: NormaCandidata; decide: boolean }) {
         <div className="mt-4 space-y-2">
           <Campo rotulo="Nota da curadoria" htmlFor={`nota-${n.chave}`} dica="Fica na decisão e na auditoria, com o seu e-mail.">
             <AreaTexto id={`nota-${n.chave}`} rows={2} value={nota} onChange={(e) => setNota(e.target.value)} maxLength={2000}
-              placeholder={n.status === "irrelevante" ? "Por que reabrir o que a IA descartou?" : "Ex.: extrair o art. 7º"} />
+              placeholder={n.status === "irrelevante" ? "Por que reabrir o que a triagem descartou?" : "Ex.: extrair o art. 7º"} />
           </Campo>
           <div className="flex flex-wrap gap-2">
             {n.status !== "aprovada" && (
@@ -155,7 +155,7 @@ function Fila() {
         <>
           <p className="mb-3 text-[13px] text-texto-2" data-testid="total-fila">
             {plural(normas.length, "norma", "normas")}
-            {status === "relevante" ? ", as de menor confiança da IA primeiro (as que mais precisam de olho)" : ""}.
+            {status === "relevante" ? ", as de menor confiança primeiro (as que mais precisam de olho)" : ""}.
           </p>
           {!normas.length ? <Vazio>Nada nesta fila com estes filtros.</Vazio> : (
             <div className="space-y-4">
@@ -177,9 +177,8 @@ export default function NormasCandidatas() {
   return (
     <>
       <Titulo sobre="Curadoria Mitra" titulo="Normas candidatas">
-        Leis, decretos e resoluções já publicados que a busca nas fontes oficiais achou para os ativos da carteira e a IA triou pela
-        ementa (ou pelo texto, nos descartes duvidosos). Aprovada vai para a extração das obrigações; descartada sai da fila. Vale
-        para todas as clientes, e cada decisão fica na auditoria com o seu e-mail.
+        Normas já publicadas que a busca nas fontes oficiais achou para os ativos da carteira. A aprovada segue para a extração
+        das obrigações e vale para todas as clientes.
       </Titulo>
       <Suspense fallback={<Carregando linhas={6} />}>
         <Fila />

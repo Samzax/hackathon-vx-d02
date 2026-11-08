@@ -25,7 +25,7 @@ rota = APIRouter(tags=["regulatório"])
 
 NORMA_PUBLICA, PROPRIA = "norma pública", "empresa"
 FUNIL = db.ROOT / "data" / "funil_dou.json"
-CAMPO = {"prazo": "Prazo", "vigencia_desde": "Começa a valer em", "vigencia_ate": "Deixa de valer após",
+CAMPO = {"prazo": "Prazo", "vigencia_desde": "A partir de", "vigencia_ate": "Até",
          "periodicidade": "Periodicidade", "aplica_se_a": "Aplica-se a", "titulo": "Obrigação",
          "evidencia": "Evidência", "regra": "Regra", "agenda": "Agenda"}
 
@@ -226,8 +226,12 @@ def _tamanho(conn, r: dict, codigo: str, norma: str | None) -> str:
     n = len(mudam)
     return (f"Muda {n} {'obrigação' if n == 1 else 'obrigações'} ({', '.join(mudam)}). "
             f"As outras {outras} da {norma or 'mesma norma'} ficam iguais. "
-            f"Foram à IA {len(r['candidatas'])} candidatas; "
+            f"{_analisadas(len(r['candidatas']))}, "
             f"{', '.join(iguais) or 'nenhuma outra'} {'ficou igual' if len(iguais) == 1 else 'ficaram iguais'}.")
+
+
+def _analisadas(n: int) -> str:
+    return "Da 1 obrigação analisada" if n == 1 else f"Das {n} obrigações analisadas"
 
 
 def _conferencia(r: dict) -> list[str]:

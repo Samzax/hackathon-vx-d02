@@ -4,7 +4,7 @@ import { ATRASADA, DADO_FALTANDO, EM_DIA, GATILHO, ROTULO, VENCE_LOGO, cor, orde
 
 describe("status", () => {
   it("apresenta os rótulos atualizados dos status", () => {
-    expect(ROTULO[DADO_FALTANDO]).toBe("Cadastro Incompleto");
+    expect(ROTULO[DADO_FALTANDO]).toBe("Cadastro incompleto");
     expect(ROTULO[VENCE_LOGO]).toBe("Próximo ao vencimento");
   });
 

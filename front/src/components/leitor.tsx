@@ -84,7 +84,7 @@ export function LeitorDeDocumento() {
         <div className="mt-4 space-y-3" data-testid="leitura">
           <p className="text-sm">
             <strong>{leitura.arquivo}</strong>{" "}
-            <span className="text-texto-2">· lido por {le.metodo === "regra" ? "regra" : "IA (conferida pelo Python)"}</span>
+            <span className="text-texto-2">· lido por {le.metodo === "regra" ? "regra" : "leitura automática, conferida"}</span>
           </p>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-md bg-fundo-2 px-4 py-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
             {[

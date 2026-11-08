@@ -221,7 +221,7 @@ function FormNormaInterna({ p }: { p: Personalizacao }) {
         onChange={(e) => setF({ ...f, prazo: e.target.value })} />
       <CampoEntrada rotulo="Evidência" value={f.evidencia} placeholder="ex.: Relatório interno assinado"
         onChange={(e) => setF({ ...f, evidencia: e.target.value })} />
-      <CampoEntrada rotulo="Começa a valer em" type="date" value={f.vigencia_desde}
+      <CampoEntrada rotulo="A partir de" type="date" value={f.vigencia_desde}
         onChange={(e) => setF({ ...f, vigencia_desde: e.target.value })} dica="Vazio: vale desde já." />
       {criar.error && <Aviso tipo="erro" className="sm:col-span-2">{mensagem(criar.error)}.</Aviso>}
       <div className="sm:col-span-2">

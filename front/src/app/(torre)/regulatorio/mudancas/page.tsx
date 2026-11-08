@@ -83,13 +83,13 @@ function CartaoMudanca({ m }: { m: Mudanca }) {
           <p><span className="font-semibold">Por quê:</span> {a.motivo}</p>
           {m.conferencia.length > 0 && (
             <div>
-              <p className="flex items-center gap-1.5 font-semibold"><ShieldCheck className="size-4 text-emdia" aria-hidden />Conferido pelo Python</p>
+              <p className="flex items-center gap-1.5 font-semibold"><ShieldCheck className="size-4 text-emdia" aria-hidden />Conferência automática</p>
               <ul className="mt-1 space-y-0.5">
                 {m.conferencia.map((c) => <li key={c} className="flex gap-1.5"><Check className="mt-0.5 size-3.5 shrink-0 text-emdia" aria-hidden />{c}</li>)}
               </ul>
             </div>
           )}
-          <p className="text-texto-2">Modelo {a.modelos.join(" → ")} · custo {usd(a.custo_original_usd)}{a.confianca !== null ? ` · confiança ${String(a.confianca).replace(".", ",")}` : ""}</p>
+          <p className="text-texto-2">Custo da análise {usd(a.custo_original_usd)}{a.confianca !== null ? ` · confiança ${String(a.confianca).replace(".", ",")}` : ""}</p>
           {m.tamanho && <p className="font-medium">{m.tamanho}</p>}
         </div>
       )}
@@ -108,7 +108,7 @@ function CartaoMudanca({ m }: { m: Mudanca }) {
           </div>
           <Expansivel className="mt-3" resumo={<span className="font-medium">Corrigir e aprovar</span>}>
             <p className="mb-3 text-[13px] text-texto-2">
-              Se a IA errou um valor, corrija aqui. Fica registrado o que foi proposto, o que foi aprovado e por quem.
+              Se a proposta errou um valor, corrija aqui. Fica registrado o que foi proposto, o que foi aprovado e por quem.
             </p>
             <form className="space-y-3" onSubmit={(e) => {
               e.preventDefault();

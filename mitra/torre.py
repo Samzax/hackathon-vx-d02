@@ -280,7 +280,7 @@ def resumo(linhas: list[Linha]) -> dict[str, dict[str, int]]:
     return out
 
 
-CAMPOS = {"prazo": "prazo", "vigencia_desde": "começa a valer em", "vigencia_ate": "deixa de valer após",
+CAMPOS = {"prazo": "prazo", "vigencia_desde": "a partir de", "vigencia_ate": "até",
           "periodicidade": "periodicidade", "aplica_se_a": "aplica-se a", "titulo": "obrigação",
           "evidencia": "evidência", "regra": "regra", "agenda": "agenda"}
 
@@ -416,7 +416,7 @@ def calendario(conn, empresa_id: int, hoje: date, desde: date, responsavel: str 
     for f in futuras(conn, empresa_id, hoje, unidades=unidades):
         if f.ativo in ativos and f.dia <= limite and not f.proposta:
             eventos.append((f.dia, f"{f.ativo}-{f.codigo}-inicio",
-                            f"Começa a valer: {f.ativo} · {f.titulo}", dispositivo(f.norma, f.artigo),
+                            f"Entra em vigor: {f.ativo} · {f.titulo}", dispositivo(f.norma, f.artigo),
                             agenda.AVISO_DIAS))
     linhas = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mitra//Torre de Controle//PT-BR",
               "CALSCALE:GREGORIAN", f"X-WR-CALNAME:Mitra · {_ics_texto(responsavel or 'Diretoria')}"]

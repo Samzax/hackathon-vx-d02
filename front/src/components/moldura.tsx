@@ -21,7 +21,7 @@ import { Aviso, Botao, Entrada, Etiqueta, Selecao, TITULOS_DICAS, cx, mensagem }
 const PAPEL: Record<string, string> = { admin: "TI", diretoria: "Diretoria", regulatorio: "Regulatório", gestor: "Gestor de área" };
 
 function rotuloVisao(visao: string): string {
-  return visao === "Diretoria (todos os ativos)" ? "Diretoria" : visao;
+  return visao.endsWith(" (todos os ativos)") ? visao.replace(" (todos os ativos)", "") : visao;
 }
 
 /** `dica` aparece ao passar o mouse; sem ela, o item usa a dica do título da tela (TITULOS_DICAS). */
@@ -265,7 +265,7 @@ function Controles() {
 
       {ia?.ligada && !t.ti && (
         <p className="text-xs text-texto-3">
-          IA ligada · gasto hoje {usd(ia.gasto_hoje_usd, 3)}{ia.teto_dia_usd ? ` de ${usd(ia.teto_dia_usd, 2)}` : ""}
+          Análise automática ativa · gasto hoje {usd(ia.gasto_hoje_usd, 3)}{ia.teto_dia_usd ? ` de ${usd(ia.teto_dia_usd, 2)}` : ""}
         </p>
       )}
 

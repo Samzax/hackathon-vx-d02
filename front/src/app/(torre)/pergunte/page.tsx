@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/markdown";
 import { AreaTexto, Aviso, Botao, Carregando, Cartao, Etiqueta, Titulo, cx, mensagem } from "@/components/ui";
 import { useEstadoPergunta, usePerguntar } from "@/lib/consultas";
+import { datasBR, numero, usd } from "@/lib/formato";
 import { type MensagemChat, type RespostaPergunta, SUGESTOES, consultas, historicoPara, resumoConferencia } from "@/lib/pergunta";
 
 function Conferencia({ r }: { r: RespostaPergunta }) {
@@ -26,7 +27,7 @@ function Resposta({ r }: { r: RespostaPergunta }) {
   const vistas = consultas(r);
   return (
     <Cartao className="p-4 sm:p-5" data-testid="resposta">
-      <Markdown texto={r.texto} />
+      <Markdown texto={datasBR(r.texto)} />
       <Conferencia r={r} />
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-borda pt-3 text-xs text-texto-3">
         {vistas.length > 0 ? (
@@ -36,7 +37,7 @@ function Resposta({ r }: { r: RespostaPergunta }) {
           </>
         ) : <span>Respondeu sem consultar a torre.</span>}
         <span className="ml-auto" title={`${r.tokens_in} tokens de entrada (${r.tokens_cache} do cache), ${r.tokens_out} de saída`}>
-          {r.modelo.split(":").pop()} · {r.segundos.toFixed(0)} s · US$ {r.custo_usd.toFixed(4)}
+          {numero(r.segundos)} s · {usd(r.custo_usd)}
         </span>
       </div>
     </Cartao>
@@ -91,7 +92,7 @@ export default function Pergunte() {
 
       {desligada && (
         <Aviso tipo="atencao" className="mb-4">
-          Funcionalidade desativada neste ambiente, pois nenhum provedor de IA está configurado.
+          Esse recurso está desativado neste ambiente.
         </Aviso>
       )}
 

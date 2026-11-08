@@ -266,7 +266,7 @@ function FormResponsavel() {
         </Botao>
       </div>
       <p className="text-xs text-texto-3 sm:col-span-2">
-        Ver o CPF inteiro é do Regulatório, da Diretoria e da TI da empresa; cada visualização fica na auditoria. O CPF nunca vai para a IA.
+        Ver o CPF inteiro é do Regulatório, da Diretoria e da TI da empresa; cada visualização fica na auditoria. O CPF nunca entra em análise automática.
       </p>
     </form>
   );

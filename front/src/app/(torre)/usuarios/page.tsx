@@ -137,8 +137,8 @@ export default function Usuarios() {
   return (
     <>
       <Titulo sobre="Administração" titulo="Usuários e acessos">
-        O papel diz o que a pessoa vê: Diretoria e Regulatório veem todos os ativos; o gestor vê os da sua área. Qual área responde por cada
-        ativo é decisão da Diretoria, na ficha do ativo. A TI administra contas e não vê dado regulatório.
+        O papel define o que cada pessoa vê, e a Diretoria decide a área de cada ativo. A TI administra contas e não vê
+        dado regulatório.
       </Titulo>
       <div className="overflow-x-auto rounded-lg border border-borda">
         <table className="w-full min-w-[860px] text-sm" data-testid="contas">

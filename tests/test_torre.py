@@ -126,7 +126,7 @@ def test_boletim_da_diretoria_tem_tudo(serra):
     assert "1ª quinzena de outubro/2026" in b and "2026-10-1Q" not in b
     assert "Requerer a renovação da licença" in b                  # L1 vence em 15/11
     assert "⚪ Falta dado no cadastro" in b and "modificacao_estrutural" in b
-    assert "OB-01" in b and "26/12/2029" in b and "começa a valer em" in b
+    assert "OB-01" in b and "26/12/2029" in b and "a partir de" in b
 
 
 def test_boletim_do_gestor_so_tem_os_ativos_dele(serra):
@@ -166,7 +166,7 @@ def test_calendario_lembra_quando_fica_amarela_e_nao_ocupa_a_agenda(serra):
 def test_calendario_mostra_quando_a_res_220_comeca(serra):
     conn, _ = serra
     ics = torre.calendario(conn, 1, HOJE, DESDE, dias=365 * 4).replace("\r\n ", "")
-    assert "DTSTART;VALUE=DATE:20270802" in ics and "Começa a valer: B" in ics
+    assert "DTSTART;VALUE=DATE:20270802" in ics and "Entra em vigor: B" in ics
 
 
 def test_plano_de_transicao(serra):

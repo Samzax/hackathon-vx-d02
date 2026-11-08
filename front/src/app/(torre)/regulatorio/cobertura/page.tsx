@@ -32,7 +32,7 @@ function ListaDeNormas({ normas }: { normas: Norma[] }) {
             ) : n.titulo}
           </p>
           {n.ementa && <p className="mt-0.5 text-[13px] text-texto-2">{curto(n.ementa, 260)}</p>}
-          {n.deveres && <p className="mt-1 text-[13px]"><span className="font-semibold">O que cobra, pela IA:</span> {n.deveres}</p>}
+          {n.deveres && <p className="mt-1 text-[13px]"><span className="font-semibold">O que cobra:</span> {n.deveres}</p>}
           {n.cita_catalogo.length > 0 && (
             <p className="mt-1 flex gap-1.5 text-[13px] text-vence">
               <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
@@ -90,13 +90,13 @@ function Linha({ i, plataforma }: { i: ItemCobertura; plataforma: boolean }) {
       {(i.triagem_pendente > 0 || i.em_curadoria.length > 0 || i.aprovadas.length > 0) && (
         <div className="mt-4 space-y-2">
           {i.triagem_pendente > 0 && (
-            <p className="text-sm text-texto-2">{plural(i.triagem_pendente, "candidata esperando", "candidatas esperando")} a triagem da IA.</p>
+            <p className="text-sm text-texto-2">{plural(i.triagem_pendente, "candidata esperando", "candidatas esperando")} a triagem.</p>
           )}
           {i.em_curadoria.length > 0 && (
             <Expansivel resumo={
               <span className="flex flex-wrap items-center gap-2">
                 <Etiqueta tom="atencao">esperando curadoria</Etiqueta>
-                <span className="font-medium">{plural(i.em_curadoria.length, "norma já publicada que a IA achou relevante", "normas já publicadas que a IA achou relevantes")}, fora do catálogo</span>
+                <span className="font-medium">{plural(i.em_curadoria.length, "norma já publicada que a triagem achou relevante", "normas já publicadas que a triagem achou relevantes")}, fora do catálogo</span>
               </span>
             }>
               <div data-testid="em-curadoria"><ListaDeNormas normas={i.em_curadoria} /></div>

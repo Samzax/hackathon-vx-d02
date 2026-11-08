@@ -64,7 +64,7 @@ export default function ComoFunciona() {
             <Seta rotulo={f ? `${numero(f.normativos)} normativos` : undefined} />
             <Caixa titulo="IA barata, com cache" sub={`${usd(custoRadar)} no radar da demo`} tom="ia" />
             <Seta />
-            <Caixa titulo="Python confere" sub="trecho, dispositivo, datas" />
+            <Caixa titulo="Conferência automática" sub="trecho, dispositivo, datas" />
             <Seta rotulo="mudança proposta" />
             <Caixa titulo="Pessoa aprova" tom="pessoa" />
           </div>
@@ -92,7 +92,7 @@ export default function ComoFunciona() {
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <Cartao className="p-4 text-sm">
           <p className="font-semibold">A IA nunca decide sozinha.</p>
-          <p className="mt-1 text-texto-2">O Python confere se o trecho citado existe no ato e se as datas aparecem nele; uma pessoa aprova. Toda versão guarda o ato, o trecho e quem decidiu.</p>
+          <p className="mt-1 text-texto-2">Uma conferência automática verifica se o trecho citado existe no ato e se as datas aparecem nele; uma pessoa aprova. Toda versão guarda o ato, o trecho e quem decidiu.</p>
         </Cartao>
         <Cartao className="p-4 text-sm">
           <p className="font-semibold">Regra antes de IA.</p>
@@ -103,11 +103,11 @@ export default function ComoFunciona() {
         </Cartao>
         <Cartao className="p-4 text-sm">
           <p className="font-semibold">Traga sua chave.</p>
-          <p className="mt-1 text-texto-2">Provedor e modelo são configuração (DeepSeek, Anthropic, Bedrock). A empresa pode rodar com a conta dela, e os documentos não passam pela nossa.</p>
+          <p className="mt-1 text-texto-2">Provedor e modelo são configuração (Amazon Bedrock, Anthropic e outros). A empresa pode rodar com a conta dela, e os documentos não passam pela nossa.</p>
         </Cartao>
       </div>
       <p className="mt-4 text-xs text-texto-3">
-        Stack: Python 3.13 · FastAPI · Postgres (SQLite na demo) · Next.js · DOU por dados abertos (o robots.txt do site proíbe robôs). Detalhes em docs/ARQUITETURA.md.
+        O Diário Oficial entra pelos dados abertos da Imprensa Nacional, o canal oficial para leitura em lote.
       </p>
     </>
   );

@@ -19,7 +19,7 @@ function Funil({ f }: { f: Esquemas["Funil"] }) {
   const passos = [
     { valor: numero(f.atos), rotulo: `Atos no DOU (${f.mes})`, dica: "Total de atos publicados no Diário Oficial da União no mês" },
     { valor: numero(f.anm), rotulo: "Da ANM", dica: "Atos específicos da Agência Nacional de Mineração" },
-    { valor: numero(f.normativos), rotulo: "Normativos da ANM → IA", dica: "Normativos encaminhados para análise de inteligência artificial" },
+    { valor: numero(f.normativos), rotulo: "Normativos da ANM → análise", dica: "Normativos encaminhados para análise automática" },
     { valor: numero(f.mudam), rotulo: "Mudam o cadastro", dica: "Atos que alteram o cadastro de obrigações da empresa" },
   ];
   return (
@@ -28,8 +28,8 @@ function Funil({ f }: { f: Esquemas["Funil"] }) {
         {passos.map((p) => <Numero key={p.rotulo} valor={p.valor} rotulo={p.rotulo} dica={p.dica} />)}
       </div>
       <p className="mt-2 text-xs text-texto-2">
-        Filtro por órgão e tipo de ato é regra, sem custo. Só os normativos chegam à IA, e só com as obrigações que a triagem
-        considerou candidatas. Fonte: {f.fonte}.
+        Filtro por órgão e tipo de ato é regra, sem custo. Só os normativos seguem para análise, e só com as obrigações que a
+        triagem considerou candidatas. Fonte: {f.fonte}.
       </p>
     </>
   );
@@ -60,7 +60,7 @@ function ResultadoAnalise({ an, texto, onEnviado }: { an: Analise; texto: string
           <p className="mt-3 text-sm">{an.motivo || "—"}</p>
         </>
       ) : (
-        <Aviso tipo="info" className="mt-2">Nenhuma obrigação do cadastro é tocada por este ato: a IA nem foi chamada (custo zero).</Aviso>
+        <Aviso tipo="info" className="mt-2">Nenhuma obrigação do cadastro é tocada por este ato: não foi preciso analisar (custo zero).</Aviso>
       )}
       {an.modelos.length > 0 && (
         <p className="mt-2 text-xs text-texto-2">
@@ -75,8 +75,8 @@ function ResultadoAnalise({ an, texto, onEnviado }: { an: Analise; texto: string
               <p className="flex flex-wrap items-center gap-2">
                 <strong>{m.obrigacao}</strong> · {m.campo_rotulo}: {m.valor_atual_texto} → <strong>{m.valor_novo_texto}</strong>
                 {m.reprovada
-                  ? <Etiqueta tom="perigo"><ShieldAlert className="mr-1 size-3" />reprovada pelo Python: {m.reprovada}</Etiqueta>
-                  : <Etiqueta tom="ok"><ShieldCheck className="mr-1 size-3" />conferida pelo Python</Etiqueta>}
+                  ? <Etiqueta tom="perigo"><ShieldAlert className="mr-1 size-3" />reprovada na conferência: {m.reprovada}</Etiqueta>
+                  : <Etiqueta tom="ok"><ShieldCheck className="mr-1 size-3" />conferida</Etiqueta>}
               </p>
               <blockquote className="mt-1 border-l-2 border-borda-forte pl-3 text-[13px] italic text-texto-2">“{m.trecho}”</blockquote>
             </li>
@@ -135,7 +135,7 @@ function TesteComAto() {
 
   return (
     <Secao titulo="Teste com um ato seu" id="teste" className="mt-10"
-      descricao="Cole o texto de um ato. A regra escolhe as obrigações candidatas sem custo; a IA só roda se houver candidata; o Python confere o que ela disser; nada muda sem aprovação.">
+      descricao="Cole o texto de um ato. A triagem escolhe as obrigações candidatas sem custo, e nada muda sem aprovação.">
       <div className="space-y-3">
         <Botao tamanho="p" icone={<FlaskConical className="size-3.5" />} carregando={exemplo.isPending} onClick={() => exemplo.mutate()}>
           Usar um ato fictício de exemplo
@@ -147,7 +147,7 @@ function TesteComAto() {
         <Botao variante="primario" disabled={!texto.trim()} carregando={analisar.isPending} onClick={() => analisar.mutate()}>
           Analisar ato
         </Botao>
-        {analisar.isPending && <p className="text-[13px] text-texto-2">Triagem por regra e, se houver candidata, análise da IA…</p>}
+        {analisar.isPending && <p className="text-[13px] text-texto-2">Triagem e, se houver candidata, análise do ato…</p>}
         {analisar.error && <Aviso tipo="erro">{mensagem(analisar.error)}.</Aviso>}
       </div>
       {feita && <ResultadoAnalise an={feita.an} texto={feita.texto} onEnviado={() => { setFeita(null); guardar(texto, null); }} />}
@@ -161,7 +161,7 @@ export default function Radar() {
   return (
     <>
       <Titulo sobre="Regulatório" titulo="Radar do DOU">
-        Todo dia o radar lê o Diário Oficial: regra primeiro, IA só no que sobra, Python conferindo, pessoa aprovando.
+        Todo dia o radar lê o Diário Oficial: regra primeiro, análise só no que sobra, e uma pessoa aprova.
       </Titulo>
       {radar.isLoading && <Carregando linhas={4} />}
       {radar.error && <ErroCarga erro={radar.error} onTentar={() => radar.refetch()} />}
@@ -169,7 +169,7 @@ export default function Radar() {
         <>
           {r.funil ? <Funil f={r.funil} /> : <Aviso tipo="info">O funil do mês ainda não foi medido.</Aviso>}
 
-          <Secao titulo="Custo real de IA até agora" className="mt-8"
+          <Secao titulo="Custo real das análises" className="mt-8"
             descricao="Cada resposta fica em cache e não é paga de novo: a mesma pergunta nunca custa duas vezes.">
             {r.custo_ia.length ? (
               <ul className="grid gap-3 sm:grid-cols-2">
@@ -177,10 +177,10 @@ export default function Radar() {
                   <li key={g.tarefa}><Numero valor={usd(g.usd, 3)} rotulo={TAREFA[g.tarefa] ?? g.tarefa} dica={plural(g.n, "chamada", "chamadas")} /></li>
                 ))}
               </ul>
-            ) : <p className="text-sm text-texto-2">Nenhuma chamada de IA registrada ainda.</p>}
+            ) : <p className="text-sm text-texto-2">Nenhuma análise registrada ainda.</p>}
             {r.ia.ligada && (
               <p className="mt-2 text-xs text-texto-3">
-                IA ligada · gasto hoje {usd(r.ia.gasto_hoje_usd, 4)}{r.ia.teto_dia_usd ? ` de ${usd(r.ia.teto_dia_usd, 2)} por dia` : ""}.
+                Análise automática ativa · gasto hoje {usd(r.ia.gasto_hoje_usd, 4)}{r.ia.teto_dia_usd ? ` de ${usd(r.ia.teto_dia_usd, 2)} por dia` : ""}.
               </p>
             )}
           </Secao>
@@ -197,7 +197,7 @@ export default function Radar() {
                       </p>
                       <p className="mt-1 text-[13px] text-texto-2">{a.motivo}</p>
                       <p className="mt-1 text-xs text-texto-3">
-                        Obrigações enviadas à IA: {a.candidatas.join(", ") || "nenhuma"} · modelo: {a.modelos.join(" → ")}
+                        Obrigações analisadas: {a.candidatas.join(", ") || "nenhuma"}
                         {a.confianca !== null && ` · confiança ${String(a.confianca).replace(".", ",")}`} · custo {usd(a.custo_original_usd)}
                         {!a.custo_usd && a.custo_original_usd > 0 && " (resposta já em cache: não foi paga de novo)"}
                       </p>

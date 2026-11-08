@@ -7,6 +7,11 @@ export function dataBR(iso: string | null | undefined): string {
   return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
 }
 
+/** As datas ISO soltas num texto viram DD/MM/AAAA: "venceu em 2026-10-15" -> "venceu em 15/10/2026". */
+export function datasBR(texto: string): string {
+  return texto.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, "$3/$2/$1");
+}
+
 /** "2026-11-07" -> "nov/2026" */
 export function mesAno(iso: string): string {
   const [a, m] = iso.split("-");

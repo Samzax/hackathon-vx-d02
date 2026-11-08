@@ -143,7 +143,7 @@ def nova_norma_interna(conn, empresa_id: int, *, titulo: str, por: str, tipo_ati
         try:
             date.fromisoformat(vigencia_desde)
         except ValueError:
-            raise ErroPersonalizacao(f"começa a valer em: {vigencia_desde!r} não é data AAAA-MM-DD") from None
+            raise ErroPersonalizacao(f"a partir de: {vigencia_desde!r} não é data AAAA-MM-DD") from None
     r = conn.execute("SELECT nome FROM empresa WHERE id = ?", (empresa_id,)).fetchone()
     if r is None:
         raise ErroPersonalizacao(f"empresa {empresa_id} não existe")

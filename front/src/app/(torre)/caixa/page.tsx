@@ -150,7 +150,7 @@ export default function Caixa() {
         <LeitorDeDocumento />
       </div>
 
-      <h2 className="mb-3 mt-8 text-base font-semibold">Revisões Pendentes</h2>
+      <h2 className="mb-3 mt-8 text-base font-semibold">Revisões pendentes</h2>
       {painel.isLoading && <Carregando linhas={5} />}
       <div className="space-y-4">
         {pendentes.length > 0 && (

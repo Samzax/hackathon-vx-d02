@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  curto, dataBR, diasEntre, emBrasilia, maiuscula, mesAno, mesesAoRedor, nomeDeArquivo, numero, numeroLivre,
+  curto, dataBR, datasBR, diasEntre, emBrasilia, maiuscula, mesAno, mesesAoRedor, nomeDeArquivo, numero, numeroLivre,
   plural, reaisMilhoes, semanasDoMes, somarDias, usd,
 } from "./formato";
 
@@ -10,6 +10,11 @@ describe("datas", () => {
     expect(dataBR("2026-11-07 22:56:38")).toBe("07/11/2026");
     expect(dataBR(null)).toBe("—");
     expect(dataBR("")).toBe("—");
+  });
+
+  it("datas ISO soltas num texto viram DD/MM/AAAA, e o resto do texto fica igual", () => {
+    expect(datasBR("venceu em 2026-10-15; hoje na torre é 2026-11-07.")).toBe("venceu em 15/10/2026; hoje na torre é 07/11/2026.");
+    expect(datasBR("R95-01, art. 19 I, 26/12/2029")).toBe("R95-01, art. 19 I, 26/12/2029");
   });
 
   it("UTC do banco vira horário de Brasília, e a data muda perto da meia-noite", () => {

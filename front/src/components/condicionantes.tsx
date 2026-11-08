@@ -144,7 +144,7 @@ export function CartaoCondicionante({ c, onDecidida }: {
           </div>
           <Expansivel className="mt-3" resumo={<span className="font-medium">Corrigir antes de aprovar</span>}>
             <p className="mb-3 text-[13px] text-texto-2">
-              Se a IA leu errado, corrija aqui: a obrigação nasce com o seu valor. O que a IA propôs fica registrado na decisão.
+              Se a leitura errou, corrija aqui: a obrigação nasce com o seu valor. A proposta original fica registrada na decisão.
             </p>
             <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); decidir.mutate({ aprovar: true, correcoes }); }}>
               <div className="grid gap-3 sm:grid-cols-2">

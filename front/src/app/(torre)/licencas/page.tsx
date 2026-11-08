@@ -22,6 +22,7 @@ type Licenca = Esquemas["Licenca"];
 type Leitura = Esquemas["api__rotas__licencas__Leitura"];
 
 const TIPOS = ["LP", "LI", "LO", "LAC", "outorga", "autorizacao", "alvara"] as const;
+const NOME_TIPO: Record<string, string> = { outorga: "Outorga", autorizacao: "Autorização", alvara: "Alvará" };
 const RENOVAR_PADRAO = 120;
 
 const ABAS = [
@@ -99,7 +100,7 @@ function EnviarLicenca({ onEnviada }: { onEnviada: (l: Licenca) => void }) {
       ativo_codigo: f.ativo_codigo.trim() || null,
     }, arquivo!),
     onSuccess: (l) => {
-      avisar(`Licença ${l.tipo} ${l.numero} guardada. Agora mande ler: a IA propõe as condicionantes e o Python confere o trecho.`);
+      avisar(`Licença ${l.tipo} ${l.numero} guardada. Agora mande ler a licença para propor as condicionantes.`);
       setF(FORM_VAZIO);
       setArquivo(null);
       if (arquivoRef.current) arquivoRef.current.value = "";
@@ -116,14 +117,14 @@ function EnviarLicenca({ onEnviada }: { onEnviada: (l: Licenca) => void }) {
         <h2 className="text-base font-semibold">Chegou uma licença nova?</h2>
       </div>
       <p className="mt-1 text-[13px] text-texto-2">
-        Mande o PDF e o que identifica a licença. O texto fica guardado para o Python conferir cada condicionante
-        palavra por palavra; nada vira obrigação antes de alguém da empresa aprovar.
+        Mande o PDF e o que identifica a licença. Cada condicionante é conferida com o texto, palavra por palavra,
+        e nada vira obrigação antes de alguém da empresa aprovar.
       </p>
       <form className="mt-3 space-y-3" onSubmit={(e) => { e.preventDefault(); enviar.mutate(); }}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <CampoSelecao rotulo="Tipo" value={f.tipo} required onChange={(e) => setF((x) => ({ ...x, tipo: e.target.value }))}>
             <option value="">—</option>
-            {TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
+            {TIPOS.map((t) => <option key={t} value={t}>{NOME_TIPO[t] ?? t}</option>)}
           </CampoSelecao>
           <CampoEntrada rotulo="Número" value={f.numero} required maxLength={60} placeholder="ex.: 123/2026"
             onChange={(e) => setF((x) => ({ ...x, numero: e.target.value }))} />
@@ -184,7 +185,7 @@ function CartaoLicenca({ l, destaque, podeLer, podeRenovar, lendo, renovando, on
   return (
     <Cartao id={`licenca-${l.id}`} className={cx("p-4 sm:p-5", destaque && "border-marca")} data-testid="licenca">
       <div className="flex flex-wrap items-center gap-2">
-        <Etiqueta tom="marca">{l.tipo}</Etiqueta>
+        <Etiqueta tom="marca">{NOME_TIPO[l.tipo] ?? l.tipo}</Etiqueta>
         <h2 className="text-base font-semibold">{l.numero}</h2>
         {l.orgao && <span className="text-[13px] text-texto-2">{l.orgao}</span>}
       </div>
@@ -216,7 +217,7 @@ function CartaoLicenca({ l, destaque, podeLer, podeRenovar, lendo, renovando, on
         <div className="mt-3 flex flex-wrap gap-2">
           {podeLer && (
             <Botao tamanho="p" icone={<ScanText className="size-3.5" aria-hidden />} carregando={lendo} disabled={ocupado}
-              title={c.pendente ? "Ler de novo propõe outra vez; as pendentes continuam até alguém decidir" : "A IA propõe as condicionantes e o Python confere o trecho"}
+              title={c.pendente ? "Ler de novo propõe outra vez; as pendentes continuam até alguém decidir" : "Propõe as condicionantes com o trecho literal de cada uma"}
               onClick={onLer}>
               {c.pendente ? "Ler de novo" : "Ler a licença"}
             </Botao>
@@ -246,13 +247,13 @@ function ResultadoLeitura({ l, r }: { l: Licenca; r: Leitura }) {
   return (
     <Cartao className="p-4 sm:p-5" data-testid="leitura-licenca">
       <div className="flex flex-wrap items-center gap-2">
-        <Etiqueta tom="marca">{l.tipo} {l.numero}</Etiqueta>
+        <Etiqueta tom="marca">{NOME_TIPO[l.tipo] ?? l.tipo} {l.numero}</Etiqueta>
         <h2 className="text-base font-semibold">O que a leitura achou</h2>
       </div>
       <p className="mt-0.5 text-[13px] text-texto-2">
-        {r.modelo ? `Leitura do modelo ${r.modelo}` : "Leitura da IA"}
+        {"Leitura automática"}
         {r.custo_usd > 0 ? ` · custo ${usd(r.custo_usd)}` : " · sem custo"}
-        {" "}· o Python confere cada trecho palavra por palavra antes de aceitar.
+        {" "}· cada trecho é conferido palavra por palavra antes de aceitar.
       </p>
 
       <dl className="mt-3 grid gap-x-6 gap-y-2 rounded-md bg-fundo-2 px-4 py-3 text-[13px] sm:grid-cols-3">
@@ -272,7 +273,7 @@ function ResultadoLeitura({ l, r }: { l: Licenca; r: Leitura }) {
 
       {validadeDiferente && (
         <Aviso tipo="atencao" className="mt-3">
-          A IA leu a validade <strong>{dataBR(r.validade_lida)}</strong> no PDF, mas o cadastro desta licença diz{" "}
+          A leitura achou a validade <strong>{dataBR(r.validade_lida)}</strong> no PDF, mas o cadastro desta licença diz{" "}
           <strong>{l.validade ? dataBR(l.validade) : "sem validade"}</strong>. A renovação é cobrada pela data do cadastro:
           confira antes de aprovar as condicionantes.
         </Aviso>
@@ -285,7 +286,7 @@ function ResultadoLeitura({ l, r }: { l: Licenca; r: Leitura }) {
       {r.reprovadas.length > 0 && (
         <div className="mt-3 rounded-md border border-atrasada/40 bg-atrasada-fundo px-4 py-3" data-testid="reprovadas">
           <p className="text-sm font-semibold">
-            O Python recusou {plural(r.reprovadas.length, "proposta da IA", "propostas da IA")}: nenhuma entra
+            A conferência recusou {plural(r.reprovadas.length, "proposta", "propostas")}: nenhuma entra
           </p>
           <ul className="mt-1.5 space-y-1 text-[13px]">
             {r.reprovadas.map((x, i) => (
@@ -367,7 +368,7 @@ export default function Licencas() {
     onSuccess: (r, l) => {
       setResultado({ empresa: empresa.id, licenca: l, leitura: r });
       avisar(`${l.tipo} ${l.numero}: ${plural(r.propostas.length, "proposta pendente", "propostas pendentes")}`
-        + (r.reprovadas.length ? `, ${plural(r.reprovadas.length, "recusada", "recusadas")} pelo Python` : "") + ".");
+        + (r.reprovadas.length ? `, ${plural(r.reprovadas.length, "recusada", "recusadas")} na conferência` : "") + ".");
       return invalidar();
     },
     onError: (e) => avisar(`Não consegui ler a licença: ${mensagem(e)}`, "erro"),
@@ -397,9 +398,7 @@ export default function Licencas() {
   return (
     <>
       <Titulo sobre="Regulatório" titulo="Licenças">
-        O PDF da licença entra aqui. A IA propõe as condicionantes com o trecho literal, o Python confere palavra por palavra
-        e cada proposta só vira obrigação quando alguém da empresa aprova — aprovada, nasce vigente, com código, e a torre
-        passa a cobrá-la.
+        Cada condicionante sai do PDF com o trecho literal e só vira obrigação quando alguém da empresa aprova.
       </Titulo>
 
       {podeEnviar ? (
@@ -432,7 +431,7 @@ export default function Licencas() {
       </Secao>
 
       {resultado?.empresa === empresa.id && ordenadas.some((l) => l.id === resultado.licenca.id) && (
-        <Secao titulo="Leitura da licença" descricao="O que a IA propôs a partir do texto guardado, e o que o Python recusou.">
+        <Secao titulo="Leitura da licença" descricao="O que a leitura propôs a partir do texto guardado, e o que a conferência recusou.">
           <ResultadoLeitura l={resultado.licenca} r={resultado.leitura} />
         </Secao>
       )}

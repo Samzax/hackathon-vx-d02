@@ -15,7 +15,7 @@ export type Status = (typeof TODOS)[number];
 
 export const ROTULO: Record<string, string> = {
   [ATRASADA]: "Atrasada",
-  [DADO_FALTANDO]: "Cadastro Incompleto",
+  [DADO_FALTANDO]: "Cadastro incompleto",
   [VENCE_LOGO]: "Próximo ao vencimento",
   [EM_DIA]: "Em dia",
   [CUMPRIDA]: "Cumprida",
