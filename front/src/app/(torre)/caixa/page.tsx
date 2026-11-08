@@ -1,29 +1,30 @@
 "use client";
 
-import { CalendarPlus, CheckCheck, Check, FileDown, FileText, Mail, Pencil } from "lucide-react";
+import { CalendarPlus, CheckCheck, FileDown, FileText, FileUp, Mail } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { type AlvoEntrega, DialogoEntrega } from "@/components/entrega";
+import { Dialogo } from "@/components/dialogo";
 import { LeitorDeDocumento } from "@/components/leitor";
 import { Markdown } from "@/components/markdown";
 import {
-  Aviso, Botao, Carregando, Cartao, ErroCarga, Etiqueta, Expansivel, LinkBotao, Numero, Selo, Titulo, mensagem,
+  Aviso, Botao, Carregando, Cartao, ErroCarga, Etiqueta, Expansivel, LinkBotao, Numero, Titulo, cx, mensagem,
 } from "@/components/ui";
 import { useAvisar } from "@/components/avisos";
 import { useQuery } from "@tanstack/react-query";
 import { baixar, texto } from "@/lib/api";
 import { type Linha, useMudancas, usePainel } from "@/lib/consultas";
 import { curto, dataBR, maiuscula, nomeDeArquivo } from "@/lib/formato";
-import { ATRASADA, DADO_FALTANDO, PRINCIPAIS, ROTULO, VENCE_LOGO } from "@/lib/status";
+import { ATRASADA, DADO_FALTANDO, PRINCIPAIS, ROTULO, VENCE_LOGO, cor } from "@/lib/status";
 import { useEmpresa, useTorre } from "@/lib/torre";
 import { LinkOficial } from "@/components/link-oficial";
 
 const ULTIMA_EXECUCAO = "ultima_execucao";
 const MAX_ITENS = 6;
 const GRUPOS = [
-  { status: ATRASADA, titulo: "atrasadas" },
-  { status: DADO_FALTANDO, titulo: "com dado faltando" },
-  { status: VENCE_LOGO, titulo: "vencendo em breve" },
+  { status: ATRASADA, titulo: "Obrigações atrasadas" },
+  { status: DADO_FALTANDO, titulo: "Obrigações com dados faltantes" },
+  { status: VENCE_LOGO, titulo: "Obrigações vencendo em breve" },
 ];
 
 function faltaCadastro(l: Linha): boolean {
@@ -40,24 +41,24 @@ function oQueFalta(l: Linha): string {
 /** Sem `onEntregar` (a plataforma só lê), o item não oferece registrar nem completar o cadastro. */
 function Item({ l, onEntregar }: { l: Linha; onEntregar?: (l: Linha) => void }) {
   const ficha = `/ativos/?id=${l.ativo_id}`;
+  const motivo = maiuscula(oQueFalta(l));
   return (
     <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-4" data-testid="item-caixa">
       <div className="min-w-0 flex-1">
-        <p className="text-sm">
-          <strong>{l.ativo}</strong> · {curto(l.titulo, 85)}
+        <p className="flex flex-wrap items-start gap-2 text-sm">
+          {onEntregar ? (
+            <button type="button" onClick={() => onEntregar(l)} className="min-w-0 text-left font-semibold hover:text-marca hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca">
+              {l.titulo}
+            </button>
+          ) : <strong>{l.titulo}</strong>}
+          <Etiqueta tom="neutro" className="shrink-0">{l.ativo}</Etiqueta>
         </p>
-        <p className="mt-0.5 text-xs text-texto-2">
-          {maiuscula(oQueFalta(l))} · <LinkOficial href={l.norma_link}>{l.dispositivo}</LinkOficial> · {l.responsavel ?? "sem responsável"}
+        <p className={cx("mt-1 text-xs font-semibold", cor(l.status).texto)}>{motivo}</p>
+        <p className="mt-1 text-xs text-texto-2">
+          {l.responsavel ?? "Sem responsável"} · <LinkOficial href={l.norma_link}>{l.dispositivo}</LinkOficial>
         </p>
       </div>
       <div className="flex shrink-0 gap-1.5">
-        {onEntregar && (faltaCadastro(l) ? (
-          <LinkBotao href={`${ficha}&aba=cadastro`} tamanho="p" icone={<Pencil className="size-3.5" />}>Completar cadastro</LinkBotao>
-        ) : (
-          <Botao tamanho="p" icone={<Check className="size-3.5" />} onClick={() => onEntregar(l)}>
-            {l.status === DADO_FALTANDO ? "Última entrega" : "Registrar entrega"}
-          </Botao>
-        ))}
         <LinkBotao href={ficha} tamanho="p" variante="fantasma">Ver ativo</LinkBotao>
       </div>
     </li>
@@ -115,6 +116,7 @@ export default function Caixa() {
   const painel = usePainel();
   const mudancas = useMudancas();
   const [alvo, setAlvo] = useState<AlvoEntrega | null>(null);
+  const [documentoAberto, setDocumentoAberto] = useState(false);
 
   const grupos = useMemo(() => {
     const linhas = painel.data?.linhas ?? [];
@@ -130,10 +132,14 @@ export default function Caixa() {
 
   return (
     <>
-      <Titulo titulo="Caixa de entrada" />
+      <Titulo titulo="Caixa de entrada" acoes={
+        <Botao variante="primario" icone={<FileUp className="size-4" />} onClick={() => setDocumentoAberto(true)}>
+          Adicionar documento
+        </Botao>
+      } />
 
       {painel.error ? <ErroCarga erro={painel.error} onTentar={() => painel.refetch()} /> : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" data-testid="numeros">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" data-testid="numeros" aria-label="Filtrar obrigações por status">
           {PRINCIPAIS.map((s) => (
             <Numero
               key={s}
@@ -146,10 +152,6 @@ export default function Caixa() {
         </div>
       )}
 
-      <div className="mt-6">
-        <LeitorDeDocumento />
-      </div>
-
       <h2 className="mb-3 mt-8 text-base font-semibold">Revisões pendentes</h2>
       {painel.isLoading && <Carregando linhas={5} />}
       <div className="space-y-4">
@@ -157,7 +159,7 @@ export default function Caixa() {
           <Cartao className="px-4 py-3" data-testid="grupo-mudancas">
             <div className="flex flex-wrap items-center gap-2">
               <Etiqueta tom="marca">
-                {pendentes.length} {pendentes.length === 1 ? "mudança de norma" : "mudanças de norma"} aguardando decisão
+                Mudanças normativas aguardando decisão
               </Etiqueta>
             </div>
             <ul className="divide-y divide-borda">
@@ -168,14 +170,18 @@ export default function Caixa() {
                       <strong>{m.codigo}</strong> · {curto(m.titulo, 70)}{" "}
                       <span className="text-texto-2">({m.ativos.filter((a) => meus.has(a)).join(", ") || m.ativos.join(", ")})</span>
                     </p>
-                    <p className="mt-0.5 text-xs text-texto-2">
-                      {m.ato ?? m.fonte}:{" "}
-                      {m.campos.slice(0, 2).map((c, i) => (
-                        <span key={c.campo}>{i > 0 && "; "}{c.rotulo.toLowerCase()} {c.vigente_texto} → <strong className="text-texto">{c.proposto_texto}</strong></span>
-                      ))}
-                    </p>
+                    <div className="mt-1 space-y-0.5 text-xs text-texto-2">
+                      <p>{m.ato ?? m.fonte}</p>
+                      {[
+                        { campo: "prazo", rotulo: "Prazo de cumprimento" },
+                        { campo: "vigencia_desde", rotulo: "Início da vigência" },
+                      ].map(({ campo, rotulo }) => {
+                        const alteracao = m.campos.find((c) => c.campo === campo);
+                        return alteracao && <p key={campo}>{rotulo}: <strong className="text-texto">{alteracao.proposto_texto}</strong></p>;
+                      })}
+                    </div>
                   </div>
-                  <LinkBotao href={`/regulatorio/mudancas/#m${m.versao_id}`} tamanho="p" variante="primario">Decidir →</LinkBotao>
+                  <LinkBotao href={`/regulatorio/mudancas/#m${m.versao_id}`} tamanho="p" variante="primario">Revisar alteração</LinkBotao>
                 </li>
               ))}
             </ul>
@@ -184,7 +190,7 @@ export default function Caixa() {
 
         {grupos.map((g) => (
           <Cartao key={g.status} className="px-4 py-3" data-testid={`grupo-${g.status}`}>
-            <Selo status={g.status} texto={`${g.linhas.length} ${g.titulo}`} />
+            <h3 className="flex items-center gap-2 text-sm font-semibold"><span className={cx("size-2 rounded-full", cor(g.status).ponto)} aria-hidden />{g.titulo}</h3>
             <ul className="divide-y divide-borda">
               {g.linhas.slice(0, MAX_ITENS).map((l) => (
                 <Item key={`${l.ativo_id}-${l.codigo}`} l={l} onEntregar={t.soLeitura ? undefined : setAlvo} />
@@ -208,6 +214,9 @@ export default function Caixa() {
       </div>
 
       <DialogoEntrega alvo={alvo} onFechar={() => setAlvo(null)} />
+      <Dialogo aberto={documentoAberto} onFechar={() => setDocumentoAberto(false)} titulo="Adicionar documento" largura="lg">
+        <LeitorDeDocumento />
+      </Dialogo>
     </>
   );
 }

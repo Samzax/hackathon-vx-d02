@@ -29,14 +29,23 @@ test("entrar na demo e ver as 4 atrasadas", async ({ page }) => {
   await expect(page.getByRole("navigation", { name: "Telas da torre" }).getByRole("link", { name: "Mercado" })).toHaveCount(0);
   await expect(numero(page, "Atrasada")).toContainText("4");
   const atrasadas = page.getByTestId("grupo-atrasada");
+  await expect(atrasadas.getByRole("heading", { name: "Obrigações atrasadas" })).toBeVisible();
   await expect(atrasadas.getByTestId("item-caixa")).toHaveCount(4);
   await expect(atrasadas).toContainText("Preencher as FIR quinzenalmente");
   await expect(atrasadas).toContainText("Res. ANM 95/2022, art. 19 I");
 
-  // o número leva à lista de entregas já filtrada
+  // o cartão leva à lista de entregas já filtrada
   await numero(page, "Atrasada").click();
   await page.waitForURL(/\/entregas\/\?status=atrasada/);
   await expect(page.getByTestId("tabela-entregas").locator("tbody tr")).toHaveCount(4);
+});
+
+test("adicionar documento abre o leitor no cabeçalho", async ({ page }) => {
+  await entrarNaDemo(page);
+  await page.getByRole("button", { name: "Adicionar documento" }).click();
+  const dialogo = page.getByRole("dialog");
+  await expect(dialogo.getByRole("heading", { name: "Adicionar documento" })).toBeVisible();
+  await expect(dialogo.getByTestId("leitor")).toBeVisible();
 });
 
 test("Assistente Mitra substitui o antigo acesso de perguntas", async ({ page }) => {
@@ -87,7 +96,7 @@ test("só a Curadoria Mitra acessa as páginas Sobre", async ({ page }) => {
 test("registrar uma entrega tira a obrigação das atrasadas", async ({ page }) => {
   await entrarNaDemo(page);
   const item = page.getByTestId("grupo-atrasada").getByTestId("item-caixa").filter({ hasText: "Preencher as FIR quinzenalmente" });
-  await item.getByRole("button", { name: "Registrar entrega" }).click();
+  await item.getByRole("button", { name: "Preencher as FIR quinzenalmente" }).click();
 
   const dialogo = page.getByRole("dialog");
   await expect(dialogo).toContainText("B3 · Preencher as FIR quinzenalmente");
