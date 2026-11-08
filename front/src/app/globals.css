@@ -3,21 +3,22 @@
 /* tema escuro pelo atributo data-tema no <html> (o script do layout escolhe antes de pintar) */
 @custom-variant dark (&:where([data-tema="escuro"], [data-tema="escuro"] *));
 
-/* Identidade Mitra: petróleo sóbrio, ações teal e status com significado. */
+/* Identidade: petróleo sóbrio, cara de software de engenharia. Cor só onde tem significado:
+   a marca (ações) e o status das obrigações. */
 :root {
   color-scheme: light;
-  --fundo: #f4f7f9;
-  --fundo-2: #ffffff;
-  --fundo-3: #edf2f4;
-  --lateral: #0b2a33;
-  --borda: #e3eaef;
-  --borda-forte: #c5d2d8;
-  --texto: #0f1b2d;
-  --texto-2: #5b6b78;
-  --texto-3: #71818c;
-  --marca: #0e7c86;
-  --marca-forte: #0a626a;
-  --marca-suave: #e8f5f6;
+  --fundo: #ffffff;
+  --fundo-2: #f3f5f7;
+  --fundo-3: #e9edf1;
+  --lateral: #f3f5f7;
+  --borda: #e1e5ea;
+  --borda-forte: #c9d0d8;
+  --texto: #1b2128;
+  --texto-2: #5b6470;
+  --texto-3: #7a838e;
+  --marca: #1e6a80;
+  --marca-forte: #16566a;
+  --marca-suave: #e2eff3;
   --sobre-marca: #ffffff;
 
   --atrasada: #c23b3b;
@@ -32,7 +33,7 @@
   --gatilho: #2f6db5;
   --gatilho-fundo: #e7eff9;
   --proposta: #c26a12;
-  --sombra: 0 8px 26px rgb(15 27 45 / 5%);
+  --sombra: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
   /* séries dos gráficos (linha do tempo): ordem fixa, validada para daltonismo */
   --serie-1: #2a78d6;
   --serie-2: #eb6834;
@@ -46,19 +47,19 @@
 
 [data-tema="escuro"] {
   color-scheme: dark;
-  --fundo: #0a1519;
-  --fundo-2: #111f25;
-  --fundo-3: #172a31;
-  --lateral: #071e25;
-  --borda: #1f3139;
-  --borda-forte: #30464f;
-  --texto: #e7f0f3;
-  --texto-2: #9fb3bc;
-  --texto-3: #8299a3;
-  --marca: #14b8a6;
-  --marca-forte: #5eead4;
-  --marca-suave: #0f2b30;
-  --sobre-marca: #04282b;
+  --fundo: #0f1318;
+  --fundo-2: #171c23;
+  --fundo-3: #1f252e;
+  --lateral: #13181e;
+  --borda: #262d36;
+  --borda-forte: #36404c;
+  --texto: #e4e7eb;
+  --texto-2: #a3abb5;
+  --texto-3: #87909b;
+  --marca: #5aafc6;
+  --marca-forte: #7cc3d6;
+  --marca-suave: #17323b;
+  --sobre-marca: #0b1a1f;
 
   --atrasada: #ee6e6e;
   --atrasada-fundo: #3a1c1e;
@@ -138,12 +139,6 @@ body {
   }
 }
 
-.logo-tematica { position: relative; }
-.logo-tematica img { display: block; }
-.logo-tematica .logo-escuro { display: none; }
-[data-tema="escuro"] .logo-tematica .logo-claro { display: none; }
-[data-tema="escuro"] .logo-tematica .logo-escuro { display: block; }
-
 .num {
   font-variant-numeric: tabular-nums;
 }
@@ -182,14 +177,3 @@ dialog::backdrop {
 .leaflet-tooltip.rotulo-ativo::before {
   display: none;
 }
-
-/* A lateral permanece escura nos dois temas, como no produto Mitra. */
-[class*="bg-lateral"] .text-texto:not(select):not(option):not(input):not(textarea) { color: #ffffff; }
-[class*="bg-lateral"] select.text-texto, [class*="bg-lateral"] input.text-texto, [class*="bg-lateral"] textarea.text-texto { color: var(--texto); }
-[class*="bg-lateral"] .text-texto-2 { color: #cfe3e8; }
-[class*="bg-lateral"] .text-texto-3 { color: #9fb3bc; }
-[class*="bg-lateral"] .text-marca { color: var(--marca); }
-[class*="bg-lateral"] a:hover { color: var(--marca) !important; }
-[class*="bg-lateral"] .border-borda { border-color: rgb(207 227 232 / 18%); }
-[class*="bg-lateral"] .bg-fundo { background-color: rgb(255 255 255 / 6%); }
-[class*="bg-lateral"] .bg-fundo-3:hover { background-color: rgb(255 255 255 / 8%); }

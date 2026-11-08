@@ -39,6 +39,40 @@ test("entrar na demo e ver as 4 atrasadas", async ({ page }) => {
   await expect(page.getByTestId("tabela-entregas").locator("tbody tr")).toHaveCount(4);
 });
 
+test("Assistente Mitra substitui o antigo acesso de perguntas", async ({ page }) => {
+  await entrarNaDemo(page);
+  const nav = page.getByRole("navigation", { name: "Telas da torre" });
+  await expect(nav.getByRole("link", { name: "Assistente Mitra" })).toBeVisible();
+  await nav.getByRole("link", { name: "Assistente Mitra" }).click();
+
+  await expect(page.getByRole("heading", { name: /Assistente Mitra/ })).toBeVisible();
+  await expect(page.getByText("Pergunte em português sobre os ativos", { exact: false })).toHaveCount(0);
+  const conversa = page.getByTestId("conversa");
+  const larguras = await conversa.evaluate((elemento) => {
+    const formulario = elemento.querySelector("form");
+    const conversa = elemento.getBoundingClientRect();
+    const retanguloFormulario = formulario?.getBoundingClientRect();
+    return { larguraConversa: conversa.width, larguraFormulario: retanguloFormulario?.width, fimConversa: conversa.bottom, fimFormulario: retanguloFormulario?.bottom };
+  });
+  expect(larguras.larguraFormulario).toBeCloseTo(larguras.larguraConversa, 0);
+  expect(larguras.fimFormulario).toBeCloseTo(larguras.fimConversa, 0);
+});
+
+test("a dica permanece dentro da área visível", async ({ page }) => {
+  await entrarNaDemo(page);
+  await numero(page, "Próximo ao vencimento").getByLabel("Ver dica").hover();
+  const dica = page.getByRole("tooltip");
+  await expect(dica).toBeVisible();
+
+  const medidas = await dica.evaluate((elemento) => {
+    const retangulo = elemento.getBoundingClientRect();
+    return { esquerda: retangulo.left, direita: retangulo.right, larguraPagina: document.documentElement.scrollWidth, larguraTela: window.innerWidth };
+  });
+  expect(medidas.esquerda).toBeGreaterThanOrEqual(0);
+  expect(medidas.direita).toBeLessThanOrEqual(medidas.larguraTela);
+  expect(medidas.larguraPagina).toBeLessThanOrEqual(medidas.larguraTela);
+});
+
 test("só a Curadoria Mitra acessa as páginas Sobre", async ({ page }) => {
   await entrarNaDemo(page);
   await page.goto("/sobre/mercado/");

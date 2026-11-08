@@ -2,7 +2,7 @@
 
 import { ChevronDown, CircleAlert, Info, Loader2, OctagonAlert, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { forwardRef, useId } from "react";
+import { forwardRef, useId, useRef, useState } from "react";
 import { ErroApi } from "@/lib/api";
 import { ROTULO, cor } from "@/lib/status";
 
@@ -68,11 +68,54 @@ export function Cartao({ className, children, ...resto }: React.HTMLAttributes<H
   );
 }
 
+function Dica({ descricao, tamanho }: { descricao: string; tamanho: "titulo" | "secao" | "numero" }) {
+  const id = useId();
+  const ancora = useRef<HTMLSpanElement>(null);
+  const [aberta, setAberta] = useState(false);
+  const [posicao, setPosicao] = useState({ esquerda: 0, largura: 256 });
+  const tamanhos = {
+    titulo: "h-3.5 w-3.5 text-[9px]",
+    secao: "h-3 w-3 text-[8px]",
+    numero: "h-3 w-3 text-[8px]",
+  };
+  const abrir = () => {
+    const retangulo = ancora.current?.getBoundingClientRect();
+    if (!retangulo) return;
+    const margem = 16;
+    const largura = Math.min(256, window.innerWidth - margem * 2);
+    const esquerdaNaTela = Math.min(Math.max(margem, retangulo.left), window.innerWidth - largura - margem);
+    setPosicao({ esquerda: esquerdaNaTela - retangulo.left, largura });
+    setAberta(true);
+  };
+  return (
+    <span ref={ancora} className="relative ml-1 inline-flex align-middle" onMouseEnter={abrir} onMouseLeave={() => setAberta(false)} onFocus={abrir} onBlur={() => setAberta(false)}>
+      <span
+        aria-describedby={id}
+        aria-label="Ver dica"
+        tabIndex={0}
+        className={cx("inline-flex items-center justify-center rounded-full bg-borda-forte text-texto-2", tamanhos[tamanho])}
+      >
+        ?
+      </span>
+      {aberta && (
+        <span
+          id={id}
+          role="tooltip"
+          style={{ left: posicao.esquerda, width: posicao.largura }}
+          className="pointer-events-none absolute top-full z-50 mt-2 rounded-md border border-borda bg-fundo px-3 py-2 text-left text-xs font-normal leading-5 text-texto shadow-cartao"
+        >
+          {descricao}
+        </span>
+      )}
+    </span>
+  );
+}
+
 const TITULOS_DICAS: Record<string, string> = {
   "Caixa de entrada": "Central de obrigações que precisam de entrega ou atenção imediata",
   "Ativos": "Barragens, equipamentos e instalações monitoradas",
   "Entregas": "Histórico de todas as entregas e registros já realizados",
-  "Pergunte à torre": "Faça perguntas e receba respostas sobre regulamentações e conformidade",
+  "Assistente Mitra": "Faça perguntas e receba respostas sobre regulamentações e conformidade",
   "Auditoria": "Registro de todas as ações realizadas no sistema",
   "Usuários e acessos": "Gerencie usuários e permissões de acesso",
   "Instanciação": "Configuração dos parâmetros e regras da sua empresa",
@@ -96,9 +139,7 @@ export function Titulo({ sobre, titulo, acoes, children, dica }: { sobre?: strin
         <h1 className="text-2xl font-semibold tracking-tight">
           {titulo}
           {Descricao && (
-            <span className="ml-1 align-middle inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-borda-forte text-[9px] text-texto-2" title={Descricao}>
-              ?
-            </span>
+            <Dica descricao={Descricao} tamanho="titulo" />
           )}
         </h1>
         {children && <div className="mt-1 max-w-3xl text-sm text-texto-2">{children}</div>}
@@ -131,9 +172,7 @@ export function Secao({ titulo, descricao, acoes, children, className, id, dica 
           <h2 id={id ? `${id}-titulo` : undefined} className="text-base font-semibold">
             {titulo}
             {Descricao && (
-              <span className="ml-1 align-middle inline-flex items-center justify-center w-3 h-3 rounded-full bg-borda-forte text-[8px] text-texto-2" title={Descricao}>
-                ?
-              </span>
+              <Dica descricao={Descricao} tamanho="secao" />
             )}
           </h2>
           {descricao && <p className="mt-0.5 max-w-3xl text-[13px] text-texto-2">{descricao}</p>}
@@ -332,9 +371,7 @@ export function Numero({ valor, rotulo, status, href, dica }: { valor: number | 
       <span className="flex items-center gap-1 text-[13px] font-medium text-texto-2">
         {rotulo}
         {Descricao && (
-          <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-borda-forte text-[8px] text-texto-2" title={Descricao}>
-            ?
-          </span>
+          <Dica descricao={Descricao} tamanho="numero" />
         )}
       </span>
       <span className="num text-3xl font-semibold leading-tight">{valor}</span>

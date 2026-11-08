@@ -1,8 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { ATRASADA, DADO_FALTANDO, EM_DIA, GATILHO, VENCE_LOGO, cor, ordenar, orgao, pior } from "./status";
+import { ATRASADA, DADO_FALTANDO, EM_DIA, GATILHO, ROTULO, VENCE_LOGO, cor, ordenar, orgao, pior } from "./status";
 
 describe("status", () => {
+  it("apresenta os rótulos atualizados dos status", () => {
+    expect(ROTULO[DADO_FALTANDO]).toBe("Cadastro Incompleto");
+    expect(ROTULO[VENCE_LOGO]).toBe("Próximo ao vencimento");
+  });
+
   it("o pior status manda na cor do ativo", () => {
     expect(pior({ atrasada: 1, dado_faltando: 2 })).toBe(ATRASADA);
     expect(pior({ dado_faltando: 1, vence_logo: 3 })).toBe(DADO_FALTANDO);

@@ -1,12 +1,11 @@
 "use client";
 
-import { CircleAlert, MessageSquareText, RotateCcw, SendHorizontal, ShieldCheck } from "lucide-react";
+import { CircleAlert, RotateCcw, SendHorizontal, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/markdown";
 import { AreaTexto, Aviso, Botao, Carregando, Cartao, Etiqueta, Titulo, cx, mensagem } from "@/components/ui";
 import { useEstadoPergunta, usePerguntar } from "@/lib/consultas";
 import { type MensagemChat, type RespostaPergunta, SUGESTOES, consultas, historicoPara, resumoConferencia } from "@/lib/pergunta";
-import { useEmpresa } from "@/lib/torre";
 
 function Conferencia({ r }: { r: RespostaPergunta }) {
   const c = resumoConferencia(r.conferencia);
@@ -59,7 +58,6 @@ function Mensagem({ m }: { m: MensagemChat }) {
 }
 
 export default function Pergunte() {
-  const empresa = useEmpresa();
   const estado = useEstadoPergunta();
   const perguntar = usePerguntar();
   const [msgs, setMsgs] = useState<MensagemChat[]>([]);
@@ -84,50 +82,48 @@ export default function Pergunte() {
 
   const desligada = estado.data && !estado.data.ligada;
   return (
-    <>
-      <Titulo sobre="Operação" titulo="Pergunte à torre" acoes={msgs.length > 0 && (
+    <div className="flex min-h-[calc(100dvh-2.5rem)] flex-col lg:min-h-[calc(100dvh-4rem)]">
+      <Titulo titulo="Assistente Mitra" acoes={msgs.length > 0 && (
         <Botao tamanho="p" icone={<RotateCcw className="size-3.5" />} onClick={() => setMsgs([])} disabled={perguntar.isPending}>
           Nova conversa
         </Botao>
-      )}>
-        Pergunte em português sobre os ativos da {empresa.nome}. A resposta vem só do que a torre tem e do que você pode ver
-        nela, cita a norma e o trecho, e o Python confere cada trecho, data e código antes de mostrar. Ninguém decide nada por
-        aqui: entregas e aprovações continuam nas telas da torre.
-      </Titulo>
+      )} />
 
       {desligada && (
         <Aviso tipo="atencao" className="mb-4">
-          O Pergunte à torre está desligado neste ambiente (nenhum provedor de IA configurado). Na AWS ele usa o Claude pelo Bedrock.
+          Funcionalidade desativada neste ambiente, pois nenhum provedor de IA está configurado.
         </Aviso>
       )}
 
-      <div className="mx-auto max-w-3xl space-y-4" data-testid="conversa">
-        {msgs.length === 0 && (
-          <Cartao className="p-5">
-            <p className="flex items-center gap-2 text-sm font-semibold"><MessageSquareText className="size-4 text-marca" aria-hidden />Experimente</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {SUGESTOES.map((s) => (
-                <button key={s} type="button" onClick={() => enviar(s)} disabled={!!desligada || perguntar.isPending}
-                  className="rounded-full border border-borda bg-fundo px-3 py-1.5 text-left text-[13px] text-texto-2 transition-colors hover:border-marca hover:text-marca disabled:opacity-50"
-                  data-testid="sugestao">
-                  {s}
-                </button>
-              ))}
-            </div>
-          </Cartao>
-        )}
+      <div className="flex flex-1 flex-col" data-testid="conversa">
+        <div className="space-y-4">
+          {msgs.length === 0 && (
+            <Cartao className="mx-auto max-w-3xl bg-transparent p-6 text-center shadow-none">
+              <p className="flex items-center justify-center gap-2 text-base font-semibold"><Sparkles className="size-4 text-marca" aria-hidden />Experimente</p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {SUGESTOES.map((s) => (
+                  <button key={s} type="button" onClick={() => enviar(s)} disabled={!!desligada || perguntar.isPending}
+                    className="rounded-full border border-borda bg-transparent px-3 py-1.5 text-left text-[13px] text-texto-2 transition-colors hover:border-marca hover:text-marca disabled:opacity-50"
+                    data-testid="sugestao">
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </Cartao>
+          )}
 
-        {msgs.map((m, i) => <Mensagem key={i} m={m} />)}
+          {msgs.map((m, i) => <Mensagem key={i} m={m} />)}
 
-        {perguntar.isPending && (
-          <Cartao className="p-4" aria-live="polite">
-            <p className="mb-2 text-xs text-texto-3">Consultando a torre…</p>
-            <Carregando linhas={3} />
-          </Cartao>
-        )}
-        <div ref={fim} />
+          {perguntar.isPending && (
+            <Cartao className="p-4" aria-live="polite">
+              <p className="mb-2 text-xs text-texto-3">Consultando a torre…</p>
+              <Carregando linhas={3} />
+            </Cartao>
+          )}
+          <div ref={fim} />
+        </div>
 
-        <form className="sticky bottom-4 flex items-end gap-2 rounded-xl border border-borda bg-fundo-2 p-2 shadow-sm"
+        <form className="mt-auto flex items-end gap-2 rounded-xl border border-borda bg-fundo-2 p-2 shadow-sm"
           onSubmit={(e) => { e.preventDefault(); enviar(texto); }}>
           <label htmlFor="pergunta" className="sr-only">Sua pergunta</label>
           <AreaTexto id="pergunta" rows={2} value={texto} maxLength={2000} disabled={!!desligada}
@@ -142,6 +138,6 @@ export default function Pergunte() {
           </Botao>
         </form>
       </div>
-    </>
+    </div>
   );
 }
