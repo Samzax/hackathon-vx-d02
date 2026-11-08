@@ -190,6 +190,21 @@ def test_conta_de_teste_troca_de_visao_e_age_como_ela(cliente):
     assert cliente.put(_url("/auth/visao"), json={"visao": "Inventada"}).status_code == 422
 
 
+def test_conta_de_teste_olha_como_o_regulatorio(cliente):
+    """O Regulatório vê todos os ativos e lê as mudanças, mas norma pública continua com a curadoria."""
+    eu = entrar(cliente)
+    assert eu["visoes"][:2] == ["Diretoria (todos os ativos)", "Regulatório (todos os ativos)"]
+    r = cliente.put(_url("/auth/visao"), json={"visao": "Regulatório (todos os ativos)"})
+    assert r.status_code == 200 and r.json()["papel_efetivo"] == "regulatorio" and not r.json()["plataforma"]
+    emp = _empresa(cliente)
+    assert len(cliente.get(_url(f"/empresas/{emp}/ativos")).json()) == 8
+    ob01 = next(m for m in cliente.get(_url(f"/empresas/{emp}/mudancas")).json() if m["codigo"] == "OB-01")
+    assert not ob01["decide"] and ob01["quem_decide"] == "curadoria Mitra"
+    r = cliente.post(_url(f"/mudancas/{ob01['versao_id']}/decisao"), json={"aprovar": True})
+    assert r.status_code == 403 and "curadoria" in r.json()["detail"]
+    assert cliente.get(_url("/usuarios")).status_code == 403
+
+
 def test_ficha_do_ativo_traz_pendencias_evidencias_e_historico(cliente):
     entrar(cliente)
     emp = _empresa(cliente)

@@ -10,7 +10,7 @@ from mitra import usuarios
 from .. import auditoria
 from ..banco import conexao
 from ..config import hoje_padrao
-from ..seguranca import (VISAO_CURADORIA, VISAO_DIRETORIA, VISAO_TI, Escopo, abrir_sessao, areas_da_empresa,
+from ..seguranca import (VISAO_CURADORIA, VISAO_DIRETORIA, VISAO_REGULATORIO, VISAO_TI, Escopo, abrir_sessao, areas_da_empresa,
                          empresa_da_conta, escopo, escopo_da_conta, fechar_sessao)
 
 rota = APIRouter(prefix="/auth", tags=["auth"])
@@ -50,7 +50,8 @@ def _eu(conn, e: Escopo, csrf: str | None = None) -> Eu:
     u = e.usuario
     visoes = [e.visao]
     if u["teste"]:      # as áreas são as da empresa da conta, mesmo olhando como a curadoria
-        visoes = [VISAO_DIRETORIA, *areas_da_empresa(conn, empresa_da_conta(conn, u)), VISAO_TI, VISAO_CURADORIA]
+        visoes = [VISAO_DIRETORIA, VISAO_REGULATORIO, *areas_da_empresa(conn, empresa_da_conta(conn, u)), VISAO_TI,
+                  VISAO_CURADORIA]
     return Eu(id=u["id"], email=u["email"], nome=u["nome"], papel=u["papel"], papel_efetivo=e.papel,
               area=u.get("area"), teste=bool(u["teste"]), empresa=e.empresa, plataforma=e.plataforma,
               so_leitura=e.so_leitura, unidades=list(e.unidades),

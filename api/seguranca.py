@@ -36,6 +36,7 @@ COOKIE_SESSAO = "mitra_sessao"
 COOKIE_CSRF = "mitra_csrf"
 CABECALHO_CSRF = "X-CSRF-Token"
 VISAO_DIRETORIA = "Diretoria (todos os ativos)"
+VISAO_REGULATORIO = "Regulatório (todos os ativos)"
 VISAO_TI = "TI (usuários e acessos)"
 VISAO_CURADORIA = "Curadoria Mitra (plataforma)"
 _ESCRITA = {"POST", "PUT", "PATCH", "DELETE"}
@@ -182,6 +183,8 @@ def escopo_da_conta(conn, u: dict, visao: str | None = None) -> Escopo:
         visao = visao or VISAO_DIRETORIA
         if visao == VISAO_DIRETORIA:
             return Escopo(u, usuarios.DIRETORIA, None, visao, visao, **na_empresa)
+        if visao == VISAO_REGULATORIO:
+            return Escopo(u, usuarios.REGULATORIO, None, visao, visao, **na_empresa)
         if visao == VISAO_TI:
             return Escopo(u, usuarios.ADMIN, None, visao, visao, **na_empresa)
         return Escopo(u, usuarios.GESTOR, visao, visao, visao, **na_empresa)
@@ -189,7 +192,7 @@ def escopo_da_conta(conn, u: dict, visao: str | None = None) -> Escopo:
         unidades = tuple(usuarios.unidades_da_conta(u))
         rotulo = (f"{u['area']} · {', '.join(unidades)}" if unidades else (u["area"] or ""))
         return Escopo(u, u["papel"], u["area"], rotulo, u["nome"], unidades=unidades, **na_empresa)
-    rotulo = {usuarios.DIRETORIA: VISAO_DIRETORIA, usuarios.REGULATORIO: "Regulatório (todos os ativos)",
+    rotulo = {usuarios.DIRETORIA: VISAO_DIRETORIA, usuarios.REGULATORIO: VISAO_REGULATORIO,
               usuarios.ADMIN: VISAO_TI}[u["papel"]]
     return Escopo(u, u["papel"], None, rotulo, u["nome"], **na_empresa)
 
