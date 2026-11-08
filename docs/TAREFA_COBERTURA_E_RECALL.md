@@ -81,11 +81,12 @@ O modelo da Mitra é o **Claude Haiku 5.5**. Para **ler os dados do catálogo** 
 2. **Então decidir:** delegar ao DeepSeek v4.1 **só dado não sensível** (norma publicada é pública),
    ou deixar tudo no Haiku 5.5. Custo do DeepSeek no OpenCode: US$ 10/mês dão US$ 100 de uso.
 
-Implementação: hoje `mitra/modelos.toml` roteia só por camada (2/3). Criar roteamento **por tarefa com
-flag de sensibilidade**: tarefas sensíveis (licenças, evidências, pergunta — texto de cliente) só
-roteiam Anthropic/Bedrock; tarefas públicas (extrator, triagem da descoberta, impacto de norma pública)
-podem cair para DeepSeek. `Roteador.pedir_json` já recebe `tarefa`; falta usá-la no roteamento.
-Lembrete: a conta do evento não tem modelos 5.5 no allowlist do Bedrock.
+Implementação (feita em 7/11): `mitra/modelos.toml` marca cada tarefa como sensível ou não. Tarefas
+sensíveis (licenças, evidências — texto de cliente) só saem para Anthropic/Bedrock; tarefas públicas
+(extrator, triagem da descoberta, impacto de norma pública) podem cair para DeepSeek. A ordem dos
+modelos é uma só por camada, com o Haiku 5.5 primeiro (8/11).
+Lembrete: a conta do evento não tem modelos 5.5 no allowlist do Bedrock; lá o Haiku 5.5 é recusado
+uma vez e o próximo modelo da lista atende.
 
 ## 6. Vertical "obras em geral" — dá, em três fases
 

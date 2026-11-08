@@ -4,7 +4,9 @@ Fala três formatos de API, o que cobre Anthropic, DeepSeek, OpenCode Go e Amazo
   - openai:    POST {base}/chat/completions
   - anthropic: POST {base}/messages
   - bedrock:   API Converse do Bedrock (boto3), credencial pelo perfil AWS, sem chave no .env
-Quem atende cada camada (e cada tarefa) está em modelos.toml. As chaves vêm do .env.
+A ordem dos modelos de cada camada está em modelos.toml ([catalogo] e [camadas]); as chaves vêm do .env.
+Quem atende é decidido na hora: provedor sem chave fica de fora, e modelo que o provedor recusa (sem
+acesso na conta, ID que ele não conhece) sai da fila por um tempo (Disponibilidade).
 Tarefa sensível (leva texto de cliente) só sai, em chamada nova, para os provedores de
 [sensibilidade]; o cache vale para qualquer modelo, porque resposta já paga não leva nada novo.
 """
@@ -13,8 +15,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
+import threading
+import time
 import tomllib
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -26,6 +31,9 @@ from dotenv import load_dotenv
 CONFIG = Path(__file__).with_name("modelos.toml")
 ROOT = Path(__file__).resolve().parent.parent
 USER_AGENT = "mitra/0.1 (hackathon-vx-d02)"
+RECUSA_POR_S = 30 * 60          # quanto tempo um modelo recusado fica fora da fila antes de tentar de novo
+RECUSA_HTTP = frozenset({401, 403, 404})
+log = logging.getLogger("mitra.ia")
 
 
 class SemProvedor(RuntimeError):
@@ -60,6 +68,82 @@ class Resposta:
     custo_usd: float
     do_cache: bool = False
     tentativas: list[str] = field(default_factory=list)   # modelos que falharam antes
+
+
+def modelos_da_lista(cfg: dict, lista: list) -> list[Modelo]:
+    """A lista de uma camada em modelos concretos. Cada item é um nome do [catalogo] ("nome@esforço"
+    opcional), que vira um Modelo por provedor que o oferece, na ordem do catálogo; ou uma tabela
+    {provedor, modelo, esforco} já resolvida."""
+    out: list[Modelo] = []
+    for item in lista:
+        if isinstance(item, dict):
+            novos = [Modelo(item["provedor"], item["modelo"], item.get("esforco"))]
+        else:
+            nome, _, esforco = item.partition("@")
+            novos = [Modelo(prov, ident, esforco or None)
+                     for prov, ident in cfg["catalogo"][nome].items() if prov != "preco"]
+        out += [m for m in novos if m not in out]
+    return out
+
+
+def preco(cfg: dict, modelo: str) -> tuple[float, float]:
+    """US$ por milhão de tokens (entrada, saída) do ID de um modelo em qualquer provedor."""
+    for entrada in cfg.get("catalogo", {}).values():
+        if modelo in [v for k, v in entrada.items() if k != "preco"]:
+            return tuple(entrada.get("preco", (0.0, 0.0)))
+    return tuple(cfg.get("precos", {}).get(modelo, (0.0, 0.0)))
+
+
+def recusa_permanente(e: BaseException) -> bool:
+    """O provedor disse que este modelo não está ao alcance (sem acesso na conta, ID desconhecido, chave
+    recusada), e não que falhou desta vez (limite de taxa, tempo esgotado, resposta malformada)."""
+    if isinstance(e, httpx.HTTPStatusError):
+        return e.response.status_code in RECUSA_HTTP
+    resp = getattr(e, "response", None)
+    if isinstance(resp, dict):                  # botocore ClientError
+        erro = resp.get("Error") or {}
+        codigo, msg = erro.get("Code", ""), str(erro.get("Message", "")).lower()
+        if codigo in ("AccessDeniedException", "ResourceNotFoundException"):
+            return True
+        return codigo == "ValidationException" and any(
+            t in msg for t in ("model identifier", "model id", "inference profile"))
+    return False
+
+
+class Disponibilidade:
+    """O que o processo aprendeu na hora: modelo recusado pelo provedor fica fora da fila por um tempo
+    (RECUSA_POR_S) e depois é tentado de novo, para voltar sozinho se a conta passar a ter acesso.
+    Uma só para o processo todo: as tarefas JSON e o Assistente Mitra aprendem juntos."""
+
+    def __init__(self, relogio=None):
+        self._relogio = relogio or time.monotonic
+        self._ate: dict[tuple[str, str], float] = {}
+        self._trava = threading.Lock()
+
+    def recusar(self, modelo: Modelo, motivo: str = "") -> None:
+        with self._trava:
+            self._ate[(modelo.provedor, modelo.nome)] = self._relogio() + RECUSA_POR_S
+        log.warning("modelo %s:%s recusado pelo provedor; fora da fila por %d min. %s",
+                    modelo.provedor, modelo.nome, RECUSA_POR_S // 60, motivo[:200])
+
+    def disponivel(self, modelo: Modelo) -> bool:
+        with self._trava:
+            ate = self._ate.get((modelo.provedor, modelo.nome))
+            if ate is not None and self._relogio() >= ate:
+                del self._ate[(modelo.provedor, modelo.nome)]
+                ate = None
+        return ate is None
+
+    def filtrar(self, modelos: list[Modelo]) -> list[Modelo]:
+        """Os disponíveis, na ordem; se todos estiverem recusados, todos (melhor tentar que não ter quem)."""
+        return [m for m in modelos if self.disponivel(m)] or list(modelos)
+
+    def esquecer(self) -> None:
+        with self._trava:
+            self._ate.clear()
+
+
+DISPONIBILIDADE = Disponibilidade()
 
 
 def extrair_json(texto: str) -> dict:
@@ -140,7 +224,12 @@ class ClienteHTTP:
 
 
 class FalhaProvedor(RuntimeError):
-    """Erro de um provedor que não fala HTTP direto (ex.: Bedrock via boto3), já sem detalhe de SDK."""
+    """Erro de um provedor que não fala HTTP direto (ex.: Bedrock via boto3), já sem detalhe de SDK.
+    `recusado`: o provedor recusou o modelo (ver recusa_permanente), não só esta chamada."""
+
+    def __init__(self, msg: str, recusado: bool = False):
+        super().__init__(msg)
+        self.recusado = recusado
 
 
 class ClienteBedrock:
@@ -180,7 +269,7 @@ class ClienteBedrock:
                 inferenceConfig={"maxTokens": max_tokens},
             )
         except Exception as e:      # ClientError, throttling, credencial: o roteador tenta o próximo modelo
-            raise FalhaProvedor(f"{type(e).__name__}: {str(e)[:200]}") from e
+            raise FalhaProvedor(f"{type(e).__name__}: {str(e)[:200]}", recusado=recusa_permanente(e)) from e
         blocos = r.get("output", {}).get("message", {}).get("content", [])
         texto = "".join(b.get("text", "") for b in blocos)
         uso = r.get("usage") or {}
@@ -198,12 +287,14 @@ class Roteador:
     """
 
     def __init__(self, conn=None, config: Path = CONFIG, env: dict | None = None,
-                 provedores: dict | None = None, timeout: float = 180.0):
+                 provedores: dict | None = None, timeout: float = 180.0,
+                 disponibilidade: Disponibilidade = DISPONIBILIDADE):
         if env is None:
             load_dotenv(ROOT / ".env")
             env = dict(os.environ)
         self.cfg = tomllib.loads(config.read_text(encoding="utf-8"))
         self.conn = conn
+        self.disponibilidade = disponibilidade
         # no link público: teto de gasto por dia (UTC), somado do cache, que guarda o custo de cada chamada
         try:
             self.teto_dia_usd = float(env.get("MITRA_TETO_DIA_USD") or 0) or None
@@ -219,27 +310,20 @@ class Roteador:
                 if env.get(c["chave"])
             }
 
-    def candidatos(self, camada: int) -> list[Modelo]:
-        return [
-            Modelo(m["provedor"], m["modelo"], m.get("esforco"))
-            for m in self.cfg["camadas"][str(camada)]["modelos"]
-            if m["provedor"] in self.provedores
-        ]
+    def _ordem(self, camada: int) -> list[Modelo]:
+        """Todos os modelos da camada, na ordem, com ou sem chave (o cache vale para qualquer um)."""
+        return modelos_da_lista(self.cfg, self.cfg["camadas"][str(camada)]["modelos"])
 
-    def _ordem(self, tarefa: str, camada: int) -> list[Modelo]:
-        """Os modelos preferidos da tarefa ([tarefas.<nome>].modelos) e depois os da camada."""
-        pref = [Modelo(m["provedor"], m["modelo"], m.get("esforco"))
-                for m in (self.cfg.get("tarefas", {}).get(tarefa, {})).get("modelos", [])]
-        base = [Modelo(m["provedor"], m["modelo"], m.get("esforco"))
-                for m in self.cfg["camadas"][str(camada)]["modelos"]]
-        return pref + [m for m in base if m not in pref]
+    def candidatos(self, camada: int) -> list[Modelo]:
+        """Quem pode atender agora: provedor com chave e modelo que ele não recusou."""
+        return self.disponibilidade.filtrar([m for m in self._ordem(camada) if m.provedor in self.provedores])
 
     def sensivel(self, tarefa: str) -> bool:
         """Tarefa que leva texto de cliente. O que não está declarado em [tarefas] é sensível."""
         return bool(self.cfg.get("tarefas", {}).get(tarefa, {}).get("sensivel", True))
 
     def custo(self, modelo: str, tin: int, tout: int) -> float:
-        preco_in, preco_out = self.cfg["precos"].get(modelo, (0.0, 0.0))
+        preco_in, preco_out = preco(self.cfg, modelo)
         return (tin * preco_in + tout * preco_out) / 1_000_000
 
     def _chave(self, tarefa: str, modelo: Modelo, versao_prompt: str, sistema: str, usuario: str) -> str:
@@ -267,17 +351,16 @@ class Roteador:
 
     def pedir_json(self, tarefa: str, camada: int, sistema: str, usuario: str,
                    versao_prompt: str, max_tokens: int = 4000) -> Resposta:
-        # 1) cache de qualquer modelo da tarefa e da camada, mesmo sem chave: a demo roda sem internet
+        # 1) cache de qualquer modelo da camada, mesmo sem chave: a demo roda sem internet
         # (a sensibilidade não filtra o cache: resposta já paga não leva nada novo a provedor nenhum)
-        todos = self._ordem(tarefa, camada)
-        for modelo in todos:
+        for modelo in self._ordem(camada):
             chave = self._chave(tarefa, modelo, versao_prompt, sistema, usuario)
             if (row := self._do_cache(chave)) is not None:
                 return Resposta(json.loads(row["resposta"]), modelo, row["tokens_in"],
                                 row["tokens_out"], row["custo_usd"], do_cache=True)
-        # 2) chamada de verdade, na ordem da tarefa e da camada, só nos provedores com chave;
-        # tarefa sensível (texto de cliente) só sai para os provedores de [sensibilidade]
-        modelos = [m for m in todos if m.provedor in self.provedores]
+        # 2) chamada de verdade, na ordem da camada, só nos provedores com chave e nos modelos que eles
+        # não recusaram; tarefa sensível (texto de cliente) só sai para os provedores de [sensibilidade]
+        modelos = self.candidatos(camada)
         if self.sensivel(tarefa):
             confiaveis = tuple(self.cfg.get("sensibilidade", {}).get("provedores", ("anthropic", "bedrock")))
             modelos = [m for m in modelos if m.provedor in confiaveis]
@@ -299,6 +382,8 @@ class Roteador:
                 dados = extrair_json(texto)
             except (httpx.HTTPError, FalhaProvedor, RespostaInvalida, KeyError) as e:
                 falhas.append(f"{modelo.rotulo}: {type(e).__name__}: {str(e)[:160]}")
+                if getattr(e, "recusado", False) or recusa_permanente(e):
+                    self.disponibilidade.recusar(modelo, str(e))
                 continue
             custo = self.custo(modelo.nome, tin, tout)
             self._guardar(chave, tarefa, modelo, dados, tin, tout, custo)
@@ -326,3 +411,33 @@ class Roteador:
         if self.conn is None:
             return 0.0
         return self.conn.execute("SELECT COALESCE(SUM(custo_usd), 0) FROM analise_ia").fetchone()[0]
+
+
+def sondar(provedores: dict, modelos: list[Modelo], disponibilidade: Disponibilidade = DISPONIBILIDADE) -> Modelo | None:
+    """Uma chamada mínima por modelo, na ordem, até o primeiro que responde: o que o provedor recusar fica
+    marcado antes de alguém precisar dele. Erro passageiro (taxa, rede) para a sondagem sem concluir nada."""
+    for m in modelos:
+        p = provedores.get(m.provedor)
+        if p is None:
+            continue
+        try:
+            p.chamar(m, "Responda só: ok", "ok", 16, sessao="sondagem")
+            log.info("modelo %s responde", m.rotulo)
+            return m
+        except Exception as e:
+            if not (getattr(e, "recusado", False) or recusa_permanente(e)):
+                log.warning("sondagem de %s parou: %s", m.rotulo, str(e)[:200])
+                return None
+            disponibilidade.recusar(m, str(e))
+    return None
+
+
+def sondar_bedrock() -> None:  # pragma: no cover - chama a AWS de verdade (no início da API, com MITRA_BEDROCK=1)
+    """Na AWS, a conta decide quais modelos estão liberados: descobre isso ao subir, em segundo plano."""
+    try:
+        rot = Roteador(None)
+        provs = {k: v for k, v in rot.provedores.items() if k == "bedrock"}
+        for camada in (2, 3):
+            sondar(provs, [m for m in rot._ordem(camada) if m.provedor == "bedrock"])
+    except Exception:
+        log.exception("sondagem dos modelos do Bedrock falhou")

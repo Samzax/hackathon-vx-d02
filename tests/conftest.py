@@ -75,6 +75,16 @@ def _postgres_no_lugar_do_sqlite(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _modelos_sem_recusa_de_outro_teste():
+    """A memória de modelos recusados é do processo: cada teste começa sem ela."""
+    from mitra.ia import DISPONIBILIDADE
+
+    DISPONIBILIDADE.esquecer()
+    yield
+    DISPONIBILIDADE.esquecer()
+
+
+@pytest.fixture(autouse=True)
 def _sem_extracao_automatica(monkeypatch):
     """Aprovar uma candidata dispara a extração em segundo plano (IA de verdade): nos testes vira
     no-op, para a suíte não depender de rede nem encher data/extraido/. O teste da fiação

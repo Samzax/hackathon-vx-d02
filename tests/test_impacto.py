@@ -36,8 +36,12 @@ class Falso:
 
 
 def _roteador(conn, respostas):
+    """As camadas fixas no modelo que o Falso roteiriza: o teste é da subida 2 -> 3, não da ordem."""
     falso = Falso(respostas)
-    return Roteador(conn, provedores={"opencode": falso}), falso
+    rot = Roteador(conn, provedores={"opencode": falso})
+    rot.cfg["camadas"]["2"]["modelos"] = ["deepseek-v4.1-flash@high"]
+    rot.cfg["camadas"]["3"]["modelos"] = ["deepseek-v4.1-flash@max"]
+    return rot, falso
 
 
 CERTA_245 = {

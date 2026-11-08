@@ -8,6 +8,8 @@ falam só com esta API. O domínio continua em `mitra/`, igual para SQLite e Pos
 
 from __future__ import annotations
 
+import os
+import threading
 from contextlib import asynccontextmanager, contextmanager
 from pathlib import Path
 
@@ -17,7 +19,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from mitra import banco as banco_mitra
-from mitra import db, demo, usuarios
+from mitra import db, demo, ia, usuarios
 
 from .banco import abrir_pool, conexao
 from .config import Config
@@ -83,6 +85,8 @@ def criar_app(cfg: Config | None = None) -> FastAPI:
     async def ciclo(app: FastAPI):
         _preparar_banco(cfg)
         app.state.pool = abrir_pool(cfg)        # Postgres: o pool de conexões; SQLite: None
+        if os.environ.get("MITRA_BEDROCK"):     # a conta AWS decide que modelos libera: descobre ao subir
+            threading.Thread(target=ia.sondar_bedrock, name="sondar-modelos", daemon=True).start()
         try:
             yield
         finally:

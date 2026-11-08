@@ -6,8 +6,10 @@ todo trecho citado entre aspas, toda data e todo código de obrigação ou ativo
 que as ferramentas devolveram. O que não estiver volta para o modelo corrigir uma vez; o que sobrar vai
 marcado para quem lê.
 
-Provedores (`[pergunta]` em modelos.toml, o primeiro com chave vale): Bedrock pela API Converse (o da AWS),
-a API da Anthropic e os de formato OpenAI (DeepSeek, OpenCode Go), todos com uso de ferramentas.
+Modelos: a lista da camada 2 de modelos.toml, na ordem, com os mesmos filtros das tarefas JSON (provedor
+com chave, modelo que o provedor não recusou). Bedrock pela API Converse (o da AWS), a API da Anthropic,
+o OpenCode Go (formato Anthropic para os modelos de `modelos_anthropic`, OpenAI para os outros) e o
+DeepSeek, todos com uso de ferramentas.
 
 Avaliação com o modelo de verdade (perguntas em `tests/pergunta_avaliacao.toml`):
     MITRA_BEDROCK=1 AWS_PROFILE=vx uv run python -m mitra.pergunta avaliar [--gravar]
@@ -31,7 +33,8 @@ from typing import Any
 import httpx
 from pydantic import ConfigDict, ValidationError, create_model
 
-from .ia import CONFIG, USER_AGENT, Modelo, Roteador, SemProvedor, TetoAtingido
+from .ia import (CONFIG, DISPONIBILIDADE, RECUSA_HTTP, USER_AGENT, Modelo, Roteador, SemProvedor, TetoAtingido,
+                 modelos_da_lista, preco, recusa_permanente)
 
 SISTEMA = Path(__file__).with_name("pergunta_sistema.md")
 VERSAO_PROMPT = "pergunta-1"
@@ -44,7 +47,11 @@ PRAZO_S = 45.0
 
 
 class ErroPergunta(RuntimeError):
-    pass
+    """`recusado`: o provedor recusou o modelo (sem acesso, ID desconhecido), não só esta chamada."""
+
+    def __init__(self, msg: str = "", recusado: bool = False):
+        super().__init__(msg)
+        self.recusado = recusado
 
 
 class Demorou(RuntimeError):
@@ -170,7 +177,7 @@ class _Bedrock:
                                       messages=estado["msgs"], toolConfig={"tools": estado["tools"]},
                                       inferenceConfig={"maxTokens": max_tokens})
         except Exception as e:
-            raise ErroPergunta(f"Bedrock: {type(e).__name__}: {str(e)[:200]}") from e
+            raise ErroPergunta(f"Bedrock: {type(e).__name__}: {str(e)[:200]}", recusado=recusa_permanente(e)) from e
         msg = r["output"]["message"]
         estado["msgs"].append(msg)
         texto = "".join(b.get("text", "") for b in msg["content"])
@@ -191,21 +198,26 @@ class _Bedrock:
 
 
 class _Anthropic:
-    def __init__(self, cfg: dict, chave: str, http: httpx.Client):
-        self.base, self.chave, self.http = cfg["base"], chave, http
+    """Formato /messages: a API da Anthropic, e o OpenCode Go para os modelos de `modelos_anthropic`."""
+
+    def __init__(self, cfg: dict, chave: str, http: httpx.Client, base: str | None = None):
+        self.cfg, self.base, self.chave, self.http = cfg, base or cfg["base"], chave, http
 
     def iniciar(self, sistema, ferramentas, historico) -> dict:
         msgs = [{"role": "user" if p == "usuario" else "assistant", "content": t} for p, t in historico]
         tools = [{"name": f.nome, "description": f.descricao, "input_schema": f.esquema} for f in ferramentas]
-        return {"sistema": sistema, "msgs": msgs, "tools": tools}
+        return {"sistema": sistema, "msgs": msgs, "tools": tools, "sessao": uuid.uuid4().hex}
 
     def passo(self, estado, modelo: Modelo, max_tokens: int) -> Passo:
-        r = self.http.post(f"{self.base}/messages", headers={
-            "x-api-key": self.chave, "anthropic-version": "2023-06-01", "User-Agent": USER_AGENT},
-            json={"model": modelo.nome, "system": estado["sistema"], "messages": estado["msgs"],
-                  "tools": estado["tools"], "max_tokens": max_tokens})
+        headers = {"x-api-key": self.chave, "anthropic-version": "2023-06-01", "User-Agent": USER_AGENT}
+        if self.cfg.get("cabecalho_sessao"):
+            headers[self.cfg["cabecalho_sessao"]] = estado["sessao"]
+        r = self.http.post(f"{self.base}/messages", headers=headers,
+                           json={"model": modelo.nome, "system": estado["sistema"], "messages": estado["msgs"],
+                                 "tools": estado["tools"], "max_tokens": max_tokens})
         if r.status_code >= 400:
-            raise ErroPergunta(f"Anthropic {r.status_code}: {r.text[:200]}")
+            raise ErroPergunta(f"{modelo.provedor} {r.status_code}: {r.text[:200]}",
+                               recusado=r.status_code in RECUSA_HTTP)
         d = r.json()
         estado["msgs"].append({"role": "assistant", "content": d["content"]})
         texto = "".join(b.get("text", "") for b in d["content"] if b.get("type") == "text")
@@ -244,7 +256,8 @@ class _OpenAI:
             payload["reasoning_effort"] = modelo.esforco
         r = self.http.post(f"{self.cfg['base']}/chat/completions", headers=headers, json=payload)
         if r.status_code >= 400:
-            raise ErroPergunta(f"{modelo.provedor} {r.status_code}: {r.text[:200]}")
+            raise ErroPergunta(f"{modelo.provedor} {r.status_code}: {r.text[:200]}",
+                               recusado=r.status_code in RECUSA_HTTP)
         d = r.json()
         msg = d["choices"][0]["message"]
         estado["msgs"].append({k: v for k, v in msg.items() if k in ("role", "content", "tool_calls")})
@@ -267,6 +280,33 @@ class _OpenAI:
         estado["msgs"].append({"role": "user", "content": texto})
 
 
+class _DoisFormatos:
+    """Provedor que fala os dois formatos (OpenCode Go): o modelo decide qual. Cada pergunta abre um estado
+    por modelo, então o estado guarda os dois e usa o do formato do modelo que respondeu."""
+
+    def __init__(self, cfg: dict, chave: str, http: httpx.Client):
+        self.anthropic = set(cfg.get("modelos_anthropic", []))
+        self.a = _Anthropic(cfg, chave, http, base=cfg["base_anthropic"])
+        self.o = _OpenAI(cfg, chave, http)
+
+    def _de(self, estado: dict):
+        return self.a if estado["formato"] == "anthropic" else self.o
+
+    def iniciar(self, sistema, ferramentas, historico) -> dict:
+        return {"anthropic": self.a.iniciar(sistema, ferramentas, historico),
+                "openai": self.o.iniciar(sistema, ferramentas, historico), "formato": None}
+
+    def passo(self, estado, modelo: Modelo, max_tokens: int) -> Passo:
+        estado["formato"] = "anthropic" if modelo.nome in self.anthropic else "openai"
+        return self._de(estado).passo(estado[estado["formato"]], modelo, max_tokens)
+
+    def resultados(self, estado, res) -> None:
+        self._de(estado).resultados(estado[estado["formato"]], res)
+
+    def corrigir(self, estado, texto: str) -> None:
+        self._de(estado).corrigir(estado[estado["formato"]], texto)
+
+
 def provedores_da_config(env: dict, cfg: dict, http: httpx.Client | None = None) -> dict:
     """Os provedores com chave no ambiente (Bedrock: MITRA_BEDROCK=1 e a credencial AWS do ambiente)."""
     out = {}
@@ -278,6 +318,8 @@ def provedores_da_config(env: dict, cfg: dict, http: httpx.Client | None = None)
             out[nome] = _Bedrock(c)
         elif c["formato"] == "anthropic":
             out[nome] = _Anthropic(c, env[c["chave"]], http)
+        elif c.get("base_anthropic"):
+            out[nome] = _DoisFormatos(c, env[c["chave"]], http)
         else:
             out[nome] = _OpenAI(c, env[c["chave"]], http)
     return out
@@ -382,8 +424,9 @@ def _config(config: Path) -> dict:
 
 
 def candidatos(cfg: dict, provedores: dict) -> list[Modelo]:
-    return [Modelo(m["provedor"], m["modelo"], m.get("esforco")) for m in cfg["pergunta"]["modelos"]
-            if m["provedor"] in provedores]
+    """Quem pode responder agora, na ordem da camada 2: provedor ligado e modelo que ele não recusou."""
+    return DISPONIBILIDADE.filtrar([m for m in modelos_da_lista(cfg, cfg["camadas"]["2"]["modelos"])
+                                    if m.provedor in provedores])
 
 
 def perguntar(pergunta: str, ferramentas: list[Ferramenta], *, historico: list[tuple[str, str]] | None = None,
@@ -473,6 +516,8 @@ def perguntar(pergunta: str, ferramentas: list[Ferramenta], *, historico: list[t
                 raise ErroPergunta(f"sem resposta em {MAX_RODADAS} rodadas")
         except ErroPergunta as e:
             falhas.append(f"{modelo.rotulo}: {e}")
+            if e.recusado:
+                DISPONIBILIDADE.recusar(modelo, str(e))
             continue
         conf = conferir(texto, resultados, pergunta)
         custo = _custo(cfg, modelo.nome, tin, tout, lido, escrito)
@@ -494,7 +539,7 @@ def registrar_custo(roteador: Roteador, r: Resposta) -> None:
 
 
 def _custo(cfg: dict, modelo: str, tin: int, tout: int, lido: int = 0, escrito: int = 0) -> float:
-    pin, pout = cfg["precos"].get(modelo, (0.0, 0.0))
+    pin, pout = preco(cfg, modelo)
     return (tin * pin + lido * pin * 0.1 + escrito * pin * 1.25 + tout * pout) / 1_000_000
 
 

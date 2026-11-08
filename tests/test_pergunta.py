@@ -91,10 +91,10 @@ def test_pergunta_consulta_a_torre_e_responde_com_a_fonte(fs):
     r, rep = _perguntar(fs, [
         _passo(chamadas=[("pendencias", {"ativo": "B3", "status": ["atrasada"]})]),
         _passo('Na B3, a **R95-01** (Res. ANM 95/2022, art. 19 I) está atrasada desde 2026-10-15.')])
-    assert r.conferencia.ok and not r.corrigida and r.modelo == "bedrock:us.anthropic.claude-sonnet-5"
+    assert r.conferencia.ok and not r.corrigida and r.modelo == "bedrock:us.anthropic.claude-haiku-5-5"
     [[(nome, texto, erro)]] = rep.vistos
     assert nome == "pendencias" and not erro and "R95-01" in texto and "N13-03" not in texto
-    assert r.custo_usd == pytest.approx((200 * 2.0 + 40 * 10.0) / 1e6)
+    assert r.custo_usd == pytest.approx((200 * 0.10 + 40 * 0.50) / 1e6)
 
 
 def test_resposta_com_data_inventada_volta_para_corrigir_uma_vez(fs):
@@ -187,6 +187,55 @@ class _BotoFalso:
         return self.respostas.pop(0)
 
 
+class _NegaHaiku(pg.Repetidor):
+    """Bedrock da conta do evento: recusa o Haiku 5.5, responde com o que estiver gravado nos outros."""
+
+    def __init__(self, passos):
+        super().__init__(passos)
+        self.modelos = []
+
+    def passo(self, estado, modelo, max_tokens):
+        self.modelos.append(modelo.nome)
+        if modelo.nome == "us.anthropic.claude-haiku-5-5":
+            raise pg.ErroPergunta("Bedrock: AccessDeniedException", recusado=True)
+        return super().passo(estado, modelo, max_tokens)
+
+
+def test_chat_recusado_no_haiku_fica_no_sonnet_5_sem_tentar_de_novo(fs):
+    prov = _NegaHaiku([_passo("Nada atrasado na B3."), _passo("Nada novo na B3.")])
+    r = pg.perguntar("E a B3?", fs, provedores={"bedrock": prov})
+    assert r.modelo == "bedrock:us.anthropic.claude-sonnet-5"
+    assert pg.candidatos(pg._config(pg.CONFIG), {"bedrock": prov})[0].nome == "us.anthropic.claude-sonnet-5"
+    pg.perguntar("E a B3?", fs, provedores={"bedrock": prov})
+    assert prov.modelos == ["us.anthropic.claude-haiku-5-5", "us.anthropic.claude-sonnet-5",
+                            "us.anthropic.claude-sonnet-5"]
+
+
+def test_opencode_fala_anthropic_com_o_haiku_e_openai_com_o_deepseek(fs):
+    import httpx
+
+    pedidos = []
+
+    def responder(req: httpx.Request) -> httpx.Response:
+        pedidos.append(req)
+        if req.url.path.endswith("/messages"):
+            return httpx.Response(200, json={"content": [{"type": "text", "text": "A B3 tem a R95-01 atrasada."}],
+                                             "usage": {"input_tokens": 10, "output_tokens": 5}, "stop_reason": "end_turn"})
+        return httpx.Response(200, json={"choices": [{"message": {"role": "assistant", "content": "Ok, a R95-01."},
+                                                      "finish_reason": "stop"}], "usage": {}})
+
+    conf = pg._config(pg.CONFIG)
+    provs = pg.provedores_da_config({"OPENCODE_API_KEY": "k"}, conf, httpx.Client(transport=httpx.MockTransport(responder)))
+    r = pg.perguntar("E a B3?", fs, provedores=provs)
+    assert r.modelo == "opencode:claude-haiku-5-5"
+    req = pedidos[-1]
+    assert str(req.url) == conf["provedores"]["opencode"]["base_anthropic"] + "/messages"
+    assert req.headers["x-opencode-session"] and json.loads(req.content)["model"] == "claude-haiku-5-5"
+    estado = provs["opencode"].iniciar("s", fs, [("usuario", "oi")])
+    provs["opencode"].passo(estado, pg.Modelo("opencode", "deepseek-v4.1-flash"), 100)
+    assert pedidos[-1].url.path.endswith("/chat/completions")
+
+
 def test_bedrock_usa_cache_de_prompt_e_cobra_o_cache_pelo_preco_certo(fs, monkeypatch):
     monkeypatch.setattr(pg.time, "sleep", lambda s: None)
     boto = _BotoFalso([
@@ -200,12 +249,12 @@ def test_bedrock_usa_cache_de_prompt_e_cobra_o_cache_pelo_preco_certo(fs, monkey
     r = pg.perguntar("O que está atrasado na B3?", fs, provedores={"bedrock": prov})
     p1, p2 = boto.pedidos
     assert p1["toolConfig"]["tools"][-1] == pg.CACHE and p1["system"][-1] == pg.CACHE
-    assert p1["modelId"] == "us.anthropic.claude-sonnet-5"
+    assert p1["modelId"] == "us.anthropic.claude-haiku-5-5"
     for p in (p1, p2):      # um ponto de cache só na conversa, no fim
         pontos = [b for m in p["messages"] for b in m["content"] if "cachePoint" in b]
         assert len(pontos) == 1 and "cachePoint" in p["messages"][-1]["content"][-1]
     assert p2["messages"][-1]["content"][0]["toolResult"]["status"] == "success"
-    esperado = (1300 * 2 + 5000 * 2 * 0.1 + 4000 * 2 * 1.25 + 80 * 10) / 1e6
+    esperado = (1300 * 0.1 + 5000 * 0.1 * 0.1 + 4000 * 0.1 * 1.25 + 80 * 0.5) / 1e6
     assert r.custo_usd == pytest.approx(esperado) and r.tokens_cache == 5000 and r.tokens_in == 10300
 
 

@@ -327,9 +327,10 @@ O código fala com uma interface única. Qual provedor e qual modelo atende cada
 
 | Camada | Padrão | Se não houver |
 |---|---|---|
-| 2. Modelo barato | DeepSeek V4.1 Flash via OpenCode Go (franquia do plano de US$ 10) | Claude Haiku 5.5 (OpenCode Go ou Anthropic) |
-| 3. Modelo forte | DeepSeek V4.1 Flash com raciocínio no máximo (`max`, mesma franquia) | Claude Haiku 5.5 (OpenCode Go ou Anthropic) |
-| Na AWS | Claude pelo Bedrock (`MITRA_BEDROCK=1`) | O mesmo de antes, pela internet |
+| 2. Modelo barato (e o Assistente Mitra) | Claude Haiku 5.5, no provedor que tiver chave (Bedrock, Anthropic ou OpenCode Go) | Os outros modelos Claude do catálogo e, por último, o DeepSeek |
+| 3. Modelo forte | Um modelo Claude maior | DeepSeek com raciocínio no máximo (`max`) |
+
+**Quem atende é decidido na hora.** Cada modelo aparece uma vez no catálogo de `mitra/modelos.toml`, com o ID em cada provedor que o oferece e o preço; as camadas citam o modelo pelo nome. Entra na fila só provedor com chave no ambiente. Se o provedor recusar o modelo (conta sem acesso, ID que ele não conhece), o modelo sai da fila por 30 minutos e o pedido segue no próximo; passado o prazo ele é tentado de novo, então volta sozinho se a conta passar a ter acesso. Falha passageira (limite de taxa, rede) não tira ninguém da fila. As tarefas JSON e o Assistente Mitra aprendem juntos, e na AWS a API sonda os modelos do Bedrock ao subir. A conta do evento não libera o Haiku 5.5 no Bedrock: lá a recusa acontece uma vez e o próximo modelo da lista atende, sem mudar configuração.
 
 A OpenCode Go mistura dois formatos de API: alguns modelos usam o da OpenAI (`/chat/completions`, ex.: DeepSeek) e outros o da Anthropic (`/messages`, ex.: Haiku, Qwen). O código fala os dois, o que também cobre a Anthropic e a DeepSeek diretas. O Bedrock entra por um adaptador próprio, a API Converse do boto3 (`ClienteBedrock`), que serve para Claude, DeepSeek e Nova do mesmo jeito. Ele está testado com um cliente falso e foi conferido com chamadas reais na conta do evento em 7/11/2026 (ver [infra/README.md](../infra/README.md)).
 
@@ -337,7 +338,7 @@ A OpenCode Go mistura dois formatos de API: alguns modelos usam o da OpenAI (`/c
 
 Os prompts não podem depender de um modelo específico. A saída é sempre JSON validado pelo Python, então trocar de modelo muda o custo e a qualidade, não o funcionamento.
 
-Sobre o `AGENTS.md`: ele é uma convenção para agentes de programação (Codex, OpenCode, Claude Code) e não é lido por chamadas de API. O equivalente no nosso produto é o arquivo de configuração: ele diz qual modelo atende cada camada (DeepSeek ou Claude Haiku 5.5) e com quanto raciocínio.
+Sobre o `AGENTS.md`: ele é uma convenção para agentes de programação (Codex, OpenCode, Claude Code) e não é lido por chamadas de API. O equivalente no nosso produto é o arquivo de configuração: ele diz a ordem dos modelos de cada camada (o Claude Haiku 5.5 primeiro) e com quanto raciocínio.
 
 ## Assistente Mitra: o chat que só fala do que a torre tem
 

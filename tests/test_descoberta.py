@@ -65,8 +65,12 @@ IRRELEVANTE = {"relevante": False, "tipos_ativo": [], "deveres": "", "motivo": "
 
 
 def _roteador(conn, respostas, padrao=IRRELEVANTE):
+    """As camadas fixas no modelo que a IAFalsa roteiriza por esforço: o teste é da triagem, não da ordem."""
     ia = IAFalsa(respostas, padrao)
-    return Roteador(conn, provedores={"opencode": ia}), ia
+    rot = Roteador(conn, provedores={"opencode": ia})
+    rot.cfg["camadas"]["2"]["modelos"] = ["deepseek-v4.1-flash@high"]
+    rot.cfg["camadas"]["3"]["modelos"] = ["deepseek-v4.1-flash@max"]
+    return rot, ia
 
 
 @pytest.fixture

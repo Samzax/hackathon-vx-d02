@@ -65,8 +65,9 @@ nas roles `cdk-*` do bootstrap — quem aplica o CloudFormation são as roles do
 
 ## Antes do deploy na conta do evento
 
-- Em `mitra/modelos.toml`, conferir os IDs do Bedrock (perfis de inferência `us.anthropic.*`) contra o
-  que o console da conta mostrar, e pôr o Bedrock no topo de cada camada.
+- Em `mitra/modelos.toml`, os IDs do Bedrock são perfis de inferência `us.anthropic.*`. Modelo que a
+  conta não libera é recusado uma vez e sai da fila sozinho (a API sonda o Bedrock ao subir e o log
+  mostra `recusado pelo provedor`); não precisa reordenar nada.
 - A conta do evento não pode receber dado pessoal: o repositório já leva só as linhas de empresa do
   SIGBM (sem CPF), e a imagem não leva `.env` nem `data/raw/`.
 - O Bedrock tem de ficar abaixo de 1 requisição por segundo: `intervalo_minimo_s = 1.1` no provedor.

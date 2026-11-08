@@ -1,13 +1,21 @@
-# Qual modelo atende cada camada. Para cada camada, vale o primeiro modelo da lista
-# cujo provedor tem chave no .env. Trocar de modelo é editar este arquivo, não o código.
+# Quais modelos a Mitra usa e em que ordem. Trocar de modelo é editar este arquivo, não o código.
 #
-# Camada 2: modelo barato, atende quase tudo.
+# [catalogo]: cada modelo uma vez, com o ID em cada provedor que o oferece (na ordem em que os
+# provedores são tentados) e o preço. As listas das camadas citam o modelo pelo nome do catálogo
+# ("nome@esforço" passa o esforço de raciocínio a quem aceita).
+#
+# A ordem vale para todos; quem atende é decidido na hora: entra só provedor com chave no ambiente, e
+# o modelo que o provedor recusar (conta sem acesso, ID que ele não conhece) sai da fila por 30 minutos
+# (mitra/ia.py, Disponibilidade). Ex.: na AWS do evento o Bedrock nega o Haiku 5.5; a primeira chamada
+# recebe a recusa e as seguintes vão direto ao próximo da lista. Numa conta com o Haiku 5.5 liberado,
+# ele atende.
+#
+# Camada 2: atende quase tudo, e é a lista do Assistente Mitra (mitra/pergunta.py).
 # Camada 3: só quando a camada 2 devolve baixa confiança ou o Python reprova a resposta.
 
-# Roteamento por tarefa (decisão de 7/11/2026). Tarefa sensível leva texto de cliente (licença,
-# documento da operação): em chamada NOVA, só sai para os provedores de confiança abaixo. O cache vale
-# para qualquer modelo: resposta já paga não leva nada novo a ninguém. Tarefa que não estiver listada
-# é tratada como sensível. `modelos` numa tarefa é a ordem preferida, antes da lista da camada.
+# Tarefa sensível leva texto de cliente (licença, documento da operação): em chamada NOVA, só sai para os
+# provedores de confiança abaixo (decisão de 7/11/2026). O cache vale para qualquer modelo: resposta já
+# paga não leva nada novo a ninguém. Tarefa que não estiver listada é tratada como sensível.
 [sensibilidade]
 provedores = ["anthropic", "bedrock"]
 
@@ -19,12 +27,6 @@ sensivel = false        # ementa e texto de norma publicada
 
 [tarefas.extrator]
 sensivel = false        # texto de norma pública
-# A extração do catálogo roda no Sonnet (qualidade primeiro); o passo seguinte é medir o Haiku 5.5
-# no mesmo gabarito (diff contra data/extraido/) e então decidir se o DeepSeek assume o dado público.
-modelos = [
-  { provedor = "bedrock",   modelo = "us.anthropic.claude-sonnet-5" },
-  { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
-]
 
 [tarefas.evidencia]
 sensivel = true         # documento da operação da cliente
@@ -33,40 +35,47 @@ sensivel = true         # documento da operação da cliente
 sensivel = true         # licença da cliente (o CPF já vira marcador antes, mesmo assim)
 
 [camadas.2]
-modelos = [
-  { provedor = "deepseek",  modelo = "deepseek-chat" },
-  { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "high" },
-  { provedor = "opencode",  modelo = "claude-haiku-5-5" },
-  { provedor = "anthropic", modelo = "claude-haiku-5-5" },
-  # No evento: troque pelo ID (ou perfil de inferência) que o console do Bedrock mostrar para o Haiku 4.5
-  # e mova esta linha para o topo da lista. Só vale com MITRA_BEDROCK=1 no .env.
-  # Pela API Converse (boto3, o que o código usa) o Haiku 4.5 costuma aparecer como perfil entre regiões
-  # "us.anthropic.claude-haiku-4-5-20251001-v1:0"; o endpoint Mantle usa "anthropic.claude-haiku-4-5".
-  # Conferir no console da conta do evento antes de trocar: o que vale é o que ela habilitou.
-  { provedor = "bedrock",   modelo = "ID_DO_HAIKU_4_5_NO_BEDROCK" },
-]
+modelos = ["haiku-5.5", "sonnet-5", "opus-5", "deepseek-v4.1-flash@high", "deepseek-chat"]
 
 [camadas.3]
-modelos = [
-  { provedor = "deepseek",  modelo = "deepseek-reasoner" },
-  { provedor = "opencode",  modelo = "deepseek-v4.1-flash", esforco = "max" },
-  { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
-  # No evento: ID do Sonnet 5 no console do Bedrock (ver comentário da camada 2). No Mantle é
-  # "anthropic.claude-sonnet-5"; na Converse, o perfil que o console mostrar (us.anthropic....).
-  { provedor = "bedrock",   modelo = "ID_DO_SONNET_5_NO_BEDROCK" },
-]
+modelos = ["sonnet-5.5", "opus-5", "deepseek-reasoner", "deepseek-v4.1-flash@max"]
 
-# Assistente Mitra (mitra/pergunta.py): conversa com uso de ferramentas, não JSON. Vale o primeiro
-# provedor ligado. Na AWS, o Bedrock (MITRA_BEDROCK=1): IDs conferidos com chamada real na conta do
-# evento em 7/11/2026 (perfis de inferência us.*). Fora da AWS, a API da Anthropic ou o DeepSeek.
-[pergunta]
-modelos = [
-  { provedor = "bedrock",   modelo = "us.anthropic.claude-sonnet-5" },
-  { provedor = "bedrock",   modelo = "us.anthropic.claude-opus-5" },      # reserva: Opus 5, não um modelo menor
-  { provedor = "anthropic", modelo = "claude-sonnet-5-5" },
-  { provedor = "opencode",  modelo = "deepseek-v4.1-flash" },
-  { provedor = "deepseek",  modelo = "deepseek-chat" },
-]
+# preço: US$ por milhão de tokens (entrada, saída), para medir o custo de cada chamada.
+# Fonte: https://opencode.ai/zen/go/v1/models e páginas de preço dos provedores (nov/2026).
+# Bedrock pela API Converse: perfis de inferência us.*. Sonnet 5 e Opus 5 conferidos com chamada real
+# na conta do evento em 7/11/2026; os IDs 5.5 seguem o mesmo padrão (a conta do evento nega os dois).
+[catalogo."haiku-5.5"]
+bedrock   = "us.anthropic.claude-haiku-5-5"
+anthropic = "claude-haiku-5-5"
+opencode  = "claude-haiku-5-5"
+preco     = [0.10, 0.50]
+
+[catalogo."sonnet-5.5"]
+bedrock   = "us.anthropic.claude-sonnet-5-5"
+anthropic = "claude-sonnet-5-5"
+preco     = [2.00, 10.00]
+
+[catalogo."sonnet-5"]
+bedrock   = "us.anthropic.claude-sonnet-5"
+anthropic = "claude-sonnet-5"
+preco     = [2.00, 10.00]
+
+[catalogo."opus-5"]
+bedrock   = "us.anthropic.claude-opus-5"
+anthropic = "claude-opus-5"
+preco     = [5.00, 25.00]
+
+[catalogo."deepseek-v4.1-flash"]
+opencode  = "deepseek-v4.1-flash"
+preco     = [0.15, 0.60]
+
+[catalogo."deepseek-chat"]
+deepseek  = "deepseek-chat"
+preco     = [0.15, 0.60]
+
+[catalogo."deepseek-reasoner"]
+deepseek  = "deepseek-reasoner"
+preco     = [0.66, 1.98]
 
 # formato: "openai" (/chat/completions) ou "anthropic" (/messages).
 [provedores.deepseek]
@@ -97,14 +106,5 @@ base_anthropic = "https://opencode.ai/inference/go/anthropic/v1"
 modelos_anthropic = ["claude-haiku-5-5", "minimax-m3", "qwen3.8-max", "qwen3.8-flash", "qwen3.7-plus"]
 cabecalho_sessao = "x-opencode-session"
 
-# US$ por milhão de tokens (entrada, saída), para medir o custo de cada chamada.
-# Fonte: https://opencode.ai/zen/go/v1/models e páginas de preço dos provedores (nov/2026).
+# Preço de modelo fora do catálogo (o do catálogo vale primeiro).
 [precos]
-"deepseek-v4.1-flash" = [0.15, 0.60]
-"deepseek-chat"       = [0.15, 0.60]
-"deepseek-reasoner"   = [0.66, 1.98]
-"claude-haiku-5-5"    = [0.10, 0.50]
-"claude-sonnet-5-5"   = [2.00, 10.00]
-"us.anthropic.claude-sonnet-5"                 = [2.00, 10.00]
-"us.anthropic.claude-opus-5"                   = [5.00, 25.00]
-"us.anthropic.claude-haiku-4-5-20251001-v1:0"  = [1.00, 5.00]
