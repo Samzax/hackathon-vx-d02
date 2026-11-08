@@ -48,3 +48,11 @@ def test_b4_mostra_o_dado_que_falta(serra):
     conn, ids = serra
     obs = {o.codigo: o for o in db.obrigacoes_do_ativo(conn, ids["B4"])}
     assert obs["OB-09"].dados_faltando == ["modificacao_estrutural"]
+
+
+def test_historico_da_demo_usa_a_data_de_referencia():
+    """A demonstração precisa ser reproduzível, inclusive nas datas mostradas pelo chat."""
+    conn = db.conectar(":memory:")
+    ids = demo.montar(conn)
+    recebido_em = {e["recebida_em"] for e in db.evidencias_do_ativo(conn, ids["E1"])}
+    assert recebido_em == {"2026-11-07"}

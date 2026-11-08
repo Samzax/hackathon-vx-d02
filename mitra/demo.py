@@ -99,7 +99,10 @@ def gerar_historico(conn, ids: dict[str, int], spec: dict) -> int:
             for r in rotulos:
                 if (codigo_ativo, o.codigo, r) in falhas:
                     continue
-                db.registrar_evidencia(conn, ativo_id, o.codigo, r, arquivo=f"demo/{codigo_ativo}/{o.codigo}/{r}.pdf")
+                # O histórico é uma fotografia da data de referência da demonstração. Usar o relógio da
+                # máquina aqui deixaria respostas gravadas e testes diferentes a cada execução.
+                db.registrar_evidencia(conn, ativo_id, o.codigo, r, arquivo=f"demo/{codigo_ativo}/{o.codigo}/{r}.pdf",
+                                       recebida_em=hoje.isoformat())
                 n += 1
     return n
 
