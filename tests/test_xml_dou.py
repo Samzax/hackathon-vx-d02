@@ -66,10 +66,7 @@ def test_numeros_do_funil_na_tela_e_nos_documentos():
     total = f"{sum(f.total for f in funis):,}".replace(",", ".")
     anm = str(sum(f.anm for f in funis))
     raiz = AGOSTO.parent.parent.parent.parent
-    app = (raiz / "app.py").read_text(encoding="utf-8")
-    assert f'"Atos no DOU (ago/2026)", "{total}"' in app and f'"Da ANM", "{anm}"' in app
-    assert f"{total} atos/mês" in app and f"{anm} da ANM" in app
-    for doc in ("README.md", "docs/ROTEIRO_DEMO.md", "docs/ARQUITETURA.md"):
+    for doc in ("docs/ROTEIRO_DEMO.md", "docs/ARQUITETURA.md"):
         texto = (raiz / doc).read_text(encoding="utf-8")
         assert total in texto and anm in texto, doc
     # o front lê o funil da API, que lê data/funil_dou.json

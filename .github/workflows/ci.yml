@@ -126,10 +126,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build da API e da demo
-        run: |
-          docker build -f api/Dockerfile -t mitra-api .
-          docker build -t mitra-demo .
+      - name: Build da API
+        run: docker build -f api/Dockerfile -t mitra-api .
       - name: Compose sobe e a API responde
         run: |
           docker compose up -d --build --wait api || { docker compose logs api postgres; exit 1; }

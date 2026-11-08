@@ -1,6 +1,6 @@
 # Roteiro da demo (3 minutos)
 
-Antes de começar: `uv run streamlit run app.py`, clicar em **Entrar na demo** (conta de teste, sem senha), barra lateral com "Hoje" em 07/11/2026 e "Diretoria (todos os ativos)". Se alguém já mexeu, clicar em **Recriar demo**.
+Antes de começar, suba a API e o front conforme o [README](../README.md). Em `http://localhost:3000`, clique em **Entrar na demo** (conta de teste, sem senha), selecione "Hoje" em 07/11/2026 e a visão **Diretoria**. Se alguém já mexeu, use **Recriar demo**.
 
 ## 1. Caixa de entrada (60 s)
 

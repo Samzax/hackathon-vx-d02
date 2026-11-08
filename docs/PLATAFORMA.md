@@ -1,8 +1,7 @@
-# Plataforma: da demo em Streamlit para o produto
+# Plataforma: produto Next.js
 
-Branch `plataforma`. A `main` continua com a demo em Streamlit funcionando até o front novo
-cobrir todas as telas. Este arquivo é o plano e o estado: quem continuar (outra sessão, outra
-conta) começa por aqui.
+O front em Next.js é a interface da plataforma. Este arquivo preserva o plano e o estado das
+decisões de produto.
 
 ## Decisões
 
@@ -66,7 +65,7 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
       `pg_stat_activity` fica vazio quando o app para), requisição que cai no meio não deixa transação aberta.
 
 ### Fase 2 (paralelo, depois da fase 1)
-- [x] 2A front Next.js em `front/`: substitui o Streamlit como interface principal, todas as telas do README.
+- [x] 2A front Next.js em `front/`: interface principal, com todas as telas do README.
       - Next.js 16 (App Router) + TypeScript + Tailwind 4, `output: "export"`: site estático que a própria API
         serve na mesma origem (`api/main.py` monta `front/out` se existir; `MITRA_FRONT` muda a pasta; rota
         `/api/v1/...` que não existe continua 404 em JSON). A imagem (`api/Dockerfile`) compila o front num
@@ -87,7 +86,6 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
         verdade num SQLite novo servindo o `out/`, seis cenários (entrar na demo e ver as 4 atrasadas,
         registrar uma entrega, gestor só com a área dele, curadoria aprovando a Res. 245, a curadoria só lendo
         os dados da empresa, TI só com contas e auditoria). CI: jobs `front` (tipos, lint, typecheck, vitest, build) e `front-e2e`.
-      - Em aberto: o Streamlit (`app.py`) continua na `main` até a troca.
 - [x] 2B AWS CDK (`infra/`, commit 49c404b): ALB + ECS Fargate (API e front na mesma origem, migração no start),
       RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
       06:00 BRT), Secrets Manager, CloudWatch com 3 alarmes, sem NAT. `tests/test_infra.py` confere a pilha;
@@ -279,16 +277,14 @@ Variáveis de ambiente novas desta tarefa; quem cuida da infra liga em produçã
   - `test_ocr.py::test_exemplo_escaneado_esta_nos_exemplos_e_e_igual_ao_gerado`: os pixels são os mesmos,
     o que muda é o zlib do Python (zlib-ng no 3.14 e em builds do Linux, zlib 1.3 no Windows) e com ele
     os bytes do PDF. O teste agora compara a imagem descomprimida, pixel a pixel.
-  - `test_app.py::test_ato_ficticio_vira_mudanca_pendente`: a resposta da IA para o ato fictício só estava
-    no `data/cache_ia.db` local. Entrou no `data/cache_ia_demo.json`, e os testes do Streamlit passam a usar
-    um cache novo, semeado só com o que está no Git (como num clone novo).
+  - A resposta da IA para o ato fictício estava só no `data/cache_ia.db` local. Ela entrou no
+    `data/cache_ia_demo.json`, para que a demonstração seja reproduzível a partir do conteúdo do Git.
 - testes-postgres: passou dos 40 minutos rodando a suíte (no SQLite ela leva 1 minuto no CI) e o log só sai
   quando o job termina. Causa provável: o `DROP SCHEMA ... CASCADE` da limpeza de cada teste espera para
-  sempre por uma conexão que ficou aberta com transação (a do `st.cache_resource` do Streamlit, ou a de
-  um teste que falhou, presa no traceback). O `conftest.py` agora fecha as conexões do teste antes e usa
-  `lock_timeout`; o `test_app.py` limpa o `st.cache_resource` a cada teste; o job tem `timeout-minutes: 45`
-  e mostra as 15 durações mais longas. Ainda não conferido no Postgres (o Docker daqui não respondeu):
-  ver no próximo CI.
+  sempre por uma conexão que ficou aberta com transação ou por um teste que falhou, presa no traceback.
+  O `conftest.py` fecha as conexões do teste antes e usa `lock_timeout`; o job tem
+  `timeout-minutes: 45` e mostra as 15 durações mais longas. Ainda não conferido no Postgres
+  (o Docker daqui não respondeu): ver no próximo CI.
 
 ## Próximo
 

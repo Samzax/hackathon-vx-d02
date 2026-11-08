@@ -49,7 +49,7 @@ def conectar(caminho: str | Path = DB_PADRAO):
         return banco.ConexaoPostgres(caminho)
     if caminho != ":memory:":
         Path(caminho).parent.mkdir(parents=True, exist_ok=True)
-    # check_same_thread=False: a interface (Streamlit) usa a conexão em outra thread
+    # check_same_thread=False: a conexão pode ser usada por workers concorrentes da aplicação.
     conn = sqlite3.connect(caminho, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")

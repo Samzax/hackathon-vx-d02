@@ -4,8 +4,6 @@
 #   docker compose run --rm radar    # roda o radar do DOU uma vez
 #   docker compose run --rm descoberta   # busca normas já publicadas nas fontes oficiais e tria pela IA
 #
-# O Streamlit da demo continua rodando à parte: uv run streamlit run app.py
-
 services:
   postgres:
     image: postgres:16-alpine

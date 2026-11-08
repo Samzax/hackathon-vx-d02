@@ -187,7 +187,7 @@ class AtoExemplo(BaseModel):
     texto: str
 
 
-# o mesmo ato fictício do Streamlit: a resposta da IA para ele está no cache da demo (data/cache_ia_demo.json)
+# A resposta da IA para este ato fictício está no cache da demonstração (data/cache_ia_demo.json).
 ATO_EXEMPLO = """RESOLUÇÃO FICTÍCIA DE TESTE Nº 1, DE 2 DE MARÇO DE 2027
 (texto inventado para demonstração: não é um ato real)
 

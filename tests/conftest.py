@@ -58,8 +58,8 @@ def _postgres_no_lugar_do_sqlite(monkeypatch):
 
     monkeypatch.setattr(db, "conectar", conectar)
     yield
-    # Conexão que ficou aberta (a do st.cache_resource do Streamlit, a de um teste que falhou e
-    # ficou presa no traceback) segura a transação e o lock das tabelas: o DROP SCHEMA esperaria
+    # Conexão que ficou aberta por um teste que falhou e ficou presa no traceback segura a transação
+    # e o lock das tabelas: o DROP SCHEMA esperaria
     # para sempre. Fecha todas antes; e o lock_timeout faz falhar com erro em vez de travar o CI.
     for conn in abertas:
         try:

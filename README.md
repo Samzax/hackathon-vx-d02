@@ -1,31 +1,12 @@
 # Mitra — regulatory control tower
 
-Mitra is a regulatory-control platform for operational assets. It brings obligations, deadlines, supporting evidence, regulatory changes, and audit history into one workspace so each responsible person can act on what needs attention. Mining is the first vertical; the underlying asset model also supports healthcare, construction, pressure vessels, environmental licences, and other regulated operations.
+Mitra is a regulatory-control platform for operational assets. It brings obligations, deadlines, supporting evidence, regulatory changes, and audit history into one workspace so each responsible person can act on what needs attention. Mining is the first vertical; the underlying asset model also supports healthcare, construction, telecommunications and other regulated operations.
 
 ![Mitra inbox: overdue items, missing data, upcoming deadlines, and the action that resolves each item](docs/img/torre_hoje.png)
 
 ## Run locally
 
-### Demo interface
-
-The Streamlit demo is the fastest way to explore the product. It works offline and without an AI key by using the committed demonstration data and cache.
-
-```bash
-uv sync
-uv run streamlit run app.py
-```
-
-Open the address printed by Streamlit. To reset or prepare local demo assets:
-
-```bash
-uv run python -m mitra.demo       # rebuild the demo database
-uv run python -m mitra.exemplos   # generate fictional evidence PDFs
-uv run pytest                     # run backend tests
-```
-
-### Product interface, API, and frontend
-
-The production-oriented interface is a Next.js application backed by FastAPI. It requires Node.js 22.12+ in addition to `uv`.
+Mitra is a Next.js application backed by FastAPI. It requires Python with `uv` and Node.js 22.12+.
 
 ```bash
 uv sync
@@ -36,9 +17,14 @@ npm ci
 npm run dev                       # http://localhost:3000; API at http://localhost:8000
 ```
 
-For a production-like local build, run `npm run build`; the API then serves `front/out` at `http://localhost:8000`. Run the frontend checks from `front/`:
+For a production-like local build, run `npm run build`; the API then serves `front/out` at `http://localhost:8000`. Reset the demonstration data or generate its fictional evidence documents with `uv run python -m mitra.demo` and `uv run python -m mitra.exemplos`.
+
+Run the checks from the repository root and `front/`, respectively:
 
 ```bash
+uv run pytest
+
+# from front/
 npm run lint
 npm run typecheck
 npm test
@@ -47,7 +33,7 @@ npm run e2e
 
 ### Optional live data and AI
 
-Copy `.env.example` to `.env` and configure a provider key only when live AI analysis is needed. Without a key, the interface remains usable, but actions that require a new model response are unavailable. Official source texts and DOU files are intentionally not committed:
+Copy `.env.example` to `.env` and configure a provider key only when live AI analysis is needed. Without a key, the interface remains usable, but actions that require a new model response are unavailable. Official source texts and Diário Oficial da União files are intentionally not committed:
 
 ```bash
 uv run python -m mitra.fontes                              # download official regulatory texts
@@ -98,11 +84,11 @@ The featured regulatory scenario shows how a new ANM act changes only the affect
 
 ## Architecture and AWS
 
-The repository contains both the Streamlit demo and the product application. The product frontend communicates exclusively with the API; FastAPI can serve the static Next.js build in the same origin.
+The Next.js frontend communicates exclusively with the API; FastAPI can serve the static build in the same origin.
 
 ```mermaid
 flowchart LR
-    U[Users] --> F[Next.js frontend or Streamlit demo]
+    U[Users] --> F[Next.js frontend]
     F --> A[FastAPI / domain services]
     D[DOU and official sources] --> R[Rules and regulatory radar]
     R --> M[AI analysis when needed]

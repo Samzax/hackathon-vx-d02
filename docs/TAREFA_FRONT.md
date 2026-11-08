@@ -7,8 +7,7 @@ Quem mexe em `api/` e no front é você.
 
 ## O que entregar
 
-Um front de produto (não protótipo) em `front/`, que substitui o Streamlit como interface
-principal, falando só com a API.
+Um front de produto em `front/`, que é a interface principal e fala somente com a API.
 
 - **Stack:** Next.js (App Router) + TypeScript + Tailwind; `output: "export"` (estático). Em
   produção a própria API serve `front/out` na mesma origem (montar `StaticFiles` em `api/main.py`

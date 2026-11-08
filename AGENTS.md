@@ -10,7 +10,7 @@ The application serves multiple personas:
 - **Curadoria Mitra** manages platform-wide regulatory content.
 - **TI** manages accounts and access.
 
-The primary user experience is the **Caixa de Entrada**, which brings together pending reviews, deliveries, documents and status indicators. The main application is in `front/` (Next.js and TypeScript); the API is in `api/`; regulatory and domain logic is in `regulaia/`; `app.py` is the Streamlit interface; and `infra/` contains infrastructure definitions.
+The primary user experience is the **Caixa de Entrada**, which brings together pending reviews, deliveries, documents and status indicators. The main application is in `front/` (Next.js and TypeScript); the API is in `api/`; regulatory and domain logic is in `regulaia/`; and `infra/` contains infrastructure definitions.
 
 ## Language and content
 

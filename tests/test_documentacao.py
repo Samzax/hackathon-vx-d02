@@ -17,19 +17,14 @@ def _linhas(caminho: Path) -> int:
 def test_numeros_do_cadastro_na_documentacao():
     res220 = _linhas(RAIZ / "seed_obligations.csv")
     cadastro = list((RAIZ / "cadastro").glob("*.csv"))
-    total = res220 + sum(_linhas(p) for p in cadastro)
-    # saúde e obras são outras verticais: ficam fora da conta "da mineração" do README
+    # saúde e obras são outras verticais: ficam fora da conta da mineração.
     mineracao = res220 + sum(_linhas(p) for p in cadastro if p.name not in ("saude.csv", "nr18.csv", "nr35.csv"))
-    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
     roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
     arquitetura = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
-    assert f"8 ativos da mineração e {mineracao} obrigações cadastradas" in readme
-    assert f"{total} obrigações no ambiente de demonstração" in readme
     assert f"8 ativos e {mineracao} obrigações" in roteiro
-    assert f"Res. ANM 220/2025 (vale a partir de 2/8/2027) | {res220} |" in readme
     assert f"as {res220} da Res. 220/2025" in arquitetura
     assert f"Cada uma das {res220} obrigações" in arquitetura
-    assert f"outras {res220 - 1} da Res. 220" in readme and f"outras {res220 - 1} da Res. 220" in roteiro
+    assert f"outras {res220 - 1} da Res. 220" in roteiro
     prep = (RAIZ / "PREP.md").read_text(encoding="utf-8")
     res95 = _linhas(RAIZ / "cadastro" / "res95_2022.csv")
     assert f"`seed_obligations.csv` has {res220} obligations" in prep and f"({res95} obligations" in prep
@@ -57,15 +52,6 @@ def test_numeros_do_topo_no_roteiro():
             f"{n[agenda.VENCE_LOGO]} vencendo") in roteiro
 
 
-def test_config_do_streamlit():
-    import tomllib
-
-    cfg = tomllib.loads((RAIZ / ".streamlit" / "config.toml").read_text(encoding="utf-8"))
-    assert cfg["server"]["maxUploadSize"] == 20
-    assert cfg["browser"]["gatherUsageStats"] is False
-    assert cfg["client"]["toolbarMode"] == "minimal"     # sem botão "Deploy" na demo
-
-
 def test_imagens_dos_documentos_existem():
     import re
 
@@ -83,25 +69,6 @@ def test_todos_os_exemplos_estao_documentados():
     assert not faltando, f"documente em ARQUITETURA.md: {faltando}"
 
 
-def test_roteiro_so_cita_o_que_existe_na_tela():
-    """Botões e abas em negrito no roteiro existem no app; os PDFs citados existem nos exemplos."""
-    import re
-
-    from mitra import exemplos
-
-    roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
-    app = (RAIZ / "app.py").read_text(encoding="utf-8")
-    nao_sao_rotulos = {"Fala:", "B3 · Barragem Córrego Fundo", "26/12/2029"}
-    rotulos = [r.lstrip("📄📨 ") for r in re.findall(r"\*\*([^*]+)\*\*", roteiro) if r not in nao_sao_rotulos]
-    assert len(rotulos) >= 8
-    assert not [r for r in rotulos if r not in app], "rótulo do roteiro que não existe no app.py"
-    for r in re.findall(r'"([^"]+)"', roteiro[:roteiro.index("**Fala:**")]):
-        assert r in app, r
-    pdfs = re.findall(r"`([^`]+\.pdf)`", roteiro)
-    assert len(pdfs) >= 5
-    assert not [n for n in pdfs if n not in exemplos.DOCS], "PDF do roteiro que não existe nos exemplos"
-
-
 def _ignorado_no_docker(caminho: str, padroes: list[str]) -> bool:
     """Aproximação das regras do .dockerignore: último padrão que casa decide; '!' reinclui; pasta inclui o conteúdo."""
     from fnmatch import fnmatch
@@ -117,34 +84,18 @@ def _ignorado_no_docker(caminho: str, padroes: list[str]) -> bool:
     return ignorado
 
 
-def test_imagem_docker_leva_o_que_a_demo_precisa_e_nada_secreto():
-    """Sem Docker nesta máquina: confere o .dockerignore contra os arquivos que o app lê ao iniciar."""
+def test_imagem_docker_exclui_dados_sensiveis():
+    """A imagem da API recebe o código-fonte, mas nunca segredos, dados brutos ou artefatos locais."""
     padroes = [l.strip() for l in (RAIZ / ".dockerignore").read_text(encoding="utf-8").splitlines()
                if l.strip() and not l.startswith("#")]
-    precisa = ["app.py", "seed_obligations.csv", "cadastro/res95_2022.csv", "data/cache_ia_demo.json",
-               "data/historico_serra_azul.json", "data/serra_azul.json", "data/mercado_sigbm.json",
-               "tests/fixtures/dou/S01_amostra.zip", ".streamlit/config.toml", "uv.lock", ".env.example",
-               "assets/marca.svg", "assets/logo_claro.svg", "assets/logo_escuro.svg", "data/posicoes_demo.json",
-               "mitra/temas.toml", "data/descoberta_demo.json"]
+    precisa = ["api/Dockerfile", "api/main.py", "front/package.json", "uv.lock", ".env.example",
+               "data/serra_azul.json", "data/posicoes_demo.json", "mitra/temas.toml"]
     for f in precisa:
         assert (RAIZ / f).exists(), f
         assert not _ignorado_no_docker(f, padroes), f"{f} ficaria fora da imagem"
     for f in [".env", ".env.local", "data/raw/sigbm.csv", "data/mitra.db", ".git/config", ".venv/x",
               "docs/img/torre_hoje.png"]:
         assert _ignorado_no_docker(f, padroes), f"{f} entraria na imagem"
-
-
-def test_readme_cita_testes_que_existem():
-    """A tabela 'O que os testes garantem' só pode citar teste e arquivo que existem."""
-    import re
-
-    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
-    secao = readme.split("## O que os testes garantem")[1].split("\n## ")[0]
-    codigo = "\n".join(p.read_text(encoding="utf-8") for p in (RAIZ / "tests").glob("test_*.py"))
-    for nome in re.findall(r"`(test_\w+?)(?:…)?`", secao):
-        assert f"def {nome}" in codigo, nome
-    for arquivo in re.findall(r"`(tests/[\w/]+\.py)`", secao):
-        assert (RAIZ / arquivo).exists(), arquivo
 
 
 def test_custos_citados_batem_com_o_que_foi_gasto():
@@ -171,9 +122,8 @@ def test_custos_citados_batem_com_o_que_foi_gasto():
             assert 0.0005 <= r.get("custo_original_usd", r["custo_usd"]) <= 0.003, r["ato"]
 
 
-def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
-    """A imagem Docker instala só [project].dependencies (uv sync --no-dev): tudo que o app,
-    a mitra e o coletor importam de fora tem de estar lá, senão a tela quebra só na nuvem."""
+def test_o_que_a_api_importa_esta_nas_dependencias_de_producao():
+    """A imagem Docker instala só [project].dependencies: toda importação da API deve estar disponível."""
     import ast
     import sys
     import tomllib
@@ -183,9 +133,9 @@ def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
               "multipart": "python-multipart", "psycopg_pool": "psycopg-pool"}             # o botocore vem com o boto3
     deps = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))["project"]["dependencies"]
     nomes = {d.split(">")[0].split("=")[0].split("<")[0].split("[")[0].strip().lower() for d in deps}
-    locais = {"mitra", "collector", "app", "api", "agente"}
+    locais = {"mitra", "collector", "api", "agente"}
     faltando = set()
-    for arq in [RAIZ / "app.py", *(RAIZ / "mitra").glob("*.py"), *(RAIZ / "collector").glob("*.py"),
+    for arq in [*(RAIZ / "mitra").glob("*.py"), *(RAIZ / "collector").glob("*.py"),
                 *(RAIZ / "api").rglob("*.py"),
                 RAIZ / "agente" / "cliente.py", RAIZ / "agente" / "ferramentas.py"]:   # o chat da torre usa
         for no in ast.walk(ast.parse(arq.read_text(encoding="utf-8"))):
@@ -202,25 +152,6 @@ def test_o_que_o_app_importa_esta_nas_dependencias_de_producao():
                 if pacote.get(raiz, raiz).lower() not in nomes:
                     faltando.add(f"{arq.name}: {raiz}")
     assert not faltando, f"falta em [project].dependencies: {sorted(faltando)}"
-
-
-def test_requirements_txt_acompanha_o_uv_lock():
-    """O Streamlit Community Cloud instala pelo requirements.txt; ele sai do uv.lock com
-    `uv export --no-dev --no-hashes --no-emit-project --format requirements-txt -o requirements.txt`.
-    Cada pacote travado no uv.lock (fora os de desenvolvimento) tem de estar lá na mesma versão."""
-    import re
-    import tomllib
-
-    req = (RAIZ / "requirements.txt").read_text(encoding="utf-8")
-    fixados = dict(re.findall(r"^([A-Za-z0-9_.-]+)==([^\s;]+)", req, re.M))
-    fixados = {k.lower(): v for k, v in fixados.items()}
-    proj = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))["project"]["dependencies"]
-    diretos = {re.split(r"[<>=!~\[ ]", d, maxsplit=1)[0].lower() for d in proj}
-    trava = {p["name"].lower(): p["version"]
-             for p in tomllib.loads((RAIZ / "uv.lock").read_text(encoding="utf-8"))["package"] if "version" in p}
-    assert diretos <= fixados.keys(), diretos - fixados.keys()
-    diferentes = {n: (fixados[n], trava[n]) for n in fixados if n in trava and fixados[n] != trava[n]}
-    assert not diferentes, f"requirements.txt desatualizado, rode o uv export: {diferentes}"
 
 
 def test_caminhos_no_codigo_com_a_mesma_caixa_do_disco():
@@ -240,7 +171,7 @@ def test_caminhos_no_codigo_com_a_mesma_caixa_do_disco():
         assert rel.as_posix().isascii(), f"nome de arquivo com acento: {rel}"
     citado = re.compile(r"""["']([\w./-]+\.(?:csv|json|pdf|zip|toml|txt|sql|md|py))["']|/\s*["']([\w.-]+)["']""")
     errados = []
-    for arq in [RAIZ / "app.py", *(RAIZ / "mitra").glob("*.py"), *(RAIZ / "collector").glob("*.py"),
+    for arq in [*(RAIZ / "mitra").glob("*.py"), *(RAIZ / "collector").glob("*.py"),
                 *(RAIZ / "api").rglob("*.py"),
                 RAIZ / "agente" / "cliente.py", RAIZ / "agente" / "ferramentas.py"]:   # o chat da torre usa
         for m in citado.finditer(arq.read_text(encoding="utf-8")):
@@ -269,12 +200,8 @@ def test_numeros_do_pitch_saem_dos_dados():
     assert f"Hoje, {alerta} dessas barragens estão em nível de alerta ou emergência" in pitch
     assert f"as outras {m['barragens_mineracao'] - m['barragens_na_pnsb']} barragens de mineração" in pitch
 
-    # premissas = valores iniciais da aba Mercado no app.py
-    app = (RAIZ / "app.py").read_text(encoding="utf-8")
-    assert '"Preço por barragem por mês (R$)", 0, 50_000, 1_500' in app
-    assert '"Outros ativos por barragem", 0, 50, 5' in app
-    assert '"Preço por outro ativo por mês (R$)", 0, 10_000, 150' in app
-    assert '"Adoção entre as barragens na PNSB (%)", 1, 100, 10)' in app
+    # Premissas de mercado documentadas no pitch: R$ 1.500 por barragem, cinco outros ativos,
+    # R$ 150 por ativo e 10% de adoção.
     anual = m["barragens_na_pnsb"] * (1500 + 5 * 150) * 12
     assert f"R$ {anual / 1e6:.1f} milhões por ano".replace(".", ",") in pitch
     assert f"com 10% de adoção, R$ {anual * 0.10 / 1e6:.1f} milhão".replace(".", ",") in pitch
@@ -452,23 +379,3 @@ def test_numeros_da_analise_de_mercado_saem_dos_dados():
     assert all(59 <= n <= 61 for _, n in federal)                  # "cerca de 60" continua verdade
     mil = f"{pnsb * 60 / 1000:.1f}".replace(".", ",")
     assert f"{pnsb} barragens × cerca de 60 entregas = **cerca de {mil} mil entregas datadas por ano**" in doc
-
-
-def test_numeros_da_descoberta_saem_da_fila_da_demo():
-    """A rodada de verdade citada no README é a que está em data/descoberta_demo.json."""
-    import json
-    from collections import Counter
-
-    dados = json.loads((RAIZ / "data" / "descoberta_demo.json").read_text(encoding="utf-8"))
-    lidas = sum(b["lidas"] for b in dados["buscas"])
-    st = Counter(c["status"] for c in dados["candidatas"])
-    custo = sum(json.loads(c["triagem"])["custo_usd"] for c in dados["candidatas"] if c["triagem"])
-    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
-    assert f"{lidas:,}".replace(",", ".") + " normas lidas" in readme
-    assert f"{len(dados['candidatas'])} candidatas" in readme
-    assert f"{st['relevante']} relevantes para a curadoria" in readme
-    assert f"{st['irrelevante']} descartadas pela IA" in readme
-    assert f"{st['catalogada']} já no catálogo" in readme
-    assert f"{st['descartada']} revogadas" in readme
-    assert all(c["decidida_por"].startswith("vigência") for c in dados["candidatas"] if c["status"] == "descartada")
-    assert f"US$ {custo:.2f}".replace(".", ",") in readme
