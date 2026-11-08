@@ -111,13 +111,15 @@ function Dica({ descricao, tamanho }: { descricao: string; tamanho: "titulo" | "
   );
 }
 
-const TITULOS_DICAS: Record<string, string> = {
+/** Dica de cada tela, pelo título. Vale para o "?" do título e para o menu lateral. */
+export const TITULOS_DICAS: Record<string, string> = {
   "Caixa de entrada": "Central de obrigações que precisam de entrega ou atenção imediata",
-  "Ativos": "Barragens, equipamentos e instalações monitoradas",
+  "Ativos": "Instalações, equipamentos e estruturas monitoradas",
   "Entregas": "Histórico de todas as entregas e registros já realizados",
   "Assistente Mitra": "Faça perguntas e receba respostas sobre regulamentações e conformidade",
   "Auditoria": "Registro de todas as ações realizadas no sistema",
   "Usuários e acessos": "Gerencie usuários e permissões de acesso",
+  "Nova empresa": "Cadastro de uma nova empresa cliente na plataforma",
   "Instanciação": "Configuração dos parâmetros e regras da sua empresa",
   "Licenças": "Licenças de operação e condicionantes de segurança",
   "Responsáveis e unidades": "Cadastro dos responsáveis técnicos e unidades operacionais",

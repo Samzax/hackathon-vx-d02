@@ -5,6 +5,7 @@
   "description": "Mitra: o front da torre de controle regulatória (Next.js exportado, fala só com a API)",
   "scripts": {
     "dev": "next dev -p 3000",
+    "dev:all": "concurrently -k -n API,FRONT -c blue,green \"uv run --directory .. uvicorn api.main:app --reload --host 127.0.0.1 --port 8000\" \"npm run dev\"",
     "build": "next build",
     "tipos": "openapi-typescript ../api/openapi.json -o src/lib/api-tipos.ts",
     "tipos:conferir": "openapi-typescript ../api/openapi.json -o src/lib/api-tipos.ts --check",
@@ -31,6 +32,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.2.0",
+    "concurrently": "^9.2.5",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.4.5",
     "jsdom": "^31.0.0",

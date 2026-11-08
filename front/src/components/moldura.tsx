@@ -16,7 +16,7 @@ import { RES_220, ZAS, useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
 import { Dialogo } from "./dialogo";
 import { ImportarSigbm } from "./importar-sigbm";
-import { Aviso, Botao, Entrada, Etiqueta, Selecao, cx, mensagem } from "./ui";
+import { Aviso, Botao, Entrada, Etiqueta, Selecao, TITULOS_DICAS, cx, mensagem } from "./ui";
 
 const PAPEL: Record<string, string> = { admin: "TI", diretoria: "Diretoria", regulatorio: "Regulatório", gestor: "Gestor de área" };
 
@@ -24,8 +24,11 @@ function rotuloVisao(visao: string): string {
   return visao === "Diretoria (todos os ativos)" ? "Diretoria" : visao;
 }
 
-type Item = { href: string; rotulo: string; icone: React.ReactNode; contador?: number; tom?: "perigo" | "marca" };
-type Grupo = { titulo: string; itens: Item[] };
+/** `dica` aparece ao passar o mouse; sem ela, o item usa a dica do título da tela (TITULOS_DICAS). */
+type Item = { href: string; rotulo: string; icone: React.ReactNode; contador?: number; tom?: "perigo" | "marca"; dica?: string };
+type Grupo = { titulo: string; itens: Item[]; dica?: string };
+
+const DICA_ADMINISTRACAO = "Usuários, acessos e registro das ações no sistema";
 
 function eCuradoriaMitra(plataforma: boolean, papel: string): boolean {
   return plataforma && papel === "regulatorio";
@@ -40,7 +43,7 @@ function useGrupos(): Grupo[] {
     return [{ titulo: "Administração", itens: [
       { href: "/usuarios/", rotulo: "Usuários e acessos", icone: <Users className="size-4" /> },
       { href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> },
-    ] }];
+    ], dica: DICA_ADMINISTRACAO }];
   }
   const curadoria = eCuradoriaMitra(t.plataforma, t.eu.papel_efetivo);
   const grupos: Grupo[] = [
@@ -49,7 +52,7 @@ function useGrupos(): Grupo[] {
       { href: "/ativos/", rotulo: "Ativos", icone: t.empresa?.setor === "saude" ? <ListChecks className="size-4" /> : <Map className="size-4" /> },
       { href: "/entregas/", rotulo: "Entregas", icone: <ListChecks className="size-4" /> },
       { href: "/pergunte/", rotulo: "Assistente Mitra", icone: <Sparkles className="size-4" /> },
-    ] },
+    ], dica: "Obrigações, ativos e entregas do dia a dia" },
     { titulo: "Regulatório", itens: [
       { href: "/regulatorio/mudancas/", rotulo: "Mudanças", icone: <Gavel className="size-4" />, contador: mudancas.data?.length || undefined, tom: "marca" },
       { href: "/regulatorio/radar/", rotulo: "Radar do DOU", icone: <IconeRadar className="size-4" /> },
@@ -57,20 +60,20 @@ function useGrupos(): Grupo[] {
       { href: "/regulatorio/cobertura/", rotulo: "Cobertura normativa", icone: <BookCheck className="size-4" /> },
       ...(t.plataforma ? [{ href: "/regulatorio/normas-candidatas/", rotulo: "Normas candidatas", icone: <FileSearch className="size-4" />,
         contador: candidatas.data?.contagem.relevante || undefined, tom: "marca" as const }] : []),
-    ] },
+    ], dica: "Mudanças nas normas e o que se aplica à empresa" },
     { titulo: "Empresa", itens: [
       ...(t.plataforma ? [{ href: "/nova-empresa/", rotulo: "Nova empresa", icone: <Building2 className="size-4" /> }] : []),
       { href: "/instanciacao/", rotulo: "Instanciação", icone: <ClipboardList className="size-4" /> },
       { href: "/licencas/", rotulo: "Licenças e condicionantes", icone: <FileBadge className="size-4" />,
-        contador: condicionantes.data?.length || undefined, tom: "marca" },
+        contador: condicionantes.data?.length || undefined, tom: "marca", dica: TITULOS_DICAS["Licenças"] },
       { href: "/responsaveis/", rotulo: "Responsáveis e unidades", icone: <IdCard className="size-4" /> },
-    ] },
+    ], dica: "Cadastro da empresa, licenças e responsáveis" },
     ...(curadoria ? [{ titulo: "Sobre", itens: [
       { href: "/sobre/mercado/", rotulo: "Mercado", icone: <ChartColumn className="size-4" /> },
       { href: "/sobre/como-funciona/", rotulo: "Como funciona", icone: <Workflow className="size-4" /> },
-    ] }] : []),
+    ], dica: "Mercado e funcionamento da plataforma" }] : []),
   ];
-  if (t.veTudo) grupos.push({ titulo: "Administração", itens: [{ href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> }] });
+  if (t.veTudo) grupos.push({ titulo: "Administração", itens: [{ href: "/auditoria/", rotulo: "Auditoria", icone: <ScrollText className="size-4" /> }], dica: "Registro das ações no sistema" });
   return grupos;
 }
 
@@ -133,7 +136,7 @@ function Navegacao({ onNavegar }: { onNavegar?: () => void }) {
     <nav aria-label="Telas da torre" className="space-y-5">
       {grupos.map((g) => (
         <div key={g.titulo}>
-          <p className="px-2.5 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-texto-3">{g.titulo}</p>
+          <p className="px-2.5 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-texto-3" title={g.dica}>{g.titulo}</p>
           <ul className="space-y-0.5">
             {g.itens.map((i) => {
               const ativo = caminho === i.href || caminho === i.href.slice(0, -1);
@@ -142,6 +145,7 @@ function Navegacao({ onNavegar }: { onNavegar?: () => void }) {
                   <Link
                     href={i.href}
                     onClick={onNavegar}
+                    title={i.dica ?? TITULOS_DICAS[i.rotulo]}
                     aria-current={ativo ? "page" : undefined}
                     className={cx(
                       "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm",
