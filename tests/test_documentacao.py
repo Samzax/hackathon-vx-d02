@@ -57,8 +57,12 @@ def test_imagens_dos_documentos_existem():
 
     for doc in [RAIZ / "README.md", *(RAIZ / "docs").glob("*.md")]:
         for img in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", doc.read_text(encoding="utf-8")):
+            if img.startswith(("http://", "https://")):  # selos de CI/deploy: externos
+                continue
             assert (doc.parent / img).is_file(), f"{doc.name}: {img}"
-    assert len(re.findall(r"!\[", (RAIZ / "README.md").read_text(encoding="utf-8"))) >= 2
+    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+    locais = [i for i in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", readme) if not i.startswith("http")]
+    assert len(locais) >= 2
 
 
 def test_todos_os_exemplos_estao_documentados():
