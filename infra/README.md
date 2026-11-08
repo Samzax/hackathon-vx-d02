@@ -35,7 +35,7 @@ cd infra && npx aws-cdk@2 deploy RegulaIA -c imagem_tag=<TAG>         # sem IA
 cd infra && npx aws-cdk@2 deploy RegulaIA -c imagem_tag=<TAG> -c ia=1 # com o Bedrock
 ```
 
-Na conta do evento: `AWS_PROFILE=vx` (`aws login --profile vx`) e `CDK_DEFAULT_ACCOUNT=777390839891`.
+Na conta do evento: `AWS_PROFILE=vx` (`aws login --profile vx`) (o CDK pega a conta das credenciais).
 Segredos gerados pela AWS: senha do banco, token do agente, `MITRA_CHAVE_DADOS` (64 alfanuméricos; o
 código deriva a chave Fernet) e `MITRA_SENHA_DEMO` (contas da demo no link público). Jobs: radar do
 DOU todo dia 06:00 BRT; descoberta de normas domingo 03:00 BRT.
@@ -48,20 +48,27 @@ Com domínio próprio: `npx aws-cdk@2 deploy -c certificado=arn:aws:acm:...` (o 
 
 Cada push no `main` roda `.github/workflows/deploy.yml`: build da imagem no runner (mesma
 `api/Dockerfile`), push no ECR `regulaia-api` com a tag do commit e `cdk deploy RegulaIA`. Sem
-segredo no GitHub: o job assume a role `github-deploy` por OIDC, restrita a este repositório e ao
+chave da AWS no GitHub: o job assume a role `github-deploy` por OIDC, restrita a este repositório e ao
 branch `main`. A role é criada uma vez, fora do CDK (o CDK não deve gerenciar quem faz o deploy dele):
 
 ```bash
 aws iam create-open-id-connect-provider --profile vx \
   --url https://token.actions.githubusercontent.com --client-id-list sts.amazonaws.com
+CONTA=$(aws sts get-caller-identity --profile vx --query Account --output text)
+sed "s/<CONTA>/$CONTA/g" infra/github-deploy-confianca.json > /tmp/confianca.json
+sed "s/<CONTA>/$CONTA/g" infra/github-deploy-permissoes.json > /tmp/permissoes.json
 aws iam create-role --profile vx --role-name github-deploy \
-  --assume-role-policy-document file://infra/github-deploy-confianca.json
+  --assume-role-policy-document file:///tmp/confianca.json
 aws iam put-role-policy --profile vx --role-name github-deploy \
-  --policy-name deploy --policy-document file://infra/github-deploy-permissoes.json
+  --policy-name deploy --policy-document file:///tmp/permissoes.json
 ```
 
 Permissões mínimas (os dois JSON ao lado): push só no repositório `regulaia-api` e `sts:AssumeRole`
 nas roles `cdk-*` do bootstrap — quem aplica o CloudFormation são as roles do CDK, como no deploy manual.
+
+O ID da conta não fica no repositório: os JSON levam `<CONTA>` e o workflow lê o ARN da role do
+segredo `AWS_DEPLOY_ROLE_ARN` (`arn:aws:iam::<CONTA>:role/github-deploy`). Trocou de conta: recrie a
+role na conta nova e atualize só esse segredo.
 
 ## Antes do deploy na conta do evento
 

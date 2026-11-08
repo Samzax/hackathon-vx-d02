@@ -1,5 +1,6 @@
 # Deploy automático: a cada push no main, constrói a imagem e atualiza a pilha RegulaIA (o produto Mitra).
-# Sem segredo guardado no GitHub: OIDC → role github-deploy (criação da role em infra/README.md).
+# Sem chave da AWS no GitHub: OIDC → role github-deploy (criação em infra/README.md). O segredo
+# AWS_DEPLOY_ROLE_ARN guarda só o ARN da role, para o ID da conta não ficar no repositório.
 name: Deploy
 
 on:
@@ -23,7 +24,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::777390839891:role/github-deploy
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
 
       - uses: aws-actions/amazon-ecr-login@v2

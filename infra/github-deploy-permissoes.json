@@ -19,13 +19,13 @@
         "ecr:CompleteLayerUpload",
         "ecr:PutImage"
       ],
-      "Resource": "arn:aws:ecr:us-east-1:777390839891:repository/regulaia-api"
+      "Resource": "arn:aws:ecr:us-east-1:<CONTA>:repository/regulaia-api"
     },
     {
       "Sid": "DeployPelasRolesDoCdk",
       "Effect": "Allow",
       "Action": "sts:AssumeRole",
-      "Resource": "arn:aws:iam::777390839891:role/cdk-*"
+      "Resource": "arn:aws:iam::<CONTA>:role/cdk-*"
     }
   ]
 }
