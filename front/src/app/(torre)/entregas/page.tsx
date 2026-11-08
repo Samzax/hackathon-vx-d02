@@ -6,11 +6,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { useAvisar } from "@/components/avisos";
 import { Calendario } from "@/components/calendario";
+import { Dialogo } from "@/components/dialogo";
 import { FormEntrega } from "@/components/entrega";
 import { FiltroMulti } from "@/components/filtro";
 import { HistoricoDaObrigacao } from "@/components/historico";
 import {
-  AreaTexto, Botao, Campo, CampoEntrada, CampoSelecao, Carregando, Cartao, Entrada, ErroCarga, Secao, Selo, Titulo, Vazio, cx, mensagem,
+  Abas, AreaTexto, Botao, Campo, CampoEntrada, CampoSelecao, Carregando, Cartao, Entrada, ErroCarga, Secao, Selo, Titulo, Vazio, cx, mensagem,
 } from "@/components/ui";
 import { useQuery } from "@tanstack/react-query";
 import { api, baixar, dados, type Consulta } from "@/lib/api";
@@ -134,72 +135,84 @@ function Varias({ linhas, onFeito }: { linhas: Linha[]; onFeito: () => void }) {
   );
 }
 
-function Uma({ l, onFeito }: { l: Linha; onFeito: () => void }) {
+type AbaDetalhe = "detalhes" | "historico";
+
+function DetalheDaEntrega({ l, aberto, onFechar, onFeito }: { l: Linha | null; aberto: boolean; onFechar: () => void; onFeito: () => void }) {
   const t = useTorre();
   const acoes = useAcoes();
+  const [aba, setAba] = useState<AbaDetalhe>("detalhes");
   const [para, setPara] = useState("");
   const [texto, setTexto] = useState("");
   const [desfazer, setDesfazer] = useState("");
   const hist = useQuery({
-    queryKey: [...t.chave, "historico", l.ativo_id, l.codigo],
-    queryFn: () => dados(api.GET("/api/v1/ativos/{ativo_id}/obrigacoes/{codigo}/historico", { params: { path: { ativo_id: l.ativo_id!, codigo: l.codigo } } })),
+    queryKey: [...t.chave, "historico", l?.ativo_id, l?.codigo],
+    queryFn: () => dados(api.GET("/api/v1/ativos/{ativo_id}/obrigacoes/{codigo}/historico", { params: { path: { ativo_id: l!.ativo_id!, codigo: l!.codigo } } })),
+    enabled: !!l && aba === "historico",
   });
   const manuais = (hist.data?.evidencias ?? []).filter((e) => e.baixa_manual);
   const escolhidaDesfazer = manuais.find((e) => e.periodo === desfazer) ?? manuais[0];
 
   return (
-    <Cartao className="p-4" data-testid="acoes-uma">
-      <div className="flex flex-wrap items-center gap-2">
-        <Selo status={l.status} />
-        <h2 className="text-base font-semibold">{l.ativo} · {l.titulo}</h2>
-      </div>
-      <p className="mt-1 text-[13px] text-texto-2"><LinkOficial href={l.norma_link}>{l.dispositivo}</LinkOficial> · {l.periodicidade ?? l.agenda_descricao} · evidência: {l.evidencia ?? "—"}</p>
-      {l.nota && <p className="mt-1 text-sm">{maiuscula(l.nota)}.</p>}
-      {l.trecho && <blockquote className="mt-2 border-l-2 border-borda-forte pl-3 text-[13px] italic text-texto-2">“{curto(l.trecho, 400)}”</blockquote>}
+    <Dialogo aberto={aberto} onFechar={onFechar} titulo={l?.titulo ?? "Obrigação"} largura="lg">
+      {l && <div data-testid="acoes-uma">
+        <Abas<AbaDetalhe> rotulo="Detalhes da obrigação" ativa={aba} onTrocar={setAba} abas={[
+          { id: "detalhes", rotulo: "Detalhes" },
+          { id: "historico", rotulo: "Histórico" },
+        ]} />
 
-      {!t.soLeitura && <div className="mt-4 grid gap-5 md:grid-cols-3">
-        <div>
-          <p className="mb-2 text-[13px] font-semibold">Registrar entrega</p>
-          {l.dados_faltando.some((c) => c !== "ultima_execucao") ? (
-            <p className="text-sm text-texto-2">Falta no cadastro: {l.dados_faltando_rotulos.join("; ")}. Complete na ficha do ativo antes.</p>
-          ) : <FormEntrega key={chave(l)} alvo={l} onFeito={onFeito} />}
-        </div>
-        <form className="space-y-2" onSubmit={async (e) => { e.preventDefault(); await acoes.atribuir([l], para.trim(), `${l.ativo} · ${l.codigo} agora com ${para.trim()}`); setPara(""); }}>
-          <p className="text-[13px] font-semibold">Responsável</p>
-          <p className="text-xs text-texto-2">
-            Hoje: {l.responsavel ?? "ninguém"}{l.responsavel_proprio ? " (só desta obrigação)" : l.responsavel ? " (o do ativo)" : ""}
-          </p>
-          <EscolhaArea rotulo="Passar para" valor={para} onMudar={setPara} />
-          <div className="flex flex-wrap gap-2">
-            <Botao type="submit" icone={<UserRound className="size-4" />} disabled={!para.trim()} carregando={acoes.pendente}>Atribuir</Botao>
-            {l.responsavel_proprio && (
-              <Botao onClick={() => acoes.atribuir([l], "", `${l.ativo} · ${l.codigo} voltou ao responsável do ativo`)}>Voltar ao do ativo</Botao>
-            )}
+        {aba === "detalhes" && <div role="tabpanel" aria-label="Detalhes" className="pt-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Selo status={l.status} />
+            <p className="font-semibold">{l.ativo} · {l.titulo}</p>
           </div>
-        </form>
-        <form className="space-y-2" onSubmit={async (e) => { e.preventDefault(); await acoes.comentar([l], texto.trim()); setTexto(""); }}>
-          <p className="text-[13px] font-semibold">Comentário</p>
-          <AreaTexto value={texto} onChange={(e) => setTexto(e.target.value)} rows={3} placeholder="ex.: laudo com a consultoria, chega dia 20" aria-label="Comentário" />
-          <Botao type="submit" icone={<MessageSquare className="size-4" />} disabled={!texto.trim()} carregando={acoes.pendente}>Comentar</Botao>
-        </form>
+          <p className="text-[13px] text-texto-2"><LinkOficial href={l.norma_link}>{l.dispositivo}</LinkOficial> · {l.periodicidade ?? l.agenda_descricao} · evidência: {l.evidencia ?? "—"}</p>
+          {l.nota && <p className="mt-1 text-sm">{maiuscula(l.nota)}.</p>}
+          {l.trecho && <blockquote className="mt-2 border-l-2 border-borda-forte pl-3 text-[13px] italic text-texto-2">“{curto(l.trecho, 400)}”</blockquote>}
+
+          {!t.soLeitura && <div className="mt-4 grid gap-5 md:grid-cols-3">
+            <div>
+              <p className="mb-2 text-[13px] font-semibold">Registrar entrega</p>
+              {l.dados_faltando.some((c) => c !== "ultima_execucao") ? (
+                <p className="text-sm text-texto-2">Falta no cadastro: {l.dados_faltando_rotulos.join("; ")}. Complete na ficha do ativo antes.</p>
+              ) : <FormEntrega key={chave(l)} alvo={l} onFeito={onFeito} />}
+            </div>
+            <form className="space-y-2" onSubmit={async (e) => { e.preventDefault(); await acoes.atribuir([l], para.trim(), `${l.ativo} · ${l.codigo} agora com ${para.trim()}`); setPara(""); }}>
+              <p className="text-[13px] font-semibold">Responsável</p>
+              <p className="text-xs text-texto-2">
+                Hoje: {l.responsavel ?? "ninguém"}{l.responsavel_proprio ? " (só desta obrigação)" : l.responsavel ? " (o do ativo)" : ""}
+              </p>
+              <EscolhaArea rotulo="Passar para" valor={para} onMudar={setPara} />
+              <div className="flex flex-wrap gap-2">
+                <Botao type="submit" icone={<UserRound className="size-4" />} disabled={!para.trim()} carregando={acoes.pendente}>Atribuir</Botao>
+                {l.responsavel_proprio && (
+                  <Botao onClick={() => acoes.atribuir([l], "", `${l.ativo} · ${l.codigo} voltou ao responsável do ativo`)}>Voltar ao do ativo</Botao>
+                )}
+              </div>
+            </form>
+            <form className="space-y-2" onSubmit={async (e) => { e.preventDefault(); await acoes.comentar([l], texto.trim()); setTexto(""); }}>
+              <p className="text-[13px] font-semibold">Comentário</p>
+              <AreaTexto value={texto} onChange={(e) => setTexto(e.target.value)} rows={3} placeholder="ex.: laudo com a consultoria, chega dia 20" aria-label="Comentário" />
+              <Botao type="submit" icone={<MessageSquare className="size-4" />} disabled={!texto.trim()} carregando={acoes.pendente}>Comentar</Botao>
+            </form>
+          </div>}
+        </div>}
+
+        {aba === "historico" && <div role="tabpanel" aria-label="Histórico" className="pt-4">
+          <HistoricoDaObrigacao ativoId={l.ativo_id!} codigo={l.codigo} />
+          {!t.soLeitura && manuais.length > 0 && escolhidaDesfazer && (
+            <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-borda pt-4">
+              <CampoSelecao rotulo="Desfazer uma entrega manual" value={escolhidaDesfazer.periodo} onChange={(e) => setDesfazer(e.target.value)} className="w-64">
+                {manuais.map((e) => <option key={e.id} value={e.periodo}>{e.periodo_rotulo}</option>)}
+              </CampoSelecao>
+              <Botao variante="perigo" icone={<Undo2 className="size-4" />} carregando={acoes.pendente}
+                onClick={() => acoes.desfazer(l, escolhidaDesfazer.periodo, escolhidaDesfazer.periodo_rotulo)}>
+                Desfazer
+              </Botao>
+            </div>
+          )}
+        </div>}
       </div>}
-
-      <div className="mt-5 border-t border-borda pt-4">
-        <p className="mb-3 text-[13px] font-semibold">Histórico</p>
-        <HistoricoDaObrigacao ativoId={l.ativo_id!} codigo={l.codigo} />
-        {!t.soLeitura && manuais.length > 0 && escolhidaDesfazer && (
-          <div className="mt-4 flex flex-wrap items-end gap-2">
-            <CampoSelecao rotulo="Desfazer uma entrega manual" value={escolhidaDesfazer.periodo} onChange={(e) => setDesfazer(e.target.value)} className="w-64">
-              {manuais.map((e) => <option key={e.id} value={e.periodo}>{e.periodo_rotulo}</option>)}
-            </CampoSelecao>
-            <Botao variante="perigo" icone={<Undo2 className="size-4" />} carregando={acoes.pendente}
-              onClick={() => acoes.desfazer(l, escolhidaDesfazer.periodo, escolhidaDesfazer.periodo_rotulo)}>
-              Desfazer
-            </Botao>
-          </div>
-        )}
-      </div>
-    </Cartao>
+    </Dialogo>
   );
 }
 
@@ -217,6 +230,7 @@ function Entregas() {
   const f = useMemo(() => lerFiltros(new URLSearchParams(params.toString())), [params]);
   const [busca, setBusca] = useState(f.busca);
   const [sel, setSel] = useState<Set<string>>(new Set());
+  const [detalhe, setDetalhe] = useState<Linha | null>(null);
 
   const mudar = (novo: Partial<Filtros>) => {
     router.replace(`${caminho}${escreverFiltros({ ...f, ...novo })}`, { scroll: false });
@@ -303,8 +317,9 @@ function Entregas() {
               {filtradas.map((l) => {
                 const k = chave(l);
                 return (
-                  <tr key={k} onClick={() => alternar(k)} aria-selected={sel.has(k)}
-                    className={cx("cursor-pointer", sel.has(k) ? "bg-marca-suave" : "hover:bg-fundo-2")}>
+                  <tr key={k} onClick={() => setDetalhe(l)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setDetalhe(l); } }}
+                    role="button" tabIndex={0}
+                    className={cx("cursor-pointer outline-none focus-visible:bg-marca-suave", detalhe && chave(detalhe) === k ? "bg-marca-suave" : "hover:bg-fundo-2")}>
                     <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                       <input type="checkbox" checked={sel.has(k)} onChange={() => alternar(k)} aria-label={`Selecionar ${l.ativo} · ${l.codigo}`}
                         className="size-4 accent-[var(--marca)]" />
@@ -327,8 +342,15 @@ function Entregas() {
 
       <div className="mt-4">
         {escolhidas.length > 1 && !t.soLeitura && <Varias linhas={escolhidas} onFeito={() => setSel(new Set())} />}
-        {escolhidas.length === 1 && <Uma key={chave(escolhidas[0]!)} l={escolhidas[0]!} onFeito={() => setSel(new Set())} />}
       </div>
+
+      <DetalheDaEntrega
+        key={detalhe ? chave(detalhe) : "sem-detalhe"}
+        l={detalhe}
+        aberto={!!detalhe}
+        onFechar={() => setDetalhe(null)}
+        onFeito={() => { setSel(new Set()); setDetalhe(null); }}
+      />
 
       <Secao titulo="Calendário do mês" className="mt-10">
         <Calendario ativos={f.ativo} />

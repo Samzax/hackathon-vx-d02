@@ -321,7 +321,7 @@ export function CampoSelecao({ rotulo, dica, className, children, ...p }: React.
 export function Abas<T extends string>({ abas, ativa, onTrocar, rotulo }:
   { abas: { id: T; rotulo: React.ReactNode }[]; ativa: T; onTrocar: (id: T) => void; rotulo: string }) {
   return (
-    <div role="tablist" aria-label={rotulo} className="flex gap-1 overflow-x-auto border-b border-borda">
+    <div role="tablist" aria-label={rotulo} className="flex gap-1 overflow-x-auto border-b border-borda [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {abas.map((a) => (
         <button
           key={a.id}
