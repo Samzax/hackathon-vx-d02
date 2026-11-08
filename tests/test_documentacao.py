@@ -77,7 +77,8 @@ def test_imagens_dos_documentos_existem():
             assert (doc.parent / img).is_file(), f"{doc.name}: {img}"
     readme = (RAIZ / "README.md").read_text(encoding="utf-8")
     locais = [i for i in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", readme) if not i.startswith("http")]
-    assert len(locais) >= 2
+    # a captura de Mudanças saiu por estar desatualizada (Caixa redesenhada); a da Caixa fica
+    assert "docs/img/torre_hoje.png" in locais, locais
 
 
 def test_todos_os_exemplos_estao_documentados():
