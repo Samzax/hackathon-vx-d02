@@ -11,8 +11,8 @@ Mitra is a regulatory-control platform for operational assets. It brings obligat
 ## Try it in two minutes
 
 1. Open the [live demo](https://d1wj3tlr6ee301.cloudfront.net) and click **Entrar na demo** (test account, no password). The **Persona** selector in the sidebar switches between Diretoria, Regulatório, each area manager, TI and Curadoria Mitra.
-2. **Caixa de entrada:** 4 overdue, 1 missing registration datum and 3 due soon, each with the action that resolves it. Under **Insira um documento**, pick `FIR_B2_2026-11-1Q_anomalia.pdf` and click **Ler documento**: rules read the asset, the document type and the date without AI, and the anomaly opens a special inspection due in 24 hours.
-3. **Decidir →** on the Res. ANM 245/2026 card: OB-01 before and after, with the literal excerpt of the act. One obligation changes and the other 23 stay the same. Public rules are approved once for every client, so switch the persona to **Curadoria Mitra** to approve it.
+2. **Caixa de entrada:** 4 overdue, 1 missing registration datum and 3 due soon, and clicking an obligation registers its delivery. **Adicionar documento**, at the top, opens the reader: pick `FIR_B2_2026-11-1Q_anomalia.pdf` and click **Ler documento**: rules read the asset, the document type and the date without AI, and the anomaly opens a special inspection due in 24 hours.
+3. **Revisar alteração** on the Res. ANM 245/2026 change: OB-01 before and after, with the literal excerpt of the act. One obligation changes and the other 23 stay the same. Public rules are approved once for every client, so switch the persona to **Curadoria Mitra** to approve it.
 4. **Assistente Mitra:** ask "O que está atrasado na B3 e por qual artigo?". The answer cites the article and the literal excerpt, and every quote, date and code is checked against the tower before it is shown.
 5. Switch the persona to **Gerência de Geotecnia**: the inbox shrinks to the assets of that area.
 

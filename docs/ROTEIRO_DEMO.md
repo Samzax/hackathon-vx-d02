@@ -5,8 +5,8 @@ Antes de começar, suba a API e o front conforme o [README](../README.md). Em `h
 ## 1. Caixa de entrada (60 s)
 
 - **Fala:** "A Serra Azul tem 8 ativos e 131 obrigações vindas de 11 normas: a lei federal de segurança de barragens, a lei de Minas e seus dois decretos, as Res. 95 e 220 da ANM, a NR-3, a NR-13, a NR-22, a LC 140 e a licença ambiental. Ninguém aqui leu norma: a torre mostra o que precisa de ação, por ativo."
-- Apontar os números do topo: 4 atrasadas, 1 dado faltando, 3 vencendo. Embaixo, a lista do que precisa de decisão ou ação: a mudança da Res. 245 aguardando aprovação, as atrasadas, o dado faltando e o que vence, cada linha com o botão que resolve (**Registrar entrega**, **Completar cadastro**, **Decidir →**).
-- Em **Chegou um documento da operação?**, escolher `FIR_B3_2026-10-1Q.pdf` e clicar em **Ler documento**.
+- Apontar os números do topo: 4 atrasadas, 1 dado faltando, 3 vencendo. Embaixo, a lista do que precisa de decisão ou ação: a mudança da Res. 245 aguardando aprovação, as atrasadas, o dado faltando e o que vence, Clicar no nome de uma obrigação abre o registro da entrega, e a mudança da Res. 245 tem o botão **Revisar alteração**.
+- Clicar em **Adicionar documento**, no topo, escolher `FIR_B3_2026-10-1Q.pdf` e clicar em **Ler documento**.
   - **Fala:** "A regra leu ativo, documento e data. A IA não foi chamada."
 - Clicar em **Registrar evidência**. As atrasadas caem de 4 para 3, e a FIR da B3 sai da caixa.
 - Opcional: `EIR_B3_2026-10-1Q_recibo_SIGBM.pdf` zera a B3 e mostra o aviso "enviado 7 dias depois do prazo". **Fala:** "comprova a quinzena, mas a torre não esconde o atraso."
@@ -19,7 +19,7 @@ Antes de começar, suba a API e o front conforme o [README](../README.md). Em `h
 
 ## 2. Mudanças (45 s)
 
-- Na caixa de entrada, clicar em **Decidir →** (abre **Regulatório**, **Mudanças**). Na Diretoria o cartão diz quem decide e não mostra botão: norma pública é decidida pela curadoria da Mitra, uma vez para todas as clientes.
+- Na caixa de entrada, clicar em **Revisar alteração** (abre **Regulatório**, **Mudanças**). Na Diretoria o cartão diz quem decide e não mostra botão: norma pública é decidida pela curadoria da Mitra, uma vez para todas as clientes.
 - **Fala:** "Em 31/7 saiu a Res. ANM 245. O radar achou o ato e propôs uma mudança. Ela não vale até alguém aprovar."
 - Mostrar o antes/depois da OB-01 (art. 7 §1: quem trabalha na lavra e no beneficiamento sai da ZAS; prazo 2027 → 26/12/2029), o trecho do ato e o quadro **Conferência automática**.
 - **Fala:** "Mudou uma obrigação. As outras 23 da Res. 220 ficaram iguais." (Está na linha em negrito do cartão, contada pela regra, não pela IA.)
