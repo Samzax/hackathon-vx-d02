@@ -16,6 +16,7 @@ import { type Linha, useMudancas, usePainel } from "@/lib/consultas";
 import { curto, dataBR, maiuscula, nomeDeArquivo } from "@/lib/formato";
 import { ATRASADA, DADO_FALTANDO, PRINCIPAIS, ROTULO, VENCE_LOGO } from "@/lib/status";
 import { useEmpresa, useTorre } from "@/lib/torre";
+import { LinkOficial } from "@/components/link-oficial";
 
 const ULTIMA_EXECUCAO = "ultima_execucao";
 const MAX_ITENS = 6;
@@ -46,7 +47,7 @@ function Item({ l, onEntregar }: { l: Linha; onEntregar?: (l: Linha) => void }) 
           <strong>{l.ativo}</strong> · {curto(l.titulo, 85)}
         </p>
         <p className="mt-0.5 text-xs text-texto-2">
-          {maiuscula(oQueFalta(l))} · {l.dispositivo} · {l.responsavel ?? "sem responsável"}
+          {maiuscula(oQueFalta(l))} · <LinkOficial href={l.norma_link}>{l.dispositivo}</LinkOficial> · {l.responsavel ?? "sem responsável"}
         </p>
       </div>
       <div className="flex shrink-0 gap-1.5">

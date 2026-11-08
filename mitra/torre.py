@@ -626,13 +626,14 @@ class Mudanca:
     fonte: str | None
     ativos: list[str]
     empresa: str | None = None    # obrigação própria desta empresa; None: norma pública
+    ato_link: str | None = None   # onde o ato foi publicado (página do DOU, portal do órgão)
 
 
 def mudancas(conn, empresa_id: int, unidades: set[str] | None = None) -> list[Mudanca]:
     """Versões pendentes que interessam à empresa: as de norma pública e as das obrigações próprias
     dela (a condicionante de licença de outra empresa nunca aparece aqui)."""
     rows = conn.execute(
-        "SELECT v.id, o.codigo, o.empresa, a.titulo AS ato, a.publicado_em FROM obrigacao_versao v "
+        "SELECT v.id, o.codigo, o.empresa, a.titulo AS ato, a.publicado_em, a.url AS ato_url FROM obrigacao_versao v "
         "JOIN obrigacao o ON o.id = v.obrigacao_id LEFT JOIN ato a ON a.id = v.ato_id "
         "WHERE v.status = 'pendente' AND (o.empresa IS NULL OR o.empresa = ?) ORDER BY o.codigo",
         (_nome_da_empresa(conn, empresa_id),)
@@ -647,7 +648,7 @@ def mudancas(conn, empresa_id: int, unidades: set[str] | None = None) -> list[Mu
                     if any(o.codigo == r["codigo"] and o.pendente for o in db.obrigacoes_do_ativo(conn, a["id"]))]
         out.append(Mudanca(r["id"], r["codigo"], vig["titulo"], db.diferencas(vig, pen),
                            nome_ato(r["ato"]), r["publicado_em"], pen["trecho"], pen["fonte"], afetados,
-                           r["empresa"]))
+                           r["empresa"], r["ato_url"]))
     return out
 
 

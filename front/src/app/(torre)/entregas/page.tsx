@@ -18,6 +18,7 @@ import { type Linha, useAreas, useAtivos, useInvalidarTorre, usePainel } from "@
 import { curto, dataBR, maiuscula, nomeDeArquivo, plural, somarDias } from "@/lib/formato";
 import { ATRASADA, DADO_FALTANDO, ROTULO, TODOS, VENCE_LOGO, ordenar } from "@/lib/status";
 import { useEmpresa, useTorre } from "@/lib/torre";
+import { LinkOficial } from "@/components/link-oficial";
 
 const PADRAO = [ATRASADA, DADO_FALTANDO, VENCE_LOGO];
 const SEM_RESPONSAVEL = "";
@@ -152,7 +153,7 @@ function Uma({ l, onFeito }: { l: Linha; onFeito: () => void }) {
         <Selo status={l.status} />
         <h2 className="text-base font-semibold">{l.ativo} · {l.titulo}</h2>
       </div>
-      <p className="mt-1 text-[13px] text-texto-2">{l.dispositivo} · {l.periodicidade ?? l.agenda_descricao} · evidência: {l.evidencia ?? "—"}</p>
+      <p className="mt-1 text-[13px] text-texto-2"><LinkOficial href={l.norma_link}>{l.dispositivo}</LinkOficial> · {l.periodicidade ?? l.agenda_descricao} · evidência: {l.evidencia ?? "—"}</p>
       {l.nota && <p className="mt-1 text-sm">{maiuscula(l.nota)}.</p>}
       {l.trecho && <blockquote className="mt-2 border-l-2 border-borda-forte pl-3 text-[13px] italic text-texto-2">“{curto(l.trecho, 400)}”</blockquote>}
 

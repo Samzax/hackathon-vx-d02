@@ -168,7 +168,9 @@ def ferramentas(torre: Torre) -> list[Callable]:
             ate += "-12-31"
         elif ate and len(ate) == 7:
             ate += "-31"
-        return [f for f in futuras if not ate or f["dia"] <= ate]
+        # sem o norma_link: a troca 95 -> 220 são dezenas de linhas com o mesmo endereço longo, e o resultado
+        # passaria do limite que vai para o modelo (a torre mostra o link na tela)
+        return [{k: v for k, v in f.items() if k != "norma_link"} for f in futuras if not ate or f["dia"] <= ate]
 
     def boletim(empresa: Empresa = None, hoje: Hoje = None,
                 responsavel: Annotated[str | None, Field(description="Área ou gestor (vazio: todos)")] = None) -> str:

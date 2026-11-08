@@ -11,6 +11,7 @@ import { api, dados, type Esquemas } from "@/lib/api";
 import { type Mudanca, useInvalidarTorre, useMudancas } from "@/lib/consultas";
 import { curto, dataBR, emBrasilia, usd } from "@/lib/formato";
 import { useEmpresa, useTorre } from "@/lib/torre";
+import { LinkOficial } from "@/components/link-oficial";
 
 type Versao = Esquemas["VersaoObrigacao"];
 
@@ -49,7 +50,8 @@ function CartaoMudanca({ m }: { m: Mudanca }) {
       </div>
       <h2 className="mt-2 text-base font-semibold">{m.codigo} · {m.titulo}</h2>
       <p className="mt-0.5 text-[13px] text-texto-2">
-        Origem: {m.ato ?? m.fonte} · publicado no DOU em {dataBR(m.publicado_em)}{m.norma ? ` · ${m.norma}` : ""}
+        Origem: <LinkOficial href={m.ato_link}>{m.ato ?? m.fonte}</LinkOficial> · publicado no DOU em {dataBR(m.publicado_em)}
+        {m.norma && <> · <LinkOficial href={m.norma_link}>{m.norma}</LinkOficial></>}
       </p>
 
       <div className="mt-4 overflow-x-auto rounded-lg border border-borda">
@@ -157,7 +159,7 @@ function Decisoes() {
           {d.data.map((x) => (
             <tr key={x.versao_id}>
               <td className="px-3 py-2 font-medium">{x.codigo}</td>
-              <td className="px-3 py-2">{x.ato_nome ?? "—"}</td>
+              <td className="px-3 py-2"><LinkOficial href={x.ato_link}>{x.ato_nome ?? "—"}</LinkOficial></td>
               <td className="px-3 py-2">
                 {!x.aprovada ? <Etiqueta tom="perigo">rejeitada</Etiqueta> : x.corrigida ? <Etiqueta tom="proposta">aprovada com correção</Etiqueta> : <Etiqueta tom="ok">aprovada</Etiqueta>}
               </td>
@@ -181,7 +183,7 @@ function Versao({ v }: { v: Versao }) {
         <strong>Versão {v.versao}</strong>
         <Etiqueta tom={s.tom}>{s.rotulo}</Etiqueta>
         <span className="text-texto-2">
-          origem: {v.ato_nome ?? v.fonte ?? "cadastro inicial"}
+          origem: <LinkOficial href={v.ato_link}>{v.ato_nome ?? v.fonte ?? "cadastro inicial"}</LinkOficial>
           {quem && (quem === "carga inicial" ? ` · veio do cadastro inicial em ${quando}` : ` · decidida por ${quem} em ${quando}`)}
         </span>
       </p>
@@ -191,7 +193,7 @@ function Versao({ v }: { v: Versao }) {
         </p>
       ) : (
         <p className="mt-1 text-sm">
-          Prazo: {dataBR(v.prazo)} · {v.vigencia_ate ? `vale de ${dataBR(v.vigencia_desde)} até ${dataBR(v.vigencia_ate)}` : `vale a partir de ${dataBR(v.vigencia_desde)}`} · {v.dispositivo}
+          Prazo: {dataBR(v.prazo)} · {v.vigencia_ate ? `vale de ${dataBR(v.vigencia_desde)} até ${dataBR(v.vigencia_ate)}` : `vale a partir de ${dataBR(v.vigencia_desde)}`} · <LinkOficial href={v.norma_link}>{v.dispositivo}</LinkOficial>
         </p>
       )}
       {v.corrigido.length > 0 && (

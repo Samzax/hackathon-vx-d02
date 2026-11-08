@@ -9,6 +9,7 @@ O ANMlegis serve as páginas em cp1252 sem dizer; todas são gravadas em UTF-8.
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -61,6 +62,69 @@ FONTES: dict[str, tuple[str, str]] = {
     "rdc-222-2018.html": ("RDC Anvisa 222/2018", _ANVISA_LEGIS.format(numero=222, ano=2018)),
     "nr-32-atualizada-2023.pdf": ("NR-32", _NRS + "nr-32-atualizada-2023.pdf"),
 }
+
+_PLANALTO = "https://www.planalto.gov.br/ccivil_03/"
+
+# Link oficial de cada norma do cadastro, para quem lê a torre abrir o texto. O nome é o do campo
+# `norma` do cadastro sem o que vem entre parênteses ("Lei 12.334/2010 (PNSB)" -> "Lei 12.334/2010").
+# Para pessoas o Planalto é a referência (ele só bloqueia robô, por isso o download usa a Câmara).
+OFICIAL: dict[str, str] = {
+    "Res. ANM 95/2022": FONTES["res95_2022.html"][1],
+    "Res. ANM 220/2025": FONTES["res220_2025.html"][1],
+    "Lei 12.334/2010": _PLANALTO + "_ato2007-2010/2010/lei/l12334.htm",
+    "LC 140/2011": _PLANALTO + "leis/lcp/lcp140.htm",
+    "Lei MG 23.291/2019": FONTES["lei_mg_23291_2019.html"][1],
+    "Decreto MG 48.078/2020": FONTES["dec_mg_48078_2020.html"][1],
+    "Decreto MG 48.140/2021": FONTES["dec_mg_48140_2021.html"][1],
+    "NR-3": FONTES["portaria_seprt_1068_-aprova_nova_nr_03.pdf"][1],
+    "NR-13": FONTES["nr-13-atualizada-2023-b.pdf"][1],
+    "NR-18": FONTES["NR18atualizada2026I.pdf"][1],
+    "NR-22": FONTES["nr-22-atualizada-2026.pdf"][1],
+    "NR-32": FONTES["nr-32-atualizada-2023.pdf"][1],
+    "NR-35": FONTES["nr-35-atualizada-2025-1.pdf"][1],
+    "Portaria MTE 105/2026": FONTES[
+        "portaria-mte-no-105-altera-a-nr-22-anexo-iii-nr-09-e-aprova-o-anexo-v-poeiras-minerais-ii.pdf"][1],
+    "Portaria MTE 261/2026": FONTES["portaria-mte-no-261-ajusta-port-105_26-que-altera-a-nr-22.pdf"][1],
+    "RDC Anvisa 63/2011": FONTES["rdc-63-2011.html"][1],
+    "RDC Anvisa 36/2013": FONTES["rdc-36-2013.html"][1],
+    "RDC Anvisa 222/2018": FONTES["rdc-222-2018.html"][1],
+}
+
+
+def _nome_curto(norma: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"\([^)]*\)", "", norma)).strip()
+
+
+def link_da_norma(norma: str | None, conn=None) -> str | None:
+    """O endereço oficial do texto da norma, ou None (licença, padrão interno, norma sem fonte conhecida).
+
+    Ordem: o cadastro acima; com `conn`, o que a descoberta achou na fonte (norma_candidata) e a ficha de
+    vigência da Câmara (norma_vigencia), para a norma que entrou no catálogo depois deste arquivo."""
+    if not norma:
+        return None
+    curto = _nome_curto(norma)
+    if url := OFICIAL.get(curto):
+        return url
+    if conn is None:
+        return None
+    from .descoberta import chave_da_norma
+
+    chave = chave_da_norma(curto)
+    if not chave:
+        return None
+    r = conn.execute("SELECT url FROM norma_candidata WHERE chave = ? AND url IS NOT NULL", (chave,)).fetchone()
+    if r:
+        return r["url"]
+    r = conn.execute("SELECT COALESCE(texto_url, ficha_url, original_url) AS url FROM norma_vigencia "
+                     "WHERE chave = ?", (chave,)).fetchone()
+    return r["url"] if r and r["url"] else None
+
+
+def link_do_dou(pdf_page: str | None) -> str | None:
+    """O XML do DOU traz a página do jornal em http://pesquisa.in.gov.br/...; o mesmo endereço serve em https."""
+    if not pdf_page or not pdf_page.startswith(("http://", "https://")):
+        return None
+    return "https://" + pdf_page.split("://", 1)[1]
 
 
 def baixar(forcar: bool = False, destino: Path = DESTINO) -> list[str]:

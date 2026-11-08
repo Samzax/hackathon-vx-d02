@@ -226,6 +226,7 @@ def test_norma_publica_so_a_curadoria_decide_e_a_decisao_vale(cliente):
     ob01 = next(m for m in pendentes if m["codigo"] == "OB-01")
     assert ob01["diferencas"]["prazo"][1] == "2029-12-26" and ob01["trecho"]
     assert ob01["escopo"] == "norma pública" and not ob01["decide"] and ob01["quem_decide"] == "curadoria Mitra"
+    assert ob01["ato_link"].startswith("https://pesquisa.in.gov.br/") and ob01["norma_link"].startswith("https://")
     decisao = _url(f"/mudancas/{ob01['versao_id']}/decisao")
     como(cliente, "geotecnia@serraazul.demo")
     assert cliente.post(decisao, json={"aprovar": True}).status_code == 403
@@ -237,6 +238,7 @@ def test_norma_publica_so_a_curadoria_decide_e_a_decisao_vale(cliente):
     assert not [m for m in cliente.get(_url(f"/empresas/{emp}/mudancas")).json() if m["codigo"] == "OB-01"]
     h = cliente.get(_url("/obrigacoes/OB-01/historico")).json()
     assert [v["status"] for v in h] == ["substituida", "vigente"] and h[-1]["decidida_por"] == "Curadoria Mitra"
+    assert h[-1]["ato_link"] == ob01["ato_link"] and h[-1]["norma_link"] == ob01["norma_link"]
 
 
 def test_correcao_invalida_e_recusada_e_auditada(cliente):

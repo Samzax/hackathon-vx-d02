@@ -10,9 +10,10 @@ import { useTorre } from "@/lib/torre";
 import { useAvisar } from "./avisos";
 import { Dialogo } from "./dialogo";
 import { AreaTexto, Aviso, Botao, Campo, CampoEntrada, Selo, mensagem } from "./ui";
+import { LinkOficial } from "./link-oficial";
 
 export type AlvoEntrega = Pick<Linha, "ativo_id" | "ativo" | "codigo" | "titulo" | "status"> &
-  Partial<Pick<Linha, "dispositivo" | "evidencia" | "pendente" | "agenda">>;
+  Partial<Pick<Linha, "dispositivo" | "norma_link" | "evidencia" | "pendente" | "agenda">>;
 
 /** Registrar a entrega: dia, o período que ela comprova (a API diz qual), comprovante opcional e observação. */
 export function FormEntrega({ alvo, onFeito, idForm }: { alvo: AlvoEntrega; onFeito?: () => void; idForm?: string }) {
@@ -92,7 +93,7 @@ export function DialogoEntrega({ alvo, onFechar }: { alvo: AlvoEntrega | null; o
               <span className="font-semibold">{alvo.ativo} · {alvo.titulo}</span>
             </div>
             <p className="mt-1 text-[13px] text-texto-2">
-              {alvo.dispositivo}
+              <LinkOficial href={alvo.norma_link}>{alvo.dispositivo}</LinkOficial>
               {alvo.evidencia ? ` · evidência: ${alvo.evidencia}` : ""}
               {alvo.pendente ? ` · pendente: ${alvo.pendente}` : ""}
             </p>

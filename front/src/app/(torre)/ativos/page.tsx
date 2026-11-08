@@ -19,6 +19,7 @@ import { type Ativo, type Linha, useAreas, useAtivos, useFicha, useInvalidarTorr
 import { dataBR, maiuscula, plural } from "@/lib/formato";
 import { ATRASADA, COLUNA, DADO_FALTANDO, GATILHO, ORDEM, ROTULO, TIPO_ATIVO, VENCE_LOGO, cor, ordenar, orgao, pior } from "@/lib/status";
 import { RES_220, useTorre } from "@/lib/torre";
+import { LinkOficial } from "@/components/link-oficial";
 
 const Mapa = dynamic(() => import("@/components/mapa"), { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-lg bg-fundo-2" /> });
 
@@ -45,7 +46,7 @@ function Pendencia({ l, onEntregar }: { l: Linha; onEntregar?: (l: Linha) => voi
           <Selo status={l.status} />
           <strong>{l.titulo}</strong>
         </p>
-        <p className="text-xs font-medium text-texto-2">{l.dispositivo}</p>
+        <p className="text-xs font-medium text-texto-2"><LinkOficial href={l.norma_link}>{l.dispositivo}</LinkOficial></p>
         {l.faltando_rotulos.length > 1 && <p>Períodos sem evidência: {l.faltando_rotulos.join(", ")}.</p>}
         {l.faltando_rotulos.length === 1 && !herdada && l.pendente && <p>{maiuscula(l.pendente)}.</p>}
         {l.status === VENCE_LOGO && l.vence && <p>Vence em {dataBR(l.vence)}.</p>}
@@ -94,7 +95,7 @@ function TabelaObrigacoes({ linhas, onHistorico, gatilho }: { linhas: Linha[]; o
                 <span className="text-xs text-texto-3">{l.codigo}</span> {l.titulo}
                 {l.mudanca_pendente && <span className="ml-1 text-xs font-semibold text-proposta">· mudança aguardando</span>}
               </td>
-              <td className="px-3 py-2 text-texto-2">{l.dispositivo}</td>
+              <td className="px-3 py-2 text-texto-2"><LinkOficial href={l.norma_link}>{l.dispositivo}</LinkOficial></td>
               {!gatilho && <td className="num px-3 py-2 whitespace-nowrap">{dataBR(l.vence)}</td>}
               <td className="px-3 py-2 text-texto-2">{gatilho ? l.evidencia : l.pendente || "—"}</td>
               <td className="px-3 py-2 text-right">
@@ -230,7 +231,7 @@ function Ficha({ ativoId, abaInicial }: { ativoId: number; abaInicial: Aba }) {
         titulo={historico ? `${a.codigo} · ${historico.codigo} · ${historico.titulo}` : ""}>
         {historico && (
           <>
-            <p className="mb-3 text-[13px] text-texto-2">{historico.dispositivo} · {historico.agenda_descricao}</p>
+            <p className="mb-3 text-[13px] text-texto-2"><LinkOficial href={historico.norma_link}>{historico.dispositivo}</LinkOficial> · {historico.agenda_descricao}</p>
             {historico.trecho && <blockquote className="mb-4 border-l-2 border-borda-forte pl-3 text-[13px] italic text-texto-2">“{historico.trecho}”</blockquote>}
             <HistoricoDaObrigacao ativoId={a.id} codigo={historico.codigo} />
           </>

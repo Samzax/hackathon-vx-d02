@@ -1613,6 +1613,11 @@ export interface components {
             /** Texto */
             texto: string;
             /**
+             * Url
+             * @description onde o ato foi publicado (diário oficial, portal do órgão)
+             */
+            url?: string | null;
+            /**
              * Empresa Id
              * @description analisa no escopo desta empresa (normas públicas e obrigações próprias dela). É o que o agente preso a uma empresa manda; sem ele, a plataforma analisa contra o catálogo inteiro e a cliente contra o dela. Empresa de outra cliente: 404.
              */
@@ -2045,6 +2050,11 @@ export interface components {
             ato: string | null;
             /** Ato Nome */
             ato_nome: string | null;
+            /**
+             * Ato Link
+             * @description onde o ato foi publicado (página do DOU, portal do órgão)
+             */
+            ato_link?: string | null;
             /**
              * Status
              * @description vigente, substituida (aprovada) ou rejeitada
@@ -2504,6 +2514,11 @@ export interface components {
             /** Dispositivo */
             dispositivo: string;
             /**
+             * Norma Link
+             * @description endereço oficial do texto da norma (vazio: sem fonte pública)
+             */
+            norma_link?: string | null;
+            /**
              * Proposta
              * @description a data vem de uma mudança ainda não aprovada
              */
@@ -2809,6 +2824,11 @@ export interface components {
              * @description norma e artigo prontos para mostrar
              */
             dispositivo: string;
+            /**
+             * Norma Link
+             * @description endereço oficial do texto da norma (vazio: sem fonte pública)
+             */
+            norma_link?: string | null;
             /** Periodicidade */
             periodicidade: string | null;
             /** Agenda */
@@ -3000,8 +3020,18 @@ export interface components {
             fonte: string | null;
             /** Ativos */
             ativos: string[];
+            /**
+             * Ato Link
+             * @description onde o ato foi publicado (página do DOU, portal do órgão)
+             */
+            ato_link?: string | null;
             /** Norma */
             norma: string | null;
+            /**
+             * Norma Link
+             * @description endereço oficial do texto da norma (vazio: sem fonte pública)
+             */
+            norma_link?: string | null;
             /**
              * Empresa
              * @description dona da obrigação própria; vazio: norma pública
@@ -3415,6 +3445,11 @@ export interface components {
             titulo: string;
             /** Norma */
             norma: string | null;
+            /**
+             * Norma Link
+             * @description endereço oficial do texto da norma (vazio: sem fonte pública)
+             */
+            norma_link?: string | null;
             /** Versoes */
             versoes: number;
             /**
@@ -3963,10 +3998,20 @@ export interface components {
              * @description o mesmo ato, para ler ('Resolução ANM nº 245, de ...')
              */
             ato_nome: string | null;
+            /**
+             * Ato Link
+             * @description onde o ato foi publicado (página do DOU, portal do órgão)
+             */
+            ato_link?: string | null;
             /** Norma */
             norma: string | null;
             /** Dispositivo */
             dispositivo: string;
+            /**
+             * Norma Link
+             * @description endereço oficial do texto da norma (vazio: sem fonte pública)
+             */
+            norma_link?: string | null;
             /**
              * Mudou
              * @description o que mudou em relação à versão anterior

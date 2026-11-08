@@ -219,7 +219,8 @@ def registrar_ato(conn, fonte: str, identificador: str, titulo: str, *,
     with conn:
         conn.execute(
             "INSERT INTO ato (fonte, identificador, titulo, ementa, publicado_em, url, texto, sha256) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(identificador) DO NOTHING",
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(identificador) DO UPDATE SET url = COALESCE(ato.url, excluded.url)",
             (fonte, identificador, titulo, ementa, publicado_em, url, texto, sha),
         )
     return conn.execute(
@@ -348,7 +349,7 @@ def historico(conn, codigo: str, empresa: str | None = QUALQUER) -> list[dict]:
     if ob is None:
         return []
     rows = conn.execute(
-        "SELECT v.*, o.codigo, a.titulo AS ato FROM obrigacao_versao v "
+        "SELECT v.*, o.codigo, a.titulo AS ato, a.url AS ato_url FROM obrigacao_versao v "
         "JOIN obrigacao o ON o.id = v.obrigacao_id LEFT JOIN ato a ON a.id = v.ato_id "
         "WHERE o.id = ? ORDER BY v.versao",
         (ob["id"],),

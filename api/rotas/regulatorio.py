@@ -12,9 +12,9 @@ import json
 from dataclasses import asdict
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 
-from mitra import db, demo, impacto, torre
+from mitra import db, demo, fontes, impacto, torre
 from mitra.ia import Roteador
 
 from .. import auditoria
@@ -72,7 +72,9 @@ class Mudanca(BaseModel):
     trecho: str | None
     fonte: str | None
     ativos: list[str]
+    ato_link: str | None = Field(None, description="onde o ato foi publicado (página do DOU, portal do órgão)")
     norma: str | None
+    norma_link: str | None = Field(None, description="endereço oficial do texto da norma (vazio: sem fonte pública)")
     empresa: str | None = Field(description="dona da obrigação própria; vazio: norma pública")
     escopo: str = Field(description="'norma pública' (vale para todas as clientes) ou 'empresa' (só desta)")
     decide: bool = Field(description="se quem pede pode aprovar ou rejeitar esta mudança")
@@ -87,6 +89,7 @@ class DecisaoRegistrada(BaseModel):
     codigo: str
     ato: str | None
     ato_nome: str | None
+    ato_link: str | None = Field(None, description="onde o ato foi publicado (página do DOU, portal do órgão)")
     status: str = Field(description="vigente, substituida (aprovada) ou rejeitada")
     aprovada: bool
     corrigida: bool
@@ -104,6 +107,7 @@ class Ato(BaseModel):
     identificacao: str | None = Field(None, examples=["RESOLUÇÃO ANM Nº 245, DE 31 DE JULHO DE 2026"],
                                       description="vazio: a primeira linha do texto, até o ano")
     texto: str = Field(min_length=20, max_length=200_000)
+    url: HttpUrl | None = Field(None, description="onde o ato foi publicado (diário oficial, portal do órgão)")
     empresa_id: int | None = Field(None, description=(
         "analisa no escopo desta empresa (normas públicas e obrigações próprias dela). É o que o agente "
         "preso a uma empresa manda; sem ele, a plataforma analisa contra o catálogo inteiro e a cliente "
@@ -250,7 +254,7 @@ def mudancas(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(con
         campos = [CampoMudanca(campo=c, rotulo=CAMPO.get(c, c), vigente=a, proposto=b, vigente_texto=_texto(c, a),
                                proposto_texto=_texto(c, b), data=c in db.CAMPOS_DATA)
                   for c, (a, b) in m.diferencas.items()]
-        out.append(Mudanca(**d, campos=campos, norma=norma, escopo=NORMA_PUBLICA if m.empresa is None else PROPRIA,
+        out.append(Mudanca(**d, campos=campos, norma=norma, norma_link=fontes.link_da_norma(norma, conn), escopo=NORMA_PUBLICA if m.empresa is None else PROPRIA,
                            decide=e.decide(m.empresa), quem_decide=_quem_decide(m.empresa),
                            analise=_registro(r) if r else None, tamanho=_tamanho(conn, r, m.codigo, norma) if r else None,
                            conferencia=_conferencia(r) if r else []))
@@ -262,12 +266,13 @@ def mudancas(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(con
 def decisoes(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     emp = empresa_visivel(conn, e, empresa_id)
     rows = conn.execute(
-        "SELECT v.id, o.codigo, o.empresa, v.status, v.decidida_por, v.decidida_em, v.correcao, a.titulo AS ato "
+        "SELECT v.id, o.codigo, o.empresa, v.status, v.decidida_por, v.decidida_em, v.correcao, a.titulo AS ato, "
+        "a.url AS ato_link "
         "FROM obrigacao_versao v JOIN obrigacao o ON o.id = v.obrigacao_id LEFT JOIN ato a ON a.id = v.ato_id "
         "WHERE v.ato_id IS NOT NULL AND v.status != 'pendente' AND (o.empresa IS NULL OR o.empresa = ?) "
         "ORDER BY v.decidida_em DESC, v.id DESC", (emp["nome"],)).fetchall()
     return [DecisaoRegistrada(versao_id=r["id"], codigo=r["codigo"], ato=r["ato"], ato_nome=torre.nome_ato(r["ato"]),
-                              status=r["status"], aprovada=r["status"] != "rejeitada", corrigida=bool(r["correcao"]),
+                              ato_link=r["ato_link"], status=r["status"], aprovada=r["status"] != "rejeitada", corrigida=bool(r["correcao"]),
                               decidida_por=(r["decidida_por"] or "").split(" (")[0] or None,
                               decidida_em=r["decidida_em"]) for r in rows]
 
@@ -372,7 +377,8 @@ def propor(dados: Ato, request: Request, e: Escopo = Depends(curadoria), conn=De
     if not an.aprovadas:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "nenhuma mudança passou na conferência")
     ident = "upload-" + hashlib.sha256(dados.texto.encode()).hexdigest()[:16]
-    ato_id = db.registrar_ato(conn, "upload", ident, an.ato, texto=dados.texto)
+    ato_id = db.registrar_ato(conn, "upload", ident, an.ato, texto=dados.texto,
+                            url=str(dados.url) if dados.url else None)
     try:
         versoes = impacto.aplicar(conn, an, ato_id)
     except db.ErroCadastro as erro:

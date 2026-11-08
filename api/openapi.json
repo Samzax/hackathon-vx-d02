@@ -4935,6 +4935,21 @@
       "minLength": 20,
       "title": "Texto"
      },
+     "url": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2083,
+        "minLength": 1,
+        "format": "uri"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Url",
+      "description": "onde o ato foi publicado (diário oficial, portal do órgão)"
+     },
      "empresa_id": {
       "anyOf": [
        {
@@ -6050,6 +6065,18 @@
       ],
       "title": "Ato Nome"
      },
+     "ato_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ato Link",
+      "description": "onde o ato foi publicado (página do DOU, portal do órgão)"
+     },
      "status": {
       "type": "string",
       "title": "Status",
@@ -7137,6 +7164,18 @@
       "type": "string",
       "title": "Dispositivo"
      },
+     "norma_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Norma Link",
+      "description": "endereço oficial do texto da norma (vazio: sem fonte pública)"
+     },
      "proposta": {
       "type": "boolean",
       "title": "Proposta",
@@ -7896,6 +7935,18 @@
       "title": "Dispositivo",
       "description": "norma e artigo prontos para mostrar"
      },
+     "norma_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Norma Link",
+      "description": "endereço oficial do texto da norma (vazio: sem fonte pública)"
+     },
      "periodicidade": {
       "anyOf": [
        {
@@ -8374,6 +8425,18 @@
       "type": "array",
       "title": "Ativos"
      },
+     "ato_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ato Link",
+      "description": "onde o ato foi publicado (página do DOU, portal do órgão)"
+     },
      "norma": {
       "anyOf": [
        {
@@ -8384,6 +8447,18 @@
        }
       ],
       "title": "Norma"
+     },
+     "norma_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Norma Link",
+      "description": "endereço oficial do texto da norma (vazio: sem fonte pública)"
      },
      "empresa": {
       "anyOf": [
@@ -9439,6 +9514,18 @@
        }
       ],
       "title": "Norma"
+     },
+     "norma_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Norma Link",
+      "description": "endereço oficial do texto da norma (vazio: sem fonte pública)"
      },
      "versoes": {
       "type": "integer",
@@ -10912,6 +10999,18 @@
       "title": "Ato Nome",
       "description": "o mesmo ato, para ler ('Resolução ANM nº 245, de ...')"
      },
+     "ato_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ato Link",
+      "description": "onde o ato foi publicado (página do DOU, portal do órgão)"
+     },
      "norma": {
       "anyOf": [
        {
@@ -10926,6 +11025,18 @@
      "dispositivo": {
       "type": "string",
       "title": "Dispositivo"
+     },
+     "norma_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Norma Link",
+      "description": "endereço oficial do texto da norma (vazio: sem fonte pública)"
      },
      "mudou": {
       "items": {

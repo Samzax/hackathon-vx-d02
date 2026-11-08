@@ -17,7 +17,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import date
 
-from . import agenda, db, triagem
+from . import agenda, db, fontes, triagem
 from .ia import Roteador, SemProvedor
 
 VERSAO_PROMPT = "impacto-v3"
@@ -268,7 +268,8 @@ def main(argv: list[str]) -> int:
         if an.revisao_humana:
             print("   >> precisa de revisão humana")
         ato_id = db.registrar_ato(conn, "dou", a.id_materia, a.identifica, ementa=a.ementa,
-                                  publicado_em=a.pub_date.isoformat(), texto=a.text)
+                                  publicado_em=a.pub_date.isoformat(), texto=a.text,
+                                  url=fontes.link_do_dou(a.pdf_page))
         novas = set(aplicar(conn, an, ato_id))
         afetadas = sorted(
             codigo for codigo, aid in ativos.items()

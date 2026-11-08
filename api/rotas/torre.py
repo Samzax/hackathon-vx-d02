@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Upl
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from mitra import agenda, db, operacao, pdf, torre, usuarios
+from mitra import agenda, db, fontes, operacao, pdf, torre, usuarios
 
 from .. import armazenamento, auditoria, cadastro
 from ..banco import conexao
@@ -52,6 +52,7 @@ class LinhaPainel(BaseModel):
     titulo: str
     artigo: str
     dispositivo: str = Field(description="norma e artigo prontos para mostrar")
+    norma_link: str | None = Field(None, description="endereço oficial do texto da norma (vazio: sem fonte pública)")
     periodicidade: str | None
     agenda: str
     status: str = Field(description="atrasada, dado_faltando, vence_logo, em_dia, cumprida, gatilho")
@@ -159,8 +160,10 @@ class VersaoObrigacao(BaseModel):
     correcao: dict[str, list] | None = Field(description="{campo: [proposto, aprovado]} quando quem aprovou corrigiu")
     ato: str | None = Field(description="o ato que originou a versão, como o DOU publica")
     ato_nome: str | None = Field(description="o mesmo ato, para ler ('Resolução ANM nº 245, de ...')")
+    ato_link: str | None = Field(None, description="onde o ato foi publicado (página do DOU, portal do órgão)")
     norma: str | None
     dispositivo: str
+    norma_link: str | None = Field(None, description="endereço oficial do texto da norma (vazio: sem fonte pública)")
     mudou: list[Alteracao] = Field(default=[], description="o que mudou em relação à versão anterior")
     corrigido: list[Alteracao] = Field(default=[], description="o que quem aprovou corrigiu: proposto → aprovado")
 
@@ -169,6 +172,7 @@ class ObrigacaoResumo(BaseModel):
     codigo: str
     titulo: str
     norma: str | None
+    norma_link: str | None = Field(None, description="endereço oficial do texto da norma (vazio: sem fonte pública)")
     versoes: int
     mudou: bool = Field(description="já teve mais de uma versão (mudou por ato ou tem mudança proposta)")
 
@@ -224,6 +228,7 @@ class Futura(BaseModel):
     norma: str | None
     artigo: str
     dispositivo: str
+    norma_link: str | None = Field(None, description="endereço oficial do texto da norma (vazio: sem fonte pública)")
     proposta: bool = Field(description="a data vem de uma mudança ainda não aprovada")
 
 
@@ -362,9 +367,21 @@ def _trechos(conn) -> dict[str, str | None]:
         "WHERE v.status = 'vigente'")}
 
 
-def _linha(l: torre.Linha, trechos: dict[str, str | None] | None = None) -> LinhaPainel:
+def _links(conn):
+    """link_da_norma com memória: o painel repete a mesma norma em dezenas de linhas."""
+    memo: dict[str | None, str | None] = {}
+
+    def link(norma: str | None) -> str | None:
+        if norma not in memo:
+            memo[norma] = fontes.link_da_norma(norma, conn)
+        return memo[norma]
+    return link
+
+
+def _linha(l: torre.Linha, trechos: dict[str, str | None] | None = None, links=None) -> LinhaPainel:
     return LinhaPainel(**{k: v for k, v in asdict(l).items()},
-                       dispositivo=torre.dispositivo(l.norma, l.artigo), status_rotulo=ROTULO.get(l.status, l.status),
+                       dispositivo=torre.dispositivo(l.norma, l.artigo),
+                       norma_link=(links or fontes.link_da_norma)(l.norma), status_rotulo=ROTULO.get(l.status, l.status),
                        pendente=torre.pendente(l), trecho=(trechos or {}).get(l.codigo),
                        agenda_descricao=agenda.descrever(l.agenda) if l.agenda else "",
                        ultima_rotulo=agenda.rotulo_humano(l.ultima) if l.ultima else None,
@@ -453,9 +470,9 @@ def painel(empresa_id: int, hoje: date | None = None, ativo: str | None = None,
     contagem = _contagem(linhas)
     if status_:
         linhas = [l for l in linhas if l.status in status_]
-    trechos = _trechos(conn)
+    trechos, links = _trechos(conn), _links(conn)
     return Painel(hoje=hoje.isoformat(), desde=desde.isoformat(), contagem=contagem,
-                  por_ativo=torre.resumo(linhas), linhas=[_linha(l, trechos) for l in linhas])
+                  por_ativo=torre.resumo(linhas), linhas=[_linha(l, trechos, links) for l in linhas])
 
 
 @rota.get("/empresas/{empresa_id}/ativos", response_model=list[Ativo],
@@ -511,7 +528,7 @@ def ficha(ativo_id: int, hoje: date | None = None, e: Escopo = Depends(regulator
     a = _ativo(conn, ativo_id, e)
     emp = empresa_visivel(conn, e, a["empresa_id"])
     linhas = _visiveis(conn, e, emp["id"], hoje or hoje_padrao(), desde_padrao(emp), ativo=a["codigo"])
-    trechos = _trechos(conn)
+    trechos, links = _trechos(conn), _links(conn)
     evidencias = db.evidencias_do_ativo(conn, ativo_id, 20)
     eventos = db.eventos(conn, ativo_id, limite=50)
     if not e.ve_tudo and not e.ve_ativo(a):
@@ -520,7 +537,7 @@ def ficha(ativo_id: int, hoje: date | None = None, e: Escopo = Depends(regulator
         minhas = {c for (aid, c), v in db.responsaveis(conn).items() if aid == a["id"] and v == e.area}
         evidencias = [x for x in evidencias if x["codigo"] in minhas]
         eventos = [x for x in eventos if x.get("codigo") in minhas]
-    return Ficha(ativo=_ativo_modelo(a, linhas, _posicoes(emp)), linhas=[_linha(l, trechos) for l in linhas],
+    return Ficha(ativo=_ativo_modelo(a, linhas, _posicoes(emp)), linhas=[_linha(l, trechos, links) for l in linhas],
                  evidencias=[_evidencia(x) for x in evidencias],
                  eventos=[_evento(x) for x in eventos])
 
@@ -565,7 +582,8 @@ def historico(codigo: str, empresa_id: int | None = Query(None, description=(
         out.append(VersaoObrigacao(
             **{k: v.get(k) for k in VersaoObrigacao.model_fields if k in v and k not in ("correcao", "mudou", "corrigido")},
             agenda_descricao=agenda.descrever(v["agenda"]) if v.get("agenda") else "",
-            correcao=correcao, ato_nome=torre.nome_ato(v.get("ato")), norma=ob["norma"],
+            correcao=correcao, ato_nome=torre.nome_ato(v.get("ato")), ato_link=v.get("ato_url"),
+            norma=ob["norma"], norma_link=fontes.link_da_norma(ob["norma"], conn),
             dispositivo=torre.dispositivo(ob["norma"], v.get("artigo")),
             mudou=[_alt(c, a, b) for c, (a, b) in db.diferencas(anterior, v).items()] if anterior else [],
             corrigido=[_alt(c, p, a) for c, (p, a) in (correcao or {}).items()]))
@@ -587,7 +605,9 @@ def obrigacoes(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(c
         "MAX(CASE WHEN v.status = 'vigente' THEN v.titulo END) AS vigente, MAX(v.titulo) AS qualquer "
         f"FROM obrigacao o JOIN obrigacao_versao v ON v.obrigacao_id = o.id WHERE o.codigo IN ({marcas}) "
         "GROUP BY o.codigo, o.norma", codigos).fetchall()
+    link = _links(conn)
     out = [ObrigacaoResumo(codigo=r["codigo"], titulo=r["vigente"] or r["qualquer"], norma=r["norma"],
+                           norma_link=link(r["norma"]),
                            versoes=r["versoes"], mudou=r["versoes"] > 1) for r in rows]
     return sorted(out, key=lambda o: (not o.mudou, o.codigo))
 
@@ -647,7 +667,8 @@ def linha_do_tempo(empresa_id: int, hoje: date | None = None, e: Escopo = Depend
                    conn=Depends(conexao)):
     empresa_visivel(conn, e, empresa_id)
     visiveis = {a["codigo"] for a in db.ativos(conn, empresa_id) if e.ve_ativo(a)}
-    return [Futura(**asdict(f), dispositivo=torre.dispositivo(f.norma, f.artigo))
+    link = _links(conn)
+    return [Futura(**asdict(f), dispositivo=torre.dispositivo(f.norma, f.artigo), norma_link=link(f.norma))
             for f in torre.futuras(conn, empresa_id, hoje or hoje_padrao(), unidades=e.escopo_unidades)
             if f.ativo in visiveis]
 

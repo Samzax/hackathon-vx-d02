@@ -25,7 +25,7 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from mitra import db, demo, impacto
+from mitra import db, demo, fontes, impacto
 from mitra.ia import Roteador
 
 from .config import Config
@@ -69,7 +69,8 @@ def radar(zip_dou: Path, cfg: Config) -> dict:
     for a, _ in interesse:
         an = impacto.analisar(conn, rot, a.identifica, a.text)
         ato_id = db.registrar_ato(conn, "dou", a.id_materia, a.identifica, ementa=a.ementa,
-                                  publicado_em=a.pub_date.isoformat(), texto=a.text)
+                                  publicado_em=a.pub_date.isoformat(), texto=a.text,
+                                  url=fontes.link_do_dou(a.pdf_page))
         try:
             propostas += len(impacto.aplicar(conn, an, ato_id))
         except db.ErroCadastro as e:        # já havia proposta pendente desse ato: rodar de novo não duplica

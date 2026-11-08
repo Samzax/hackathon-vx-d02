@@ -18,7 +18,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from . import banco, agenda, db, descoberta, usuarios
+from . import banco, agenda, db, descoberta, fontes, usuarios
 
 ROOT = Path(__file__).resolve().parent.parent
 SEED = ROOT / "seed_obligations.csv"
@@ -194,7 +194,8 @@ def _preparar(conn, caminho, dou: Path, cache: Path | None) -> tuple:
                 continue
             an = impacto.analisar(conn, roteador, a.identifica, a.text)
             ato_id = db.registrar_ato(conn, "dou", a.id_materia, a.identifica, ementa=a.ementa,
-                                      publicado_em=a.pub_date.isoformat(), texto=a.text)
+                                      publicado_em=a.pub_date.isoformat(), texto=a.text,
+                                      url=fontes.link_do_dou(a.pdf_page))
             impacto.aplicar(conn, an, ato_id)
             analises.append(an)
     RADAR.write_text(json.dumps([registro_radar(an) for an in analises], ensure_ascii=False, indent=1),

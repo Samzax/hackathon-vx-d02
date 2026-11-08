@@ -10,6 +10,7 @@ import { api, baixar, dados, type Esquemas } from "@/lib/api";
 import { useAtivos } from "@/lib/consultas";
 import { dataBR, diasEntre, nomeDeArquivo, plural } from "@/lib/formato";
 import { RES_220, useEmpresa, useTorre } from "@/lib/torre";
+import { LinkOficial } from "@/components/link-oficial";
 
 const HORIZONTE = "2030-03-31"; // cobre o prazo da ZAS (26/12/2029)
 type Ob = Esquemas["ObrigacaoTroca"];
@@ -135,7 +136,7 @@ function LinhaDoTempo() {
                 {itens.map(({ f, ativos: ats }) => (
                   <li key={`${f.codigo}-${f.proposta}`}>
                     {f.proposta && <Etiqueta tom="proposta" className="mr-1.5">proposta</Etiqueta>}
-                    {f.titulo} — <em className="text-texto-2">{f.dispositivo}</em> · {ats.join(", ")}
+                    {f.titulo} — <em className="text-texto-2"><LinkOficial href={f.norma_link}>{f.dispositivo}</LinkOficial></em> · {ats.join(", ")}
                   </li>
                 ))}
               </ul>
