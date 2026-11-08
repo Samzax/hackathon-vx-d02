@@ -1,4 +1,4 @@
-// Pergunte à torre: o que a tela precisa além da chamada (sugestões, rótulos, histórico e conferência).
+// Assistente Mitra: o que a tela precisa além da chamada (sugestões, rótulos, histórico e conferência).
 import type { Esquemas } from "./api";
 
 export type RespostaPergunta = Esquemas["RespostaPergunta"];

@@ -1,4 +1,4 @@
-"""Pergunte à torre: o laço com as ferramentas, a conferência do Python, a rota (sessão, CSRF, papel,
+"""Assistente Mitra: o laço com as ferramentas, a conferência do Python, a rota (sessão, CSRF, papel,
 escopo da área, teto, auditoria) e as respostas gravadas do modelo de verdade, repetidas sem chave."""
 
 from __future__ import annotations
@@ -125,6 +125,14 @@ def test_erro_da_torre_vira_resultado_que_o_modelo_explica(fs):
     r, rep = _perguntar(fs, [_passo(chamadas=[("ficha_do_ativo", {"ativo": "B9"})]),
                              _passo("Não encontrei a B9.")], pergunta="Como está a B9?")
     assert "não encontrado" in r.ferramentas[0].erro and "B1 (" in rep.vistos[0][0][1]
+
+
+def test_lista_de_ativos_da_mensagem_de_erro_passa_na_conferencia(fs):
+    """O prompt manda escolher pela lista que vem no "não encontrado": citá-la não é inventar."""
+    r, _ = _perguntar(fs, [_passo(chamadas=[("ficha_do_ativo", {"ativo": "B9"})]),
+                           _passo("A B9 não existe nesta empresa. Os ativos são B1, B2, B3, B4, E1, E2, L1 e U1.")],
+                      pergunta="Como está a B9?")
+    assert r.conferencia.ok and not r.corrigida, r.conferencia.resumo()
 
 
 def test_ativo_pelo_nome_que_a_empresa_usa(fs):

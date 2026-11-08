@@ -55,7 +55,7 @@ def _devolver(pool, pg) -> None:
 @contextmanager
 def emprestar(app):
     """Uma conexão por um instante, fora das dependências da rota: para quem não pode segurar uma
-    conexão a requisição inteira (o Pergunte à torre, que faz requisições internas enquanto o modelo
+    conexão a requisição inteira (o Assistente Mitra, que faz requisições internas enquanto o modelo
     pensa, e cada uma delas pega a sua)."""
     pool = getattr(app.state, "pool", None)
     if pool is None:

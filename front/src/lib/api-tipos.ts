@@ -798,7 +798,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Se o Pergunte à torre está ligado, com qual modelo, e o gasto de IA do dia */
+        /** Se o Assistente Mitra está ligado, com qual modelo, e o gasto de IA do dia */
         get: operations["estado_api_v1_pergunta_estado_get"];
         put?: never;
         post?: never;

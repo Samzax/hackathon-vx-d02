@@ -4,7 +4,7 @@ Só leitura. O agente explica, cruza e prioriza; quem decide é gente, na torre:
 registrar entrega e mexer no cadastro continuam nos botões, com nome na auditoria. A única ferramenta que
 chama IA (`analisar_ato`) não grava nada: mostra o que mudaria e a conferência do Python.
 
-As ferramentas estão em `agente/ferramentas.py` (as mesmas do "Pergunte à torre" do front); aqui elas só
+As ferramentas estão em `agente/ferramentas.py` (as mesmas do "Assistente Mitra" do front); aqui elas só
 ganham o embrulho do protocolo.
 
 Uso:

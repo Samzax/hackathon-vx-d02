@@ -152,7 +152,7 @@ export function useEntregar() {
   });
 }
 
-/** Pergunte à torre: se está ligado aqui (e com qual modelo), sem depender da empresa nem do dia. */
+/** Assistente Mitra: se está ligado aqui (e com qual modelo), sem depender da empresa nem do dia. */
 export function useEstadoPergunta() {
   const { t, chave } = useBase();
   return useQuery({

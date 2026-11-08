@@ -56,7 +56,7 @@ modelos = [
   { provedor = "bedrock",   modelo = "ID_DO_SONNET_5_NO_BEDROCK" },
 ]
 
-# Pergunte à torre (mitra/pergunta.py): conversa com uso de ferramentas, não JSON. Vale o primeiro
+# Assistente Mitra (mitra/pergunta.py): conversa com uso de ferramentas, não JSON. Vale o primeiro
 # provedor ligado. Na AWS, o Bedrock (MITRA_BEDROCK=1): IDs conferidos com chamada real na conta do
 # evento em 7/11/2026 (perfis de inferência us.*). Fora da AWS, a API da Anthropic ou o DeepSeek.
 [pergunta]

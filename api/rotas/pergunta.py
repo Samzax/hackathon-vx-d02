@@ -1,4 +1,4 @@
-"""Pergunte à torre: o Claude responde sobre a torre com as ferramentas de leitura do agente.
+"""Assistente Mitra: o Claude responde sobre a torre com as ferramentas de leitura do agente.
 
 As ferramentas falam com a própria API por requisições internas, com o cookie (ou o token) de quem
 pergunta: o modelo vê exatamente o que essa pessoa veria na torre, nem uma linha a mais, e cada
@@ -100,7 +100,7 @@ def _interno(request: Request) -> TestClient:
 
 
 @rota.get("/pergunta/estado", response_model=EstadoPergunta,
-          summary="Se o Pergunte à torre está ligado, com qual modelo, e o gasto de IA do dia")
+          summary="Se o Assistente Mitra está ligado, com qual modelo, e o gasto de IA do dia")
 def estado(request: Request, e: Escopo = Depends(regulatorio)):
     modelos = pg.candidatos(pg._config(CONFIG), _provedores(request))
     with roteador_avulso(request.app) as rot:
@@ -132,7 +132,7 @@ def perguntar(dados: PedidoPergunta, request: Request):
     provedores = _provedores(request)
     if not pg.candidatos(pg._config(CONFIG), provedores):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE,
-                            "o Pergunte à torre está desligado aqui: nenhum provedor de IA configurado")
+                            "o Assistente Mitra está desligado aqui: nenhum provedor de IA configurado")
 
     fs = pg.preparar(ferramentas(Torre(interno)), fora=CHAMA_IA)
     historico = [(m.papel, m.texto) for m in dados.historico]

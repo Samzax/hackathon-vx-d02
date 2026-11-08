@@ -1,7 +1,7 @@
 """As ferramentas de leitura da torre, sem depender do MCP.
 
 Servem a dois clientes: o servidor MCP (`agente/servidor.py`, do lado de quem usa, com o token de serviço)
-e o "Pergunte à torre" do front (`mitra/pergunta.py` pela rota da API, com a sessão de quem pergunta).
+e o "Assistente Mitra" do front (`mitra/pergunta.py` pela rota da API, com a sessão de quem pergunta).
 As duas pontas falam com a torre só pela API (`Torre`), então valem as mesmas regras de acesso.
 
 Sem `from __future__ import annotations`: as anotações ficam como objetos, e o MCP e o Pydantic leem o

@@ -2442,7 +2442,7 @@
     "tags": [
      "pergunta"
     ],
-    "summary": "Se o Pergunte à torre está ligado, com qual modelo, e o gasto de IA do dia",
+    "summary": "Se o Assistente Mitra está ligado, com qual modelo, e o gasto de IA do dia",
     "operationId": "estado_api_v1_pergunta_estado_get",
     "responses": {
      "200": {

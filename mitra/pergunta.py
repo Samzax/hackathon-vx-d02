@@ -1,4 +1,4 @@
-"""Pergunte à torre: o Claude responde sobre a torre usando as mesmas ferramentas de leitura do agente MCP.
+"""Assistente Mitra: o Claude responde sobre a torre usando as mesmas ferramentas de leitura do agente MCP.
 
 O modelo não vê o banco: só o que as ferramentas devolvem, e as ferramentas falam com a torre pela API com
 a sessão de quem pergunta (mesmo escopo, mesma regra de acesso). Depois da resposta, o Python confere:
@@ -398,7 +398,7 @@ def perguntar(pergunta: str, ferramentas: list[Ferramenta], *, historico: list[t
     cfg = _config(config)
     modelos = candidatos(cfg, provedores)
     if not modelos:
-        raise SemProvedor("nenhum provedor de IA ligado para o Pergunte à torre")
+        raise SemProvedor("nenhum provedor de IA ligado para o Assistente Mitra")
     if roteador is not None and roteador.teto_dia_usd is not None and roteador.gasto_hoje() >= roteador.teto_dia_usd:
         raise TetoAtingido(f"teto diário de IA atingido (US$ {roteador.teto_dia_usd:.2f}); volte amanhã")
     inicio = time.monotonic()
@@ -446,6 +446,10 @@ def perguntar(pergunta: str, ferramentas: list[Ferramenta], *, historico: list[t
                         if not erro:
                             # o que o modelo consultou (ex.: hoje = 2027-08-02) também é base da conferência
                             resultados.append(json.dumps(c.args, ensure_ascii=False) + "\n" + t)
+                        else:
+                            # a mensagem de erro também é dado da torre (ex.: "não encontrado" traz a lista
+                            # de ativos, que o prompt manda usar); os argumentos de uma chamada que falhou, não
+                            resultados.append(t)
                         res.append((c, t, bool(erro)))
                     prov.resultados(estado, res)
                     continue
@@ -610,7 +614,7 @@ def _main(argv: list[str]) -> int:   # pragma: no cover - roda com o modelo de v
 
 def escrever_relatorio(arquivo: Path, notas: list[Nota]) -> None:
     passou = sum(n.passou for n in notas)
-    linhas = ["# Avaliação do Pergunte à torre", "",
+    linhas = ["# Avaliação do Assistente Mitra", "",
               f"Gerado por `python -m mitra.pergunta avaliar` contra a demo (Mineradora Serra Azul), com o "
               f"modelo de verdade. **{passou} de {len(notas)} casos passaram**; custo total "
               f"US$ {sum(n.custo_usd for n in notas):.4f}; a mais lenta levou "

@@ -1,4 +1,4 @@
-# Avaliação do "Pergunte à torre" (mitra/pergunta.py) contra a demo (Mineradora Serra Azul, hoje
+# Avaliação do "Assistente Mitra" (mitra/pergunta.py) contra a demo (Mineradora Serra Azul, hoje
 # 2026-11-07). Os fatos esperados vêm das ferramentas, não de memória: conferidos com a API da demo.
 #
 #   contem       cada item precisa aparecer na resposta (lista dentro da lista = basta uma das opções)
