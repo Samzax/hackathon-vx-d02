@@ -38,7 +38,7 @@ Três gabaritos, no padrão do `tests/pergunta_avaliacao.toml`:
   prova que a cobertura informa, não que cobre.
 - **Triagem IA (pela ementa):** `tests/descoberta_recall.toml` com ementas reais rotuladas
   (relevante/irrelevante + tipo de ativo); novo subcomando `python -m mitra.descoberta avaliar`
-  medindo recall e precisão por modelo (DeepSeek × Haiku × Sonnet). Meta: recall 100% no gabarito;
+  medindo recall e precisão por modelo (DeepSeek × Claude Haiku 5.5). Meta: recall 100% no gabarito;
   precisão é secundária (falso positivo custa só triagem humana). Mantidos: confiança mínima 0,7 +
   curadoria humana decide (aprovado em 7/11).
 - `--revisar` (relê pelo texto os descartes duvidosos) deixa de ser manual: entra no job semanal
@@ -73,20 +73,19 @@ todas as clientes — ativo com UF=PR cria a necessidade "PR × barragem" sozinh
   trecho literal → Python confere → Regulatório aprova → vencimento e renovação viram obrigação da
   empresa. Ou seja: alvará entra no perfil da empresa, como as licenças.
 
-## 5. Modelos (decisão de 7/11)
+## 5. Modelos (decisão de 8/11)
 
-Para **ler os dados do catálogo** (extração de norma, dado público):
+O modelo da Mitra é o **Claude Haiku 5.5**. Para **ler os dados do catálogo** (extração de norma, dado público):
 
-1. **Agora: Sonnet 5** (no evento, Bedrock `us.anthropic.claude-sonnet-5`; fora, `claude-sonnet-5-5`).
-2. **Depois: medir o Haiku 5.5** no mesmo gabarito de extração (diff contra `data/extraido/*.json`).
-3. **Então decidir:** delegar ao DeepSeek v4.1 **só dado não sensível** (norma publicada é pública),
+1. **Medir o Haiku 5.5** no gabarito de extração (diff contra `data/extraido/*.json`).
+2. **Então decidir:** delegar ao DeepSeek v4.1 **só dado não sensível** (norma publicada é pública),
    ou deixar tudo no Haiku 5.5. Custo do DeepSeek no OpenCode: US$ 10/mês dão US$ 100 de uso.
 
 Implementação: hoje `mitra/modelos.toml` roteia só por camada (2/3). Criar roteamento **por tarefa com
 flag de sensibilidade**: tarefas sensíveis (licenças, evidências, pergunta — texto de cliente) só
 roteiam Anthropic/Bedrock; tarefas públicas (extrator, triagem da descoberta, impacto de norma pública)
 podem cair para DeepSeek. `Roteador.pedir_json` já recebe `tarefa`; falta usá-la no roteamento.
-Lembrete: a conta do evento não tem modelos 5.5 no allowlist do Bedrock (Sonnet 5 e Haiku 4.5 sim).
+Lembrete: a conta do evento não tem modelos 5.5 no allowlist do Bedrock.
 
 ## 6. Vertical "obras em geral" — dá, em três fases
 
@@ -110,14 +109,14 @@ Lembrete: a conta do evento não tem modelos 5.5 no allowlist do Bedrock (Sonnet
 | 2 | Evals de recall (item 2) | código |
 | 3 | Descoberta na instanciação + conectores estaduais (item 3) | código |
 | 4 | `"alvara"` em TIPOS_LICENCA (item 4) | código, 1 linha |
-| 5 | Roteamento por tarefa/sensibilidade + Sonnet 5 na extração (item 5) | código |
+| 5 | Roteamento por tarefa/sensibilidade (item 5) | código |
 | 6 | Vertical obras, fases A→C (item 6) | código |
 | 7 | Decidir: 22 tipos de documento (código) × "23" (docs/ARQUITETURA.md) | usuário |
-| 8 | Re-rodar o eval do Pergunte à torre pós-rename (prompt mudou, cache invalidou) | código |
+| 8 | Re-rodar o eval do Assistente Mitra pós-rename (prompt mudou, cache invalidou) | código |
 | 9 | Tela "Nova empresa" no front (instanciação; API pronta) | código |
 | 10 | Push `main` + papel IAM `github-deploy` → auto-deploy (comandos em `infra/README.md`) | usuário |
 | 11 | CI verde e remover o worktree `plataforma-pergunta` | código |
-| 12 | IA na AWS (MITRA_BEDROCK=1 + IAM Sonnet 5/Haiku 4.5) | usuário dá o go |
+| 12 | IA na AWS (MITRA_BEDROCK=1) | feito em 7/11 |
 | 13 | Vídeo da demo | usuário + código |
 | 14 | Revisão por IA no aceitar/rejeitar norma | aguarda o go |
 

@@ -13,7 +13,7 @@ decisões de produto.
   double submit, papéis (TI, Diretoria, Regulatório, gestor), escopo por área, auditoria de toda
   escrita, logs JSON com request_id, contrato OpenAPI versionado em `api/openapi.json`.
 - **Front:** Next.js + Tailwind (fase 2A). **Infra:** AWS CDK em Python (fase 2B). **Agente:** servidor
-  MCP + chat "Pergunte à torre" com Bedrock (fase 2C). **CI:** GitHub Actions (fase 3).
+  MCP + chat "Assistente Mitra" com Bedrock (fase 2C). **CI:** GitHub Actions (fase 3).
 - **Multiempresa:** a Mitra é a plataforma; cada mineradora (a Serra Azul inclusive) é uma cliente
   que só vê o que é dela. Decisão do usuário (06/11): mudança de **norma pública** (Res. ANM, NR...) é
   aprovada pela **curadoria da plataforma**, uma vez para todas as clientes (a cliente vê "aguardando
@@ -89,12 +89,11 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
 - [x] 2B AWS CDK (`infra/`, commit 49c404b): ALB + ECS Fargate (API e front na mesma origem, migração no start),
       RDS Postgres 16 isolado, S3 privado e versionado, Bedrock e Textract por IAM mínimo, EventBridge (radar
       06:00 BRT), Secrets Manager, CloudWatch com 3 alarmes, sem NAT. `tests/test_infra.py` confere a pilha;
-      `npx aws-cdk@2 synth` sem aviso. Falta o deploy na conta do evento (IDs do Bedrock em `modelos.toml`).
+      `npx aws-cdk@2 synth` sem aviso. Deploy na conta do evento feito em 7/11/2026 (https://d2aseby2fenqd6.cloudfront.net).
 - [x] 2C servidor MCP (`agente/`): 13 ferramentas de leitura sobre a API com o token de serviço,
       `MITRA_EMPRESA` prende o escopo numa cliente, erro da API vira erro de ferramenta legível; stdio e
       streamable HTTP. `tests/test_agente.py` contra a API real; conferido com um cliente MCP de verdade (stdio).
-- [x] 2C chat "Pergunte à torre": `POST /api/v1/pergunta` roda o Claude (Sonnet 5 no Bedrock; Haiku 4.5 de
-      reserva) com as 11 ferramentas de leitura do agente (`agente/ferramentas.py`, as mesmas do MCP, menos a
+- [x] 2C chat "Assistente Mitra": `POST /api/v1/pergunta` roda o Claude (Haiku 5.5) com as 11 ferramentas de leitura do agente (`agente/ferramentas.py`, as mesmas do MCP, menos a
       que chama IA), que consultam a API por dentro com a sessão de quem pergunta: mesmo escopo e mesma regra
       de acesso da tela. O Python confere trecho entre aspas, data e código contra o que as ferramentas
       devolveram; uma rodada de correção e o que sobrar aparece marcado. Cache de prompt do Bedrock, custo no
@@ -168,7 +167,7 @@ npm test && npm run e2e                           # vitest; Playwright contra a 
       sai GET (e a análise de ato, que não grava). Testes: `test_plataforma_so_le_os_dados_operacionais_da_empresa`
       (as 8 rotas, curadoria, token e conta de teste), `test_a_propria_empresa_escreve_nos_dados_dela` e o e2e
       "a curadoria da plataforma só lê os dados da empresa".
-- [ ] O Streamlit (`app.py`) continua de uma empresa só e com as regras antigas de decisão (é a demo).
+- [x] O Streamlit (`app.py`) saiu: o front Next.js é a única interface.
 - [x] Código da obrigação único **por empresa** (migração 0005, seção Instanciação): duas clientes têm
       cada uma a sua "LO-01" e as normas públicas continuam únicas entre si. Toda busca por código leva a
       empresa; sem ela, código repetido em duas donas é erro, não escolha ao acaso.

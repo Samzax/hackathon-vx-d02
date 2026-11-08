@@ -28,11 +28,9 @@ from .rotas import (admin, auth, descoberta, evidencias, instanciacao, licencas,
 VERSAO = "1.0.0"
 PREFIXO = "/api/v1"
 
-# pg_advisory_lock: um processo por vez prepara o banco. A API sobe com --workers 2 (e pode rodar em
-# várias tasks); sem a trava, dois workers viam "a conta não existe" ao mesmo tempo, os dois inseriam e o
-# segundo derrubava o container (UniqueViolation em usuario_email_key no deploy de 7/11/2026).
+# pg_advisory_lock: um processo por vez prepara o banco (a API sobe com --workers 2).
 # Chave própria: o Alembic usa 724100245 e a montagem da demo (mitra/demo.py, _LOCK_DEMO) 724100246, que roda
-# DENTRO deste bloco, em outra conexão; com a mesma chave ela esperaria por esta trava para sempre.
+# dentro deste bloco em outra conexão; com a mesma chave, travaria.
 TRAVA_PREPARO = 724100247
 
 

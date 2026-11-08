@@ -327,26 +327,26 @@ O código fala com uma interface única. Qual provedor e qual modelo atende cada
 
 | Camada | Padrão | Se não houver |
 |---|---|---|
-| 2. Modelo barato | DeepSeek V4.1 Flash via OpenCode Go (franquia do plano de US$ 10) | Claude Haiku (OpenCode Go ou Anthropic) |
-| 3. Modelo forte | DeepSeek V4.1 Flash com raciocínio no máximo (`max`, mesma franquia) | Claude Sonnet, se houver chave da Anthropic ou Bedrock. Opus não: caro demais para o ganho |
-| No evento | Claude 5 no Bedrock (a família 5.5 não estaria disponível lá) | O mesmo de antes, pela internet |
+| 2. Modelo barato | DeepSeek V4.1 Flash via OpenCode Go (franquia do plano de US$ 10) | Claude Haiku 5.5 (OpenCode Go ou Anthropic) |
+| 3. Modelo forte | DeepSeek V4.1 Flash com raciocínio no máximo (`max`, mesma franquia) | Claude Haiku 5.5 (OpenCode Go ou Anthropic) |
+| Na AWS | Claude pelo Bedrock (`MITRA_BEDROCK=1`) | O mesmo de antes, pela internet |
 
-A OpenCode Go mistura dois formatos de API: alguns modelos usam o da OpenAI (`/chat/completions`, ex.: DeepSeek) e outros o da Anthropic (`/messages`, ex.: Haiku, Qwen). O código fala os dois, o que também cobre a Anthropic e a DeepSeek diretas. O Bedrock entra por um adaptador próprio, a API Converse do boto3 (`ClienteBedrock`), que serve para Claude, DeepSeek e Nova do mesmo jeito. Ele está testado com um cliente falso; a primeira chamada de verdade é no evento, com a conta da organização (ver "Arquitetura na AWS" no README).
+A OpenCode Go mistura dois formatos de API: alguns modelos usam o da OpenAI (`/chat/completions`, ex.: DeepSeek) e outros o da Anthropic (`/messages`, ex.: Haiku, Qwen). O código fala os dois, o que também cobre a Anthropic e a DeepSeek diretas. O Bedrock entra por um adaptador próprio, a API Converse do boto3 (`ClienteBedrock`), que serve para Claude, DeepSeek e Nova do mesmo jeito. Ele está testado com um cliente falso e foi conferido com chamadas reais na conta do evento em 7/11/2026 (ver [infra/README.md](../infra/README.md)).
 
 **Conta do cliente (traga sua chave).** O provedor e a chave são configuração, não código. Uma empresa pode rodar a Mitra com a própria conta (Bedrock na AWS dela, Anthropic, DeepSeek), e os documentos dela não passam pela nossa conta. Para mineradoras, isso responde à pergunta "para onde vão meus dados?".
 
 Os prompts não podem depender de um modelo específico. A saída é sempre JSON validado pelo Python, então trocar de modelo muda o custo e a qualidade, não o funcionamento.
 
-Sobre o `AGENTS.md`: ele é uma convenção para agentes de programação (Codex, OpenCode, Claude Code) e não é lido por chamadas de API. O equivalente no nosso produto é o arquivo de configuração: ele manda a camada 2 usar um modelo barato (Haiku, DeepSeek) e só a camada 3 usar um forte (Sonnet).
+Sobre o `AGENTS.md`: ele é uma convenção para agentes de programação (Codex, OpenCode, Claude Code) e não é lido por chamadas de API. O equivalente no nosso produto é o arquivo de configuração: ele diz qual modelo atende cada camada (DeepSeek ou Claude Haiku 5.5) e com quanto raciocínio.
 
-## Pergunte à torre: o chat que só fala do que a torre tem
+## Assistente Mitra: o chat que só fala do que a torre tem
 
 O chat é um laço de uso de ferramentas (`mitra/pergunta.py`): o modelo pede consultas, o Python as executa e devolve o resultado, até o modelo responder. As decisões:
 
 - **As ferramentas são as do agente MCP** (`agente/ferramentas.py`), sem depender do pacote `mcp`. Um só lugar define o que o Claude pode consultar, no Claude Desktop e no front. A análise de ato fica de fora do chat: ela chama outra IA.
 - **As ferramentas passam pela API, não pelo banco.** A rota chama a própria API em processo, com o cookie ou o token de quem pergunta. Assim, escopo da área, papel e empresa valem igual à tela, sem uma segunda implementação das regras de acesso. Durante o laço, a rota não segura conexão do pool: cada consulta pega e devolve a sua.
 - **Conferência pelo Python, não pela palavra do modelo.** Trecho entre aspas (a partir de 25 caracteres), data (AAAA-MM-DD e DD/MM/AAAA) e código (OB-01, R95-08, B3, LO-02) precisam estar no que as ferramentas devolveram, nos argumentos que o modelo consultou ou na própria pergunta. O que não estiver volta para o modelo uma vez, com a lista do que não bateu; o que sobrar aparece marcado para quem lê. Resposta que para no limite de tokens também volta, com o pedido de uma mais curta, em vez de chegar cortada no meio da frase.
-- **Custo.** O Bedrock guarda em cache o prompt fixo (instruções e descrição das ferramentas) e a conversa até ali: leitura de cache sai a 10% do preço de entrada. O prompt manda não repetir consulta. Uma pergunta custa de US$ 0,004 a 0,05 no Sonnet 5; o custo vai para a tabela `analise_ia`, a mesma que o teto diário soma.
+- **Custo.** O Bedrock guarda em cache o prompt fixo (instruções e descrição das ferramentas) e a conversa até ali: leitura de cache sai a 10% do preço de entrada. O prompt manda não repetir consulta. Uma pergunta custa de US$ 0,004 a 0,05 (medido na avaliação abaixo); o custo vai para a tabela `analise_ia`, a mesma que o teto diário soma.
 - **Prazo.** Na AWS o CloudFront espera a origem por 60 s. A pergunta tem 45 s: passou disso, a rota responde 504 com uma sugestão ("pergunte de um ativo, uma norma") e o gasto já feito entra no teto.
 - **Avaliação.** `tests/pergunta_avaliacao.toml` tem 10 perguntas com critério objetivo (o que a resposta precisa conter, o que não pode, que ferramenta precisa ter usado, conferência sem nada fora). `python -m mitra.pergunta avaliar --gravar` roda contra o modelo de verdade, escreve `docs/AVALIACAO_PERGUNTA.md` e grava cada passo do modelo; o CI repete essas gravações sem chave, então mudança de ferramenta ou de prompt que quebre um caso aparece no teste.
 

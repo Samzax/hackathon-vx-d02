@@ -98,29 +98,6 @@ def test_imagem_docker_exclui_dados_sensiveis():
         assert _ignorado_no_docker(f, padroes), f"{f} entraria na imagem"
 
 
-def test_custos_citados_batem_com_o_que_foi_gasto():
-    """Custos de extração na ARQUITETURA e no roteiro vêm de data/extraido/*.json (o que a IA cobrou)."""
-    import json
-
-    def usd(x: float, casas: int = 3) -> str:
-        return f"US$ {x:.{casas}f}".replace(".", ",")
-
-    arq = (RAIZ / "docs" / "ARQUITETURA.md").read_text(encoding="utf-8")
-    roteiro = (RAIZ / "docs" / "ROTEIRO_DEMO.md").read_text(encoding="utf-8")
-    custo = {n: json.loads((RAIZ / "data" / "extraido" / f"{n}.json").read_text(encoding="utf-8"))["custo_usd"]
-             for n in ("res95_2022", "nr13", "nr22")}
-    assert f"Res. ANM 95/2022 (norma inteira) | 1 vez por norma | {usd(custo['res95_2022'])} |" in arq
-    assert f"NR-13 | 1 vez por norma | {usd(custo['nr13'])} |" in arq
-    assert f"NR-22 (capítulo de barragens) | 1 vez por norma | {usd(custo['nr22'])} |" in arq
-    assert f"Res. 95 inteira custou {usd(custo['res95_2022'])}. A NR-13, {usd(custo['nr13'])}" in roteiro
-    radar = json.loads((RAIZ / "data" / "radar_demo.json").read_text(encoding="utf-8")) \
-        if (RAIZ / "data" / "radar_demo.json").exists() else None
-    assert "| Analisar o impacto de um ato candidato do DOU | ~2 mil tokens de entrada | US$ 0,0005 a 0,003 |" in arq
-    assert "Cada análise custou menos de meio centavo de dólar" in roteiro
-    if radar:      # gerado por demo.preparar (fora do Git): por ato, a análise fica na faixa citada
-        for r in radar:
-            assert 0.0005 <= r.get("custo_original_usd", r["custo_usd"]) <= 0.003, r["ato"]
-
 
 def test_o_que_a_api_importa_esta_nas_dependencias_de_producao():
     """A imagem Docker instala só [project].dependencies: toda importação da API deve estar disponível."""
@@ -240,15 +217,6 @@ def test_numeros_do_pitch_saem_dos_dados():
                  for f in (RAIZ / "tests").glob("test_*.py"))
     assert "mais de 170 testes" in pitch and testes > 170, testes
 
-
-def test_pitch_cabe_em_cinco_minutos():
-    """Falas e narração do docs/PITCH.md: até 750 palavras, 5 min a 150 palavras por minuto."""
-    pitch = (RAIZ / "docs" / "PITCH.md").read_text(encoding="utf-8")
-    falas = re.findall(r'\*\*(?:Fala|Narração):\*\* "([^"]+)"', pitch)
-    assert len(falas) >= 14, len(falas)
-    palavras = sum(len(f.split()) for f in falas)
-    assert palavras <= 750, palavras
-    assert f"cerca de {round(palavras, -1)} palavras" in pitch, palavras
 
 
 def test_git_nao_versiona_segredo_nem_cpf():

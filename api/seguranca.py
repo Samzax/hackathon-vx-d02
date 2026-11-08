@@ -62,9 +62,9 @@ class Escopo:
 
     @property
     def restrita(self) -> bool:
-        """Conta presa a uma ou mais unidades (operações): vê só o que é delas. Diretoria e Regulatório
-        da empresa continuam vendo tudo, mesmo que alguém grave unidades na conta."""
-        return bool(self.unidades) and not self.ve_tudo
+        """Conta presa a uma ou mais unidades (operações): vê só o que é delas. Só gestor tem unidades
+        (usuarios.criar/atualizar recusam para Diretoria e Regulatório)."""
+        return bool(self.unidades)
 
     @property
     def escopo_unidades(self) -> set[str] | None:

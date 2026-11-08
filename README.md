@@ -1,6 +1,6 @@
 # Mitra: Regulatory Control Tower
 
-Mitra is a regulatory-control platform for operational assets. It brings obligations, deadlines, supporting evidence, regulatory changes, and audit history into one workspace so each responsible person can act on what needs attention. Mining is the first vertical; the underlying asset model also supports healthcare, construction, telecommunications and other regulated operations.
+Mitra is a regulatory-control platform for operational assets. It brings obligations, deadlines, supporting evidence, regulatory changes, and audit history into one workspace so each responsible person can act on what needs attention. Mining is the first vertical; the underlying asset model also supports healthcare, construction and other regulated operations.
 
 ![Mitra inbox: overdue items, missing data, upcoming deadlines, and the action that resolves each item](docs/img/torre_hoje.png)
 
@@ -33,7 +33,7 @@ npm run e2e
 
 ### Optional live data and AI
 
-Copy `.env.example` to `.env` and configure a provider key only when live AI analysis is needed. Without a key, the interface remains usable, but actions that require a new model response are unavailable. Official source texts and Diário Oficial da União files are intentionally not committed:
+Mitra's AI analysis runs on Claude Haiku 5.5. Copy `.env.example` to `.env` and configure a provider key only when live AI analysis is needed. Without a key, the interface remains usable, but actions that require a new model response are unavailable. Official source texts and Diário Oficial da União files are intentionally not committed:
 
 ```bash
 uv run python -m mitra.fontes                              # download official regulatory texts
@@ -60,7 +60,7 @@ The Inbox is the central experience. It consolidates overdue obligations, missin
 - Evidence intake for operational documents, including event-triggered obligations such as special safety inspections.
 - Client onboarding for assets, licences and conditions, technical responsibles, units, access, internal deadlines, and company-specific rules.
 - Import of a mining company from public SIGBM data. Information not available in the source is flagged as missing instead of assumed.
-- A read-only MCP agent and the **Ask Mitra** chat, both constrained by the same access scope as the interface.
+- A read-only MCP agent and the **Assistente Mitra** chat, both constrained by the same access scope as the interface.
 
 ### Users and access
 
@@ -76,7 +76,7 @@ Every delivery, decision, assignment, and relevant data change is recorded in th
 
 ### Demo scope
 
-The fictional Serra Azul mining company contains eight assets and a regulatory catalogue for dams, pressure vessels, mining activities, and an environmental licence. The demo also includes a fictional healthcare organisation to demonstrate that the model is not limited to dams. It uses public SIGBM-derived company data without personal identifiers and fictional locations and operational documents.
+The fictional Serra Azul mining company contains eight assets and a regulatory catalogue for dams, pressure vessels, mining activities, and an environmental licence. The demo also includes a fictional healthcare organisation and a construction site to demonstrate that the model is not limited to dams. It uses public SIGBM-derived company data without personal identifiers and fictional locations and operational documents.
 
 The featured regulatory scenario shows how a new ANM act changes only the affected obligation and preserves the rest of the catalogue.
 
@@ -101,7 +101,7 @@ flowchart LR
 
 Rules are evaluated before AI, and each model proposal is checked against the source text before becoming a proposed change or evidence. The catalogue keeps the literal legal excerpt, applicability rule, and schedule for every obligation. Missing data remains visible as a task rather than creating a false compliance status.
 
-The AWS CDK stack provisions ECS Fargate behind an ALB, RDS PostgreSQL 16, private versioned S3 storage, Bedrock for model analysis, Textract for scanned PDFs, EventBridge jobs for the DOU radar, Secrets Manager, and CloudWatch alarms. Deployment can use AWS CodeBuild/ECR or GitHub Actions with OIDC. See [infrastructure instructions](infra/README.md) for exact commands and prerequisites.
+The AWS CDK stack provisions ECS Fargate behind an ALB, RDS PostgreSQL 16, private versioned S3 storage, Bedrock for Claude model analysis, Textract for scanned PDFs, EventBridge jobs for the DOU radar, Secrets Manager, and CloudWatch alarms. Deployment can use AWS CodeBuild/ECR or GitHub Actions with OIDC. See [infrastructure instructions](infra/README.md) for exact commands and prerequisites.
 
 ```bash
 uv sync --group infra

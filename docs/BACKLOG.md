@@ -5,7 +5,7 @@ Mudanças, Res. 95 + Res. 220 + NRs + licença fictícia), fazendo commit e push
 privado, sem linhas de coautoria. Nada fora do repositório (sem mensagens, compras, contas).
 
 Regras: rodar `uv run pytest` antes de cada commit; IA só com DeepSeek V4.1 Flash (OpenCode Go)
-ou Haiku/Sonnet; nada de Opus; chaves só no `.env`; o CSV bruto do SIGBM (tem CPF) nunca vai pro Git.
+ou Claude Haiku 5.5; chaves só no `.env`; o CSV bruto do SIGBM (tem CPF) nunca vai pro Git.
 
 ## Fila (marcar [x] ao terminar)
 

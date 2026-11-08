@@ -17,8 +17,7 @@ rota = APIRouter(prefix="/auth", tags=["auth"])
 
 
 class Login(BaseModel):
-    # max_length: a tentativa recusada vai inteira para a auditoria; sem teto, cada requisição anônima
-    # gravaria o que o cliente mandasse (e-mail de 200 KB = linha de 400 KB na trilha)
+    # max_length: a tentativa recusada vai para a auditoria
     email: str = Field(examples=["diretoria@serraazul.example"], max_length=320)
     senha: str = Field(max_length=200)
 
