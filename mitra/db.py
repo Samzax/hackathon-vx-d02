@@ -129,7 +129,7 @@ def limpar(conn) -> None:
     """Apaga todos os dados (menos o cache de IA), mantendo o arquivo e as conexões abertas."""
     with conn:
         for tabela in ("evento", "responsavel_obrigacao", "acionamento", "evidencia", "obrigacao_versao", "obrigacao",
-                       "ato", "exigencia_municipal", "instanciacao_evento", "instanciacao", "unidade", "ativo", "empresa"):
+                       "ato", "analise_ato", "exigencia_municipal", "instanciacao_evento", "instanciacao", "unidade", "ativo", "empresa"):
             conn.execute(f"DELETE FROM {tabela}")
 
 
@@ -226,6 +226,22 @@ def registrar_ato(conn, fonte: str, identificador: str, titulo: str, *,
     return conn.execute(
         "SELECT id FROM ato WHERE identificador = ?", (identificador,)
     ).fetchone()["id"]
+
+
+def guardar_analise(conn, registro: dict) -> None:
+    """Guarda o resumo da análise de um ato (impacto.resumo), que o cartão de Mudanças mostra.
+    Analisar o mesmo ato de novo substitui o resumo e mantém a ordem."""
+    with conn:
+        conn.execute(
+            "INSERT INTO analise_ato (ato, registro) VALUES (?, ?) "
+            "ON CONFLICT(ato) DO UPDATE SET registro = excluded.registro",
+            (registro["ato"], json.dumps(registro, ensure_ascii=False)),
+        )
+
+
+def analises(conn) -> list[dict]:
+    """Os resumos guardados, na ordem em que cada ato foi analisado pela primeira vez."""
+    return [json.loads(r["registro"]) for r in conn.execute("SELECT registro FROM analise_ato ORDER BY id")]
 
 
 # -------------------------------------------------------------------- obrigação

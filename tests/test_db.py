@@ -231,3 +231,14 @@ def test_migracao_codigo_por_empresa_completa_colunas_de_banco_bem_antigo(tmp_pa
     assert {"norma", "area", "empresa"} <= {r["name"] for r in raw.execute("PRAGMA table_info(obrigacao)")}
     raw.execute("INSERT INTO obrigacao (codigo, tipo_ativo, empresa) VALUES ('OB-01', 'barragem', 'Outra')")
     assert raw.execute("SELECT COUNT(*) FROM obrigacao").fetchone()[0] == 2
+
+
+def test_resumo_da_analise_do_ato_fica_no_banco_e_analisar_de_novo_substitui():
+    """O cartão de Mudanças lê o porquê daqui (antes, um arquivo do container que todo deploy apagava)."""
+    c = db.conectar(":memory:")
+    db.guardar_analise(c, {"ato": "RES 245", "candidatas": ["OB-01"], "motivo": "primeira leitura"})
+    db.guardar_analise(c, {"ato": "RES 246", "candidatas": [], "motivo": "nada muda"})
+    db.guardar_analise(c, {"ato": "RES 245", "candidatas": ["OB-01", "OB-02"], "motivo": "lido de novo"})
+    assert [(a["ato"], a["motivo"]) for a in db.analises(c)] == [("RES 245", "lido de novo"), ("RES 246", "nada muda")]
+    db.limpar(c)        # recriar a demo apaga o resumo junto com os atos
+    assert db.analises(c) == []

@@ -71,6 +71,7 @@ def radar(zip_dou: Path, cfg: Config) -> dict:
         ato_id = db.registrar_ato(conn, "dou", a.id_materia, a.identifica, ementa=a.ementa,
                                   publicado_em=a.pub_date.isoformat(), texto=a.text,
                                   url=fontes.link_do_dou(a.pdf_page))
+        db.guardar_analise(conn, impacto.resumo(an))
         try:
             propostas += len(impacto.aplicar(conn, an, ato_id))
         except db.ErroCadastro as e:        # já havia proposta pendente desse ato: rodar de novo não duplica

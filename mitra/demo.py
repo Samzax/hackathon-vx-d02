@@ -108,7 +108,6 @@ def gerar_historico(conn, ids: dict[str, int], spec: dict) -> int:
 
 
 AMOSTRA_DOU = ROOT / "tests" / "fixtures" / "dou" / "S01_amostra.zip"
-RADAR = ROOT / "data" / "radar_demo.json"
 CACHE_DEMO = ROOT / "data" / "cache_ia_demo.json"     # respostas da IA usadas na demo (vai pro Git)
 _COLUNAS_CACHE = ("chave", "tarefa", "provedor", "modelo", "resposta", "tokens_in", "tokens_out", "custo_usd")
 
@@ -197,20 +196,10 @@ def _preparar(conn, caminho, dou: Path, cache: Path | None) -> tuple:
                                       publicado_em=a.pub_date.isoformat(), texto=a.text,
                                       url=fontes.link_do_dou(a.pdf_page))
             impacto.aplicar(conn, an, ato_id)
+            # o resumo vai para o banco, não para um arquivo do container: um deploy novo não apaga o porquê
+            db.guardar_analise(conn, impacto.resumo(an))
             analises.append(an)
-    RADAR.write_text(json.dumps([registro_radar(an) for an in analises], ensure_ascii=False, indent=1),
-                     encoding="utf-8")
     return conn, ids, analises
-
-
-def registro_radar(an) -> dict:
-    """O que a interface mostra de uma análise de ato: candidatas, motivo, modelo, custo e mudanças."""
-    return {"ato": an.ato, "candidatas": [c.codigo for c in an.candidatas], "motivo": an.motivo,
-            "confianca": an.confianca, "modelos": an.modelos, "custo_usd": an.custo_usd,
-            "custo_original_usd": an.custo_original_usd,
-            "revisao_humana": an.revisao_humana,
-            "mudancas": [{"obrigacao": m.obrigacao, "campo": m.campo, "valor_novo": m.valor_novo,
-                          "reprovada": m.reprovada} for m in an.mudancas]}
 
 
 def main(argv: list[str]) -> int:

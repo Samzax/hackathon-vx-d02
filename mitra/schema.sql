@@ -37,6 +37,15 @@ CREATE TABLE IF NOT EXISTS ato (
     sha256         TEXT
 );
 
+-- Resumo da análise de cada ato (candidatas, motivo, custo e mudanças propostas): é o que o cartão de
+-- Mudanças mostra. Fica no banco, e não num arquivo do container, para um deploy novo não apagar.
+CREATE TABLE IF NOT EXISTS analise_ato (
+    id        INTEGER PRIMARY KEY,
+    ato       TEXT NOT NULL UNIQUE,             -- identificação do ato (a mesma de ato.titulo)
+    registro  TEXT NOT NULL,                    -- JSON de impacto.resumo
+    em        TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- O código é único por empresa (índice obrigacao_empresa_codigo, abaixo), não global: duas clientes
 -- têm cada uma a sua "LO-01", e as normas públicas (empresa vazia) continuam únicas entre si.
 CREATE TABLE IF NOT EXISTS obrigacao (

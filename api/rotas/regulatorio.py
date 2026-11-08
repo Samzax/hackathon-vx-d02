@@ -14,7 +14,7 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field, HttpUrl
 
-from mitra import db, demo, fontes, impacto, torre
+from mitra import db, fontes, impacto, torre
 from mitra.ia import Roteador
 
 from .. import auditoria
@@ -204,10 +204,6 @@ def _quem_decide(dona: str | None) -> str:
     return "curadoria Mitra" if dona is None else f"Regulatório ou Diretoria da {dona}"
 
 
-def _analises() -> list[dict]:
-    return json.loads(demo.RADAR.read_text(encoding="utf-8")) if demo.RADAR.exists() else []
-
-
 def _registro(r: dict) -> AnaliseRadar:
     campos = {k: r[k] for k in AnaliseRadar.model_fields if k in r and k not in ("ato_nome", "mudancas")}
     return AnaliseRadar(**campos, ato_nome=torre.nome_ato(r["ato"]), mudancas=[MudancaRadar(**m) for m in r["mudancas"]])
@@ -245,7 +241,7 @@ def _conferencia(r: dict) -> list[str]:
 def mudancas(empresa_id: int, e: Escopo = Depends(regulatorio), conn=Depends(conexao)):
     empresa_visivel(conn, e, empresa_id)
     visiveis = {a["codigo"] for a in db.ativos(conn, empresa_id) if e.ve_ativo(a)}
-    radar = {torre.nome_ato(r["ato"]): r for r in _analises()}
+    radar = {torre.nome_ato(r["ato"]): r for r in db.analises(conn)}
     normas = {r["codigo"]: r["norma"] for r in conn.execute("SELECT codigo, norma FROM obrigacao")}
     out = []
     for m in torre.mudancas(conn, empresa_id, unidades=e.escopo_unidades):
@@ -315,8 +311,8 @@ def _funil(analises: list[dict]) -> Funil | None:
 
 
 @rota.get("/radar", response_model=Radar, summary="O radar do DOU: funil do mês, análises e custo real da IA")
-def radar(e: Escopo = Depends(regulatorio), rot: Roteador = Depends(roteador)):
-    analises = _analises()
+def radar(e: Escopo = Depends(regulatorio), conn=Depends(conexao), rot: Roteador = Depends(roteador)):
+    analises = db.analises(conn)
     gastos = [CustoIA(tarefa=r["tarefa"], n=r["n"], usd=float(r["usd"])) for r in rot.conn.execute(
         "SELECT tarefa, COUNT(*) AS n, COALESCE(SUM(custo_usd), 0) AS usd FROM analise_ia GROUP BY tarefa "
         "ORDER BY tarefa").fetchall()]
@@ -348,7 +344,7 @@ def _analise_ato(conn, an: impacto.Analise) -> AnaliseAto:
     titulos = {r["codigo"]: r["titulo"] for r in conn.execute(
         "SELECT o.codigo, v.titulo FROM obrigacao_versao v JOIN obrigacao o ON o.id = v.obrigacao_id "
         "WHERE v.status = 'vigente'")}
-    reg = demo.registro_radar(an)
+    reg = impacto.resumo(an)
     return AnaliseAto(
         ato=an.ato, ato_nome=torre.nome_ato(an.ato),
         candidatas=[Candidata(codigo=c.codigo, titulo=titulos.get(c.codigo), motivos=list(c.motivos))
