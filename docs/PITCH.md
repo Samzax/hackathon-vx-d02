@@ -68,6 +68,7 @@ Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é a
   - à esquerda, o funil 908 → 461 → 208 → 46 barragens (cadastradas → na política nacional → grupos de 2 a 9 barragens → meta em 3 anos), com "R$ 24,5 mi · R$ 12,4 mi · R$ 1,2 mi por ano" ao lado das etapas que viram receita (TAM, SAM, SOM);
   - à direita, o modelo em três linhas: assinatura por ativo; implantação; licença para consultoria, que também é canal de venda;
   - embaixo, a escada numa faixa só, com o título "Mesmo motor, outro cadastro": 461 barragens da PNSB (a porta de entrada) → a mineradora inteira, 8.086 pagam CFEM (NR-13, NR-22 e licença já rodam na demo) → 29.761 barragens do país (água, energia, resíduos; SNISB);
+  - acima do rodapé, a conta de quem compra (hipótese da [análise de mercado](ANALISE_MERCADO.md), seção 2): "um grupo com 4 barragens gasta de R$ 47 mil a R$ 156 mil por ano em horas só para controlar prazos; a Mitra custa R$ 108 mil, sem contar consultoria às pressas nem estrutura embargada";
   - no rodapé: "preço a validar com 10 entrevistas e 3 pilotos pagos".
 - **Fala:** "Começamos pelos 59 grupos que têm de 2 a 9 barragens: dor de consolidar, pouco time de sistemas. Cobrando por ativo, só as 461 barragens da PNSB dão R$ 12,4 milhões por ano; com 10% de adoção, R$ 1,2 milhão. Mas o motor é por ativo, não por barragem: mesmo motor, outro cadastro. Depois vêm as outras 447 barragens de mineração, a mineradora inteira, em 8.086 mineradoras que pagam royalty, e as 29.761 barragens do país."
 - **Por que a escada:** o SAM de R$ 12,4 milhões é pequeno para quem investe; o mercado de verdade é compliance por ativo na mineradora inteira. A demo prova o degrau do meio: vaso de pressão (NR-13), unidade (NR-22) e licença rodam no mesmo motor das barragens.
@@ -89,7 +90,7 @@ Vídeo sem som, gravado seguindo o [roteiro](ROTEIRO_DEMO.md); a narração é a
 
 ## Ensaio
 
-- As falas e a narração somam cerca de 580 palavras: perto de 3 min 50 s a 150 palavras por minuto. O slide 7 ficou no limite dos 30 s: se apertar, a escada fica só na tela. O resto do tempo é o vídeo mostrando a tela entre uma narração e outra, e uma pausa depois do número de abertura. Um teste conta as palavras e falha se passar de 750.
+- As falas e a narração somam cerca de 610 palavras: perto de 4 min a 150 palavras por minuto. O slide 7 ficou no limite dos 30 s: se apertar, a escada fica só na tela. O resto do tempo é o vídeo mostrando a tela entre uma narração e outra, e uma pausa depois do número de abertura. Um teste conta as palavras e falha se passar de 750.
 - Cronometrar duas vezes com o vídeo rodando. Se passar de 5 min, cortar primeiro o corte "Transição" do vídeo e depois o slide 9 para uma frase.
 - O vídeo é gravado antes, com a barra lateral em 07/11/2026, "Diretoria (todos os ativos)" e **Recriar demo**. Ter o arquivo do vídeo local, além do link, caso a internet falhe.
 - Não há perguntas: as respostas que mais importam já estão nos slides 6 (a IA errar), 7 (premissas de preço) e 8 (concorrência). A tabela "Se perguntarem" do [roteiro](ROTEIRO_DEMO.md) fica para as mentorias e para conversas depois do pitch.

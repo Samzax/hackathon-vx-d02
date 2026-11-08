@@ -94,4 +94,16 @@ Atualizado a cada commit, pela ordem da lista.
 
 | # | Situação |
 |---|---|
-| D1–D4, S1–S7, P1–P8 | a fazer |
+| D1 | Feito (`439b294`): pitch e roteiro trocam para a Curadoria Mitra antes de aprovar |
+| D2 | Feito (`914613b`): nenhum ID de modelo na interface (Mudanças, Radar, Assistente, Licenças) |
+| D3 | Feito (`914613b`): "Conferência automática" no lugar de "Python" em todas as telas |
+| D4 | Feito (`439b294`): 131 obrigações de 11 normas e "mais de 500 testes", calculados pelo teste; frase do Bedrock firme. O teste que conta as palavras do pitch, citado no PITCH.md mas apagado num commit anterior, voltou |
+| S1 | Feito (`914613b`): "A partir de" e "Até" nos rótulos da API, no boletim e em Responsáveis; "Entra em vigor" no .ics |
+| S2 | Feito (`914613b`): "Análise automática ativa", "Das 6 obrigações analisadas", triagem em vez de "a IA achou" |
+| S3 | Feito (`8821004`): "Regulatório" no seletor da conta de teste, com teste de acesso |
+| S4 | Feito (`914613b`): datas DD/MM/AAAA e custo com vírgula no Assistente |
+| S5 | Feito: seção "Try it in two minutes" no README |
+| S6 | Feito (`914613b`): subtítulos curtos em Licenças, Radar, Usuários e Normas candidatas; "Outorga", "Autorização", "Alvará" |
+| S7 | Feito: a conta de quem compra no slide 7, marcada como hipótese |
+| P1 | Feito em parte (`914613b`): "Cadastro incompleto" e "Revisões pendentes". "Atrasada" fica no singular porque é também o status de cada obrigação |
+| P2–P8 | A fazer |

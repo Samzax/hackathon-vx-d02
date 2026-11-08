@@ -239,6 +239,16 @@ def test_numeros_do_pitch_saem_dos_dados():
     assert "mais de 500 testes" in pitch and testes > 500, testes
 
 
+def test_pitch_cabe_em_cinco_minutos():
+    """Falas e narração do docs/PITCH.md: até 750 palavras, 5 min a 150 palavras por minuto."""
+    pitch = (RAIZ / "docs" / "PITCH.md").read_text(encoding="utf-8")
+    falas = re.findall(r'\*\*(?:Fala|Narração):\*\* "([^"]+)"', pitch)
+    assert len(falas) >= 14, len(falas)
+    palavras = sum(len(f.split()) for f in falas)
+    assert palavras <= 750, palavras
+    assert f"cerca de {round(palavras, -1)} palavras" in pitch, palavras
+
+
 
 def test_git_nao_versiona_segredo_nem_cpf():
     """O que vai para o GitHub: nada de .env, export bruto do SIGBM (tem CPF), banco ou cache local;
